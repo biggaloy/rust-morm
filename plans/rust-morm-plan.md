@@ -1019,7 +1019,7 @@ Shared reads: a small opt-in lane that pipelines primary-key reads on a few conn
 Encrypted columns, including per-user keys and rotation, are not designed yet. Nothing in 0.1 is built for them. These choices, which 0.1 needs anyway, keep them possible without breaking changes:
 
 - `F` columns carry capability markers checked by the query API, so a column can refuse `.by()` or `set_expr`.
-- Encode and decode go through one per-column conversion layer, so a column's Rust type can differ from its stored type.
+- Encode and decode go through one per-column conversion layer, so a column's Rust type can differ from its stored type. It exists only at compile time: generated code calls `ToSql` and `FromSql` directly through static dispatch, with no branch, pointer, allocation or per-row state. A benchmark against hand-written tokio-postgres decoding checks that it adds no cost.
 
 ### Not carried over from python-morm
 
