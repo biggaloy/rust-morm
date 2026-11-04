@@ -975,6 +975,7 @@ One compact, complete file at the repo root. It must be enough to use morm effic
 9. JSON output and schemas.
 10. Pool and `morm.toml`: every setting, sizing, and the rule for long-running work: "use `db` for everything, including jobs and crons, and use `db.hold()` only when you need session state." It states plainly that service jobs, crons and background workers running as their own process must not spawn a pool with `min` above 1, and shows `connect_as`, `MORM_POOL` and `MORM_POOL_MIN`. It includes the full environment variable table. It also shows the jobs table, the `db.hold()` lifecycle, and when a websocket needs a listener: "release when you're done, and rely on Drop as the safety net, never as the plan."
 11. Migrations: workflow, every command in one table, safety rules, triggers and functions.
+12. Security: TLS settings, encrypting disks and backups (outside morm's job, but expected in production), and password hashing with `clean`.
 
 ---
 
@@ -1012,6 +1013,33 @@ One compact, complete file at the repo root. It must be enough to use morm effic
 ### Later
 
 Shared reads: a small opt-in lane that pipelines primary-key reads on a few connections, added only if a benchmark shows real gains with no worse p99 under mixed load. Also read replicas, keyset pagination, `schema = "x"`, partitioning, a `dynamic` registry for by-name admin CRUD, sensitive-column prompts in `import`.
+
+### Later: field-level encryption
+
+An optional `encrypt` feature that costs nothing when unused. The app encrypts values before they reach Postgres, which protects against database breaches, dumps, logs and staff with database access.
+
+```rust
+#[col(encrypt)]                pub nid: String,    // bytea in Postgres, plain String in Rust
+#[col(encrypt, blind_index)]   pub email: String,  // exact match only
+```
+
+- **Algorithm:** AES-256-GCM.
+- **Envelope keys:** data keys encrypt values, and a master key in a KMS, Vault or protected file encrypts the data keys. Keys never live in the database. Each value stores its key id.
+- **Key scope:** per table or per tenant. Per-user keys allow erasing a user by deleting the key.
+- **Search:** exact match only, through a blind index, a keyed hash in a separate column that reveals which rows share a value.
+- **Compile errors:** `.by()` on an encrypted column (`.by_blind()` is required), `set_expr` on one, and encrypted columns in `fetch_json`, because Postgres can't decrypt them.
+- **Logs:** values are masked in `Debug`.
+- **Rotation:** `morm-admin mgr rekey` re-encrypts in batches.
+- **Not `pgcrypto`:** keys would pass through SQL and could land in logs.
+
+**Room left for it in 0.1, so adding it later breaks nothing:**
+
+- `F` columns carry capability markers (searchable, comparable, usable in `set_expr`, usable in Postgres-built JSON), and the query API checks them through trait bounds from the start. Views and `expr` columns already need this.
+- Generated encode and decode go through one per-column conversion layer, so a column's Rust type can differ from its stored type.
+- The `Debug` implementation is generated per column, so a column can be masked.
+- `encrypt` and `blind_index` are reserved `#[col]` names that give a clear "not available yet" compile error.
+- `MORM_ENCRYPTION_KEY_FILE` and the `[encryption]` section of `morm.toml` are reserved.
+- The migration `batch` step can run a data transformation, which `rekey` and encrypting an existing column need.
 
 ### Not carried over from python-morm
 
