@@ -102,8 +102,17 @@ TOML is the Rust standard, with comments, real types and sections, and no indent
 
 ```toml
 [database]
-url = "${DATABASE_URL}"          # keep secrets in the environment
-migration_url = "${MORM_MIGRATION_URL}"   # owner role, so the app can run with fewer privileges
+# Either a URL, or the separate fields below. Separate fields override URL parts.
+url = "${DATABASE_URL}"
+host = "/var/run/postgresql"     # Unix socket directory or hostname
+port = 5432
+name = "app"
+user = "app"                     # no password needed with peer auth on a Unix socket
+password = "${MORM_DB_PASSWORD}" # keep secrets in the environment
+sslmode = "disable"              # disable, prefer, require, verify-ca, verify-full
+
+[database.migration]             # owner role, so the app can run with fewer privileges
+url = "${MORM_MIGRATION_URL}"
 
 [pool]
 min = "auto"                     # 2 x cores of this machine
@@ -131,8 +140,18 @@ Precedence: defaults, then `morm.toml`, then environment variables, then code. T
 | Variable | Overrides |
 |---|---|
 | `MORM_CONFIG` | Path to the config file (default `morm.toml`) |
-| `DATABASE_URL` | Database URL |
-| `MORM_MIGRATION_URL` | Owner-role URL for migrations |
+| `DATABASE_URL` | Full database URL |
+| `MORM_DB_HOST`, `MORM_DB_PORT` | Host or Unix socket directory, and port |
+| `MORM_DB_NAME` | Database name |
+| `MORM_DB_USER` | User |
+| `MORM_DB_PASSWORD` | Password |
+| `MORM_DB_PASSWORD_FILE` | File holding the password, for systemd credentials and secret mounts |
+| `MORM_DB_SSLMODE` | `disable`, `prefer`, `require`, `verify-ca`, `verify-full` |
+| `MORM_DB_SSLROOTCERT` | CA certificate path |
+| `MORM_DB_SSLCERT`, `MORM_DB_SSLKEY` | Client certificate and key paths |
+| `MORM_MIGRATION_URL` | Full owner-role URL for migrations |
+| `MORM_MIGRATION_USER`, `MORM_MIGRATION_PASSWORD` | Owner-role login, using the same host and database |
+| `MORM_MIGRATION_PASSWORD_FILE` | File holding the owner-role password |
 | `MORM_SCRATCH_URL` | Scratch database URL |
 | `MORM_MIGRATIONS_DIR` | Migrations directory |
 | `MORM_POOL` | Named pool this process opens, instead of `[pool]` |
@@ -143,6 +162,10 @@ Precedence: defaults, then `morm.toml`, then environment variables, then code. T
 | `MORM_POOL_HOLD_WARN_AFTER` | `hold_warn_after` |
 
 `MORM_POOL_*` variables apply to the pool this process opens at startup.
+
+**Unix sockets:** the default `host` is `/var/run/postgresql`, the Ubuntu and Debian location. A `host` starting with `/` is a socket directory, and anything else is a hostname using TCP. The socket file is `<host>/.s.PGSQL.<port>`, so `port` still matters. Other systems set `host` to match Postgres's `unix_socket_directories`; Arch and Manjaro usually use `/run/postgresql`. If `host` is a full socket file path, morm takes the directory and port from it. `morm-admin doctor` reports the exact socket path it tries.
+
+**Credentials:** `MORM_DB_*` values override the matching parts of `DATABASE_URL`, so a URL can hold the address while the password comes from `MORM_DB_PASSWORD_FILE`. Setting both `MORM_DB_PASSWORD` and `MORM_DB_PASSWORD_FILE` is an error. `sslmode` values other than `disable` and `prefer` need the `tls` feature, and morm refuses to start without it, so it never silently connects unencrypted. Passwords are never logged, and they're masked in `Debug` output and error messages. `morm-admin doctor` checks that credentials work and warns if `morm.toml` contains a literal password.
 
 **Named pools** take any unset value from `[pool]`, except `min`, which defaults to 1. A separate process can open only its own profile, so job settings live in the same file:
 
