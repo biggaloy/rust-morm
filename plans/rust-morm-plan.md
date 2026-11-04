@@ -115,7 +115,8 @@ max_queries = 50000              # 0 = no limit
 max_lifetime = "off"
 hold_warn_after = "1h"
 
-[pools.jobs]                     # optional named pool, same settings
+[pools.jobs]                     # optional named pool
+min = 1
 max = 4
 
 [migrations]
@@ -123,7 +124,33 @@ dir = "morm-migrations"
 scratch_url = "${MORM_SCRATCH_URL}"
 ```
 
-Precedence: defaults, then `morm.toml`, then `MORM_*` environment variables, then code.
+Precedence: defaults, then `morm.toml`, then environment variables, then code. There is one config file, and a process that needs different values uses a named pool, an environment variable, or code.
+
+**Environment variables:**
+
+| Variable | Overrides |
+|---|---|
+| `MORM_CONFIG` | Path to the config file (default `morm.toml`) |
+| `DATABASE_URL` | Database URL |
+| `MORM_MIGRATION_URL` | Owner-role URL for migrations |
+| `MORM_SCRATCH_URL` | Scratch database URL |
+| `MORM_MIGRATIONS_DIR` | Migrations directory |
+| `MORM_POOL` | Named pool this process opens, instead of `[pool]` |
+| `MORM_POOL_MIN`, `MORM_POOL_MAX` | `min`, `max` |
+| `MORM_POOL_PROCESSES` | `processes` |
+| `MORM_POOL_IDLE_TIMEOUT`, `MORM_POOL_LAST_IDLE_TIMEOUT` | `idle_timeout`, `last_idle_timeout` |
+| `MORM_POOL_MAX_QUERIES`, `MORM_POOL_MAX_LIFETIME` | `max_queries`, `max_lifetime` |
+| `MORM_POOL_HOLD_WARN_AFTER` | `hold_warn_after` |
+
+`MORM_POOL_*` variables apply to the pool this process opens at startup.
+
+**Named pools** take any unset value from `[pool]`, except `min`, which defaults to 1. A separate process can open only its own profile, so job settings live in the same file:
+
+```rust
+let db = morm::Db::connect_as("jobs").await?;   // opens only [pools.jobs]
+```
+
+`MORM_POOL=jobs` with plain `Db::connect()` does the same without a code change. `db.pool("jobs")` is different: it adds that pool alongside the default one in a process that has both.
 
 **`morm-admin import`** is a simple starting point for any existing database. It reads the catalog only, never rows, and writes model files that match the schema exactly: types, nullability, defaults, indexes, constraints and their names. Nothing is "improved". `morm-admin mgr baseline` then records that state as migration zero. Views, hooks and validation are added by hand afterwards.
 
@@ -739,7 +766,7 @@ Everything goes through `db`, so the pool can be replaced later without changing
 - **Custom rules:** `Db::connect().recycle_when(|c| c.queries > 50_000 || c.age > hours(6))`.
 - **Cores:** the default uses the machine running the app, because morm can't see a remote server's core count. If the database is elsewhere, set `min` by hand.
 - **Queues:** a request that can't get a connection waits, then returns `PoolBusy`.
-- **Short scripts:** a cron that runs as its own process should set `min = 1`.
+- **Separate processes:** a service job, cron or background worker running as its own process must not start a pool with `min` above 1. It should use `Db::connect_as("jobs")`, `MORM_POOL=jobs`, or `MORM_POOL_MIN=1`, because the default of 2 × cores would open connections it doesn't need. The pool still grows on demand.
 
 ### Sizing guidance
 
@@ -916,7 +943,7 @@ One compact, complete file at the repo root. It must be enough to use morm effic
 7. Views, groups, validation.
 8. Hooks, with a table of what each receives and this line: "update and delete hooks never see a row unless you fetch it."
 9. JSON output and schemas.
-10. Pool and `morm.toml`: every setting, sizing, and the rule for long-running work: "use `db` for everything, including jobs and crons, and use `db.hold()` only when you need session state." It also shows the jobs table, the `db.hold()` lifecycle, and when a websocket needs a listener: "release when you're done, and rely on Drop as the safety net, never as the plan."
+10. Pool and `morm.toml`: every setting, sizing, and the rule for long-running work: "use `db` for everything, including jobs and crons, and use `db.hold()` only when you need session state." It states plainly that service jobs, crons and background workers running as their own process must not spawn a pool with `min` above 1, and shows `connect_as`, `MORM_POOL` and `MORM_POOL_MIN`. It includes the full environment variable table. It also shows the jobs table, the `db.hold()` lifecycle, and when a websocket needs a listener: "release when you're done, and rely on Drop as the safety net, never as the plan."
 11. Migrations: workflow, every command in one table, safety rules, triggers and functions.
 
 ---
@@ -925,7 +952,7 @@ One compact, complete file at the repo root. It must be enough to use morm effic
 
 0. **Repo bootstrap:** workspace in `biggaloy/rust-morm`, CI workflows, README skeleton.
 1. **Core models:** macro, bases, views, groups, declarative rules and `clean`, inference, `F`, compile-time checks.
-2. **Runtime:** `morm.toml`, `morm::Pool` on the `deadpool` core (start with a quick proof-of-concept), dynamic size, `max_connections` adjustment, `db.hold()`, bounded statement cache, insert, `get`/`update`/`delete` forms, query builder, loop detector, typed errors, transactions, all list and JSON paths. → **First publish** (`0.1.0-alpha`).
+2. **Runtime:** `morm.toml` and environment variables, `morm::Pool` on the `deadpool` core (start with a quick proof-of-concept), dynamic size, named pools, `max_connections` adjustment, `db.hold()`, bounded statement cache, insert, `get`/`update`/`delete` forms, query builder, loop detector, typed errors, transactions, all list and JSON paths. → **First publish** (`0.1.0-alpha`).
 3. **Migration foundation:** `Schema` IR, catalog reader, diff, typed ops with inverses, scratch, proof pipeline.
 4. **Migration execution:** ledger, steps, fingerprint gates, advisory lock, timeouts, preflight, crash recovery, fault-injection suite.
 5. **Migration safety:** safe forms, batched backfills, retire and purge, decisions, `lint`, `rehearse`, expand/contract, `check_schema()`.
