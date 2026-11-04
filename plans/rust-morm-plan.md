@@ -1019,17 +1019,29 @@ Shared reads: a small opt-in lane that pipelines primary-key reads on a few conn
 An optional `encrypt` feature that costs nothing when unused. The app encrypts values before they reach Postgres, which protects against database breaches, dumps, logs and staff with database access.
 
 ```rust
-#[col(encrypt)]                pub nid: String,    // bytea in Postgres, plain String in Rust
-#[col(encrypt, blind_index)]   pub email: String,  // exact match only
+#[col(encrypt)]                pub nid: String,      // table key; bytea in Postgres, String in Rust
+#[col(encrypt, blind_index)]   pub email: String,    // table key, exact match only
+
+#[col(encrypt = "user", owner = user_id)]              pub notes: String,    // the owner's key
+#[col(encrypt = "user:messages", owner = user_id)]     pub body: String,     // a named key of that owner
 ```
 
 - **Algorithm:** AES-256-GCM.
-- **Envelope keys:** data keys encrypt values, and a master key in a KMS, Vault or protected file encrypts the data keys. Keys never live in the database. Each value stores its key id.
-- **Key scope:** per table or per tenant. Per-user keys allow erasing a user by deleting the key.
+- **Envelope keys:** data keys encrypt values, and a master key in a KMS, Vault or protected file encrypts the data keys. The master key and plain data keys never live in the database; only wrapped data keys do. Each value stores its key id.
+- **Key scope:** per table, per user, or per group of users. Each owner can have several named keys for different purposes.
+- **Key ring:** an owner has many key versions. New writes use the latest, and older values stay readable until re-encrypted.
+- **Rotation:** rotating the master key only rewraps data keys, so no row changes. Rotating a data key re-encrypts that owner's values in batches.
+- **Erasure:** deleting a user's keys makes their data unreadable everywhere, including old backups, as long as those backups don't hold the keys or the keys are stored separately.
+- **Bulk reads:** a list across many users loads the wrapped keys it needs with one `= ANY` query, never one per row. Unwrapped keys sit in a bounded in-memory LRU with a short TTL.
+- **Updates need the owner, with no hidden fetch:** `db.update::<Note>(7).owner(&user_id).set(F.notes, v)`. Setting a user-encrypted column without `.owner()` is a compile error, and `update_q` can't set one across several owners.
+- **A row owned by itself:** a `users` row has no `id` before insert, so such tables use an app-generated `key_ref` UUID as the owner.
+- **Changing owner:** re-encrypts the value under the new owner's key.
+- **Blind indexes:** a global lookup such as login by email must use a table-level key. A per-user blind index only works when the owner is already known.
+- **Shared data:** data read by several users, such as an org or chat, uses a group key, not one user's key.
 - **Search:** exact match only, through a blind index, a keyed hash in a separate column that reveals which rows share a value.
 - **Compile errors:** `.by()` on an encrypted column (`.by_blind()` is required), `set_expr` on one, and encrypted columns in `fetch_json`, because Postgres can't decrypt them.
 - **Logs:** values are masked in `Debug`.
-- **Rotation:** `morm-admin mgr rekey` re-encrypts in batches.
+- **Tools:** `morm-admin mgr rekey [--owner ID]` re-encrypts in batches, and `morm-admin mgr rewrap` rotates the master key.
 - **Not `pgcrypto`:** keys would pass through SQL and could land in logs.
 
 **Room left for it in 0.1, so adding it later breaks nothing:**
@@ -1037,7 +1049,10 @@ An optional `encrypt` feature that costs nothing when unused. The app encrypts v
 - `F` columns carry capability markers (searchable, comparable, usable in `set_expr`, usable in Postgres-built JSON), and the query API checks them through trait bounds from the start. Views and `expr` columns already need this.
 - Generated encode and decode go through one per-column conversion layer, so a column's Rust type can differ from its stored type.
 - The `Debug` implementation is generated per column, so a column can be masked.
-- `encrypt` and `blind_index` are reserved `#[col]` names that give a clear "not available yet" compile error.
+- Decoding can take a key context, and the read path has a step before decoding where keys can be loaded asynchronously, because decoding itself is synchronous.
+- Update builders use typestate, so a required `.owner()` can be added for these columns.
+- A `KeyProvider` trait is reserved, so keys can come from a file, a KMS or Vault.
+- `encrypt`, `owner` and `blind_index` are reserved `#[col]` names that give a clear "not available yet" compile error.
 - `MORM_ENCRYPTION_KEY_FILE` and the `[encryption]` section of `morm.toml` are reserved.
 - The migration `batch` step can run a data transformation, which `rekey` and encrypting an existing column need.
 
