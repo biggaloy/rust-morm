@@ -26,7 +26,9 @@ Non-goals: other databases, a query language that replaces SQL, runtime reflecti
 | Topic | Decision |
 |---|---|
 | Driver | `tokio-postgres` |
-| Pool | Our own `morm::Pool`, with a shared pipelined lane and an exclusive lane. No external pooler needed for a single process |
+| Pool | `morm::Pool`: the `deadpool` core crate with our own connection manager. Dynamic size, one exclusive checkout per query |
+| Configuration | `morm.toml`, shared by the app and `morm-admin`, so settings need no Rust |
+| Long-running work | Jobs and crons use the pool normally. `db.hold()` is only for session state |
 | Statement cache | Bounded per-connection LRU, with `query_typed` for dynamic SQL and overflow |
 | Connection | Unix socket by default (`host=/var/run/postgresql`), the lowest latency and allows peer auth. TCP also supported |
 | TLS | Optional cargo feature `tls` (rustls). Not compiled in unless enabled |
@@ -92,9 +94,36 @@ morm-admin scratch                    # check or create the scratch database
 morm-admin mgr <command>              # migrations and schema work (section 10)
 ```
 
-`init` creates the `morm-mgr` package, `morm-migrations/`, `.env.example`, a sample model, and a CI workflow. `--axum` adds the app template and a systemd unit.
+`init` creates the `morm-mgr` package, `morm-migrations/`, `morm.toml`, `.env.example`, a sample model, and a CI workflow. `--axum` adds the app template and a systemd unit.
 
-Configuration: `DATABASE_URL`, `MORM_MIGRATION_URL` (an owner role for migrations, so the app can run with fewer privileges), `MORM_SCRATCH_URL`, `MORM_MIGRATIONS_DIR` (default `morm-migrations`).
+### Configuration: `morm.toml`
+
+TOML is the Rust standard, with comments, real types and sections, and no indentation traps. Settings need no Rust code.
+
+```toml
+[database]
+url = "${DATABASE_URL}"          # keep secrets in the environment
+migration_url = "${MORM_MIGRATION_URL}"   # owner role, so the app can run with fewer privileges
+
+[pool]
+min = "auto"                     # 2 x cores of this machine
+max = "auto"                     # 10 x min
+processes = 1                    # app processes sharing this database
+idle_timeout = "5m"              # shrink to 1 after this
+last_idle_timeout = "1h"         # then close the last one
+max_queries = 50000              # 0 = no limit
+max_lifetime = "off"
+hold_warn_after = "1h"
+
+[pools.jobs]                     # optional named pool, same settings
+max = 4
+
+[migrations]
+dir = "morm-migrations"
+scratch_url = "${MORM_SCRATCH_URL}"
+```
+
+Precedence: defaults, then `morm.toml`, then `MORM_*` environment variables, then code.
 
 **`morm-admin import`** is a simple starting point for any existing database. It reads the catalog only, never rows, and writes model files that match the schema exactly: types, nullability, defaults, indexes, constraints and their names. Nothing is "improved". `morm-admin mgr baseline` then records that state as migration zero. Views, hooks and validation are added by hand afterwards.
 
@@ -334,7 +363,8 @@ In the examples, `F` is short for the relevant model's `F`, such as `Product::F`
 ### Connecting
 
 ```rust
-let db = morm::Db::connect("host=/var/run/postgresql dbname=app user=app").await?;
+let db = morm::Db::connect().await?;                       // reads morm.toml
+let db = morm::Db::connect_to(url).min(10).max(90).await?; // or set values in code
 ```
 
 ### Get
@@ -415,7 +445,7 @@ A list needs `.limit(n)`, `.all()` or `stream()`. Lists return one of:
 
 - `sql!` builds a `&'static str` from `F` constants and registers it. `morm-admin mgr check-sql` runs `PREPARE` on each against scratch and compares types. That gives checked raw SQL with no database at build time.
 - `.q()` accepts only `&'static str`, so `format!`-ed input won't compile. `q_unchecked(String)` is the visible escape hatch.
-- Typed errors: `Unique { constraint, field }`, `ForeignKey`, `NotNull`, `Check`, `Serialization`, `Deadlock`, `Conflict`, `PoolBusy`.
+- Typed errors: `Unique { constraint, field }`, `ForeignKey`, `NotNull`, `Check`, `Serialization`, `Deadlock`, `Conflict`, `PoolBusy`, `ConnectionLost`.
 
 ### Transactions
 
@@ -682,37 +712,106 @@ repair --reason R     refingerprint           sql ID
 
 ### `morm::Pool`
 
-`deadpool-postgres` gives each task exclusive use of a connection, so concurrency is capped at pool size, and its statement cache has no size limit. tokio-postgres can do better: its methods take `&self`, and concurrent requests on one connection pipeline automatically.
+`morm::Pool` is the generic `deadpool` crate with our own connection manager, not `deadpool-postgres`, whose statement cache has no size limit. `deadpool` provides the tested parts: waiting with timeouts, closing and resizing. morm provides the rest:
 
-| Lane | Used for | Behaviour |
+- **Statement cache:** a bounded LRU on each connection.
+- **Health check:** `client.is_closed()` at checkout, with no extra query, so checkout adds no round trip.
+- **Errors:** a pool wait timeout becomes a typed `PoolBusy`.
+- **Sizing:** warm start, idle shrinking and limit checks, below.
+
+Each query takes a connection, runs, and releases it. Connections are not shared between tasks, so one slow query only holds its own connection, a dropped connection fails only its own request, and timeouts work normally. Tasks can still pipeline several queries within one checkout.
+
+Everything goes through `db`, so the pool can be replaced later without changing application code.
+
+### Dynamic size
+
+| Setting | Default | Meaning |
 |---|---|---|
-| **Shared** | Single statements outside a transaction | Many tasks use one connection at once, with no checkout. Requests go to the connection with the fewest in flight |
-| **Exclusive** | Transactions, streams, `COPY`, per-query timeouts, slow statements | Normal checkout |
+| `min` | 2 × cores | Connections opened at startup |
+| `max` | 10 × `min` | The ceiling |
+| `idle_timeout` | 5m | Idle connections close, down to 1 |
+| `last_idle_timeout` | 1h | The last connection closes too, so an idle app can reach 0 |
+| `max_queries` | 50000 | Replace a connection after this many queries; 0 disables it |
+| `max_lifetime` | off | Replace a connection after this age |
 
-Each connection is a whole process on the Postgres side, so needing fewer of them saves real memory.
+- **`min` is not a floor.** It only sets the warm start. Connections reopen on demand, and the first query after a full idle period pays the connection cost.
+- **Limits never interrupt work.** `max_queries` and `max_lifetime` are checked only when a connection returns to the pool.
+- **Custom rules:** `Db::connect().recycle_when(|c| c.queries > 50_000 || c.age > hours(6))`.
+- **Cores:** the default uses the machine running the app, because morm can't see a remote server's core count. If the database is elsewhere, set `min` by hand.
+- **Queues:** a request that can't get a connection waits, then returns `PoolBusy`.
+- **Short scripts:** a cron that runs as its own process should set `min = 1`.
 
-**Effect on query speed:**
+### Sizing guidance
 
-- **A query doesn't execute any slower,** but a connection runs one query at a time, so anything queued waits. If 10,000 1ms queries truly arrive at the same instant on 8 connections, the last waits about 1.25s.
-- **More connections wouldn't fix that.** Postgres can only run as many queries at once as it has CPU cores free, and hundreds of active connections slow it down through contention.
-- **Against an exclusive pool of the same size, the shared lane should be as fast or faster on average:** no checkout wait, and no idle gap per network round trip.
-- **The real cost is tail latency.** One slow query delays everything behind it on that connection, where an exclusive pool would have sent the next query to a free one.
+- Connections needed ≈ queries per second × seconds each query holds a connection. For example, 2,000 queries/s × 5ms needs about 10.
+- Only as many queries run at once as Postgres has free CPU cores. Extra connections help when queries wait on disk, locks or a slow network. When everything is CPU-bound, they only move the queue into Postgres and add contention and memory.
+- `db.pool_stats()` reports wait time, busy connections and holds. If tasks wait while Postgres CPU isn't maxed out, raise `max`. If Postgres CPU is maxed out, a bigger pool won't help, so fix the queries or add cores.
 
-Mitigations:
+### `max_connections`
 
-- **Adaptive routing:** each cached statement tracks its average duration in an atomic. Anything above a threshold (about 5ms) goes to the exclusive lane automatically. `.exclusive()` forces it by hand.
-- **Cap in-flight per connection** (about 16), and route to the least loaded.
-- **Sizing:** default pool size is about 2× Postgres CPU cores, higher for disk-heavy workloads.
-- **Decision gate:** milestone 2 measures p50, p99 and throughput against deadpool at equal and larger sizes, with a mix of fast and slow queries. If p99 is worse under mixed load after these mitigations, the exclusive lane becomes the default and the shared lane an opt-in.
+At startup, morm reads `max_connections` and the reserved slots, then computes:
 
-Other details:
+```
+budget = (max_connections - reserved - safety margin) / processes
+```
 
-- **Each statement runs in its own implicit transaction,** so one failure doesn't affect others on the connection.
-- **Timeouts need the exclusive lane.** `CancelToken` cancels whatever is running on that connection, which on the shared lane could be someone else's query. `SET LOCAL` is exclusive too. Session-level `SET` isn't offered at all, so no state leaks.
-- **Backpressure:** bounded wait queue with a deadline and a typed `PoolBusy` error, rather than unbounded queuing.
-- **Lifecycle:** connection `max_lifetime`, reconnect with backoff, `ping()`, graceful `close()`, statement prewarm at startup.
+If `min` or `max` exceed the budget, including explicit values, morm lowers them and emits a warning, through `tracing` when enabled and stderr otherwise. `morm-admin doctor` runs the same check.
 
-**Limit:** this replaces a pooler for one process. Multiple app processes each hold their own connections, so the total is processes × pool size against `max_connections`. One multi-threaded Tokio process is the recommended deployment. A very large fleet of separate app hosts is the one case this design doesn't cover.
+```
+morm: pool max 160 lowered to 92 (max_connections=100, reserved=3, margin=5)
+```
+
+morm can't see other apps on the same server, which is what the margin is for, and `processes` is set by hand. When several separate processes share a server, Postgres is the real limit: on "too many clients", morm retries with a short backoff before returning the error.
+
+### Jobs and long-running work
+
+Crons, background jobs and service workers use the pool like everything else. Every `db` call takes a connection and releases it, so a job that sleeps for hours holds nothing, and idle closing and reconnects need no code.
+
+```rust
+loop {
+    let batch = next_batch().await;    // holds no connection while waiting
+    db.update_q::<Job>().by(F.id, &batch.id).set(F.done, true).run().await?;
+}
+```
+
+| Case | Use |
+|---|---|
+| Normal request, job or cron | `db` |
+| Websocket query | `db`, per message |
+| Several statements that must be atomic | `db.transaction(...)`, in small batches. A long transaction blocks vacuum and can hold locks |
+| A very long query | `db`. It holds its slot until done, so size `max` for it |
+| A heavy job in the same process as the web app | A named pool: `db.pool("jobs")` |
+| `LISTEN`, temp tables, advisory locks, `SET` | `db.hold()` |
+| Server push from Postgres to websockets | One `db.hold()` listener for the whole app, fanned out to the sockets. Not one per socket, and not needed for ordinary websockets |
+
+### `db.hold()`
+
+```rust
+let held = db.hold().await?;
+held.listen("orders").await?;
+// ...
+db.release(held).await;      // or held.release().await
+```
+
+`db.hold()` keeps one pool connection until released, and no limit or idle rule touches it. `release` takes ownership, so using `held` afterwards is a compile error. Holds count against `max`.
+
+**Release is guaranteed wherever the process survives,** and the server cleans up where it doesn't:
+
+| How it ends | What releases it |
+|---|---|
+| Normal release | `db.release(held)` |
+| Forgot to release, early return, `?` error | Drop |
+| Panic, or task cancelled | Drop, with `panic = "unwind"` |
+| Process crash, `kill -9`, `panic = "abort"` | The OS closes the socket, and Postgres ends the session and releases its locks |
+| Machine or network dies (TCP) | morm sets TCP keepalives, and the server clears the session after about a minute |
+| Postgres restarts | Every session ends. The next use of `held` returns `ConnectionLost`, and the slot is freed |
+
+- **Held connections are closed on release, never reused.** They can carry `LISTEN`, temp tables, `SET` values or advisory locks, and reusing one could leak that state into the next query. The slot is free immediately, and the pool opens a clean connection when needed.
+- **Reconnecting:** `db.hold().on_connect(...)` re-applies session state after a lost connection. `held.listen()` channels re-subscribe automatically.
+- **Forgotten holds:** `#[must_use]` warns if a guard is discarded straight away. Rust can't force an explicit `release`, so Drop is the safety net. `pool_stats()` lists each hold with its age and where it was created, and `hold_warn_after` logs a warning. It only warns, because long-running holds are allowed.
+- **Shutdown:** `db.close()` waits a set time for holds to finish, then closes them.
+
+**Limit:** one app process has one budget, so several processes or hosts must be sized together against `max_connections`. One multi-threaded Tokio process is the recommended deployment.
 
 ### Statements
 
@@ -735,7 +834,7 @@ Other details:
 
 - Release profile for benches and examples, recommended in the docs: `lto = "fat"`, `codegen-units = 1`, `strip = true`, `panic = "unwind"` (so a panicking handler doesn't kill the server). A library's profile doesn't reach its users.
 - Criterion benchmarks in CI against raw tokio-postgres, SQLx, SeaORM and Diesel.
-- Also: shared lane vs deadpool, `fetch_ref` vs `fetch` vs `fetch_json`, binary size, and RSS on both app and Postgres.
+- Also: `morm::Pool` vs `deadpool-postgres`, pool sizes under mixed fast and slow queries, `fetch_ref` vs `fetch` vs `fetch_json`, binary size, and RSS on both app and Postgres.
 
 ---
 
@@ -762,7 +861,7 @@ Tests are written with the code: **a milestone isn't done until its tests pass i
 
 - **Unit:** macro output, SQL generation, diff, naming.
 - **Compile-fail (`trybuild`):** every compile-time guarantee, including hidden view fields, `HasPk`, unfiltered update and delete, update with no `.set()`, list with no limit, `self` absent in update and delete hooks, non-static `q()`.
-- **Integration on real Postgres:** insert, every get, update and delete form, views, groups, hook inputs (`Changes`, `Target`), hooks order, the loop detector, `after_commit` on commit and skip on rollback, all list and JSON paths, pool lanes, routing, cancellation.
+- **Integration on real Postgres:** insert, every get, update and delete form, views, groups, hook inputs (`Changes`, `Target`), hooks order, the loop detector, `after_commit` on commit and skip on rollback, all list and JSON paths, pool growth and idle shrinking, `max_connections` adjustment, `db.hold()` release on every exit path, `ConnectionLost`, cancellation.
 - **Property tests:** random models and data round-trip through insert, read and JSON.
 - **Doc tests:** every README and doc example compiles and runs.
 - **`#[morm::test]`:** gives each test a database cloned from a migrated template, for this project and its users.
@@ -811,13 +910,13 @@ One compact, complete file at the repo root. It must be enough to use morm effic
 | Add many rows | `insert_many` | A loop of `insert` |
 | Handle huge results | `stream` | `.all()` |
 
-4. **Performance rules:** never query in a loop, always limit lists, select through the narrowest view, keep transactions short with no network calls inside them, index what you filter on, use `.exclusive()` for known slow queries.
+4. **Performance rules:** never query in a loop, always limit lists, select through the narrowest view, keep transactions short with no network calls inside them, index what you filter on, release every `db.hold()`.
 5. Models: bases, every `#[model]` and `#[col]` option in tables.
 6. `get`, `insert`, `update`, `delete`, lists, transactions.
 7. Views, groups, validation.
 8. Hooks, with a table of what each receives and this line: "update and delete hooks never see a row unless you fetch it."
 9. JSON output and schemas.
-10. Pool: sizing and tuning.
+10. Pool and `morm.toml`: every setting, sizing, and the rule for long-running work: "use `db` for everything, including jobs and crons, and use `db.hold()` only when you need session state." It also shows the jobs table, the `db.hold()` lifecycle, and when a websocket needs a listener: "release when you're done, and rely on Drop as the safety net, never as the plan."
 11. Migrations: workflow, every command in one table, safety rules, triggers and functions.
 
 ---
@@ -826,7 +925,7 @@ One compact, complete file at the repo root. It must be enough to use morm effic
 
 0. **Repo bootstrap:** workspace in `biggaloy/rust-morm`, CI workflows, README skeleton.
 1. **Core models:** macro, bases, views, groups, declarative rules and `clean`, inference, `F`, compile-time checks.
-2. **Runtime:** `morm::Pool` with both lanes and adaptive routing, bounded statement cache, insert, `get`/`update`/`delete` forms, query builder, loop detector, typed errors, transactions, all list and JSON paths. Benchmark the pool here against the decision gate. → **First publish** (`0.1.0-alpha`).
+2. **Runtime:** `morm.toml`, `morm::Pool` on the `deadpool` core (start with a quick proof-of-concept), dynamic size, `max_connections` adjustment, `db.hold()`, bounded statement cache, insert, `get`/`update`/`delete` forms, query builder, loop detector, typed errors, transactions, all list and JSON paths. → **First publish** (`0.1.0-alpha`).
 3. **Migration foundation:** `Schema` IR, catalog reader, diff, typed ops with inverses, scratch, proof pipeline.
 4. **Migration execution:** ledger, steps, fingerprint gates, advisory lock, timeouts, preflight, crash recovery, fault-injection suite.
 5. **Migration safety:** safe forms, batched backfills, retire and purge, decisions, `lint`, `rehearse`, expand/contract, `check_schema()`.
@@ -844,7 +943,6 @@ One compact, complete file at the repo root. It must be enough to use morm effic
 ### Risks
 
 - **Managed objects:** functions, triggers and policies with exact inverses are the hardest engine work.
-- **Shared-lane pool:** unproven until the milestone 2 benchmark. If it disappoints, the exclusive lane alone still works as a normal pool.
 - **Needs proof early:** borrowed `ProductRef` decoding, the loop detector, macro feasibility for `#[view]`, and hook signatures.
 - **Scratch databases:** `makemigrations` needs a Postgres where it can `CREATE DATABASE`.
 - **Scope:** migrations alone outweigh the runtime.
@@ -856,7 +954,7 @@ One compact, complete file at the repo root. It must be enough to use morm effic
 
 ### Later
 
-Read replicas, `LISTEN/NOTIFY`, keyset pagination, `schema = "x"`, partitioning, a `dynamic` registry for by-name admin CRUD, sensitive-column prompts in `import`.
+Shared reads: a small opt-in lane that pipelines primary-key reads on a few connections, added only if a benchmark shows real gains with no worse p99 under mixed load. Also read replicas, keyset pagination, `schema = "x"`, partitioning, a `dynamic` registry for by-name admin CRUD, sensitive-column prompts in `import`.
 
 ### Not carried over from python-morm
 
