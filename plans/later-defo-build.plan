@@ -1,0 +1,36 @@
+# rust-morm: later, definitely building
+
+Features confirmed for after 0.1. They aren't in the 0.1 milestones, and 0.1 must not make them harder.
+
+## Automatic read routing
+
+Replicas already work by hand in 0.1: `db.pool("replica")`, with `read_only = true`. This step makes the routing automatic, so apps don't choose a pool for each query.
+
+**API**
+
+```rust
+db.read().select::<Order>()...     // a replica when safe, otherwise the primary
+db.write().update::<Order>(id)...  // always the primary
+```
+
+Writes and transactions always go to the primary.
+
+**The hard part: replica lag.** A replica can be behind the primary, so a user might not see what they just saved. Routing has to prevent this, or it's a silent bug.
+
+- After a write, keep its WAL position (`pg_current_wal_lsn()`).
+- A read goes to a replica only if that replica has reached the position (`pg_last_wal_replay_lsn()`). Otherwise it goes to the primary.
+- Across requests, the position has to travel with the user, in a cookie or token, so a user's next request still sees their own write.
+
+**Needs designing**
+
+- Getting the write position cheaply, with no extra round trip per write.
+- How often to check each replica's position, and how to choose among replicas.
+- Removing a lagging or dead replica from routing, and adding it back.
+- Falling back to the primary without overloading it when replicas are behind.
+- Failover: what happens to routing when a replica is promoted.
+- How `pool_stats()` reports routing and lag.
+
+**What 0.1 must keep possible**
+
+- All queries go through `db`, so routing can be added without changing application code.
+- Named pools and `read_only` stay as they are.
