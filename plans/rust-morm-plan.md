@@ -1214,14 +1214,42 @@ One compact, complete file at the repo root. It must be enough to use morm effic
 | Handle huge results | `stream` | `.all()` |
 
 4. **Performance rules:** never query in a loop, always limit lists, select through the narrowest view, keep transactions short with no network calls inside them, index what you filter on, release every `db.hold()`, use `tx` and never `db` inside a transaction, no network calls or app `Mutex` waits inside one, build rows inside a retried closure, lock several rows with `tx.lock`, use `.lock_ordered()` on contended bulk updates, put side effects in `after_commit`.
-5. Models: bases, every `#[model]` and `#[col]` option in tables.
-6. `get`, `insert`, `update`, `delete`, lists, `filter_cols`, raw SQL with `db.sql()`, transactions, and which of `Decimal`, `Numeric` or `bigint` to use.
-7. Views, groups, validation.
-8. Hooks, with a table of what each receives and this line: "update and delete hooks never see a row unless you fetch it."
-9. JSON output and schemas.
-10. Pool and `morm.toml`: every setting, sizing, and the rule for long-running work: "use `db` for everything, including jobs and crons, and use `db.hold()` only when you need session state." It states plainly that service jobs, crons and background workers running as their own process must not spawn a pool with `min` above 1, and shows `connect_as`, `MORM_POOL` and `MORM_POOL_MIN`. It includes the full environment variable table. It also shows the jobs table, the `db.hold()` lifecycle, and when a websocket needs a listener: "release when you're done, and rely on Drop as the safety net, never as the plan."
-11. Migrations: workflow, every command in one table, safety rules, triggers and functions.
-12. Security: TLS settings, encrypting disks and backups (outside morm's job, but expected in production), and password hashing with `clean`.
+5. **Extra calls, one line each.** Every opt-in call, escape hatch and override gets one line saying when to use it. A public option with no line here is a documentation bug, and CI compares this table with the public API.
+
+| Use | When |
+|---|---|
+| `.allow_missing()` | Updating or deleting zero rows by primary key isn't an error for you |
+| `.returning()` | You need the changed rows back |
+| `.all()` | You really want every row, and know the result is small |
+| `set_expr` | The new value depends on the current one |
+| `.retry(n)` | The whole transaction is safe to run again; build rows inside the closure |
+| `.isolation(...)` | The default `READ COMMITTED` isn't enough for this transaction |
+| `.lock_timeout(...)` | One transaction may legitimately wait longer for a lock |
+| `.transaction_timeout(...)` | One transaction may legitimately run longer than the default |
+| `tx.lock(&ids)` | You'll change several rows that others change too |
+| `.lock_ordered()` | Bulk updates or deletes overlap and must not deadlock |
+| `.skip_locked()` | Workers take jobs from a queue and shouldn't wait for each other |
+| `tx.advisory_lock(&keys)` | Work across tables must not run at the same time |
+| `db.extra_conn()` | You need a second connection on purpose, such as an audit row that survives a rollback |
+| `db.hold()` | You need session state: `LISTEN`, temp tables, session advisory locks, `SET` |
+| `db.pool("jobs")` | Heavy jobs run in the same process as the web app |
+| `db.groups(mask)`, `db.sudo()` | Writes and output must follow a caller's access |
+| `Numeric` | A value may not fit `Decimal`, or the column can hold `NaN` or `Infinity` |
+| `q_unchecked`, `sql_unchecked` | The SQL can't be a static string; you're now responsible for injection safety |
+| `recycle_when` | The built-in connection limits don't fit your workload |
+| `no_default` | The compiler should insist on every field |
+| `--fast` | The table is small, or you're in a maintenance window |
+| `--accept-data-loss` | You've read the plan, and that data may go |
+| `--skip-fingerprint` | The role can't create a temporary database, and you accept a weaker check |
+
+6. Models: bases, every `#[model]` and `#[col]` option in tables.
+7. `get`, `insert`, `update`, `delete`, lists, `filter_cols`, raw SQL with `db.sql()`, transactions, and which of `Decimal`, `Numeric` or `bigint` to use.
+8. Views, groups, validation.
+9. Hooks, with a table of what each receives and this line: "update and delete hooks never see a row unless you fetch it."
+10. JSON output and schemas.
+11. Pool and `morm.toml`: every setting, sizing, and the rule for long-running work: "use `db` for everything, including jobs and crons, and use `db.hold()` only when you need session state." It states plainly that service jobs, crons and background workers running as their own process must not spawn a pool with `min` above 1, and shows `connect_as`, `MORM_POOL` and `MORM_POOL_MIN`. It includes the full environment variable table. It also shows the jobs table, the `db.hold()` lifecycle, and when a websocket needs a listener: "release when you're done, and rely on Drop as the safety net, never as the plan."
+12. Migrations: workflow, every command in one table, safety rules, triggers and functions.
+13. Security: TLS settings, encrypting disks and backups (outside morm's job, but expected in production), and password hashing with `clean`.
 
 ---
 
