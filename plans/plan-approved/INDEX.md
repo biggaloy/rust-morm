@@ -16,7 +16,7 @@ The frozen plan was split word for word into requirements (`R-nnnn`) and test ob
 
 | Step | Title | Phase | Depends on | Status |
 |---|---|---|---|---|
-| 01 | [Repo bootstrap and CI](steps/01-bootstrap.md) | Foundation | none | todo |
+| 01 | [Repo bootstrap and CI](steps/01-bootstrap.md) | Foundation | none | in progress |
 | 02 | [Proofs of the risky parts](steps/02-proofs.md) | Foundation | 01 | todo |
 | 03 | [Freeze the contracts](steps/03-contracts-freeze.md) | Foundation | 02 | todo |
 | 04 | [`#[model]`, names and types](steps/04-model-core.md) | Models | 03 | todo |
