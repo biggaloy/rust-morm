@@ -1464,7 +1464,7 @@ db.release(held).await;      // or held.release().await
 
 ### Telemetry
 
-morm has no vendor code. It emits OpenTelemetry-shaped data through `tracing` and `metrics`, so Datadog, Grafana, Honeycomb and the rest work through the app's exporter, the Datadog Agent or an OpenTelemetry Collector. Logs and database monitoring come from Postgres directly, as `app_suggestions.md` describes.
+morm has no vendor code. It emits OpenTelemetry-shaped data through `tracing` and `metrics`, so Datadog, Grafana, Honeycomb and in-house stacks work through exporters the app chooses, and morm depends on no exporter or vendor. Spans reach an agent through `tracing-opentelemetry` and OTLP. Metrics usually go through `metrics-exporter-prometheus`, scraped by the agent, because the `metrics` crate has no official OTLP exporter. Logs and database monitoring come from Postgres directly, as `app_suggestions.md` describes.
 
 **Cheap by construction:**
 

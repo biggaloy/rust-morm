@@ -82,13 +82,46 @@ Postgres can't see time spent outside it. morm's `pool_stats()` adds pool waits,
 Datadog, Grafana, Honeycomb and similar tools all fit the same way, and morm needs no vendor code:
 
 ```
-morm spans    -> tracing -> OpenTelemetry exporter -> Datadog Agent or OTel Collector
-morm metrics  -> metrics crate -> same exporter
+morm spans    -> tracing -> tracing-opentelemetry -> OTLP exporter -> Datadog Agent or OTel Collector
+morm metrics  -> metrics crate -> /metrics endpoint -> scraped by the agent
 Postgres logs -> Agent tails the log file or journal
 pg_stat_statements, pg_stat_activity -> Agent's database monitoring role
 ```
 
+- The exporter and its setup live in your app, not in morm, so you can update those crates on your own schedule. For traces, use `tracing-opentelemetry` and `opentelemetry-otlp`.
+- For metrics, use `metrics-exporter-prometheus` and let the agent scrape it. The `metrics` crate has no official OTLP exporter. `metrics-exporter-opentelemetry` is a third-party bridge if you need to push.
 - Give the Agent its own role with `pg_monitor`, and keep `log_parameter_max_length = 0`, because shipped logs leave the server for a third party.
 - Use `service` or fixed-comment trace modes only. A per-request `traceparent` comment, such as Datadog's `full` propagation mode, makes every query unique and defeats statement caching. morm doesn't add one.
 - Keep `span_sample` low on busy services, and wrap requests in `morm::sample_scope` with the trace's own decision so a kept trace has all its queries.
 - Raise `metrics_interval` if the bill matters more than fine graphs. It changes the data volume, not query speed.
+
+## In-house observability
+
+All of this is optional, and morm works the same without it. Run the OpenTelemetry Collector as the agent instead of writing your own, because it already handles batching, retries and buffering.
+
+```
+App: morm spans over OTLP, metrics scraped from /metrics
+  |  localhost
+  v
+Agent on the same host (OTel Collector)
+  |  also tails the Postgres log and reads pg_stat_statements and pg_stat_activity
+  |  batches, samples, buffers, retries
+  v
+Separate telemetry storage
+  v
+Grafana
+```
+
+| Storage | Holds | Use when |
+|---|---|---|
+| ClickHouse | Logs, traces and metrics in one place | The default choice: one system to run, and it compresses this data well |
+| Prometheus, Tempo and Loki | One store per data type | You already run Grafana's stack |
+| A separate Postgres | Whatever you design tables for | Volumes are small; telemetry is a constant heavy write load |
+
+- **Never store telemetry in the app's database,** or on its server. Every query would create a write, and an overloaded Postgres would lose its visibility just when you need it.
+- **Telemetry must never block a query.** Keep the exporter's queue bounded and let it drop data when full.
+- **Keep the agent outside the app, one per host.** If storage is down, the agent buffers and retries, and the app doesn't notice.
+- **Set retention from day one,** for example 7 days of traces, 30 days of logs and a year of metrics. Otherwise this becomes your biggest disk problem.
+- **Cost:** these tools are free to self-host. You pay for the server, its disk and the time to maintain it. Check each project's license before relying on it; Grafana, Tempo and Loki use AGPL v3.
+
+Moving between this setup and a platform like Datadog is a change of exporter target and agent config, with no change to morm.
