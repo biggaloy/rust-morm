@@ -3,7 +3,7 @@
 - **Phase:** Foundation
 - **Depends on:** nothing
 - **Can run beside:** nothing
-- **Crates:** workspace, all four crates as empty shells
+- **Crates:** workspace, all five crates as empty shells
 - **PR approval:** the owner approves the PR
 
 Read `../rules.md` and `../contracts.md` first. Everything needed for this step is in those two files and this one.
@@ -14,16 +14,16 @@ Create the workspace so every later step has a place to land, and CI that runs t
 
 ## Deliverables
 
-- Cargo workspace with `crates/morm`, `crates/morm-macros`, `crates/morm-migrate`, `crates/morm-admin`, `examples/app`, `tests/`, edition 2024, MSRV 1.99.1
+- Cargo workspace with `crates/morm`, `crates/morm-core`, `crates/morm-macros`, `crates/morm-migrate`, `crates/morm-admin`, `examples/app`, `tests/`, edition 2024, MSRV 1.99.1
 - `ci.yml`, `nightly.yml`, `bench.yml` and `release.yml`, including Postgres 15–18 over TCP and Unix socket and a PgBouncer service
-- `tools/check_coverage.py` copied into the repo and run by `ci.yml` in `--code` mode
+- `ci.yml` runs `plans/plan-approved/tools/check_coverage.py --code crates tests benches fuzz .github`
 - A test helper that starts or connects to each Postgres version, and a `trybuild` harness
 - README skeleton, included as crate docs
-- Check that the five crate names are still free on crates.io
+- Check that all six crate names, including `morm-mgr`, are still free on crates.io
 
 ## End-to-end check
 
-A PR containing one trivial integration test tagged `covers: R-nnnn` passes `ci.yml` on every Postgres version and on PgBouncer. Removing the tag makes the coverage job fail.
+A PR containing one trivial integration test tagged `covers: R-nnnn` passes `ci.yml` on every Postgres version and on PgBouncer. Removing the tag makes `--step` fail for that step.
 
 ## Out of scope
 
@@ -63,33 +63,31 @@ rust-morm/
 
 ### Performance and memory / Query path
 
-- **R-0676** Minimal dependencies and features; no CLI framework in `morm-admin`.
+- **R-0706** Minimal dependencies and features; no CLI framework in `morm-admin`.
 
 ### Testing and CI
 
-**R-0738** Tests are written with the code: **a milestone isn't done until its tests pass in CI.**
+**R-0768** Tests are written with the code: **a milestone isn't done until its tests pass in CI.**
 
-**R-0739** Migration tests:
+**R-0769** Migration tests:
 
-**R-0740** Outbox tests:
+**R-0770** Outbox tests:
 
 ### Testing and CI / GitHub Actions (`.github/workflows/`)
 
 | ID | Workflow | When | Runs |
 |---|---|---|---|
-| R-0741 | `ci.yml` | Every push and PR | `fmt`, `clippy -D warnings`, unit, `trybuild`, doc tests, integration on Postgres 15–18 (TCP and Unix socket), `pooler` tests against a PgBouncer service, MSRV build, feature combinations, migration suite including fault injection |
-| R-0742 | `nightly.yml` | Daily | Long property tests, fuzzing, full chain, `cargo audit` and `cargo deny` |
-| R-0743 | `bench.yml` | Weekly and on demand | Benchmarks, compared with the last run; tracks binary size and RSS |
-| R-0744 | `release.yml` | On tag | Tests, publish crates, build `morm-admin` binaries |
+| R-0771 | `ci.yml` | Every push and PR | `fmt`, `clippy -D warnings`, unit, `trybuild`, doc tests, integration on Postgres 15–18 (TCP and Unix socket), `pooler` tests against a PgBouncer service, MSRV build, feature combinations, migration suite including fault injection |
+| R-0772 | `nightly.yml` | Daily | Long property tests, fuzzing, full chain, `cargo audit` and `cargo deny` |
+| R-0773 | `bench.yml` | Weekly and on demand | Benchmarks, compared with the last run; tracks binary size and RSS |
+| R-0774 | `release.yml` | On tag | Tests, publish crates, build `morm-admin` binaries |
 
-**R-0745** Every merge to `main` requires `ci.yml` to pass. The repo is private, so Actions minutes are limited: the Postgres matrix runs fully on `main` and PRs, while pushes to other branches use one version.
+**R-0775** Every merge to `main` requires `ci.yml` to pass. The repo is private, so Actions minutes are limited: the Postgres matrix runs fully on `main` and PRs, while pushes to other branches use one version.
 
 ### Risks, open items and later work / Open items
 
-- **R-0868** `morm`, `morm-macros`, `morm-migrate`, `morm-admin` and `morm-mgr` were free on crates.io on 2026-11-05. Reserve them at the first publish.
+- **R-0898** `morm`, `morm-macros`, `morm-migrate`, `morm-admin` and `morm-mgr` were free on crates.io on 2026-11-05. Reserve them at the first publish.
 
 ## Test obligations
 
-| ID | Type | Obligation |
-|---|---|---|
-| T-0001 | suite | **Unit:** macro output, SQL generation, diff, naming. |
+None beyond one tagged test per requirement.

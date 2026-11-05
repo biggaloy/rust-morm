@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """One-time: writes rules.md, contracts.md and INDEX.md."""
 from pathlib import Path
-from steps_data import STEPS
+from steps_data import STEPS, beside, sub, wave
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
 info_c = (HERE / "_contracts_info.md").read_text(encoding="utf-8")
@@ -16,7 +16,8 @@ These apply to every step, with no exceptions. A step session reads this file, `
 1. Check `INDEX.md`: every dependency must be `done`.
 2. Work on a branch named `step-NN-name`, in its own worktree when another step is running.
 3. Commit as biggodev: repo-local `user.name` is `Biggo Dev`, `user.email` is `biggodev@gmail.com`, and the remote is `git@github.com-biggodev:biggaloy/rust-morm.git`. Never use the neurobin account.
-4. Set the step's status to `in progress` in `INDEX.md`.
+
+The coordinator owns `INDEX.md`: only it changes a status, so parallel steps never conflict over that file.
 
 ## Doing the work
 
@@ -30,24 +31,24 @@ These apply to every step, with no exceptions. A step session reads this file, `
 
 ## Tests
 
-- Every `code` requirement and every test obligation ends with at least one test tagged in a comment, as `// covers: R-0123, T-0045`. A `trybuild` case carries the tag in its `.rs` file.
+- Every `code` requirement and every test obligation ends with at least one test tagged in a comment, as `// covers: R-0123, T-0045`, in any language. A `trybuild` case carries the tag in its `.rs` file, and a CI requirement carries it in the workflow file.
 - A tag means the test really exercises that requirement. Tagging a test that doesn't is a failed review.
 - A requirement that holds several rules needs tests for each of them, not one test for the first.
 - `info` and `doc` requirements need no tag.
 - Integration tests run against real Postgres, never mocks.
-- Performance claims are measured in step 31. A step that reports a cost states what it measured.
+- Performance claims are measured in step @benchmarks. A step that reports a cost states what it measured.
 
 ## When a step is done
 
 All of these must be true:
 
 1. Every requirement in the step file is built.
-2. `tools/check_coverage.py --code crates tests` passes with this step marked done.
+2. `plans/plan-approved/tools/check_coverage.py --step NN --code crates tests benches fuzz .github` passes.
 3. `ci.yml` passes: `fmt`, `clippy -D warnings`, unit, `trybuild`, doc tests, and integration on Postgres 15–18.
 4. The step's end-to-end check passes, and the PR shows the command and result.
-5. Any new public call has its one-line "use this when" entry, ready for the README table in step 33. It states the real use case from the reader's side, such as: `.allow_missing()`: you will not handle a 0-row error.
+5. Any new public call has its one-line "use this when" entry, ready for the README table in step @readme-release, listed in the PR body. It states the real use case from the reader's side, such as: `.allow_missing()`: you will not handle a 0-row error.
 6. An independent review passes (below).
-7. `INDEX.md` says `done`, and the PR is merged.
+7. The PR is merged, and the coordinator marks the step `done`.
 
 ## Independent review
 
@@ -61,20 +62,20 @@ It reports each finding with the requirement ID and evidence. The writing sessio
 
 ## PRs
 
-- The owner approves the PRs of steps 01, 02, 03 and 33.
+- The owner approves the PRs of steps @bootstrap, @proofs, @contracts-freeze and @readme-release.
 - Other PRs merge once CI and the independent review both pass.
 - The PR body lists the requirements covered, the end-to-end result, and any owner decisions.
 - Never publish crates, force-push or change repository settings without the owner's go-ahead.
 
 ## Changing the plan
 
-`plan-approved/` is the source of truth, and `plans/rust-morm-plan.md` is frozen as the record. An owner-approved change is edited into the step file it affects, in the same PR, with a note in `INDEX.md` under Decisions. A new requirement gets the next free ID, and `coverage.md` and `tools/manifest.json` are updated with it. A change to a shared signature also updates `contracts.md`, and every in-progress step is told.
+`plan-approved/` is the source of truth, and `plans/rust-morm-plan.md` is frozen as the record. An owner-approved change is edited into the step file it affects, in the same PR, with a note in `INDEX.md` under Decisions. A new or edited requirement is updated in `coverage.md` and `tools/manifest.json` in the same PR, and a new one gets the next free ID. A change to a shared signature also updates `contracts.md`, and every in-progress step is told.
 
 ## Keeping sessions small
 
 One step is one fresh session, sized to stay under about 30% of the context window. If a step can't fit, stop at a clean commit and ask the coordinator to split it. Don't read the frozen plan or other step files to fill in gaps. If a gap exists, that's a plan problem: stop and ask.
 """
-(ROOT / "rules.md").write_text(rules, encoding="utf-8")
+(ROOT / "rules.md").write_text(sub(rules), encoding="utf-8")
 
 contracts = """# Contracts
 
@@ -84,10 +85,11 @@ What parallel steps share. Signatures here are the starting point, taken from th
 
 | Crate | Depends on | Holds |
 |---|---|---|
-| `morm` | `morm-macros`, `tokio-postgres`, `deadpool` | Runtime |
-| `morm-macros` | nothing in this workspace | Procedural macros |
-| `morm-migrate` | `tokio-postgres` | Migration engine. Doesn't depend on `morm` |
-| `morm-admin` | `morm-migrate` | The binary. Doesn't depend on the user's models |
+| `morm-core` | no async or database crates | Code several crates need: config loading (`morm.toml`, environment), the 63-byte name function, and the manifest types |
+| `morm-macros` | `morm-core` | Procedural macros |
+| `morm` | `morm-macros`, `morm-core`, `tokio-postgres`, `deadpool` | Runtime |
+| `morm-migrate` | `morm-core`, `tokio-postgres` | Migration engine. Doesn't depend on `morm` |
+| `morm-admin` | `morm-migrate`, `morm-core` | The binary. Doesn't depend on the user's models |
 | `morm-mgr` | generated per project; `morm` and the user's models | Prints the manifest as JSON |
 
 ## Conventions
@@ -103,12 +105,14 @@ What parallel steps share. Signatures here are the starting point, taken from th
 ```rust
 // Implemented by #[model] and #[view]
 pub trait Model: Sized + Send + Sync + 'static {
+    type Pk: PkValue;                 // () for a model with no primary key
     const TABLE: &'static str;
     const SELECT: &'static str;
     fn from_row(row: &tokio_postgres::Row) -> Result<Self>;
     fn from_row_named(row: &tokio_postgres::Row) -> Result<Self>;
 }
-pub trait HasPk: Model { type Pk: Param; }
+pub trait HasPk: Model {}             // absent on models with no primary key
+pub trait PkValue {}                  // one Param, or a tuple for a composite key
 
 // Product::F.<field>. Capability markers let a column refuse .set(), .by() or set_expr
 pub struct Column<M, T, Cap> { /* name, marker data */ }
@@ -127,22 +131,23 @@ pub struct Bits<const N: usize>([u64; N]);
 pub struct Mask<M> { /* global and scoped bits */ }
 
 // Connection-like: db, a held connection, or tx
-pub trait Conn: Send + Sync { /* every query entry point; fn tx(&self) -> Option<&Tx>; */ }
+pub trait Conn: Send + Sync { fn tx(&self) -> Option<&Tx>; /* every query entry point */ }
 
+// Every hook has an empty default body, so an empty `impl Hooks` compiles away
 pub trait Hooks: Model {
     fn validate(&self) -> Result<()> { Ok(()) }
-    fn pre_insert(rows: &mut [Self], db: &impl Conn) -> impl Future<Output = Result<()>> + Send;
-    fn post_insert(rows: &[Self], db: &impl Conn) -> impl Future<Output = Result<()>> + Send;
+    fn pre_insert(rows: &mut [Self], db: &impl Conn) -> impl Future<Output = Result<()>> + Send { async { Ok(()) } }
+    fn post_insert(rows: &[Self], db: &impl Conn) -> impl Future<Output = Result<()>> + Send { async { Ok(()) } }
     fn validate_changes(changes: &Changes<Self>) -> Result<()> { Ok(()) }
-    fn pre_update(changes: &mut Changes<Self>, target: &Target<Self>, db: &impl Conn) -> impl Future<Output = Result<()>> + Send;
-    fn post_update(changes: &Changes<Self>, target: &Target<Self>, affected: u64, db: &impl Conn) -> impl Future<Output = Result<()>> + Send;
-    fn pre_delete(target: &Target<Self>, db: &impl Conn) -> impl Future<Output = Result<()>> + Send;
-    fn post_delete(target: &Target<Self>, affected: u64, db: &impl Conn) -> impl Future<Output = Result<()>> + Send;
-    fn after_commit(event: Committed<Self>) -> impl Future<Output = Result<()>> + Send;
+    fn pre_update(changes: &mut Changes<Self>, target: &Target<Self>, db: &impl Conn) -> impl Future<Output = Result<()>> + Send { async { Ok(()) } }
+    fn post_update(changes: &Changes<Self>, target: &Target<Self>, affected: u64, db: &impl Conn) -> impl Future<Output = Result<()>> + Send { async { Ok(()) } }
+    fn pre_delete(target: &Target<Self>, db: &impl Conn) -> impl Future<Output = Result<()>> + Send { async { Ok(()) } }
+    fn post_delete(target: &Target<Self>, affected: u64, db: &impl Conn) -> impl Future<Output = Result<()>> + Send { async { Ok(()) } }
+    fn after_commit(event: Committed<Self>) -> impl Future<Output = Result<()>> + Send { async { Ok(()) } }
 }
-pub enum Target<M: HasPk> { Id(M::Pk), Ids(Vec<M::Pk>), Filter(/* condition */), All }
+pub enum Target<M: Model> { Id(M::Pk), Ids(Vec<M::Pk>), Filter(/* condition */), All }
 pub enum Change<'a, T> { Value(&'a T), Expr }
-pub enum Committed<M> {
+pub enum Committed<M: Model> {
     Inserted(Vec<M>),
     Copied { count: u64 },
     Updated { changes: Changes<M>, target: Target<M> },
@@ -158,27 +163,50 @@ pub enum Error {
     PoolerMode, NotFound, EmptyPatch, Conflict, Forbidden, Validation,
     PoolBusy, ConnectionLost, ReadOnly, OutOfRange, InvalidText,
     InvalidOrder, InvalidCursor, Decimal,
-    // payloads settled in step 03
+    // payloads settled in step @contracts-freeze
 }
 ```
 
+## Defined in step @contracts-freeze
+
+These are shared by steps that can run side by side, so each is written and frozen before any of them starts:
+
+| Item | Lives in | Shared by |
+|---|---|---|
+| `Db`, `Tx` and every `Conn` entry point | `morm` | All runtime steps |
+| `Changes<M>` | `morm` | Updates, hooks |
+| The `by`/`any` filter builder | `morm` | Reads, updates |
+| The internal query entry point, which runs SQL through the caches | `morm` | Pool, statements, every query step |
+| Macro field IR: the parsed form of `#[model]`, `#[col]` and `#[view]` | `morm-macros` | All model steps |
+| The conversion layer between a field and its column | `morm` | Models, types, reads, writes |
+| `ModelMeta`, the metadata every model emits | `morm-core` | Models, manifest, migrations |
+| The name function, with the 63-byte rule | `morm-core` | Macros, migrations |
+| The config structs | `morm-core` | `morm`, `morm-migrate`, `morm-admin` |
+
+`Op`, the typed migration operation, is defined in step @schema-diff. Migration steps run one at a time, so it needs no earlier freeze.
+
 ## Between `morm-mgr` and `morm-admin`
 
-`morm-mgr` prints one JSON manifest: `format`, then models (table, schema, columns, types, nullability, defaults, flags, indexes, constraints, `was` hints, comments), managed objects, extensions, and registered `sql!` queries. Step 21 defines it. Everything else reads it, and it's versioned by `format`.
+`morm-mgr` prints one JSON manifest: `format`, then models (table, schema, columns, types, nullability, defaults, flags, indexes, constraints, `was` hints, comments), managed objects, extensions, and registered `sql!` queries. Step @manifest defines it, in `morm-core`. Everything else reads it, and it's versioned by `format`.
 
 ## Approved key decisions
 
 These are context for every step. Details live in the step files.
 
 """ + info_c
-(ROOT / "contracts.md").write_text(contracts, encoding="utf-8")
+(ROOT / "contracts.md").write_text(sub(contracts), encoding="utf-8")
 
 rows = []
 for k, s in STEPS.items():
     d = ", ".join(f"{STEPS[x]['n']:02d}" for x in s["deps"]) or "none"
     rows.append(f"| {s['n']:02d} | [{s['title']}](steps/{s['n']:02d}-{k}.md) | {s['phase']} | {d} | todo |")
 
-index = """# rust-morm: approved plan
+waves = {}
+for k in STEPS:
+    waves.setdefault(wave(k), []).append(f"{STEPS[k]['n']:02d}")
+wave_lines = "\n".join(f"{i}. {', '.join(v)}" for i, v in sorted(waves.items()))
+
+index = f"""# rust-morm: approved plan
 
 This folder is the source of truth for building rust-morm. `../rust-morm-plan.md` is frozen as the record. `../app_suggestions.md` holds advice for apps, and `../later-defo-build.plan` holds confirmed work after 0.1.
 
@@ -190,28 +218,21 @@ This folder is the source of truth for building rust-morm. `../rust-morm-plan.md
 | `steps/` | One self-contained file per step |
 | `tools/` | The coverage checker, and the scripts that made this split |
 
-The frozen plan was split word for word: 894 blocks became requirements (`R-nnnn`), and the test lists became 125 obligations (`T-nnnn`). `tools/check_coverage.py` fails if any of them isn't in exactly one place, and with `--code` it fails if a finished step has an untagged one.
+The frozen plan was split word for word into requirements (`R-nnnn`) and test obligations (`T-nnnn`), each in exactly one place. A few long blocks were cut at a sentence so each part sits in the step that can build it, and five of those parts were reworded to stand alone. `tools/check_coverage.py` fails if an item isn't in exactly one place or its text has changed, and with `--code` it fails if a finished step has an untagged one.
 
 ## Steps
 
 | Step | Title | Phase | Depends on | Status |
 |---|---|---|---|---|
-""" + "\n".join(rows) + """
+{chr(10).join(rows)}
 
-Status is one of `todo`, `in progress`, `in review` or `done`.
+Status is one of `todo`, `in progress`, `in review` or `done`. Only the coordinator changes it.
 
-## Order and parallel work
+## Order
 
-1. **Foundation, one at a time:** 01, 02, 03. The owner approves each PR.
-2. **After 03, these tracks run side by side:**
-   - **Models:** 04, then 05, 06, 07 and 08 in parallel.
-   - **Runtime start:** 09, beside 04.
-3. **After 04:** 10.
-4. **After 09 and 10:** 11. After 11 and 06: 12 and 13 in parallel, then 17 after 12.
-5. **After 13:** 14, 15 (with 05), then 16.
-6. **Migrations, beside the runtime once 05 is done:** 21, 22, 23, then 24, 25 and 26 in parallel.
-7. **After their dependencies:** 18, 19, 20, then 27, then 28, 29 and 30 in parallel.
-8. **Finish:** 31 and 32 in parallel, then 33. The owner approves the release.
+Each wave below needs only earlier waves. Each step file's "Can run beside" line says which steps it can run with: no dependency path between them, and no shared area of the code. Steps that aren't listed there run one after another, even in the same wave.
+
+{wave_lines}
 
 Steps run in parallel only when `contracts.md` covers what they share. Each gets its own worktree and branch. When a parallel step needs something shared that isn't in `contracts.md`, it stops, and the contract is updated first.
 
@@ -219,19 +240,20 @@ Steps run in parallel only when `contracts.md` covers what they share. Each gets
 
 The coordinator stays thin: it reads this file and never reads code.
 
-1. Pick steps whose dependencies are all `done`.
+1. Pick steps whose dependencies are all `done`, and mark them `in progress`.
 2. Start a fresh agent for each one, with this prompt: read `plans/plan-approved/rules.md`, `contracts.md` and `steps/NN-name.md`, then do the step.
-3. When it opens a PR, start a fresh review agent as `rules.md` describes.
+3. When it opens a PR, mark it `in review` and start a fresh review agent as `rules.md` describes.
 4. Relay findings until the review is clean, then merge or ask the owner, as `rules.md` says.
-5. Update the status here. Take any design question straight to the owner.
+5. Mark the step `done`. Take any design question straight to the owner.
 
 ## Decisions since the split
 
-None yet.
+- **`morm-core` added:** a sixth crate for config loading, the name function and manifest types, because `morm-migrate` and `morm-admin` can't depend on `morm` but need all three. The owner should confirm this.
+- **Doctor, `lint` and `import` rules gathered:** sentences about them moved from their topic into those tools' own steps, so no earlier step depends on a later tool.
 
 ## Record from the frozen plan
 
-Superseded milestones, later work and build decisions, kept for traceability. Nothing here is a step requirement, except as copied into a step file.
+Superseded milestones, later work and build decisions, kept for traceability. Nothing here is a step requirement.
 
 """ + info_i
 (ROOT / "INDEX.md").write_text(index, encoding="utf-8")

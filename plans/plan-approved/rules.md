@@ -7,7 +7,8 @@ These apply to every step, with no exceptions. A step session reads this file, `
 1. Check `INDEX.md`: every dependency must be `done`.
 2. Work on a branch named `step-NN-name`, in its own worktree when another step is running.
 3. Commit as biggodev: repo-local `user.name` is `Biggo Dev`, `user.email` is `biggodev@gmail.com`, and the remote is `git@github.com-biggodev:biggaloy/rust-morm.git`. Never use the neurobin account.
-4. Set the step's status to `in progress` in `INDEX.md`.
+
+The coordinator owns `INDEX.md`: only it changes a status, so parallel steps never conflict over that file.
 
 ## Doing the work
 
@@ -21,24 +22,24 @@ These apply to every step, with no exceptions. A step session reads this file, `
 
 ## Tests
 
-- Every `code` requirement and every test obligation ends with at least one test tagged in a comment, as `// covers: R-0123, T-0045`. A `trybuild` case carries the tag in its `.rs` file.
+- Every `code` requirement and every test obligation ends with at least one test tagged in a comment, as `// covers: R-0123, T-0045`, in any language. A `trybuild` case carries the tag in its `.rs` file, and a CI requirement carries it in the workflow file.
 - A tag means the test really exercises that requirement. Tagging a test that doesn't is a failed review.
 - A requirement that holds several rules needs tests for each of them, not one test for the first.
 - `info` and `doc` requirements need no tag.
 - Integration tests run against real Postgres, never mocks.
-- Performance claims are measured in step 31. A step that reports a cost states what it measured.
+- Performance claims are measured in step 41. A step that reports a cost states what it measured.
 
 ## When a step is done
 
 All of these must be true:
 
 1. Every requirement in the step file is built.
-2. `tools/check_coverage.py --code crates tests` passes with this step marked done.
+2. `plans/plan-approved/tools/check_coverage.py --step NN --code crates tests benches fuzz .github` passes.
 3. `ci.yml` passes: `fmt`, `clippy -D warnings`, unit, `trybuild`, doc tests, and integration on Postgres 15–18.
 4. The step's end-to-end check passes, and the PR shows the command and result.
-5. Any new public call has its one-line "use this when" entry, ready for the README table in step 33. It states the real use case from the reader's side, such as: `.allow_missing()`: you will not handle a 0-row error.
+5. Any new public call has its one-line "use this when" entry, ready for the README table in step 43, listed in the PR body. It states the real use case from the reader's side, such as: `.allow_missing()`: you will not handle a 0-row error.
 6. An independent review passes (below).
-7. `INDEX.md` says `done`, and the PR is merged.
+7. The PR is merged, and the coordinator marks the step `done`.
 
 ## Independent review
 
@@ -52,14 +53,14 @@ It reports each finding with the requirement ID and evidence. The writing sessio
 
 ## PRs
 
-- The owner approves the PRs of steps 01, 02, 03 and 33.
+- The owner approves the PRs of steps 01, 02, 03 and 43.
 - Other PRs merge once CI and the independent review both pass.
 - The PR body lists the requirements covered, the end-to-end result, and any owner decisions.
 - Never publish crates, force-push or change repository settings without the owner's go-ahead.
 
 ## Changing the plan
 
-`plan-approved/` is the source of truth, and `plans/rust-morm-plan.md` is frozen as the record. An owner-approved change is edited into the step file it affects, in the same PR, with a note in `INDEX.md` under Decisions. A new requirement gets the next free ID, and `coverage.md` and `tools/manifest.json` are updated with it. A change to a shared signature also updates `contracts.md`, and every in-progress step is told.
+`plan-approved/` is the source of truth, and `plans/rust-morm-plan.md` is frozen as the record. An owner-approved change is edited into the step file it affects, in the same PR, with a note in `INDEX.md` under Decisions. A new or edited requirement is updated in `coverage.md` and `tools/manifest.json` in the same PR, and a new one gets the next free ID. A change to a shared signature also updates `contracts.md`, and every in-progress step is told.
 
 ## Keeping sessions small
 

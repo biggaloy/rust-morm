@@ -3,7 +3,7 @@
 - **Phase:** Foundation
 - **Depends on:** 02
 - **Can run beside:** nothing
-- **Crates:** `morm`, `morm-macros`: traits and types only
+- **Crates:** `morm`, `morm-core`, `morm-macros`: traits and types only
 - **PR approval:** the owner approves the PR
 
 Read `../rules.md` and `../contracts.md` first. Everything needed for this step is in those two files and this one.
@@ -14,13 +14,13 @@ Turn `contracts.md` into compiling Rust: the shared traits, types and error enum
 
 ## Deliverables
 
-- Public traits, the `Error` enum and shared types compiled in `morm`, with signatures only where a later step fills in behaviour
+- Everything listed in `contracts.md`, compiled, with signatures only where a later step fills in behaviour, including the items marked "defined in this step"
 - `contracts.md` matching that code exactly
-- Parallel groups in `INDEX.md` confirmed against what `contracts.md` covers
+- The parallel groups in `INDEX.md` confirmed against what `contracts.md` covers
 
 ## End-to-end check
 
-`cargo doc` and `cargo test` pass, and a small test crate implements each trait by hand to prove the signatures are usable.
+`cargo doc` and `cargo test` pass, and a small test crate implements each trait by hand to prove the signatures are usable, including a model with no primary key and one with a composite key.
 
 ## Out of scope
 

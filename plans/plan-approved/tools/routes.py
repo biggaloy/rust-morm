@@ -237,25 +237,23 @@ def route_misuse(t):
 
 TESTS = [
     # suites and whole-area lines from section 13
-    (r"^\*\*Unit:", "bootstrap"),
-    (r"^\*\*Property tests:\*\* random models", "hardening"),
+        (r"^\*\*Property tests:\*\* random models", "hardening"),
     (r"^\*\*Doc tests", "readme-release"),
     (r"^\*\*`#\[morm::test\]`", "query-tooling"),
     (r"^\*\*Fault injection:\*\* kill the process at every step", "execution"),
     (r"^\*\*Property tests:\*\* random schema", "hardening"),
-    (r"^\*\*Op tests", "schema-diff"),
-    (r"^\*\*Concurrency:\*\* rival migrators", "execution"),
+        (r"^\*\*Concurrency:\*\* rival migrators", "execution"),
     (r"^\*\*Retire", "retire"),
     (r"^\*\*Safe forms", "safe-forms"),
     (r"^\*\*Multi-step", "execution"),
-    (r"^\*\*Forward only|^\*\*Squash", "safe-forms"),
+    (r"^\*\*Forward only|^\*\*Squash", "live-modes"),
     (r"^\*\*Full chain", "hardening"),
     (r"^\*\*Fuzzing", "hardening"),
     (r"^\*\*Fault injection:\*\* kill the process and the worker|^\*\*Concurrency:\*\* rival workers|^\*\*Failures:", "outbox"),
     # specific obligations, first match wins
     (r"hidden view fields|`Deserialize` on|protected columns|derived `Serialize`", "views"),
     (r"`HasPk`", "model-core"),
-    (r"unfiltered update|update with no|every write path on an `insert_only`|missing `\.version|one in a `?version", "writes"),
+    (r"unfiltered update|update with no|every write path on an `insert_only`|missing `\.version", "updates"),
     (r"list with no limit|nullable keyset|non-static", "reads"),
     (r"non-literal default|uppercase names|columns narrower|`usize`|over-long", "model-core"),
     (r"`upsert` outcomes, hooks", "hooks"),
@@ -271,11 +269,12 @@ TESTS = [
     (r"`doctor`", "admin-core"),
     (r"`morm-admin size`|`--here`|`--measure`", "size"),
     (r"pool growth|`max_connections`|`db\.hold\(\)`|`ConnectionLost`|`max_holds`|`25006`|`db\.close\(\)`|two pools|pooler = ", "config-pool"),
-    (r"cancellation|forced deadlocks|every timeout|cancelled queries|`\.lock_ordered\(\)`|advisory key|`skip_locked`|`NestedConnection`|`tx\.lock`|retry limits", "deadlocks"),
+    (r"cancellation|forced deadlocks|every timeout|cancelled queries|`\.lock_ordered\(\)`|advisory key|`skip_locked`|`NestedConnection`|`tx\.lock`|retry limits", "locks-timeouts"),
     (r"swallowed errors|`CommitUnknown`|savepoint", "transactions"),
-    (r"`\.in_batches`|`insert_many`|`\.explicit_ids\(\)`|changed defaults|`OrDefault`|`patch`|`EmptyPatch`|`\.set\(\)` winning|`\.version\(\)` conflicts|array columns|^insert$|every get, update and delete", "writes"),
+    (r"`\.in_batches`|`patch`|`EmptyPatch`|`\.set\(\)` winning|`\.version\(\)` conflicts", "updates"),
+    (r"`insert_many`|`\.explicit_ids\(\)`|changed defaults|`OrDefault`|array columns|^insert$", "inserts"),
     (r"keyset|tampered|`order_by_allowed`|`\.custom_plan\(\)`|`load_related`", "reads"),
-    (r"`check_schema`", "safe-forms"),
+    (r"`check_schema`", "rolling"),
     (r"loop detector", "query-tooling"),
     (r"views$|unknown input", "views"),
     (r"^groups$", "groups"),
@@ -283,6 +282,10 @@ TESTS = [
 
 
 def route_test(t, kind):
+    from overrides import TEST_MOVE, TEST_REFINE
+    for pat, step in TEST_MOVE + TEST_REFINE:
+        if re.search(pat, t):
+            return step
     for pat, step in TESTS:
         if re.search(pat, t):
             return step

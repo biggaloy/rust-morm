@@ -6,10 +6,11 @@ What parallel steps share. Signatures here are the starting point, taken from th
 
 | Crate | Depends on | Holds |
 |---|---|---|
-| `morm` | `morm-macros`, `tokio-postgres`, `deadpool` | Runtime |
-| `morm-macros` | nothing in this workspace | Procedural macros |
-| `morm-migrate` | `tokio-postgres` | Migration engine. Doesn't depend on `morm` |
-| `morm-admin` | `morm-migrate` | The binary. Doesn't depend on the user's models |
+| `morm-core` | no async or database crates | Code several crates need: config loading (`morm.toml`, environment), the 63-byte name function, and the manifest types |
+| `morm-macros` | `morm-core` | Procedural macros |
+| `morm` | `morm-macros`, `morm-core`, `tokio-postgres`, `deadpool` | Runtime |
+| `morm-migrate` | `morm-core`, `tokio-postgres` | Migration engine. Doesn't depend on `morm` |
+| `morm-admin` | `morm-migrate`, `morm-core` | The binary. Doesn't depend on the user's models |
 | `morm-mgr` | generated per project; `morm` and the user's models | Prints the manifest as JSON |
 
 ## Conventions
@@ -25,12 +26,14 @@ What parallel steps share. Signatures here are the starting point, taken from th
 ```rust
 // Implemented by #[model] and #[view]
 pub trait Model: Sized + Send + Sync + 'static {
+    type Pk: PkValue;                 // () for a model with no primary key
     const TABLE: &'static str;
     const SELECT: &'static str;
     fn from_row(row: &tokio_postgres::Row) -> Result<Self>;
     fn from_row_named(row: &tokio_postgres::Row) -> Result<Self>;
 }
-pub trait HasPk: Model { type Pk: Param; }
+pub trait HasPk: Model {}             // absent on models with no primary key
+pub trait PkValue {}                  // one Param, or a tuple for a composite key
 
 // Product::F.<field>. Capability markers let a column refuse .set(), .by() or set_expr
 pub struct Column<M, T, Cap> { /* name, marker data */ }
@@ -49,22 +52,23 @@ pub struct Bits<const N: usize>([u64; N]);
 pub struct Mask<M> { /* global and scoped bits */ }
 
 // Connection-like: db, a held connection, or tx
-pub trait Conn: Send + Sync { /* every query entry point; fn tx(&self) -> Option<&Tx>; */ }
+pub trait Conn: Send + Sync { fn tx(&self) -> Option<&Tx>; /* every query entry point */ }
 
+// Every hook has an empty default body, so an empty `impl Hooks` compiles away
 pub trait Hooks: Model {
     fn validate(&self) -> Result<()> { Ok(()) }
-    fn pre_insert(rows: &mut [Self], db: &impl Conn) -> impl Future<Output = Result<()>> + Send;
-    fn post_insert(rows: &[Self], db: &impl Conn) -> impl Future<Output = Result<()>> + Send;
+    fn pre_insert(rows: &mut [Self], db: &impl Conn) -> impl Future<Output = Result<()>> + Send { async { Ok(()) } }
+    fn post_insert(rows: &[Self], db: &impl Conn) -> impl Future<Output = Result<()>> + Send { async { Ok(()) } }
     fn validate_changes(changes: &Changes<Self>) -> Result<()> { Ok(()) }
-    fn pre_update(changes: &mut Changes<Self>, target: &Target<Self>, db: &impl Conn) -> impl Future<Output = Result<()>> + Send;
-    fn post_update(changes: &Changes<Self>, target: &Target<Self>, affected: u64, db: &impl Conn) -> impl Future<Output = Result<()>> + Send;
-    fn pre_delete(target: &Target<Self>, db: &impl Conn) -> impl Future<Output = Result<()>> + Send;
-    fn post_delete(target: &Target<Self>, affected: u64, db: &impl Conn) -> impl Future<Output = Result<()>> + Send;
-    fn after_commit(event: Committed<Self>) -> impl Future<Output = Result<()>> + Send;
+    fn pre_update(changes: &mut Changes<Self>, target: &Target<Self>, db: &impl Conn) -> impl Future<Output = Result<()>> + Send { async { Ok(()) } }
+    fn post_update(changes: &Changes<Self>, target: &Target<Self>, affected: u64, db: &impl Conn) -> impl Future<Output = Result<()>> + Send { async { Ok(()) } }
+    fn pre_delete(target: &Target<Self>, db: &impl Conn) -> impl Future<Output = Result<()>> + Send { async { Ok(()) } }
+    fn post_delete(target: &Target<Self>, affected: u64, db: &impl Conn) -> impl Future<Output = Result<()>> + Send { async { Ok(()) } }
+    fn after_commit(event: Committed<Self>) -> impl Future<Output = Result<()>> + Send { async { Ok(()) } }
 }
-pub enum Target<M: HasPk> { Id(M::Pk), Ids(Vec<M::Pk>), Filter(/* condition */), All }
+pub enum Target<M: Model> { Id(M::Pk), Ids(Vec<M::Pk>), Filter(/* condition */), All }
 pub enum Change<'a, T> { Value(&'a T), Expr }
-pub enum Committed<M> {
+pub enum Committed<M: Model> {
     Inserted(Vec<M>),
     Copied { count: u64 },
     Updated { changes: Changes<M>, target: Target<M> },
@@ -84,9 +88,27 @@ pub enum Error {
 }
 ```
 
+## Defined in step 03
+
+These are shared by steps that can run side by side, so each is written and frozen before any of them starts:
+
+| Item | Lives in | Shared by |
+|---|---|---|
+| `Db`, `Tx` and every `Conn` entry point | `morm` | All runtime steps |
+| `Changes<M>` | `morm` | Updates, hooks |
+| The `by`/`any` filter builder | `morm` | Reads, updates |
+| The internal query entry point, which runs SQL through the caches | `morm` | Pool, statements, every query step |
+| Macro field IR: the parsed form of `#[model]`, `#[col]` and `#[view]` | `morm-macros` | All model steps |
+| The conversion layer between a field and its column | `morm` | Models, types, reads, writes |
+| `ModelMeta`, the metadata every model emits | `morm-core` | Models, manifest, migrations |
+| The name function, with the 63-byte rule | `morm-core` | Macros, migrations |
+| The config structs | `morm-core` | `morm`, `morm-migrate`, `morm-admin` |
+
+`Op`, the typed migration operation, is defined in step 26. Migration steps run one at a time, so it needs no earlier freeze.
+
 ## Between `morm-mgr` and `morm-admin`
 
-`morm-mgr` prints one JSON manifest: `format`, then models (table, schema, columns, types, nullability, defaults, flags, indexes, constraints, `was` hints, comments), managed objects, extensions, and registered `sql!` queries. Step 21 defines it. Everything else reads it, and it's versioned by `format`.
+`morm-mgr` prints one JSON manifest: `format`, then models (table, schema, columns, types, nullability, defaults, flags, indexes, constraints, `was` hints, comments), managed objects, extensions, and registered `sql!` queries. Step 25 defines it, in `morm-core`. Everything else reads it, and it's versioned by `format`.
 
 ## Approved key decisions
 

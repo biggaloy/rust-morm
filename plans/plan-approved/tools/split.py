@@ -18,7 +18,7 @@ HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
 MASTER = ROOT.parent / "rust-morm-plan.md"
 
-from steps_data import STEPS  # noqa: E402
+from steps_data import STEPS, beside, context_for, sub  # noqa: E402
 
 # ---------------------------------------------------------------- parsing
 
@@ -53,7 +53,7 @@ def parse(text):
             h3, h4 = ln[4:].strip(), ""
             i += 1
             continue
-        if ln.startswith("# ") or ln.strip() == "---":
+        if ln.startswith("# ") or ln.startswith("> ") or ln.strip() == "---":
             flush()
             i += 1
             continue
@@ -115,11 +115,12 @@ def split_commas(s):
 # ---------------------------------------------------------------- routing
 
 from routes import route, route_test  # noqa: E402
+from overrides import apply_pieces, refine, TEST_SPLIT, EXTRA_TESTS  # noqa: E402
 
 
 def kind_of(u, step):
     t = u["text"]
-    if step in ("contracts", "index"):
+    if step in ("contracts", "index") or u.get("forced_info"):
         return "info"
     if u["h2"].startswith(("1.", "2.", "15.", "17.")):
         return "info"
@@ -141,7 +142,7 @@ def main():
     text = MASTER.read_text(encoding="utf-8")
     units = parse(text)
 
-    reqs, tests = [], []
+    reqs, tests, plain = [], [], []
     for u in units:
         # section 13: the two long lists become single test obligations
         if u["h2"].startswith("13.") and u["kind"] == "bullet" and (
@@ -173,16 +174,27 @@ def main():
         if u["h2"].startswith("13.") and u["kind"] == "bullet" and u["h3"] != "GitHub Actions (`.github/workflows/`)":
             tests.append(dict(text=re.sub(r"^-\s*", "", u["text"]), tkind="suite", line=u["line"]))
             continue
-        step = route(u)
-        u["step"] = step
-        u["rkind"] = kind_of(u, step)
+        plain.append(u)
+
+    plain = apply_pieces(plain, lambda u: refine(u, route(u)))
+    for u in plain:
+        u["rkind"] = kind_of(u, u["step"])
         reqs.append(u)
 
     for i, r in enumerate(reqs, 1):
         r["id"] = f"R-{i:04d}"
+    final = []
+    for t in tests:
+        if t["text"] in TEST_SPLIT:
+            for txt, step in TEST_SPLIT[t["text"]]:
+                final.append(dict(t, text=txt, step=step))
+        else:
+            final.append(dict(t, step=route_test(t["text"], t["tkind"])))
+    for txt, tk, step in EXTRA_TESTS:
+        final.append(dict(text=txt, tkind=tk, line=0, step=step))
+    tests = final
     for i, t in enumerate(tests, 1):
         t["id"] = f"T-{i:04d}"
-        t["step"] = route_test(t["text"], t["tkind"])
 
     write_steps(reqs, tests)
     write_coverage(reqs, tests, text)
@@ -244,7 +256,7 @@ def write_steps(reqs, tests):
         L = [f"# Step {s['n']:02d}: {s['title']}\n"]
         L.append(f"- **Phase:** {s['phase']}")
         L.append(f"- **Depends on:** {', '.join(f'{STEPS[x]['n']:02d}' for x in s['deps']) or 'nothing'}")
-        L.append(f"- **Can run beside:** {', '.join(f'{STEPS[x]['n']:02d}' for x in s.get('par', [])) or 'nothing'}")
+        L.append(f"- **Can run beside:** {', '.join(f'{STEPS[x]['n']:02d}' for x in beside(key)) or 'nothing'}")
         L.append(f"- **Crates:** {s['crates']}")
         L.append(f"- **PR approval:** {s.get('approve', 'CI and an independent review')}")
         L.append(f"\nRead `../rules.md` and `../contracts.md` first. Everything needed for this step is in those two files and this one.\n")
@@ -256,6 +268,12 @@ def write_steps(reqs, tests):
         L.append(s["e2e"] + "\n")
         if s.get("extra"):
             L.append(s["extra"].strip() + "\n")
+        ctx = [u for u in context_for(key, reqs)]
+        if ctx:
+            L.append("## Context from other steps\n")
+            L.append("Owned elsewhere, and quoted so this step needs no other file. Nothing here needs a test in this step.\n")
+            L.extend(("> " + line) if line else ">" for u in ctx for line in (u["text"] + "\n").split("\n"))
+            L.append("")
         L.append("## Out of scope\n")
         L.extend(f"- {x}" for x in s["out"])
         L.append("")
@@ -270,7 +288,7 @@ def write_steps(reqs, tests):
             L.append("")
         else:
             L.append("None beyond one tagged test per requirement.\n")
-        (d / f"{s['n']:02d}-{key}.md").write_text("\n".join(L).rstrip() + "\n", encoding="utf-8")
+        (d / f"{s['n']:02d}-{key}.md").write_text(sub("\n".join(L)).rstrip() + "\n", encoding="utf-8")
 
 
 def short(t, n=90):
@@ -298,7 +316,7 @@ def write_manifest(reqs, tests, text):
     m = dict(
         master_sha256=hashlib.sha256(text.encode()).hexdigest(),
         reqs=[dict(id=r["id"], kind=r["rkind"], step=r["step"], line=r["line"],
-                   sha=hashlib.sha256(r["text"].encode()).hexdigest()[:12]) for r in reqs],
+                   text=r["text"]) for r in reqs],
         tests=[dict(id=t["id"], step=t["step"], kind=t["tkind"], line=t["line"]) for t in tests],
     )
     (HERE / "manifest.json").write_text(json.dumps(m, indent=0) + "\n", encoding="utf-8")

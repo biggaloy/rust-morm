@@ -1,8 +1,8 @@
 # Step 07: Group declarations and masks
 
 - **Phase:** Models
-- **Depends on:** 04
-- **Can run beside:** 05, 06, 08
+- **Depends on:** 06
+- **Can run beside:** 08, 09, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 24, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40
 - **Crates:** `morm-macros`, `morm`
 - **PR approval:** CI and an independent review
 
@@ -14,7 +14,7 @@ Global and model-scoped groups with macro-counted masks.
 
 ## Deliverables
 
-- `morm::groups!`, `scoped_groups`, `#[model(groups)]`, `sudo`, `G`, `Bits<N>`, `Mask<T>`, `from_names`, `Model::groups()`, `Model::group_fields()`
+- `morm::groups!`, `scoped_groups`, `#[model(groups)]`, `sudo`, `#[view(groups = ...)]`, `G`, `Bits<N>`, `Mask<T>`, `from_names`, `Model::groups()`, `Model::group_fields()`
 
 ## End-to-end check
 
@@ -22,7 +22,7 @@ An app with global and scoped groups over 64 entries builds masks, converts name
 
 ## Out of scope
 
-- Enforcement on queries (step 19)
+- Enforcement on queries (step 23)
 
 ## Requirements
 
@@ -32,25 +32,29 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 
 | ID | Option | Meaning |
 |---|---|---|
-| R-0147 | `groups`, `sudo` | global groups for the whole model (section 5) |
-| R-0148 | `scoped_groups` | declares groups that exist only on this model (section 5) |
+| R-0153 | `groups`, `sudo` | global groups for the whole model (section 5) |
+| R-0154 | `scoped_groups` | declares groups that exist only on this model (section 5) |
 
 ### Models / Field options (`#[col(...)]`)
 
 | ID | Option | Meaning |
 |---|---|---|
-| R-0166 | `groups`, `sudo` | field access groups (section 5) |
+| R-0172 | `groups`, `sudo` | field access groups (section 5) |
+
+### Models / Generated per model
+
+- **R-0216** `Product::G.<group>` masks, when the model has scoped groups
 
 ### Views and groups / Groups: granular field access
 
-**R-0249** There are two kinds of group:
+**R-0260** There are two kinds of group:
 
 | ID | Kind | Declared | Applies to | Mask |
 |---|---|---|---|---|
-| R-0250 | **Global** | Once, with `morm::groups!` | Models and fields, everywhere. The same name is the same group on every model | `G.admin` |
-| R-0251 | **Model-scoped** | On one model, with `scoped_groups` | That model's fields only | `User::G.billing` |
+| R-0261 | **Global** | Once, with `morm::groups!` | Models and fields, everywhere. The same name is the same group on every model | `G.admin` |
+| R-0262 | **Model-scoped** | On one model, with `scoped_groups` | That model's fields only | `User::G.billing` |
 
-**R-0252**
+**R-0263**
 
 ```rust
 // src/groups.rs: one declaration for the whole app
@@ -71,19 +75,19 @@ pub struct UserAdmin {
 pub struct AuditLog { /* ... */ }
 ```
 
-**R-0253** `sudo` is an ordinary global group with a reserved name, always present, so it works with no declaration.
+**R-0264** `sudo` is an ordinary global group with a reserved name, always present, so it works with no declaration.
 
-**R-0254** **Declaring global groups:** call `morm::groups!` once per app, in any module. It's plain Rust, not `morm.toml`, so names are checked by the compiler. It generates a constant `G`, with one field per group numbered in the order listed, and `sudo` as bit 0. Models find `G` through a normal `use`. If models span several crates, put the call in a crate they all depend on.
+**R-0265** **Declaring global groups:** call `morm::groups!` once per app, in any module. It's plain Rust, not `morm.toml`, so names are checked by the compiler. It generates a constant `G`, with one field per group numbered in the order listed, and `sudo` as bit 0. Models find `G` through a normal `use`. If models span several crates, put the call in a crate they all depend on.
 
-- **R-0255** **Resolving names:** a name listed in the model's `scoped_groups` is scoped. Any other name is global and resolves to `G`, so a typo is a compile error. A scoped name hiding a global one is a compile error too.
-- **R-0256** **Access:** a field with no groups is open to everyone. A grouped field needs the caller to be in at least one of its groups.
-- **R-0257** **Whole model:** `#[model(groups = "staff")]` puts every field without its own `groups` into that group. `#[model(sudo)]` does the same with `sudo`. Only global groups work here, and a field's own `groups` takes priority.
-- **R-0258** **Compile time:** `#[view(pub Moderator, groups = "moderator")]` builds a view from ungrouped fields plus that group. Views take both kinds.
-- **R-0263** `Model::groups()` lists the model's groups, and `Model::group_fields("moderator")` lists a group's fields.
+- **R-0266** **Resolving names:** a name listed in the model's `scoped_groups` is scoped. Any other name is global and resolves to `G`, so a typo is a compile error. A scoped name hiding a global one is a compile error too.
+- **R-0267** **Access:** a field with no groups is open to everyone. A grouped field needs the caller to be in at least one of its groups.
+- **R-0268** **Whole model:** `#[model(groups = "staff")]` puts every field without its own `groups` into that group. `#[model(sudo)]` does the same with `sudo`. Only global groups work here, and a field's own `groups` takes priority.
+- **R-0269** **Compile time:** `#[view(pub Moderator, groups = "moderator")]` builds a view from ungrouped fields plus that group. Views take both kinds.
+- **R-0274** `Model::groups()` lists the model's groups, and `Model::group_fields("moderator")` lists a group's fields.
 
 ### Views and groups / Masks
 
-**R-0264**
+**R-0275**
 
 ```rust
 let db = db.groups(G.admin | G.staff);                  // works on every model
@@ -92,20 +96,19 @@ let db = db.groups(G.staff | User::G.billing);          // works on User only
 let mask = G::from_names(&claims.roles)?;               // roles from a token or a table
 ```
 
-- **R-0265** **Structure:** bits live in an opaque `Bits<N>`, a plain `[u64; N]` array. A group number `n` is bit `n % 64` of word `n / 64`, and a check ANDs the arrays word by word.
-- **R-0266** **Size is counted by the macros, with nothing to configure.** `morm::groups!` counts the global groups and `#[model]` counts its scoped groups, then each sets `N` to the fewest words that fit. Up to 64 groups use `[u64; 1]`, 65 to 128 use `[u64; 2]`, and so on. Global and scoped sizes are separate, and a model with no scoped groups stores no scoped bits.
-- **R-0267** **Generic code:** stable Rust can't write `[u64; Self::N]` in generic code, so each model names its mask as an associated type (`type Scoped = Bits<2>`), and `db.groups()` is generic over the mask.
-- **R-0268** **Limits:** none fixed, for groups or fields.
-- **R-0269** **Cost:** a mask is held by value in the handle with no allocation, 8 bytes per word. Each grouped field has an entry of the same size in a static table, and rows carry no extra bytes. Each extra word adds a fraction of a nanosecond to a check, and the milestone 2 benchmark gives real figures. Group code is monomorphized per mask type, which slightly lengthens compile times.
-- **R-0270** **Only grouped fields are checked.** A field without groups generates no check. `.set()` checks once per call, and `to_json_for` works out its field list once per mask, so output cost doesn't grow with the number of rows.
-- **R-0271** **Scoped bits are per model,** so a mask containing them is typed `Mask<User>`, and using it on another model is a compile error. A caller with scoped groups on two models uses two handles. A mask of only global groups works everywhere.
-- **R-0272** **Bit numbers aren't stable.** They change when the list changes, so store group names, never mask values, and convert with `from_names`. An unknown name is an error.
+- **R-0276** **Structure:** bits live in an opaque `Bits<N>`, a plain `[u64; N]` array. A group number `n` is bit `n % 64` of word `n / 64`, and a check ANDs the arrays word by word.
+- **R-0277** **Size is counted by the macros, with nothing to configure.** `morm::groups!` counts the global groups and `#[model]` counts its scoped groups, then each sets `N` to the fewest words that fit. Up to 64 groups use `[u64; 1]`, 65 to 128 use `[u64; 2]`, and so on. Global and scoped sizes are separate, and a model with no scoped groups stores no scoped bits.
+- **R-0278** **Generic code:** stable Rust can't write `[u64; Self::N]` in generic code, so each model names its mask as an associated type (`type Scoped = Bits<2>`), and `db.groups()` is generic over the mask.
+- **R-0279** **Limits:** none fixed, for groups or fields.
+- **R-0280** **Cost:** a mask is held by value in the handle with no allocation, 8 bytes per word. Each grouped field has an entry of the same size in a static table, and rows carry no extra bytes. Each extra word adds a fraction of a nanosecond to a check, and the milestone 2 benchmark gives real figures. Group code is monomorphized per mask type, which slightly lengthens compile times.
+- **R-0281** **Only grouped fields are checked.** A field without groups generates no check.
+- **R-0283** **Scoped bits are per model,** so a mask containing them is typed `Mask<User>`, and using it on another model is a compile error. A caller with scoped groups on two models uses two handles. A mask of only global groups works everywhere.
+- **R-0284** **Bit numbers aren't stable.** They change when the list changes, so store group names, never mask values, and convert with `from_names`. An unknown name is an error.
 
 ## Test obligations
 
 | ID | Type | Obligation |
 |---|---|---|
-| T-0022 | trybuild | unknown group names |
-| T-0023 | trybuild | scoped groups on `#[model(groups)]` |
-| T-0024 | trybuild | a scoped mask on another model |
-| T-0032 | integration | groups |
+| T-0025 | trybuild | unknown group names |
+| T-0026 | trybuild | scoped groups on `#[model(groups)]` |
+| T-0027 | trybuild | a scoped mask on another model |

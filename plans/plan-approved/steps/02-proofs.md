@@ -15,7 +15,7 @@ Prove on stable Rust 1.99.1 that the designs everything else depends on actually
 ## Deliverables
 
 - One small spike per item below, each compiled and run
-- `plans/plan-approved/proofs.md`: result, code location of the spike, the final shape of each API, and any design change the owner approved
+- `plans/plan-approved/proofs.md`: result, the final shape of each API, and any design change the owner approved
 - `contracts.md` updated with what was learned
 
 ## End-to-end check
@@ -49,7 +49,7 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 
 ### Risks, open items and later work / Risks
 
-- **R-0865** **Needs proof early:** borrowed `ProductRef` decoding, the loop detector, macro feasibility for `#[view]` and `#[morm::base]`, macro-counted group mask sizes on stable Rust, `AsyncFn` closures for `.retry()`, hook signatures including the lazy `db`, `NestedConnection` detection for stream loops, including `join!` and streams moved between tasks, upsert conflict-target markers across macro expansions, `morm::Param` with `query_typed` on every supported type, and registration with `cfg(morm_mgr)` across crates.
+- **R-0895** **Needs proof early:** borrowed `ProductRef` decoding, the loop detector, macro feasibility for `#[view]` and `#[morm::base]`, macro-counted group mask sizes on stable Rust, `AsyncFn` closures for `.retry()`, hook signatures including the lazy `db`, `NestedConnection` detection for stream loops, including `join!` and streams moved between tasks, upsert conflict-target markers across macro expansions, `morm::Param` with `query_typed` on every supported type, and registration with `cfg(morm_mgr)` across crates.
 
 ## Test obligations
 
