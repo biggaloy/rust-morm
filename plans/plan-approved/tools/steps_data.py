@@ -47,7 +47,7 @@ S("model-core", "`#[model]`, names and types", "Models", ["contracts-freeze"], "
 S("model-types", "Type inference and decoding", "Models", ["model-core"], "`morm-macros`, `morm`", ["macro"],
   "Map Rust types to columns, and decode rows with no needless allocation.",
   ["Type inference, the integer table with range CHECKs in metadata, `from_row`, `from_row_named`, `ProductRef`, capability markers on `F`, the conversion layer"],
-  "A model with every inferred type decodes rows from a real Postgres table created by hand, borrowed and owned, and each compile-time rule is proven with `trybuild`.",
+  "A model with every inferred type decodes rows from a real Postgres table created by hand, borrowed and owned, except the types step @types owns: `Decimal`, `Numeric`, `Range<T>`, `IpAddr`, enums, domains and composite types. Each compile-time rule is proven with `trybuild`.",
   ["Encoding exactness and `Decimal` (step @types)"]),
 S("bases-indexes", "Bases, indexes and constraint names", "Models", ["model-core"], "`morm-macros`, `morm-core`", ["macro"],
   "Add bases, custom bases, indexes, constraints and the naming convention, including upsert key markers.",
@@ -174,7 +174,7 @@ S("schema-ir", "Schema IR, catalog and scratch", "Migrations", ["manifest", "con
   ["The diff (step @schema-diff)"]),
 S("schema-diff", "Diff and typed ops", "Migrations", ["schema-ir"], "`morm-migrate`", ["planner"],
   "Diff two schemas into typed operations with inverses.",
-  ["Diff, `Op` with inverse, lock, transaction and data properties, topological planning"],
+  ["Diff, `Op` with inverse, lock, transaction and data properties, topological planning, ops for tables, columns, constraints, indexes, schemas and extensions"],
   "For a set of schema pairs, the diff produces ops whose forward and inverse SQL move a real database between both states exactly.",
   ["Writing files (step @proof-files)", "Managed objects beyond tables (step @managed-decl)"]),
 S("lint", "`lint`", "Migrations", ["schema-diff", "views", "types"], "`morm-migrate`, `morm-admin`", ["planner", "admin"],
@@ -204,7 +204,7 @@ S("managed-decl", "Managed objects: declarations", "Migrations", ["recovery"], "
   ["Applying objects to a database (step @managed-ops)"]),
 S("managed-ops", "Managed objects: catalog and ops", "Migrations", ["managed-decl", "updates"], "`morm-migrate`, `morm-macros`, `morm`", ["planner", "macro"],
   "Read each object kind from the catalog, diff it, and apply it with an exact inverse.",
-  ["IR, catalog reading, diff and `Op` with inverse for each kind: functions, procedures, triggers, policies, grants, views, materialized views, enums, domains", "Running `.sql` definitions on scratch", "Placeholder roles on scratch", "Read-only view models, `db.call`, `db.refresh`"],
+  ["IR, catalog reading, diff and `Op` with inverse for each kind: functions, procedures, triggers, policies, grants, views, materialized views, enums, domains, composite types, sequences", "Running `.sql` definitions on scratch", "Placeholder roles on scratch", "Read-only view models, `db.call`, `db.refresh`"],
   "Each object kind goes from a declaration to a real database and back through the diff with no drift, on Postgres 15–18.",
   ["Dependency recreation (step @managed-deps)"]),
 S("managed-deps", "Managed objects: dependencies", "Migrations", ["managed-ops"], "`morm-migrate`", ["planner"],
@@ -231,7 +231,8 @@ S("rolling", "Rolling deploys", "Migrations", ["live-modes", "reads"], "`morm-mi
   "Keep old and new binaries working through a deploy.",
   ["`phase`, expand and contract, rename sync triggers, `deprecated` steps, `db.check_schema()` with its per-model column list, data migration hooks"],
   "An old binary boots and works during an expand phase, and `check_schema` reports a dropped default.",
-  ["New features"]),
+  ["New features"],
+  extra="**Waiting on the owner:** Rust data hooks need somewhere to run, because `morm-admin` holds no project code and a production host has no Rust toolchain. Stop and ask before building that part. The rest of this step can go ahead."),
 
 S("admin-init", "`morm-admin init` and project setup", "Tools", ["retire", "outbox", "inserts", "reads-more"], "`morm-admin`, `morm-macros`", ["admin"],
   "Create a working project from one command.",
@@ -248,7 +249,7 @@ S("import", "`morm-admin import`", "Tools", ["admin-init"], "`morm-admin`", ["im
   ["`import` with exact types, names, `keep_case`, `secret`, `Decimal` choices, and a list of what models can't express"],
   "`import` on the fixture `tests/fixtures/import.sql` round-trips to no diff. Write that fixture to hold mixed-case names, composite keys, every index kind, deferrable constraints, views, triggers and an exclusion constraint.",
   ["Changing the imported database"]),
-S("size", "`morm-admin size`", "Tools", ["pool", "doctor"], "`morm-admin`, `morm-core`", ["size"],
+S("size", "`morm-admin size`", "Tools", ["pool", "doctor", "query-tooling"], "`morm-admin`, `morm-core`", ["size"],
   "Estimate resources from settings, and settings from resources.",
   ["`size` in both directions, `--here` with cgroup limits, `--share`, `--emit`, `--measure`, `[server]` use, exit codes, calibrated memory figures, the `doctor` line"],
   "On a real server, estimates are checked against measured memory, and `--here` gives a config that starts Postgres and the app.",
@@ -324,6 +325,7 @@ def sub(text):
 
 
 CTX = {
+    "inserts": [r"^\*\*A commit is confirmed", r"^- Any Postgres error marks", r"^- `COMMIT` is sent as"],
     "outbox": [r"^\[database\]|\[outbox\]"], "telemetry": [r"\[telemetry\]"], "pool": [r"\[pool\]"],
     "size": [r"^- Connections needed", r"^- Only as many queries", r"budget = \(", r"^Pools open in one"],
     "benchmarks": [r"^\| Features compiled out|^\| `tracing` |^\| `metrics` on"],

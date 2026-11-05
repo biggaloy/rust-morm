@@ -304,6 +304,7 @@ def write_coverage(reqs, tests, text):
          "`tools/check_coverage.py` fails if that stops being true, and with `--code` it fails if a `code` "
          "requirement of a finished step has no test tagged `covers: R-nnnn`.\n",
          "Kinds: `code` needs a tagged test, `doc` is checked in the README step, `info` is context with nothing to build.\n",
+         f"Totals: {len(reqs)} requirements, {len(tests)} test obligations.\n",
          "## Requirements\n", "| ID | Kind | Step | Plan line | Text |", "|---|---|---|---|---|"]
     for r in reqs:
         st = r["step"] if r["step"] in ("contracts", "index") else f"{STEPS[r['step']]['n']:02d}"
@@ -333,6 +334,15 @@ def write_manifest(reqs, tests, text):
         tests=[dict(id=t["id"], step=t["step"], kind=t["tkind"], line=t["line"],
                     text=t["text"].replace("|", "\\|")) for t in tests],
     )
+    frame = {}
+    for f in sorted((ROOT / "steps").glob("*.md")):
+        key = f.name[3:-3]
+        t = f.read_text(encoding="utf-8").split("## Requirements\n", 1)[1].split("## Test obligations\n", 1)[0]
+        for r in reqs:
+            if r["step"] == key:
+                t = ("\n" + t + "\n").replace("\n" + block_of(r) + "\n", "\n", 1)
+        frame[key] = sorted(x for x in t.splitlines() if x.strip())
+    m["frame"] = frame
     (HERE / "manifest.json").write_text(json.dumps(m, indent=0) + "\n", encoding="utf-8")
     # info blocks that contracts.md and INDEX.md quote
     for key, fn in (("contracts", "_contracts_info.md"), ("index", "_index_info.md")):

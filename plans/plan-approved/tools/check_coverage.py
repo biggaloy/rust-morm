@@ -65,14 +65,13 @@ def exact(block, hay):
 
 stem = {f: f[3:-3] for f in texts}
 for f, t in texts.items():
-    # nothing may sit among the requirements unless it's a block of the manifest
+    # nothing may sit among the requirements unless the manifest knows it
     sec = t.split("## Requirements\n", 1)[-1].split("## Test obligations\n", 1)[0]
     for r in man["reqs"]:
         if r["step"] == stem[f]:
-            sec = ("\n" + sec + "\n").replace("\n" + r["block"] + "\n", "\n")
-    for line in sec.splitlines():
-        if line.strip() and not line.startswith(("### ", "Copied word for word", "None beyond", "|---", "| ID ")):
-            errs.append(f"{f}: unexpected line among requirements: {line[:70]}")
+            sec = ("\n" + sec + "\n").replace("\n" + r["block"] + "\n", "\n", 1)
+    if sorted(x for x in sec.splitlines() if x.strip()) != man["frame"].get(stem[f]):
+        errs.append(f"{f}: unexpected lines among requirements")
     sec = t.split("## Test obligations\n", 1)[-1]
     for line in sec.splitlines():
         if line.startswith("| T-") and not any(line == f"| {x['id']} | {x['kind']} | {x['text']} |" for x in man["tests"] if x["step"] == stem[f]):
@@ -110,6 +109,21 @@ for t in man["tests"]:
 for item in man["reqs"] + man["tests"]:
     if item["step"] not in ("contracts", "index") and item["step"] not in stem.values():
         errs.append(f"{item['id']}: no step file named {item['step']}")
+
+m = re.search(r"^Totals: (\d+) requirements, (\d+) test obligations\.$", coverage, re.M)
+if not m or (int(m[1]), int(m[2])) != (len(man["reqs"]), len(man["tests"])):
+    errs.append("coverage.md totals don't match the manifest")
+for prefix, items in (("R", man["reqs"]), ("T", man["tests"])):
+    if [x["id"] for x in items] != [f"{prefix}-{i:04d}" for i in range(1, len(items) + 1)]:
+        errs.append(f"{prefix} IDs aren't contiguous")
+for r in man["reqs"]:
+    st = {v: k for k, v in {f[:2]: f[3:-3] for f in texts}.items()}.get(r["step"], r["step"])
+    if not re.search(rf"^\| {r['id']} \| {r['kind']} \| {st} \|", coverage, re.M):
+        errs.append(f"{r['id']}: kind or step differs between coverage.md and the manifest")
+for t in man["tests"]:
+    st = {v: k for k, v in {f[:2]: f[3:-3] for f in texts}.items()}.get(t["step"], t["step"])
+    if not re.search(rf"^\| {t['id']} \| {t['kind']} \| {st} \|", coverage, re.M):
+        errs.append(f"{t['id']}: type or step differs between coverage.md and the manifest")
 
 rows = re.findall(r"^\| (\d{2}) \|.*\|\s*([^|]*?)\s*\|\s*$", index, re.M)
 if len(rows) != len(texts):

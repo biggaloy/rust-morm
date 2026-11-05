@@ -182,10 +182,14 @@ MOVE2 = [  # (start of block, step)
     ("- **`citext`**", "reads"), ("| `default_fn` |", "inserts"), ("- an empty `impl Hooks`", "hooks"),
     ("```\nmorm-admin init [path]", "admin-init"),
     ("- `morm`, `morm-macros`, `morm-migrate`", "readme-release"),
-    ("**Everything an application's schema", "schema-ir"), ("Tables and other objects with no definition", "schema-ir"),
+    ("**Everything an application's schema", "schema-ir"), ("Tables and other objects with no definition", "retire"),
 ]
 INFO2 = [  # examples and labels: the rules around them carry the tests
     "```\nmorm-admin init [path]", "```\nmakemigrations [--plan]",
+    "1. Never trust generated", "2. Check the real database", "3. Every failure has", "4. Down is a first-class", "5. Nothing destructive",
+    "- **Migrations must bypass the pooler.**", "Crons, background jobs and service workers", "```rust\nloop {\n    let batch",
+    "| Normal request, job or cron", "| Websocket query", "| Several statements that must be atomic", "| A very long query",
+    "| A heavy job in the same process", "| `LISTEN`, temp tables", "| Server push from Postgres",
     "```rust\nuse morm::{model, Timestamp};", "```rust\nlet mut p = Product {", "```rust\npub enum Patch<T>",
     "```rust\ndb.insert(&mut p).await?;", "```rust\n#[derive(morm::Row)]", "```rust\nmorm::pg_outbox!();",
     "Cargo features of `morm`:", "**Custom bases** are ordinary", "There are two kinds of group:",
@@ -212,6 +216,7 @@ PIECES2 = [  # (start of block, exact text, step, new block or None)
     ("- **Visibility:** `pool_stats()`", "Postgres's deadlock detail is logged through `tracing`, with no parameter values.", "telemetry", None),
     ("- `user.to_json()`, or", "`user.to_json_for(mask)` limits output to groups.", "group-enforcement", None),
     ("- **Failures retry with backoff.**", ", and `morm-admin outbox retry ID` runs it again", "admin-init", "`morm-admin outbox retry ID` runs a failed event again."),
+    ("- **Fingerprint gate.**", "Rollback checks the reverse.", "recovery", "**Fingerprint gate:** rollback checks the fingerprints in reverse."),
     ("- Roles are cluster-wide", ", and `doctor` checks the real ones exist", "doctor", "`doctor` checks that the real roles exist."),
 ]
 SPLIT2 = [  # fifth-pass sizing: (old step, block pattern, new step)
@@ -270,6 +275,15 @@ def nb(text, step, h2, h3):
 # owner-confirmed additions after the split; INDEX.md lists them
 NEW_BLOCKS = [
     nb("`db.upsert_many(&mut rows, target)` is the batch form of `upsert`, taking the same conflict targets. It's the call the plan's \"batch upsert\" and \"`upsert` batches\" mean.", "upsert", "8. Reading and writing", "Insert and update"),
+    nb("Array columns work through `upsert` and `upsert_many` the same way as `insert_many`.", "upsert", "8. Reading and writing", "Insert and update"),
+    nb("`makemigrations [--plan] [--json] [-n name] [--decide ID=OPT] [--decisions F] [--empty] [--fast]`, with `--empty` writing an empty migration for hand-written steps, and `rebase-chain` fixing a chain marked `diverged`.", "proof-files", "10. Migrations", "Commands"),
+    nb("`migrate [--plan] [--json] [--yes] [--to ID] [--resume] [--phase expand|contract]`, where `--yes` skips the prompt and `--to ID` stops after that migration. `status [--json]`. `check`. `sql ID` prints a migration's SQL.", "execution", "10. Migrations", "Commands"),
+    nb("`rollback [--last N | --to ID | --orphans | --failed] [--plan] [--yes] [--accept-data-loss] [--production --reason R]`. `verify [--json]`. `repair --reason R`. `refingerprint`.", "recovery", "10. Migrations", "Commands"),
+    nb("`revert ID [--plan] [--decide ID=OPT]`. `mode [development --confirm NAME | production]`. `squash --to ID`. `rehearse --url URL`.", "live-modes", "10. Migrations", "Commands"),
+    nb("`purge --older-than D | --now ID`.", "retire", "10. Migrations", "Commands"),
+    nb("`baseline`.", "admin-init", "10. Migrations", "Commands"),
+    nb("`morm-admin init [path] [--axum]`, `morm-admin scratch` to check or create the scratch database, and `morm-admin outbox [list | retry ID]` to inspect failed events and deliver one again.", "admin-init", "3. Crates and tools", "`morm-admin`"),
+    nb("`morm-admin mgr <command>` runs migration and schema work, and each `mgr` command lives in its own module.", "lint", "10. Migrations", "Commands"),
     nb("`morm::pg_outbox!()` declares the outbox table as a managed table, tracked by migrations.", "admin-init", "9. Hooks", "Outbox: events that must not be lost"),
 ]
 

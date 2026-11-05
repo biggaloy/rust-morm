@@ -266,6 +266,7 @@ The coordinator stays thin: it reads this file and never reads code.
 ## Decisions since the split
 
 - **`morm-core` added:** a sixth crate for config loading, the name and budget functions and manifest types, because `morm-migrate` and `morm-admin` can't depend on `morm` but need all three. The owner should confirm this.
+- **Open, for the owner:** Rust data hooks (step @rolling) have no place to run, because `morm-admin` can't link a project's code. See that step.
 - **`db.upsert_many` named:** the plan said "batch upsert" with no call. The owner should confirm the name.
 - **`morm::pg_outbox!()` given its own requirement,** because the only text about it was an example.
 - **Doctor, `lint` and `import` rules gathered:** sentences about them moved from their topic into those tools' own steps, so no earlier step depends on a later tool.
