@@ -276,4 +276,4 @@ The coordinator stays thin: it reads this file and never reads code.
 Superseded milestones, later work and build decisions, kept for traceability. Nothing here is a step requirement.
 
 """ + info_i
-(ROOT / "INDEX.md").write_text(index, encoding="utf-8")
+(ROOT / "INDEX.md").write_text(sub(index), encoding="utf-8")
