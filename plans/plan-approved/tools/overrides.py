@@ -53,7 +53,8 @@ def split_auto(u):
     if u["kind"] not in ("bullet", "para") or u["h2"].startswith(("1.", "2.", "14.", "15.", "16.", "17.")):
         return []
     out = []
-    prefix = "- " if u["text"].startswith("- ") else ""
+    m = re.match(r"^(-|\d+\.)\s", u["text"])
+    prefix = m.group(0) if m else ""
     body = u["text"][len(prefix):]
     parts = re.split(r"(?<=[.])\s+(?=[`*A-Z])", body)
     if len(parts) == 1:
@@ -154,7 +155,8 @@ TEST_MOVE = [
     (r"^groups$", "group-enforcement"), (r"models in several schemas", "reads"),
     (r"every integer type at its limits", "json"), (r"range CHECKs", "schema-diff"),
     (r"`\.limit\(\)` sharing", "reads"), (r"`\.tag\(\)` in server", "reads"),
-    (r"over-long and colliding", "bases-indexes"), (r"`db\.close\(\)`", "hooks"),
+    (r"over-long and colliding", "bases-indexes"), (r"`db\.close\(\)`", "hooks-more"),
+    (r"columns narrower|`usize`", "model-types"),
     (r'pooler = "', "locks-timeouts"),
 ]
 EXTRA_TESTS = [("every compile-time guarantee has a `trybuild` case", "trybuild", "hardening")]
@@ -162,4 +164,98 @@ TEST_REFINE = [
     (r"pool growth|`max_connections`|`25006`|two pools", "pool"),
     (r"`db\.hold\(\)`|`ConnectionLost`|`max_holds`", "hold-pooler"),
     (r"`NestedConnection`", "pool-deadlocks"),
+]
+
+
+# ---- second review ----------------------------------------------------------
+
+MOVE2 = [  # (start of block, step)
+    ("| `insert_only` |", "upsert"), ("Compile-time checks: unknown columns", "bases-indexes"),
+    ("- On existing tables, migrations build", "safe-forms"), ("- **Read-only works:**", "updates"),
+    ("**Views write too.**", "updates"), ("- **Inserts:** a view", "inserts"),
+    ("- It never appears in `Serialize`", "group-enforcement"),
+    ("```rust\nlet db = db.groups(", "group-enforcement"), ("- **Generic code:**", "group-enforcement"),
+    ("- **Scoped bits are per model,**", "group-enforcement"), ("**Read replicas** work", "reads"),
+    ("- **Statement caches:** two bounded", "statements"), ("- **`SET LOCAL` still works", "locks-timeouts"),
+    ("- **Prepared statements** need", "locks-timeouts"), ("- **NUL bytes:**", "statements"),
+    ("| Large, with `.returning()`", "upsert"), ("- **Input:** a view with", "hooks"),
+    ("- `morm`, `morm-macros`, `morm-migrate`", "readme-release"),
+    ("**Everything an application's schema", "schema-ir"), ("Tables and other objects with no definition", "schema-ir"),
+]
+INFO2 = [  # examples and labels: the rules around them carry the tests
+    "```rust\nuse morm::{model, Timestamp};", "```rust\nlet mut p = Product {", "```rust\npub enum Patch<T>",
+    "```rust\ndb.insert(&mut p).await?;", "```rust\n#[derive(morm::Row)]", "```rust\nmorm::pg_outbox!();",
+    "Cargo features of `morm`:", "**Custom bases** are ordinary", "There are two kinds of group:",
+    "**Postgres deadlocks:**", "**Limiting the damage:**", "All are `morm-admin mgr <command>`:",
+    "**What the numbers mean:**", "**Cheap by construction:**", "- **Needs proof early:**", "Migration tests:", "Outbox tests:",
+]
+PIECES2 = [  # (start of block, exact text, step, new block or None)
+    ("- `Default` (unless `no_default`)", ", `json_schema()`", "json", "`json_schema()` is generated per model."),
+    ("Compile-time checks: unknown columns", "Postgres checks `filter` and `expr` on scratch, because a macro can't parse SQL.", "proof-files", None),
+    ("- **Session features refuse.**", "`tx.advisory_lock` is unaffected, because it ends with the transaction.", "locks-timeouts", None),
+    ("- **Connection limits:** `SHOW", " and the `max_connections` check in `size`", "size", "With `pooler = \"transaction\"`, the `max_connections` check in `size` is skipped."),
+    ("- `cached plan must not change", ", typed error inside", "transactions", "`cached plan must not change result type` (0A000) inside a transaction returns a typed error."),
+    ("- **Worst case:** random one-off", "The `tracing` feature logs heavy churn.", "telemetry", None),
+    ("- The SQL must be `&'static str`", "`sql!` also registers it for `check-sql`.", "query-tooling", None),
+    ("- **Array columns:**", ", `upsert` and `update_each`", "updates", "Array columns work through `update_each`, and through `upsert`, the same way."),
+    ("- **`#[col(version)]`:**", " and `upsert`", "upsert", "`upsert` also increments a `version` column."),
+    ("- **`.apply()` acts as one", "so hooks, `clean`, rules, `Changes<Self>` and group masks work unchanged, and `clean` runs only on fields that were sent.", "hooks", "`.apply()` goes through hooks, `clean`, rules, `Changes<Self>` and group masks exactly as `.set()` does, and `clean` runs only on fields that were sent."),
+    ("**`.retry(n)`** is available", "Each attempt starts with no queued `after_commit` events.", "hooks", None),
+    ("**Automatic retry:**", "Retry covers only the SQL, so hooks don't run again and `RETURNING` fills the row only on success.", "hooks", None),
+    ("**Automatic retry:**", "`hooks(tx)` statements are transactions, so they follow `.retry(n)`.", "hooks", None),
+    ("- **Visibility:** `pool_stats()`", "Postgres's deadlock detail is logged through `tracing`, with no parameter values.", "telemetry", None),
+    ("- `user.to_json()`, or", "`user.to_json_for(mask)` limits output to groups.", "group-enforcement", None),
+    ("- **Failures retry with backoff.**", ", and `morm-admin outbox retry ID` runs it again", "admin-init", "`morm-admin outbox retry ID` runs a failed event again."),
+    ("- Roles are cluster-wide", ", and `doctor` checks the real ones exist", "doctor", "`doctor` checks that the real roles exist."),
+]
+SPLIT2 = [  # fifth-pass sizing: (old step, block pattern, new step)
+    ("model-core", r"^(\| `i8`|\| `u8`|\| `u16`|\| `u32`|\| `u64`|\| `i128`|\| `u128`|\| `NonZero|\| `char`)", "model-types"),
+    ("model-core", r"^`i16` →|^- \*\*Integers Postgres|^- \*\*`usize`|^- \*\*A column must hold|^- \*\*A wider column|^- \*\*`numeric` is larger|^- \*\*`citext`", "model-types"),
+    ("model-core", r"^- positional decoding|^Encrypted columns|^- `F` columns carry|^- Encode and decode|^\| A Rust type wider", "model-types"),
+    ("schema-diff", r"^No snapshots|^1\. Replay|^2\. Create the models|^3\. Read both|^- \*\*Scratch databases", "schema-ir"),
+    ("execution", r"^- \*\*A failed migration|^- \*\*Crash recovery|^- \*\*Tamper refusal|^- \*\*LIFO rollback|^- \*\*Postgres versions|^- `verify`", "recovery"),
+    ("admin-core", r"doctor|^\| Query values", "doctor"),
+    ("hooks", r"^- \*\*Hooks and outcome|^- An insert runs|^- An update runs|^- `pre_update` can't|^- `Unchanged`|^- A batch upsert|^Hooks run once per batch|^\| `upsert` \||^- \*\*Shutdown|^- \*\*`update_each`", "hooks-more"),
+]
+
+
+def final_fix(units):
+    out = []
+    for u in units:
+        t = u["text"]
+        for start, step in MOVE2:
+            if t.startswith(start):
+                u["step"] = step
+        if any(t.startswith(s) for s in INFO2):
+            u["forced_info"] = True
+        extra = []
+        for start, find, step, new in PIECES2:
+            if t.startswith(start):
+                assert find in u["text"], find
+                u["text"] = u["text"].replace(find, "").replace("  ", " ").strip()
+                extra.append((new or find, step))
+        out.append(u)
+        for txt, step in extra:
+            v = dict(u)
+            v["text"] = ("- " if u["kind"] == "bullet" else "") + txt
+            v["step"] = step
+            v["forced_info"] = False
+            out.append(v)
+    for u in out:
+        for old, pat, new in SPLIT2:
+            if u["step"] == old and re.search(pat, u["text"]):
+                u["step"] = new
+        if u["step"] == "admin-core":
+            u["step"] = "admin-init"
+    return out
+
+
+TEST_SPLIT["**Failures:** backoff, `max_attempts`, `failed` events kept, `retry`, and cleanup after `retention`."] = [
+    ("**Failures:** backoff, `max_attempts`, `failed` events kept, and cleanup after `retention`", "outbox"),
+    ("`morm-admin outbox retry ID` on a failed event", "admin-init")]
+TEST_MOVE += [
+    (r"a scoped mask on another model", "group-enforcement"), (r"every write path on an `insert_only`", "upsert"),
+    (r"`InvalidText`", "statements"), (r"`secret` absent", "group-enforcement"),
+    (r"`upsert` outcomes, hooks|`db\.close\(\)`", "hooks-more"), (r"array columns on every", "updates"),
+    (r"^`doctor`|`doctor` warnings", "doctor"),
 ]

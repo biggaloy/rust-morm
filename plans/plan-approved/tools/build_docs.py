@@ -9,7 +9,7 @@ info_i = (HERE / "_index_info.md").read_text(encoding="utf-8")
 
 rules = """# Rules for every step
 
-These apply to every step, with no exceptions. A step session reads this file, `contracts.md` and its own step file, and nothing else unless the step file says so.
+These apply to every step. A step session reads this file, `contracts.md`, `proofs.md` once it exists, and its own step file, and nothing else unless the step file says so.
 
 ## Starting a step
 
@@ -23,7 +23,8 @@ The coordinator owns `INDEX.md`: only it changes a status, so parallel steps nev
 
 - **The step file is the specification.** Build all of it. Don't drop, shorten or defer a requirement, and don't add features it doesn't ask for.
 - **If the plan is wrong, stop.** When a requirement can't work, contradicts another or needs a design choice the file doesn't settle, stop and ask the owner with evidence and options. Don't improvise, and don't quietly build something different.
-- **Nothing is stubbed.** No `todo!()`, no ignored tests, no "handled later" comments. Work that belongs to a later step is left out completely, and the step file's "Out of scope" says which.
+- **Nothing is stubbed.** No `todo!()`, no ignored tests, no "handled later" comments. Work that belongs to a later step is left out completely, and the step file's "Out of scope" says which. The one exception is step @contracts-freeze: frozen entry points on `Db`, `Tx` and `Conn` may call `unimplemented!("step NN")`, naming the step that fills them in, and that step removes it. Step @readme-release confirms none remain.
+- **Warnings:** code that warns or logs before step @telemetry calls the internal warning sink in `contracts.md`, never `println!` or `tracing` directly.
 - **Unknown behaviour gets tested.** When a requirement depends on how Postgres or a crate behaves, run it. Don't rely on memory.
 - **Goals, in order:** raw performance, lowest memory, rock-solid migrations, hard to misuse. Hot paths have no needless allocation, dynamic dispatch or per-row state.
 - **Secrets:** never log, print or commit passwords, tokens or parameter values.
@@ -85,7 +86,7 @@ What parallel steps share. Signatures here are the starting point, taken from th
 
 | Crate | Depends on | Holds |
 |---|---|---|
-| `morm-core` | no async or database crates | Code several crates need: config loading (`morm.toml`, environment), the 63-byte name function, and the manifest types |
+| `morm-core` | no async or database crates | Code several crates need: config loading (`morm.toml`, environment), the 63-byte name function, the connection budget function, and the manifest types |
 | `morm-macros` | `morm-core` | Procedural macros |
 | `morm` | `morm-macros`, `morm-core`, `tokio-postgres`, `deadpool` | Runtime |
 | `morm-migrate` | `morm-core`, `tokio-postgres` | Migration engine. Doesn't depend on `morm` |
@@ -104,8 +105,11 @@ What parallel steps share. Signatures here are the starting point, taken from th
 
 ```rust
 // Implemented by #[model] and #[view]
+pub type Result<T, E = Error> = std::result::Result<T, E>;
+
 pub trait Model: Sized + Send + Sync + 'static {
     type Pk: PkValue;                 // () for a model with no primary key
+    type Scoped;                      // scoped group mask, () when the model has none
     const TABLE: &'static str;
     const SELECT: &'static str;
     fn from_row(row: &tokio_postgres::Row) -> Result<Self>;
@@ -128,7 +132,7 @@ pub enum OrDefault<T> { Default, Set(T) }
 pub struct WriteOnly<T>(/* private */);
 
 pub struct Bits<const N: usize>([u64; N]);
-pub struct Mask<M> { /* global and scoped bits */ }
+pub struct Mask<G, M: Model> { /* global bits G, plus M::Scoped */ }
 
 // Connection-like: db, a held connection, or tx
 pub trait Conn: Send + Sync { fn tx(&self) -> Option<&Tx>; /* every query entry point */ }
@@ -181,6 +185,12 @@ These are shared by steps that can run side by side, so each is written and froz
 | The conversion layer between a field and its column | `morm` | Models, types, reads, writes |
 | `ModelMeta`, the metadata every model emits | `morm-core` | Models, manifest, migrations |
 | The name function, with the 63-byte rule | `morm-core` | Macros, migrations |
+| The connection budget function | `morm-core` | Pool, `doctor`, `size` |
+| `Timestamp`, re-exported `Uuid`, `Range<T>` as types | `morm` | Bases and inference, before `types` adds their encoding |
+| The internal transaction with confirmed commit, used by `insert_many` and chunked paths before `db.transaction` exists | `morm` | Inserts, updates, upsert, transactions |
+| `PoolStats`, with every counter the plan names | `morm` | Pool, hold-pooler, locks, outbox, telemetry |
+| The internal warning sink: stderr now, `tracing` when enabled | `morm-core` | Every step that warns |
+| Expansion layout: `#[model]` calls one module per feature, so model steps add a module and don't edit one shared function | `morm-macros` | Model steps, `manifest`, `rolling` |
 | The config structs | `morm-core` | `morm`, `morm-migrate`, `morm-admin` |
 
 `Op`, the typed migration operation, is defined in step @schema-diff. Migration steps run one at a time, so it needs no earlier freeze.
@@ -188,6 +198,10 @@ These are shared by steps that can run side by side, so each is written and froz
 ## Between `morm-mgr` and `morm-admin`
 
 `morm-mgr` prints one JSON manifest: `format`, then models (table, schema, columns, types, nullability, defaults, flags, indexes, constraints, `was` hints, comments), managed objects, extensions, and registered `sql!` queries. Step @manifest defines it, in `morm-core`. Everything else reads it, and it's versioned by `format`.
+
+## `morm-admin` layout
+
+Each command is its own module, registered in one table, so steps adding commands don't edit the same code. Step @lint creates this dispatcher. It uses no CLI framework.
 
 ## Approved key decisions
 
@@ -218,7 +232,7 @@ This folder is the source of truth for building rust-morm. `../rust-morm-plan.md
 | `steps/` | One self-contained file per step |
 | `tools/` | The coverage checker, and the scripts that made this split |
 
-The frozen plan was split word for word into requirements (`R-nnnn`) and test obligations (`T-nnnn`), each in exactly one place. A few long blocks were cut at a sentence so each part sits in the step that can build it, and five of those parts were reworded to stand alone. `tools/check_coverage.py` fails if an item isn't in exactly one place or its text has changed, and with `--code` it fails if a finished step has an untagged one.
+The frozen plan was split word for word into requirements (`R-nnnn`) and test obligations (`T-nnnn`), each in exactly one place. A few long blocks were cut at a sentence so each part sits in the step that can build it, and a few of those parts were reworded to stand alone. `tools/check_coverage.py` fails if an item isn't in exactly one place, its text has changed, or the frozen plan has changed, and with `--code` it fails if a finished step has an untagged one.
 
 ## Steps
 
@@ -248,7 +262,7 @@ The coordinator stays thin: it reads this file and never reads code.
 
 ## Decisions since the split
 
-- **`morm-core` added:** a sixth crate for config loading, the name function and manifest types, because `morm-migrate` and `morm-admin` can't depend on `morm` but need all three. The owner should confirm this.
+- **`morm-core` added:** a sixth crate for config loading, the name and budget functions and manifest types, because `morm-migrate` and `morm-admin` can't depend on `morm` but need all three. The owner should confirm this.
 - **Doctor, `lint` and `import` rules gathered:** sentences about them moved from their topic into those tools' own steps, so no earlier step depends on a later tool.
 
 ## Record from the frozen plan

@@ -49,7 +49,7 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 
 ### Risks, open items and later work / Risks
 
-- **R-0895** **Needs proof early:** borrowed `ProductRef` decoding, the loop detector, macro feasibility for `#[view]` and `#[morm::base]`, macro-counted group mask sizes on stable Rust, `AsyncFn` closures for `.retry()`, hook signatures including the lazy `db`, `NestedConnection` detection for stream loops, including `join!` and streams moved between tasks, upsert conflict-target markers across macro expansions, `morm::Param` with `query_typed` on every supported type, and registration with `cfg(morm_mgr)` across crates.
+- **R-0911** **Needs proof early:** borrowed `ProductRef` decoding, the loop detector, macro feasibility for `#[view]` and `#[morm::base]`, macro-counted group mask sizes on stable Rust, `AsyncFn` closures for `.retry()`, hook signatures including the lazy `db`, `NestedConnection` detection for stream loops, including `join!` and streams moved between tasks, upsert conflict-target markers across macro expansions, `morm::Param` with `query_typed` on every supported type, and registration with `cfg(morm_mgr)` across crates.
 
 ## Test obligations
 

@@ -2,7 +2,7 @@
 
 - **Phase:** Models
 - **Depends on:** 03
-- **Can run beside:** 09, 10, 11
+- **Can run beside:** 10, 11, 12
 - **Crates:** `morm-macros`, `morm`, `morm-core`
 - **PR approval:** CI and an independent review
 
@@ -14,16 +14,17 @@ Generate everything a model needs at compile time, with no runtime cost, from a 
 
 ## Deliverables
 
-- `#[model]`, every struct and field option assigned here, `F`, generated SQL constants, `from_row`, `from_row_named`, `ProductRef`, `Default`, `new`, `HasPk`
-- Name rules, type inference, the integer table with range CHECKs in metadata, `db_set`, `insert_only`, `flatten`, capability markers and the conversion layer
+- `#[model]`, every struct and field option assigned here, `F`, generated SQL constants, `Default`, `new`, `HasPk`
+- Name rules, `db_set`, `flatten`, metadata for each model
 
 ## End-to-end check
 
-A model using every option expands to the expected SQL, and rows decode from a real Postgres table created by hand. All compile-time rules are proven with `trybuild`.
+A model using every option assigned here expands to the expected SQL and metadata, and each compile-time rule is proven with `trybuild`.
 
 ## Out of scope
 
-- Indexes and bases (step 05)
+- Types and decoding (step 05)
+- Indexes and bases (step 06)
 - Running queries through `db`
 
 ## Requirements
@@ -116,34 +117,9 @@ pub struct Product {
 | R-0177 | `help` | description, used in schemas; defaults to the field's `///` doc comment |
 | R-0178 | `auto_now` | set to `now()` on every update |
 | R-0179 | `db_set` | Postgres always sets it on insert: the field's value is ignored, and the result is filled in place. Bases set it on `created_at` and `updated_at` |
-| R-0180 | `insert_only` | written by `insert`, then never changed: left out of `upsert` updates, and `.set()`, `set_expr`, `update_each`, `.update_only` or a `patch` naming it is a compile error. Bases set it on `created_at`, and custom bases use it the same way |
 | R-0181 | `name` | column name override, for example `type_` with `name = "type"`; lowercase only unless `keep_case` is set |
 | R-0182 | `keep_case` | allow uppercase in an existing column's name |
 | R-0183 | `was` | previous column name (rename hint) |
-
-### Models / Type inference
-
-**R-0184** `i16` → smallint, `i32` → integer, `i64` → bigint, `f32` → real, `f64` → double precision, `bool` → boolean, `String` → text, `Vec<u8>` → bytea, `DateTime<Utc>` / `Timestamp` → timestamptz, `NaiveDateTime` → timestamp, `NaiveDate` → date, `NaiveTime` → time, `Uuid` → uuid, `serde_json::Value` → jsonb, `Vec<T>` → `T[]`, `IpAddr` → inet, `morm::Range<T>` → the matching range type, such as `tstzrange` or `int8range`. `Option<T>` → nullable. Anything else requires an explicit `sql`, including `Decimal` and `Numeric`, which need their precision stated (section 8).
-
-- **R-0188** **Integers Postgres has no exact type for** map to the smallest column that holds every value, with a generated range CHECK named `__CHK_{table}_{column}_range__`, so nothing outside the Rust type can be stored by any client:
-
-| ID | Rust | Column | CHECK |
-|---|---|---|---|
-| R-0189 | `i8` | `smallint` | -128 to 127 |
-| R-0190 | `u8` | `smallint` | 0 to 255 |
-| R-0191 | `u16` | `integer` | 0 to 65,535 |
-| R-0192 | `u32` | `bigint` | 0 to 4,294,967,295 |
-| R-0193 | `u64` | `numeric(20,0)` | 0 to `u64::MAX` |
-| R-0194 | `i128` | `numeric(39,0)` | `i128::MIN` to `i128::MAX` |
-| R-0195 | `u128` | `numeric(39,0)` | 0 to `u128::MAX` |
-| R-0196 | `NonZero*` | As the base type | Adds `<> 0` |
-| R-0197 | `char` | `text` | `char_length = 1` |
-
-- **R-0198** **`usize` and `isize` are compile errors,** because their size depends on the machine, so a value could fit on one build and not another. Use a fixed-width type.
-- **R-0199** **A column must hold the whole Rust type.** An explicit `sql` can only widen: `u32` on `numeric` compiles, while `u64` on `bigint` or `i64` on `integer` is a compile error, so a value can't wrap or fail at runtime.
-- **R-0200** **A wider column gets the range CHECK too,** so `i32` on `bigint` can't store a value the field can't read. If one still arrives, because the CHECK was removed outside morm, decoding returns `OutOfRange`, never a wrapped value.
-- **R-0201** **`numeric` is larger and slower than `bigint`,** so `u64`, `i128` and `u128` columns and their indexes cost more. Use `i64` when values fit. `#[col(sql = "uuid")]` on `u128` is a compact alternative for ids and hashes: 16 fixed bytes, with no arithmetic in SQL.
-- **R-0204** **`citext`** works on a `String` field with `sql = "citext"` and `extensions = "citext"`.
 
 ### Models / Plain structs, no `save`
 
@@ -162,31 +138,20 @@ db.insert(&mut p).await?;        // fills id and timestamps in place
 ### Models / Generated per model
 
 - **R-0212** compile-time SQL constants (`SELECT`, `GET`, `INSERT`, `DELETE`, `RETURNING`, `ORDER BY`)
-- **R-0213** positional decoding (`from_row`), name-based decoding for raw queries (`from_row_named`), and a borrowed `ProductRef<'r>`
 - **R-0214** `Product::F.<field>`: typed, quoted column references, checked at compile time; `Product::F.alias("p")` for JOINs, with prefix decoding for two models in one row
-- **R-0215** `Default` (unless `no_default`), `Product::new(...)`, `Debug`, `Serialize`, `json_schema()`. `Deserialize` only as described in section 5
-- **R-0218** an empty `impl Hooks` (unless `hooks` is set)
-- **R-0219** schema metadata, compiled only into `morm-mgr`, with no model list to maintain
-
-**R-0220** Compile-time checks: unknown columns in `ordering`, `indexes` and `include`; foreign keys whose types don't match; generic structs. Postgres checks `filter` and `expr` on scratch, because a macro can't parse SQL. Group limits are in section 5.
+- **R-0215** `Default` (unless `no_default`), `Product::new(...)`, `Debug`, `Serialize`. `Deserialize` only as described in section 5
+- **R-0219** an empty `impl Hooks` (unless `hooks` is set)
+- **R-0220** schema metadata, compiled only into `morm-mgr`, with no model list to maintain
 
 ### Reading and writing / Insert and update
 
-- **R-0358** **A non-`Option` field is always sent,** so generated `Default` and `new` must agree with its SQL default, or `active: bool` with `default = "true"` would quietly insert `false` through `..Default::default()`. The macro reads literal defaults (numbers, `true`, `false`, quoted strings) into `Default`. A non-literal default such as `gen_random_uuid()` on a non-`Option` field is a compile error, unless the field is `db_set`, the model has `no_default`, or it's written as `Option<T>` with `not_null`.
+- **R-0363** **A non-`Option` field is always sent,** so generated `Default` and `new` must agree with its SQL default, or `active: bool` with `default = "true"` would quietly insert `false` through `..Default::default()`. The macro reads literal defaults (numbers, `true`, `false`, quoted strings) into `Default`. A non-literal default such as `gen_random_uuid()` on a non-`Option` field is a compile error, unless the field is `db_set`, the model has `no_default`, or it's written as `Option<T>` with `not_null`.
 
 ### Hard to misuse
 
 | ID | Mistake | Caught by |
 |---|---|---|
-| R-0742 | A Rust type wider than its column, or `usize` on a column | Compile error |
-| R-0754 | A generated `Default` disagreeing with a SQL default | Literals are read into `Default`; other defaults on non-`Option` fields are compile errors |
-
-### Risks, open items and later work / Later: field-level encryption
-
-**R-0901** Encrypted columns, including per-user keys and rotation, are not designed yet. Nothing in 0.1 is built for them. These choices, which 0.1 needs anyway, keep them possible without breaking changes:
-
-- **R-0902** `F` columns carry capability markers checked by the query API, so a column can refuse `.by()` or `set_expr`.
-- **R-0903** Encode and decode go through one per-column conversion layer, so a column's Rust type can differ from its stored type. It exists only at compile time: generated code calls `ToSql` and `FromSql` directly through static dispatch, with no branch, pointer, allocation or per-row state. A benchmark against hand-written tokio-postgres decoding checks that it adds no cost.
+| R-0770 | A generated `Default` disagreeing with a SQL default | Literals are read into `Default`; other defaults on non-`Option` fields are compile errors |
 
 ## Test obligations
 
@@ -196,5 +161,3 @@ db.insert(&mut p).await?;        // fills id and timestamps in place
 | T-0006 | trybuild | `HasPk` |
 | T-0011 | trybuild | a non-literal default on a non-`Option` field |
 | T-0022 | trybuild | uppercase names without `keep_case` |
-| T-0023 | trybuild | columns narrower than their Rust type |
-| T-0024 | trybuild | `usize` and `isize` |

@@ -115,7 +115,7 @@ def split_commas(s):
 # ---------------------------------------------------------------- routing
 
 from routes import route, route_test  # noqa: E402
-from overrides import apply_pieces, refine, TEST_SPLIT, EXTRA_TESTS  # noqa: E402
+from overrides import apply_pieces, final_fix, refine, TEST_SPLIT, EXTRA_TESTS  # noqa: E402
 
 
 def kind_of(u, step):
@@ -176,7 +176,7 @@ def main():
             continue
         plain.append(u)
 
-    plain = apply_pieces(plain, lambda u: refine(u, route(u)))
+    plain = final_fix(apply_pieces(plain, lambda u: refine(u, route(u))))
     for u in plain:
         u["rkind"] = kind_of(u, u["step"])
         reqs.append(u)
@@ -312,12 +312,24 @@ def write_coverage(reqs, tests, text):
     (ROOT / "coverage.md").write_text("\n".join(L) + "\n", encoding="utf-8")
 
 
+def block_of(r):
+    """The exact text a requirement has in its file."""
+    if r["kind"] == "row":
+        return f"| {r['id']} " + r["text"]
+    if r["kind"] == "code":
+        return f"**{r['id']}**\n\n{r['text']}"
+    if r["kind"] == "para":
+        return f"**{r['id']}** {r['text']}"
+    return f"- **{r['id']}** " + re.sub(r"^(-|\d+\.)\s+", "", r["text"])
+
+
 def write_manifest(reqs, tests, text):
     m = dict(
         master_sha256=hashlib.sha256(text.encode()).hexdigest(),
         reqs=[dict(id=r["id"], kind=r["rkind"], step=r["step"], line=r["line"],
-                   text=r["text"]) for r in reqs],
-        tests=[dict(id=t["id"], step=t["step"], kind=t["tkind"], line=t["line"]) for t in tests],
+                   text=r["text"], block=block_of(r)) for r in reqs],
+        tests=[dict(id=t["id"], step=t["step"], kind=t["tkind"], line=t["line"],
+                    text=t["text"].replace("|", "\\|")) for t in tests],
     )
     (HERE / "manifest.json").write_text(json.dumps(m, indent=0) + "\n", encoding="utf-8")
     # info blocks that contracts.md and INDEX.md quote
