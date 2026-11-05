@@ -139,6 +139,10 @@ idle_in_transaction_session_timeout = "1m"
 client_connection_check_interval = "5s"
 tx_warn_after = "1s"
 
+[pools.replica]                  # a read replica
+host = "db-replica.internal"
+read_only = true
+
 [pools.jobs]                     # optional named profile
 user = "app_jobs"                # any [database] field can be set here
 password = "${MORM_JOBS_PASSWORD}"
@@ -206,6 +210,8 @@ let db = morm::Db::connect_as("jobs").await?;   // opens only [pools.jobs]
 
 `MORM_POOL=jobs` with plain `Db::connect()` does the same without a code change. `db.pool("jobs")` is different: it adds that pool alongside the default one in a process that has both.
 
+**Read replicas** work through a named pool: `db.pool("replica").select::<Order>()...`. You choose which queries go there. A replica can lag behind the primary, so a read straight after a write belongs on `db`. `read_only = true` makes a write on that pool fail with `ReadOnly` at once, sets `default_transaction_read_only`, and exempts it from the `25006` discard rule.
+
 **`morm-admin import`** is a simple starting point for any existing database. It reads the catalog only, never rows, and writes model files that match the schema exactly: types, nullability, defaults, indexes, constraints and their names. Nothing is "improved". `morm-admin mgr baseline` then records that state as migration zero. Views, hooks and validation are added by hand afterwards.
 
 ---
@@ -255,6 +261,15 @@ pub struct Product {
     pub deleted_at: Option<Timestamp>,
 }
 ```
+
+### Table and column names
+
+Generated SQL always quotes every table and column name, so reserved words like `order` and `type` work as they are. Quoting makes Postgres case-sensitive: unquoted names fold to lowercase, so `userID` in hand-written SQL means `userid`, while `"userID"` is a different column.
+
+- **Names are stored exactly as written,** and the default `table` and `name` are lowercase snake_case, which behave the same quoted or unquoted.
+- **Mixed-case names work** when you set them, as in `#[col(name = "userID")]`, and `import` keeps existing ones.
+- `lint` warns about mixed-case names, because hand-written SQL must then quote them. `sql!` with `F` constants quotes for you, and `check-sql` catches the mistake in registered queries.
+- A table or column name over 63 bytes is a compile error, because Postgres would silently cut it.
 
 ### Bases
 
@@ -625,7 +640,7 @@ let products: Vec<Product> = db.raw::<Product>("SELECT * FROM products WHERE att
 - Columns come from `F`, so a view can't select what it hides. On a `db.groups(mask)` handle, a column outside the mask is an error.
 - The column list is cached like other statements, so repeats allocate nothing.
 
-- **Sort columns from a request** can't be parameters, and `.q()` won't accept them. `.order_by_allowed(&input, &[F.name, F.age])` takes `"name"` or `"-age"`, and returns `InvalidOrder` for anything not on the list. `morm::quote_ident()` quotes a name for `q_unchecked` and `sql_unchecked`.
+- **Sort columns from a request** can't be parameters, and `.q()` won't accept them. `.order_by_allowed(&input, &[F.name, F.age])` takes `"name"` or `"-age"`, and returns `InvalidOrder` for anything not on the list. `morm::quote_ident()` is only for names known at runtime in `q_unchecked` and `sql_unchecked`: it wraps a name in double quotes and doubles any quote inside it, so it can't break out. `F` columns are already quoted.
 - `.custom_plan()` plans a query for its actual values, for skewed data where one customer has a million orders and most have ten. It runs through `query_typed`, so it needs no `SET` and no extra round trip. The `plan_cache_mode` setting does the same for a whole pool.
 
 A list needs `.limit(n)`, `.all()` or `stream()`. Lists return one of:
@@ -710,7 +725,7 @@ Postgres `numeric` goes up to 131,072 digits before the point, and also holds `N
 
 - `sql!` builds a `&'static str` from `F` constants and registers it. `morm-admin mgr check-sql` runs `PREPARE` on each against scratch and compares types. That gives checked raw SQL with no database at build time.
 - `.q()` accepts only `&'static str`, so `format!`-ed input won't compile. `q_unchecked(String)` is the visible escape hatch.
-- Typed errors: `Unique { constraint, field }`, `ForeignKey`, `NotNull`, `Check`, `Serialization`, `Deadlock`, `LockTimeout`, `TransactionTimeout`, `TransactionAborted`, `CommitUnknown`, `NestedConnection`, `NotFound`, `Conflict`, `PoolBusy`, `ConnectionLost`, `Decimal`.
+- Typed errors: `Unique { constraint, field }`, `ForeignKey`, `NotNull`, `Check`, `Serialization`, `Deadlock`, `LockTimeout`, `TransactionTimeout`, `TransactionAborted`, `CommitUnknown`, `NestedConnection`, `NotFound`, `Conflict`, `PoolBusy`, `ConnectionLost`, `ReadOnly`, `InvalidOrder`, `InvalidCursor`, `Decimal`.
 
 ### Transactions
 
@@ -1076,7 +1091,7 @@ Everything goes through `db`, so the pool can be replaced later without changing
 - **Limits never interrupt work.** `max_queries` and `max_lifetime` are checked only when a connection returns to the pool.
 - **Custom rules:** `Db::connect().recycle_when(|c| c.queries > 50_000 || c.age > hours(6))`.
 - **Cores:** the default uses the machine running the app, because morm can't see a remote server's core count. If the database is elsewhere, set `min` by hand.
-- **Failover:** a connection that returns `25006` (read-only transaction, after a primary switch) or an admin shutdown error is discarded, not reused. With several hosts and `target_session_attrs = "read-write"`, replacements find the new primary.
+- **Failover:** on a pool that isn't `read_only`, a connection that returns `25006` (read-only transaction, after a primary switch) or an admin shutdown error is discarded, not reused. With several hosts and `target_session_attrs = "read-write"`, replacements find the new primary.
 - **Queues:** a request that can't get a connection waits up to `wait_timeout`, then returns `PoolBusy`. Waits are never infinite.
 - **Separate processes:** a service job, cron or background worker running as its own process must not start a pool with `min` above 1. It should use `Db::connect_as("jobs")`, `MORM_POOL=jobs`, or `MORM_POOL_MIN=1`, because the default of 2 × cores would open connections it doesn't need. The pool still grows on demand.
 
@@ -1290,6 +1305,7 @@ One compact, complete file at the repo root. It must be enough to use morm effic
 | `tx.advisory_lock(&keys)` | Only one process may do this work at a time, such as a billing run |
 | `db.extra_conn()` | You need a write to survive a rollback, such as an audit row |
 | `db.hold()` | You need `LISTEN`, temp tables, session advisory locks or `SET` |
+| `db.pool("replica")` | You run heavy reads, such as reports, that can be slightly out of date |
 | `db.pool("jobs")` | You run heavy jobs in the web app's process, and they must not take its connections |
 | `db.groups(mask)`, `db.sudo()` | Your callers may see or change different fields |
 | `Numeric` | Your values can exceed 28 digits, or be `NaN` or `Infinity` |
@@ -1343,7 +1359,7 @@ One compact, complete file at the repo root. It must be enough to use morm effic
 
 ### Later
 
-Shared reads: a small opt-in lane that pipelines primary-key reads on a few connections, added only if a benchmark shows real gains with no worse p99 under mixed load. Also read replicas with `db.read()` and `db.write()`, `schema = "x"`, partitioning, a `dynamic` registry for by-name admin CRUD, sensitive-column prompts in `import`.
+Shared reads: a small opt-in lane that pipelines primary-key reads on a few connections, added only if a benchmark shows real gains with no worse p99 under mixed load. Also automatic read routing with `db.read()` and `db.write()`, including replica lag tracking so reads after a write stay correct, `schema = "x"`, partitioning, a `dynamic` registry for by-name admin CRUD, sensitive-column prompts in `import`.
 
 ### Later: field-level encryption
 
