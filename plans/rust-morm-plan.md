@@ -380,7 +380,7 @@ pub struct Invoice { pub total: Decimal }       // invoice.tenant_id is a plain 
 
 `i16` → smallint, `i32` → integer, `i64` → bigint, `f32` → real, `f64` → double precision, `bool` → boolean, `String` → text, `Vec<u8>` → bytea, `DateTime<Utc>` / `Timestamp` → timestamptz, `NaiveDateTime` → timestamp, `NaiveDate` → date, `NaiveTime` → time, `Uuid` → uuid, `serde_json::Value` → jsonb, `Vec<T>` → `T[]`. `Option<T>` → nullable. `#[derive(TextEnum)]` maps a Rust enum to `text` with a CHECK constraint, the recommended form, because adding or removing a value is an ordinary migration. `#[derive(PgEnum)]` maps to a Postgres enum, mainly to match existing tables, because removing a value from one is very hard. Domains and composite types are also supported. Anything else requires an explicit `sql`, including `Decimal` and `Numeric`, which need their precision stated (section 8).
 
-- **Unsigned integers:** Postgres has none, so `u8` → smallint, `u16` → integer and `u32` → bigint, each with a generated range CHECK. `u64` can exceed `bigint`'s maximum, so it needs an explicit `#[col(sql = "numeric(20,0)")]`, which holds every value with a range CHECK but is larger and slower than `bigint`. Without that, `u64` is a compile error, so a large value can't wrap or fail at runtime. `i64` is the better choice when values fit.
+- **Unsigned integers:** Postgres has none, so `u8` → smallint, `u16` → integer and `u32` → bigint, each with a generated range CHECK. `u64` can exceed `bigint`'s maximum, so it's stored only as `numeric(20,0)`, written explicitly: `#[col(sql = "numeric(20,0)")]`. That holds every value, with a range CHECK, but it's larger and slower than `bigint`, which is why it must be stated. `u64` with no `sql`, or with any other `sql` such as `bigint`, is a compile error, so a large value can't wrap or fail at runtime. `i64` is the better choice when values fit.
 - **Timestamps:** Postgres stores microseconds and chrono nanoseconds, so a value can compare unequal after a round trip. `Timestamp::now()` truncates to microseconds, and `insert` fills database-set timestamps in place. Compare stored values, not values read from the clock.
 - **NUL bytes:** Postgres rejects `\0` in text. morm doesn't scan every string for it, which would cost time on every write; Postgres's error becomes a typed `InvalidText`.
 
@@ -1294,7 +1294,7 @@ db.release(held).await;      // or held.release().await
 | A request-supplied sort column | `.q()` refuses it; `order_by_allowed` checks it against a list |
 | Paging with `OFFSET` | No helper exists; `keyset` is the documented path |
 | Rolling back a production database | Refused, exit code `2`, unless marked `development`; `revert` is the forward path |
-| `u64` with no explicit `sql` | Compile error |
+| `u64` without `sql = "numeric(20,0)"` | Compile error |
 | A stale cached statement after a migration | Re-prepared automatically outside a transaction |
 | Swallowing an error, then committing | `TransactionAborted` at runtime |
 | Updating or deleting a missing id | `NotFound` at runtime |
