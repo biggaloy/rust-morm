@@ -621,6 +621,7 @@ One mechanism, instead of python-morm's overlapping `validator`, `modifier` and 
 - **No function pointers per field.** Everything is static and inlined, and a field without rules generates no code.
 - **Runs only on write,** and on updates only for values passed to `.set()`. Reads are never validated.
 - **Runs once,** in order: `clean` and declarative rules, then pre hooks, then `validate`, then SQL. `clean` comes first so that slow work never holds a connection: it runs before one is checked out.
+- **Trade-off:** `clean` runs even if a pre hook then rejects the request, so a slow hash can be spent on it. Do cheap rejections, such as checking whether an email is taken, in the handler before `insert`. The unique constraint is still the real guarantee, and endpoints running a slow `clean` need rate limits.
 - A value a pre hook sets through `changes.set` runs through that field's `clean` and rules as it's set. Fields `pre_insert` changes on `self` are the hook's responsibility, and `validate` still sees them.
 - **`blocking`** runs a slow `clean`, such as password hashing, through `spawn_blocking`, because 50–100ms of CPU on an async thread stalls other requests. Inside `db.transaction` the connection is already held, so hash before opening the transaction.
 - `db_check` also emits a declarative rule as a real `CHECK` constraint.
@@ -1765,3 +1766,29 @@ Encrypted columns, including per-user keys and rotation, are not designed yet. N
 - **`exclude_values_up/down`:** rarely useful, and it would make insert SQL vary per row. `Option` `None` already defers to the DB default, and `skip_json_if` covers output. It can come back if a real need appears.
 - **`validator` and `modifier`:** replaced by the type system, native decoding, and declarative rules.
 - **`pre_save` and `post_save`:** removed with `save`.
+
+---
+
+## 17. How this gets built
+
+After the final review, this plan is split into `plans/plan-approved/`:
+
+- `INDEX.md`: order, dependencies, what can run in parallel, and status.
+- `rules.md`: how every step works and when it counts as done.
+- `contracts.md`: shared types and signatures that parallel steps rely on.
+- `coverage.md`: every requirement, by ID, mapped to its step and tests. A script fails if a requirement has no step or no test.
+- `steps/`: one self-contained file per step, about 26 in total, small enough for one fresh session.
+
+**Decisions:**
+
+- `plan-approved/` becomes the working source of truth once it's built. This file is then frozen as the record, so two live copies can't drift apart.
+- Steps and reviews run as subagents, each with fresh context, and each reads only `rules.md`, `contracts.md` and its own step file. A thin coordinating session tracks `INDEX.md`.
+- The owner approves the Foundation PRs. Later PRs merge once CI and an independent review both pass.
+
+**Rules for every step:**
+
+- The session that writes a step doesn't approve it. A separate one checks the work against the step file.
+- Done means every test passes on Postgres 15–18, with nothing deferred or stubbed.
+- If a step finds the plan is wrong, it stops and asks, and it doesn't improvise.
+- Parallel steps use separate worktrees and branches, and run in parallel only when `contracts.md` covers what they share.
+- The early proofs step comes before anything depends on the risky parts in section 16.
