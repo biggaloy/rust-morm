@@ -19,7 +19,7 @@ Create the workspace so every later step has a place to land, and CI that runs t
 - `ci.yml` runs `plans/plan-approved/tools/check_coverage.py --code crates tests benches fuzz .github`
 - A test helper that starts or connects to each Postgres version, and a `trybuild` harness
 - README skeleton, included as crate docs, plus `SECURITY.md` and Dependabot config
-- Check that all six crate names, including `morm-mgr`, are still free on crates.io
+- Once `ci.yml` has run, add it as a required status check on `main`. The owner approved this. Protection already blocks force-pushes and deletion, and it leaves admins exempt so plan edits can still go straight to `main`
 
 ## End-to-end check
 
