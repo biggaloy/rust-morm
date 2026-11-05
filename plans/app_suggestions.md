@@ -26,7 +26,7 @@ Each Postgres connection can use `work_mem` per sort or hash operation, so pool 
 - **Outbox handlers:** morm's outbox delivers at least once, so make every handler safe to run twice, using `e.id` to ignore repeats. Alert on failed events and on the age of the oldest pending one.
 - **Idempotency keys:** when a connection drops during `COMMIT`, morm returns `CommitUnknown`, and you can't tell if the write happened. Have clients send a key, store it in a unique column in the same transaction, and return the stored result on a repeat.
 - **Job queues:** a table with `.skip_locked()` lets many workers share jobs, so you may not need Redis or a separate queue.
-- **Tenant isolation:** use row-level security with `pg_policy!`, and set the tenant per transaction with `SET LOCAL`.
+- **Tenant isolation:** use row-level security with `pg_policy!`, and set the tenant per transaction with `tx.set_local`.
 
 ## Keeping tables healthy
 

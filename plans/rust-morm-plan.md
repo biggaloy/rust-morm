@@ -3,7 +3,7 @@
 A complete re-engineering of morm in Rust: define PostgreSQL models in code, track them with rock-solid up and down migrations, and write queries in plain SQL. There is no extra query language. This is a new design, not a port. python-morm is a reference for what real projects need, and nothing is kept just for compatibility.
 
 - **Repo:** `biggaloy/rust-morm`
-- **Crates:** `morm`, `morm-macros`, `morm-migrate`, `morm-admin`. The first two names were free on crates.io as of 2026-11-04; the other two still need checking.
+- **Crates:** `morm`, `morm-macros`, `morm-migrate`, `morm-admin`.
 - **Database:** PostgreSQL 15 and later only.
 - **Naming:** everything in the project uses the `morm-` prefix.
 
@@ -78,7 +78,9 @@ rust-morm/
 | `morm-admin` | installed binary | All admin work |
 | `morm-mgr` | small package in each project | Links your models and prints their schema and queries as JSON. Nothing else |
 
-**How it fits together:** `morm-admin` holds the engine. When a command needs the models, it builds and runs `morm-mgr` to get the manifest. Commands that don't need models (`migrate`, `rollback`, `status`, `purge`) run from `morm-migrations/` alone, so a production host needs `morm-admin` and no Rust toolchain. The app binary carries no migration code or schema metadata.
+**How it fits together:** `morm-admin` holds the engine. When a command needs the models, it builds and runs `morm-mgr` to get the manifest. Commands that don't need models (`migrate`, `rollback`, `status`, `purge`) run from `morm-migrations/` alone, so a production host needs `morm-admin` and no Rust toolchain. The app binary carries no migration code or schema metadata, apart from the short per-model column list `check_schema` reads.
+
+**Registration:** models, objects and `sql!` queries register themselves through a distributed static list, with no central list to maintain. Their metadata is behind `cfg(morm_mgr)`, not a cargo feature, because `cargo build --workspace` unifies features and would pull it into the app. `morm-admin` builds `morm-mgr` in its own target directory with that `cfg` set. This needs proof early, including models in several crates, where a linker can drop a crate nothing references (section 16).
 
 Cargo features of `morm`:
 
@@ -187,6 +189,8 @@ min_postgres = 15
 scratch_url = "${MORM_SCRATCH_URL}"
 ```
 
+A missing `morm.toml` isn't an error unless `MORM_CONFIG` names it, so a deployment can use environment variables alone. An unset `${VAR}` leaves that field unset, and if a required value ends up missing, startup fails and names the variable.
+
 Precedence: defaults, then `morm.toml`, then environment variables, then code. There is one config file, and a process that needs different values uses a named pool, an environment variable, or code.
 
 **Environment variables:**
@@ -256,7 +260,7 @@ let db = morm::Db::connect_as("jobs").await?;   // opens only [pools.jobs]
 
 **Read replicas** work through a named pool: `db.pool("replica").select::<Order>()...`. You choose which queries go there. A replica can lag behind the primary, so a read straight after a write belongs on `db`. `read_only = true` makes a write on that pool fail with `ReadOnly` at once, sets `default_transaction_read_only`, and exempts it from the `25006` discard rule.
 
-**`morm-admin import`** is a simple starting point for any existing database. It reads the catalog only, never rows, and writes model files that match the schema exactly: types, nullability, defaults, indexes, constraints and their names. Nothing is "improved". `morm-admin mgr baseline` then records that state as migration zero. Views, hooks and validation are added by hand afterwards.
+**`morm-admin import`** is a simple starting point for any existing database. It reads the catalog only, never rows, and writes model files that match the schema exactly: types, nullability, defaults, indexes, constraints and their names. Nothing is "improved". Anything models can't express, such as exclusion constraints or partitioned tables, is listed in its output and stays unmanaged. `morm-admin mgr baseline` then records that state as migration zero. Views, hooks and validation are added by hand afterwards.
 
 ---
 
@@ -385,20 +389,22 @@ pub struct Invoice { pub total: Decimal }       // invoice.tenant_id is a plain 
 | `default_fn` | Rust function that supplies a default on insert |
 | `pk` | primary key (with `base = "bare"`; several fields make a composite PK) |
 | `unique`, `index`, `index(using = ..., ...)` | single-column shortcuts; `index = "hash,btree"` makes two. Rules in section 7 |
+| `deferrable` | with `unique` or `fk`, a constraint checked at commit; `deferrable = "initially deferred"` sets the start state |
 | `not_null` | `Option<T>` field that is still NOT NULL in the DB (filled by a default) |
 | `fk = Type::field`, `on_delete`, `on_update` | typed foreign key, checked at compile time; actions: `cascade`, `restrict`, `set null`, `set default`, `no action` |
 | `expr` | read-only computed column; excluded from writes and migrations |
 | `flatten` | embed a reusable column set |
 | `generated`, `identity`, `check` | generated column, identity column, check constraint. A generated column is never written, and `.set()` on it is a compile error |
-| `version` | optimistic locking; a stale update fails with `Conflict` |
+| `version` | optimistic locking; a stale update fails with `Conflict` (section 8) |
 | `deprecated` | removes the field from reads and writes while the column remains (rolling deploys) |
 | `groups`, `sudo` | field access groups (section 5) |
 | `secret` | never in JSON or schemas, redacted in `Debug` (section 5) |
-| `min`, `max`, `len`, `choices`, `clean`, `db_check` | validation (section 6) |
+| `min`, `max`, `len`, `choices`, `clean`, `blocking`, `db_check` | validation (section 6) |
 | `skip_json_if` | omit a value from JSON output when a function returns true |
 | `json_string` | write an integer as a JSON string (section 8) |
 | `help` | description, used in schemas; defaults to the field's `///` doc comment |
 | `auto_now` | set to `now()` on every update |
+| `db_set` | Postgres always sets it on insert: the field's value is ignored, and the result is filled in place. Bases set it on `created_at` and `updated_at` |
 | `insert_only` | written by `insert`, then never changed: left out of `upsert` updates, and `.set()`, `set_expr`, `update_each`, `.update_only` or a `patch` naming it is a compile error. Bases set it on `created_at`, and custom bases use it the same way |
 | `name` | column name override, for example `type_` with `name = "type"`; lowercase only unless `keep_case` is set |
 | `keep_case` | allow uppercase in an existing column's name |
@@ -472,7 +478,7 @@ A view is a restricted model over the same table. Views are declared on the full
 #[view(pub User,
        read_hide  = "password, expires, is_super_user",
        write_hide = "is_super_user, expires")]
-#[view(pub UserProfile, groups = "profile")]
+#[view(pub UserProfile, groups = "staff")]
 pub(in crate::auth) struct UserAdmin { /* every column */ }
 ```
 
@@ -484,7 +490,7 @@ pub(in crate::auth) struct UserAdmin { /* every column */ }
 - **Narrowing is one-way.** `From<UserAdmin> for User` exists; nothing goes the other way.
 - **Raw SQL stays safe.** Named decoding ignores columns a view lacks, and `check-sql` flags queries selecting hidden columns.
 - **Inserts:** a view that hides a required column with no default can't be inserted.
-- Only the definition is migrated. `clean` and declarative rules apply to every view, and `impl Hooks` is per type.
+- Only the definition is migrated. `clean` and declarative rules apply to every view. `impl Hooks` is per type, so a write through a view doesn't run the full model's hooks. A rule that must hold for every write belongs in `clean`, a CHECK or a trigger.
 
 ### Public input and output
 
@@ -500,7 +506,7 @@ pub(in crate::auth) struct UserAdmin {
     pub email: String,
     #[col(secret)] pub password: String,
     pub bio: Option<String>,
-    pub is_admin: bool,
+    #[col(default = "false")] pub is_admin: bool,
 }
 ```
 
@@ -510,6 +516,8 @@ pub(in crate::auth) struct UserAdmin {
 - `input` and `patch` can't list a primary key, identity, generated, `expr`, `version`, `auto_now` or `deprecated` column, or `created_at` and `updated_at`. That's a compile error.
 - A `secret` field can be listed in `input` or `patch`, because a password has to arrive somewhere. It's write-only in that view, so it can't be read back or printed.
 - `#[model(deserialize)]` opts a full model in, for trusted data such as a cache or a file. It's marked as unsafe for request bodies in the docs.
+
+**Views write too.** `db.insert(&mut new_user)` works on `UserIn`, and `db.update::<UserPatch>(id)` on `UserPatch`, so a handler never names the private full model. A column the view lacks is left out of the statement.
 
 **Partial updates.** A PATCH field has three states: missing, null or a value. A `patch` view holds them with one small enum, not `Option<Option<T>>`:
 
@@ -523,7 +531,7 @@ pub struct UserPatch {
     pub bio: Patch<Option<String>>,   // nullable column
 }
 
-db.update::<User>(id).apply(body).run().await?;
+db.update::<UserPatch>(id).apply(body).run().await?;
 ```
 
 | JSON field | NOT NULL column | Nullable column |
@@ -584,7 +592,10 @@ pub struct AuditLog { /* ... */ }
 - **Access:** a field with no groups is open to everyone. A grouped field needs the caller to be in at least one of its groups.
 - **Whole model:** `#[model(groups = "staff")]` puts every field without its own `groups` into that group. `#[model(sudo)]` does the same with `sudo`. Only global groups work here, and a field's own `groups` takes priority.
 - **Compile time:** `#[view(pub Moderator, groups = "moderator")]` builds a view from ungrouped fields plus that group. Views take both kinds.
-- **Enforcement at runtime** is on write and on output. An `update` setting fields outside the caller's groups fails, and `to_json_for(mask)` omits them.
+- **Plain `db` is trusted server code,** with no group checks. Checks apply only on a `db.groups(mask)` handle, so request handlers use one. `db.sudo()` passes every group.
+- **Writes on a handle:** `.set()` or `.apply()` on a field outside the mask returns `Forbidden`. `insert` leaves such a field out of the statement, so it gets the column's default.
+- **Reads on a handle fail closed.** `.filter()`, `fetch_json` and `stream_json` select only allowed columns. `.filter_cols()` naming a column outside the mask returns `Forbidden`, and so does `get`, `fetch` or `fetch_ref` into a full struct that has such a column, because the struct has nowhere to leave it out. Read through a view, `.filter_cols()` or a JSON path.
+- `to_json_for(mask)` limits output for a row you already hold.
 - `Model::groups()` lists the model's groups, and `Model::group_fields("moderator")` lists a group's fields.
 
 ### Masks
@@ -621,10 +632,11 @@ One mechanism, instead of python-morm's overlapping `validator`, `modifier` and 
 - `Hooks::validate(&self)` handles rules across fields on insert, and `Hooks::validate_changes(&Changes<Self>)` on update.
 - A rule that needs the whole row on update must be a `CHECK` constraint, or its hook fetches the row visibly.
 - **No function pointers per field.** Everything is static and inlined, and a field without rules generates no code.
-- **Runs only on write,** and on updates only for values passed to `.set()`. Reads are never validated.
+- **Runs only on write,** and on updates only for values passed to `.set()`. Reads are never validated. `clean`, declarative rules and `validate` run per row on bulk inserts, and they do no I/O.
 - **Runs once,** in order: `clean` and declarative rules, then pre hooks, then `validate`, then SQL. `clean` comes first so that slow work never holds a connection: it runs before one is checked out.
 - **Trade-off:** `clean` runs even if a pre hook then rejects the request, so a slow hash can be spent on it. Do cheap rejections, such as checking whether an email is taken, in the handler before `insert`. The unique constraint is still the real guarantee, and endpoints running a slow `clean` need rate limits.
-- A value a pre hook sets through `changes.set` runs through that field's `clean` and rules as it's set. Fields `pre_insert` changes on `self` are the hook's responsibility, and `validate` still sees them.
+- A value a pre hook sets through `changes.set` runs through that field's `clean` and rules as it's set. On a `blocking` field `changes.set` is a compile error, and `changes.set_blocking(...).await` is the form to use. Fields `pre_insert` changes on a row are the hook's responsibility, and `validate` still sees them.
+- **`clean` changes the row you passed.** After a failed `insert`, `p.password` already holds the hash, so inserting `p` again would hash it twice. Build the row again, as `.retry()` closures do.
 - **`blocking`** runs a slow `clean`, such as password hashing, through `spawn_blocking`, because 50–100ms of CPU on an async thread stalls other requests. Inside `db.transaction` the connection is already held, so hash before opening the transaction.
 - `db_check` also emits a declarative rule as a real `CHECK` constraint.
 
@@ -639,6 +651,7 @@ Declared in `indexes(...)` on the struct, or with field shortcuts.
 | `cols` | columns, each with optional `ASC`/`DESC`, `NULLS FIRST`/`NULLS LAST` | required unless `expr` |
 | `expr` | expression index, e.g. `lower(email)` | none |
 | `unique` | unique index | off |
+| `deferrable` | with `unique`, a constraint checked at commit. It can't be an `upsert` target | off |
 | `nulls_not_distinct` | with `unique`, treat NULLs as equal, so only one NULL is allowed | off |
 | `using` | `btree`, `hash`, `gin`, `gist`, `brin`, `spgist` | `btree` |
 | `ops` | operator class, e.g. `jsonb_path_ops`, `gin_trgm_ops` | none |
@@ -680,7 +693,7 @@ The convention is python-morm's, so models can match its databases without expli
 | Foreign key | `__FK_{table}_{column}__` |
 | Check | `__CHK_{table}_{name}__` (new; python-morm has no convention for it) |
 
-`{name}` is the `name` you give, or the column names joined by `_`. A primary key keeps the Postgres name `{table}_pkey`, and an identity column's sequence keeps `{table}_{column}_seq`.
+`{name}` is the `name` you give, or the column names joined by `_`. For an `expr` index with no `name`, it's the expression with everything but letters, digits and `_` collapsed to `_`, so `lower(email)` gives `lower_email`. `Product::UK` uses the same `{name}`. A primary key keeps the Postgres name `{table}_pkey`, and an identity column's sequence keeps `{table}_{column}_seq`.
 
 - **63-byte limit:** Postgres silently cuts longer names, so two long names could collide. morm counts bytes, not characters. A longer name is cut and ends in 8 hex characters of its full SHA-256, as `__IDX_{start of name}_{hash}__`, so it stays at 63 bytes, is stable across builds and still shows the table.
 - A generated name used twice in one model, for example two partial indexes on one column, is a compile error asking for an explicit `name`.
@@ -724,7 +737,7 @@ db.get_q::<Hist>().by(F.owner_id, &1).by(F.app, &"chat").one().await?;
 
 ```rust
 db.insert(&mut p).await?;                                  // INSERT ... RETURNING, fills p in place
-db.insert_many(&rows).await?;                              // UNNEST, COPY above a threshold
+db.insert_many(&mut rows).await?;                          // UNNEST, COPY above a threshold
 db.upsert(&mut p, F.sku).await?;                           // ON CONFLICT
 
 db.update::<Product>(42).set(F.price, dec!(34)).run().await?;       // no fetch needed
@@ -744,7 +757,8 @@ db.update::<Product>(42).set_expr(F.stock, "stock - $1", &n).run().await?;  // a
 | Large, with `None` on some rows of a defaulted column | `UNNEST` in chunks, one per pattern of present columns, one transaction | `COPY` can't choose a default per row |
 
 - `insert_many` is atomic on every path: all rows or none, in one transaction.
-- **Array columns:** `UNNEST` flattens nested arrays, so two rows holding `text[]` values would become four. A `Vec<T>` column is sent as a `text[]` of array literals and cast back per row (`x::text[]`), which keeps one statement and works with `.returning()` and `upsert`. These columns use the text format, so the escaping must be exact, and property tests cover quoted `"NULL"` strings, real NULLs, quotes, commas and empty arrays. `COPY` handles arrays directly.
+- **`.returning()` doesn't promise input order,** because rows are sorted by key and grouped by pattern, so match returned rows by a key.
+- **Array columns:** `UNNEST` flattens nested arrays, so two rows holding `text[]` values would become four. A `Vec<T>` column is sent as a `text[]` of array literals and cast back per row (`x::text[]`), which keeps one statement and works with `.returning()`, `upsert` and `update_each`. These columns use the text format, so the escaping must be exact, and property tests cover quoted `"NULL"` strings, real NULLs, quotes, commas and empty arrays. `COPY` handles arrays directly.
 - **Explicit ids:** a normal insert always leaves an identity column to Postgres, whatever the field holds. `.explicit_ids()` on `insert` and `insert_many` writes the ids you give, adds `OVERRIDING SYSTEM VALUE` for `GENERATED ALWAYS`, and moves the sequence past them in the same transaction.
   - It takes the two-argument `pg_advisory_xact_lock(<morm namespace>, <sequence oid>)`, which can't collide with the hashed keys of `tx.advisory_lock`, so two imports can't overwrite each other's position, then calls `setval(seq, max(id))` only when `max(id) >= last_value`. It's `>=` because a sequence that was never used has `last_value = 1` with nothing taken, and the condition means a stale read can't move the sequence backwards.
   - It needs `SELECT` and `UPDATE` on the sequence, unlike normal identity inserts, so give those grants only to the role that imports.
@@ -755,11 +769,14 @@ db.update::<Product>(42).set_expr(F.stock, "stock - $1", &n).run().await?;  // a
 - **`update` and `delete` by primary key return `NotFound` when no row matched,** so a mistyped id can't pass as success. `.allow_missing()` returns a count, for deletes that may have already happened. `update_q`, `update_each` and the other filtered and bulk forms return a count, because zero rows is a normal result for a filter.
 - `updated_at` and `auto_now` columns are set to `now()` in SQL.
 - **Request-driven updates** use a `patch` view and `.apply()` (section 5), which needs no conditional `.set()` calls.
+- **`#[col(version)]`:** an `update` or `delete` by primary key must call `.version(v)`, which adds `AND version = $n` and returns `Conflict` when no row matches, or `.ignore_version()`. Leaving out both is a compile error. Every update increments the column, including `.apply()` and `upsert`. A PATCH handler passes the version the client read, for example from `If-Match`, because `patch` can't list it.
 - **Lost updates:** under Read Committed, two requests can read `stock = 10` and both write `9`. Use `set_expr` for arithmetic, `#[col(version)]` for optimistic locking (`Conflict` on a stale write), or `tx.get_for_update` when logic must see the current row.
 - **`now()` is the transaction's start time,** so every row in a long transaction gets the same `updated_at`. Use `clock_timestamp()` in `set_expr` when the actual time matters.
 - **Defaults stay in the database.** A field that is `None` on a column with a default is left out of the statement, so a migration changing a default takes effect on running binaries, and identity and `GENERATED ALWAYS` columns work. A model with no such fields has one compile-time statement. Otherwise there is one statement per pattern of present columns, usually one or two, held in `shape_cache`. `insert_many` groups rows by pattern, in one transaction.
+- **A non-`Option` field is always sent,** so generated `Default` and `new` must agree with its SQL default, or `active: bool` with `default = "true"` would quietly insert `false` through `..Default::default()`. The macro reads literal defaults (numbers, `true`, `false`, quoted strings) into `Default`. A non-literal default such as `gen_random_uuid()` on a non-`Option` field is a compile error, unless the field is `db_set`, the model has `no_default`, or it's written as `Option<T>` with `not_null`.
+- **Base columns:** a bigint `id` is an `i64`, 0 until inserted, and identity columns are never sent. A uuid `id` is a `Uuid`: left nil, `insert` generates a UUIDv7 in the app and fills it in, so the statement doesn't change. `created_at` and `updated_at` are `db_set`.
 - **Writing NULL over a default:** `None` on a nullable column with a default means "use the default". When you need a real NULL there, declare the field `morm::OrDefault<Option<T>>`, with the states `Default` and `Set(v)`.
-- **Hooks and outcome.** `upsert` holds a whole row, so `pre_insert` always runs, before Postgres decides. Afterwards morm knows what happened, through `RETURNING old.ctid IS NULL` on Postgres 18 and `RETURNING (xmax = 0)` before it. `ctid` works for every model, because a user column can't be trusted here: a model may have no primary key, and under `NULLS NOT DISTINCT` a NULL key column can conflict, which would report an update as an insert. That second form is undocumented but long established, and CI proves it on 15–17. `upsert` returns `Inserted`, `Updated` or `Unchanged`. An insert runs `post_insert` and fires `Inserted(row)`. An update runs `post_update`, with `Changes` holding the `SET` columns, and fires `Updated`. `pre_update` can't run, because the outcome isn't known yet. `Unchanged` writes nothing, so no post hook or `after_commit` runs. A batch upsert fires one `Upserted { inserted, updated }` event per statement, with counts.
+- **Hooks and outcome.** `upsert` holds a whole row, so `pre_insert` always runs, before Postgres decides. Afterwards morm knows what happened, through `RETURNING old.ctid IS NULL` on Postgres 18 and later, and `RETURNING (xmax = 0)` before it. `ctid` works for every model, because a user column can't be trusted here: a model may have no primary key, and under `NULLS NOT DISTINCT` a NULL key column can conflict, which would report an update as an insert. That second form is undocumented but long established, and CI proves it on 15–17. `upsert` returns `Inserted`, `Updated` or `Unchanged`. An insert runs `post_insert` and fires `Inserted(rows)`. An update runs `post_update`, with `Changes` holding the `SET` columns, and fires `Updated`. `pre_update` can't run, because the outcome isn't known yet. `Unchanged` writes nothing, so no post hook or `after_commit` runs. A batch upsert fires one `Upserted { inserted, updated }` event per statement, with counts.
 - Conflict targets can be one column, a tuple as in `(F.vendor_id, F.sku)`, or a generated unique key such as `Product::UK.lower_email`, which is the only way to target an expression unique index.
 - **An upsert only overwrites what the row supplies.** A field left out of the `INSERT` isn't in the `DO UPDATE SET` list, because `EXCLUDED.col` would hold the column's default and reset an existing value. The list also leaves out the conflict target, the primary key and `insert_only` columns, decided by attributes and never by name, and `updated_at` and `auto_now` columns get `now()`. `None` on a nullable column with no default is a value, so it writes NULL. `.update_only(&[F.price, F.stock])` narrows the list further, for upserts that must leave everything else alone.
 - **Conflict targets are checked at compile time.** The target must match a unique constraint or unique index, or it's a compile error, and so is a deferrable constraint, which Postgres refuses as an arbiter. The model macro emits a marker per unique key, and `upsert` requires it. Two partial unique indexes on the same columns with different filters make the columns ambiguous, which is a compile error asking for the `UK` name. For a partial unique index, the macro adds its `filter` as the `WHERE` of the `ON CONFLICT` clause, because Postgres doesn't match that index otherwise.
@@ -809,7 +826,7 @@ let products: Vec<Product> = db.raw::<Product>("SELECT * FROM products WHERE att
 
 - `.filter()` selects every down column: all the columns this model or view may read, without hidden, write-only or `deprecated` ones. It's the `.filter_cols(...)` default, since Rust has no default arguments.
 - `.filter_cols((F.a, F.b))` selects only those. `fetch()` returns tuples of the columns' Rust types and `fetch_ref()` returns borrowed tuples, so a wrong type is a compile error, and a partial row can't pass for a full `Product`. `fetch_json`, `stream_json` and `fetch_raw` work the same way.
-- Columns come from `F`, so a view can't select what it hides. On a `db.groups(mask)` handle, a column outside the mask is an error.
+- Columns come from `F`, so a view can't select what it hides. Group rules on a `db.groups(mask)` handle are in section 5.
 - The column list is cached like other statements, so repeats allocate nothing.
 
 - **Sort columns from a request** can't be parameters, and `.q()` won't accept them. `.order_by_allowed(&input, &[F.name, F.age])` takes `"name"` or `"-age"`, and returns `InvalidOrder` for anything not on the list. `morm::quote_ident()` is only for names known at runtime in `q_unchecked` and `sql_unchecked`: it wraps a name in double quotes and doubles any quote inside it, so it can't break out. `F` columns are already quoted.
@@ -885,7 +902,7 @@ let changed = db.sql("UPDATE orders SET seen = true WHERE id = $1", &[&id]).run(
 - Every list and single-result call works here, including `fetch_ref`, `stream` and `stream_json`.
 - `#[derive(morm::Row)]` decodes by column name, for any plain struct. Columns the struct lacks are ignored, and a missing column is an error.
 - The SQL must be `&'static str`, as with `.q()`, and `sql_unchecked(String)` is the visible escape hatch. `sql!` also registers it for `check-sql`.
-- **The list rule still applies.** `.limit(n)` appends `LIMIT n` to your statement, and `.all()` runs it as written. `run()`, `fetch_val()`, `fetch_one()` and `fetch_opt()` don't need either.
+- **The list rule still applies.** `.limit(n)` appends a `LIMIT` on a new line, so a trailing `--` comment can't swallow it, and as a parameter, so different limits share one statement, and `.all()` runs it as written. `run()`, `fetch_val()`, `fetch_one()` and `fetch_opt()` don't need either.
 - It uses the same bounded statement cache, and `db.raw::<T>()` remains for raw SQL decoding into a model or view.
 
 ### Decimal
@@ -913,7 +930,8 @@ Postgres `numeric` goes up to 131,072 digits before the point, and also holds `N
 
 - `sql!` builds a `&'static str` from `F` constants and registers it. `morm-admin mgr check-sql` runs `PREPARE` on each against scratch and compares types. That gives checked raw SQL with no database at build time.
 - `.q()` accepts only `&'static str`, so `format!`-ed input won't compile. `q_unchecked(String)` is the visible escape hatch.
-- Typed errors: `Unique { constraint, field }`, `ForeignKey`, `NotNull`, `Check`, `Serialization`, `Deadlock`, `LockTimeout`, `TransactionTimeout`, `TransactionAborted`, `CommitUnknown`, `NestedConnection`, `PoolerMode`, `NotFound`, `EmptyPatch`, `Conflict`, `PoolBusy`, `ConnectionLost`, `ReadOnly`, `OutOfRange`, `InvalidOrder`, `InvalidCursor`, `Decimal`.
+- **`$n` in a fragment is local.** `comp`, `set_expr` and `.q()` fragments each count from `$1`, and morm renumbers them. The scan skips quoted strings and comments, so `'$1'` stays text.
+- Typed errors: `Unique { constraint, field }`, `ForeignKey`, `NotNull`, `Check`, `Serialization`, `Deadlock`, `LockTimeout`, `TransactionTimeout`, `TransactionAborted`, `CommitUnknown`, `NestedConnection`, `PoolerMode`, `NotFound`, `EmptyPatch`, `Conflict`, `Forbidden`, `Validation`, `PoolBusy`, `ConnectionLost`, `ReadOnly`, `OutOfRange`, `InvalidText`, `InvalidOrder`, `InvalidCursor`, `Decimal`.
 
 ### Transactions
 
@@ -930,7 +948,7 @@ db.transaction(async |tx| {                       // runs again on 40001 or 40P0
 }).isolation(Serializable).retry(3).await?;
 ```
 
-Same API as `db`, with savepoints and per-transaction settings (`statement_timeout`, `lock_timeout`, `transaction_timeout`, `SET LOCAL` for tenant RLS).
+Same API as `db`, with savepoints and per-transaction settings (`statement_timeout`, `lock_timeout`, `transaction_timeout`). `tx.set_local("app.user", &id)` sets a value for RLS through `set_config(..., true)`, so it takes a parameter, which `SET LOCAL` can't.
 
 **A commit is confirmed, never assumed.** After a failed statement, Postgres turns `COMMIT` into `ROLLBACK` with no error, and tokio-postgres's `commit()` returns `Ok` either way, so a swallowed error would look like a saved transaction. Two checks prevent that:
 
@@ -1006,11 +1024,11 @@ tx.advisory_lock(&["billing", "reports"]).await?;
 - `user.to_json()`, or `Serialize` from the `json` feature. `user.to_json_for(mask)` limits output to groups.
 - `ProductRef` also serializes directly, so `fetch_ref` is the path for rows you process and then send.
 - `jsonb` columns can decode as `&RawValue`, so stored JSON is embedded without being parsed and rewritten.
-- **Input:** a view with `input` is the request body (section 5). `insert` and `update` run `clean` and the rules. No hand-written input type is needed.
+- **Input:** a view with `input` or `patch` is the request body (section 5). `insert` and `update` run `clean` and the rules. No hand-written input type is needed.
 - **Schema:** `User::json_schema(Up | Down)` as generated static strings, plus optional `utoipa` for OpenAPI.
 - **Large integers:** JavaScript loses digits above 2^53, so `#[col(json_string)]` writes an integer as a JSON string, on every JSON path.
 - Formats are fixed and documented: `Decimal` as a string, timestamps as RFC 3339, `bytea` as base64, `None` as `null`, `jsonb` embedded as JSON.
-- **`fetch_json()` on a model or view follows the same formats.** Postgres would write `numeric` as a JSON number and `bytea` as hex, so generated SQL converts those columns. `db.sql(...).fetch_json()` has no model to go by, so Postgres's own formats apply there, and your SQL can cast.
+- **`fetch_json()` on a model or view follows the same formats.** Postgres would write `numeric` as a JSON number, `bytea` as hex and a float `NaN` as the string `"NaN"`, so generated SQL converts those columns, including `json_string` integers and timestamps, which are always written in UTC. `skip_json_if` is a Rust function that Postgres can't run, so `fetch_json` and `stream_json` on such a model are compile errors. `db.sql(...).fetch_json()` has no model to go by, so Postgres's own formats apply there, and your SQL can cast.
 
 `fetch_json()` isn't automatically fastest: it moves the CPU work into Postgres, where it occupies a connection. Benchmarks compare it with `fetch_ref()`, and the docs state the result.
 
@@ -1021,11 +1039,12 @@ tx.advisory_lock(&["billing", "reports"]).await?;
 Hook signatures show exactly what's available. **Update and delete hooks take no `self`, so they never see a row unless they fetch it.** Nothing is ever fetched automatically.
 
 ```rust
+#[morm::hooks]
 impl Hooks for Product {
-    // Insert: you built the whole row, so hooks get the whole row
-    fn validate(&self) -> Result<()>;
-    async fn pre_insert(&mut self, db: &impl Conn) -> Result<()>;
-    async fn post_insert(&self, db: &impl Conn) -> Result<()>;   // includes id and defaults
+    // Insert: you built the rows, so hooks get them. One row for `insert`, all of them for `insert_many`
+    fn validate(&self) -> Result<()>;                                 // per row
+    async fn pre_insert(rows: &mut [Self], db: &impl Conn) -> Result<()>;
+    async fn post_insert(rows: &[Self], db: &impl Conn) -> Result<()>;   // includes id and defaults
 
     // Update: only what was set, and what was targeted
     fn validate_changes(changes: &Changes<Self>) -> Result<()>;
@@ -1036,7 +1055,7 @@ impl Hooks for Product {
     async fn pre_delete(target: &Target<Self>, db: &impl Conn) -> Result<()>;
     async fn post_delete(target: &Target<Self>, affected: u64, db: &impl Conn) -> Result<()>;
 
-    async fn after_commit(event: Event<Self>) -> Result<()>;
+    async fn after_commit(event: Committed<Self>) -> Result<()>;
 }
 ```
 
@@ -1065,18 +1084,18 @@ changes.set(F.slug, slug);   // a pre hook can add or change a value
 ### Rules
 
 - **A hook needing the full row** fetches it itself, so the query is visible in the code.
-- **Hooks run once per statement,** never per row, so a bulk update can't become thousands of hook calls.
+- **Hooks run once per statement,** never per row, so a bulk write can't become thousands of hook calls. `pre_insert` and `post_insert` take a slice for that reason: `insert` passes one row with no allocation, and `insert_many` passes all of them. `insert_stream` calls them once per chunk.
+- **`#[morm::hooks]`** on the `impl` records which hooks are overridden, because stable Rust can't detect that. It's what lets a model skip an unused transaction, boxing or pipelining check at compile time.
 - **`update_each`:** `pre_update` runs once with `Target::Ids` and only the column list. Per-row values go through `clean` and the declarative rules.
 - **The `db` a hook receives is lazy.** A connection is checked out on its first query, and with `hooks(tx)` the transaction begins there too, so a hook that doesn't query holds nothing.
 - **SQL is built after pre hooks,** so changes made there apply. A pre hook can cancel the operation by returning an error.
-- **Post hooks** run on the same connection or transaction.
-- **`after_commit`** is for side effects (emails, queues, cache invalidation). It gets an owned enum: `Inserted(row)`, `Updated { changes, target }`, `Upserted { inserted, updated }` or `Deleted { target }`. It's boxed only for models overriding it, runs only after commit, and is skipped on rollback. Errors there can't undo the commit. It runs in the app process, so a crash right after commit loses it. Events that must not be lost use `tx.emit` (below).
+- **Post hooks** run on the same connection or transaction. Without `hooks(tx)` or a surrounding transaction, the statement has already committed, so a post hook's error can't undo it. Use `hooks(tx)` when it must.
+- A hook that needs `tx.emit` calls `db.tx()`, which returns the transaction when there is one, since `emit` isn't on `Conn`.
+- **`after_commit`** is for side effects (emails, queues, cache invalidation). It gets an owned enum: `Inserted(rows)`, `Copied { count }` for `insert_stream`, which can't keep its rows, `Updated { changes, target }`, `Upserted { inserted, updated }` or `Deleted { target }`. It's boxed only for models overriding it, runs only after commit, and is skipped on rollback. Errors there can't undo the commit. It runs in the app process, so a crash right after commit loses it. Events that must not be lost use `tx.emit` (below).
 - **Automatic transaction:** a model with `hooks(tx)` has each statement wrapped in a transaction. Others stay at one round trip.
 - **Raw SQL doesn't run hooks;** this is documented.
 - **Zero cost:** static dispatch, and empty default hooks compile away.
 - **Axum-safe:** signatures use `-> impl Future<Output = Result<()>> + Send` underneath, and users can still write `async fn`.
-
----
 
 ### Outbox: events that must not be lost
 
@@ -1096,15 +1115,18 @@ morm::outbox::worker(&db)                              // in the app, or its own
     .run().await?;
 ```
 
-- **`emit` exists only on `tx`,** so an event can't be saved apart from its data. Hooks can use it when they run in a transaction, with `hooks(tx)`.
+- **`emit` exists only on `tx`,** so an event can't be saved apart from its data. Hooks can reach it through `db.tx()` when they run in a transaction.
 - **Delivery is at least once.** A worker can crash after sending and before recording it, so an event can arrive twice. `e.id` is stable across attempts, so handlers and receivers use it to ignore repeats.
 - **Claims use a lease, not an open transaction.** A worker marks a batch as claimed with `FOR UPDATE SKIP LOCKED`, commits, then sends. Holding a transaction during network calls would hold locks and hit `transaction_timeout`. If a worker dies, its lease expires and the events are claimed again.
-- **Failures retry with backoff.** After `max_attempts`, an event is marked `failed` and kept, never dropped. `pool_stats()` reports pending, failed and oldest-pending age, and `morm-admin outbox retry ID` runs it again.
+- **Failures retry with backoff.** After `max_attempts`, an event is marked `failed` and kept, never dropped. `pool_stats()` reports pending, failed and oldest-pending age from the worker's last poll, and `morm-admin outbox retry ID` runs it again.
+- **Workers claim only event names they handle,** so an event with no handler waits during a deploy instead of burning its attempts. Its age shows in the oldest-pending figure. A payload that won't decode counts as a failed attempt.
 - **Order isn't guaranteed by default,** because workers run in parallel. `tx.emit_keyed("order_placed", &order.id, &event)` delivers events with the same key in order, one at a time, which costs some throughput.
 - **Workers poll,** using a partial index on pending events, so an idle check is one small query. `NOTIFY` isn't used, because it takes a global lock at commit, which limits write throughput.
 - **Cleanup:** delivered events are deleted in batches after `retention`, so the table stays small.
 - **Separate worker process:** use `Db::connect_as("jobs")`, as for other jobs.
 - The app role needs read and write access on the table, so it's a normal managed table in the app's schema, not in `_morm`.
+
+---
 
 ## 10. Migrations
 
@@ -1207,7 +1229,7 @@ New tables use plain DDL in one transaction. `--fast` allows the simple forms fo
 
 ### Down that can restore data
 
-- **Retire instead of drop.** A dropped column is renamed `_morm_retired_<migration>_<col>`, with NOT NULL and defaults removed, and with its indexes, CHECK constraints and triggers dropped, along with foreign keys going out from the retired object. Otherwise a column the app no longer knows about would keep blocking deletes, or cascade them silently. The ledger records each definition. A dropped table moves to the `_morm_retired` schema, with its migration in the name. Long names follow the 63-byte rule with the hash suffix, because Postgres would truncate them and two could collide. The ledger records each original name. Rollback restores them with their data and recreates foreign keys and CHECKs as `NOT VALID`, then `VALIDATE`. Rows changed in the meantime can fail that step, such as a parent deleted since, so it stops with the offending rows and offers a decision: clear those values, delete those rows, or keep the constraint `NOT VALID`.
+- **Retire instead of drop.** A dropped column is renamed `_morm_retired_<migration>_<col>`, with NOT NULL and defaults removed, and with its indexes, CHECK constraints and triggers dropped, along with foreign keys going out from the retired object. Otherwise a column the app no longer knows about would keep blocking deletes, or cascade them silently. The ledger records each definition. A dropped table moves to the `_morm_retired` schema, with its migration in the name. Long names follow the 63-byte rule with the hash suffix, because Postgres would truncate them and two could collide. The ledger records each original name. Rollback restores them with their data, rebuilds indexes concurrently, and recreates foreign keys and CHECKs as `NOT VALID`, then `VALIDATE`. Rows changed in the meantime can fail those steps, such as a parent deleted since, or a duplicate where a unique index was, so it stops with the offending rows and offers a decision: clear those values, delete those rows, or keep the constraint `NOT VALID`.
 - **Objects that still depend on it stop the retire.** `makemigrations` and `migrate` read `pg_depend` and refuse, showing the list, while an object that isn't being retired depends on the column or table: a foreign key from a live table, a view, a materialized view, a function, a generated column, an RLS policy, extended statistics or a publication. Functions matter because a `BEGIN ATOMIC` body has an empty `prosrc`, so the text search can't see it, but it does record its dependencies. Renaming doesn't break these, which is the danger: a view would keep serving retired data, and the purge would fail later. Dropping a foreign key would quietly remove integrity from a column the app still uses. Retire them together, change them in the same migration, or remove them first. The planner applies managed changes first, so only what still depends after them counts. A generated column's dependency is recorded through `pg_attrdef`, so the query must include it.
 - **Code Postgres doesn't track.** A `plpgsql` function body has no recorded dependency on the columns it names, so a retire or rename can break inserts through a trigger like `NEW.note := 'x'`. Before either, morm searches `pg_proc.prosrc` in the affected schemas, and in every function the table's triggers call, in any schema, for the name, whole words only. Common names like `status` will give false hits, which is fine, because a hit is only a decision. A hit on a managed function is a decision with evidence, and `makemigrations` proposes the rewritten function. `migrate` preflight repeats the search on the live database, which is the only way to see unmanaged functions, and refuses on a hit unless accepted. `doctor` runs the same scan.
 - **Data that must really go:** retiring keeps data, which conflicts with a legal duty to delete it. The retire decision also offers `drop now`, which is marked irreversible, and `mgr purge --now ID` drops one retired object before its time.
@@ -1219,6 +1241,7 @@ New tables use plain DDL in one transaction. `--fast` allows the simple forms fo
 
 Rolling back after new data has been written can fail or lose that data, so production moves forward only. `down.sql` is still proven for every migration, because `revert` and development depend on it.
 
+- **`mode development` must name the database,** as in `mgr mode development --confirm app_staging`, so a command aimed at the wrong URL can't remove the protection.
 - **Every database is production until marked otherwise.** The mode is stored in `_morm`, not in an environment variable, so a wrong setting on a host can't turn it off, and a backup restores with it. Forgetting to mark a database leaves it safe.
 - `morm-admin mgr mode development` marks a local or staging database, and `mode` shows the current value. Every change goes in `_morm.history`.
 - **On a production database,** `rollback` and `rehearse` exit with code `2`. To rehearse on a clone of production, mark the clone first.
@@ -1262,7 +1285,7 @@ morm-migrations/
 
 ### Runtime guarantees
 
-- **Fingerprint gate.** Fingerprints cover only objects the chain manages, so unmanaged objects can't fail a run. Live schema must match `schema_before`, or the run refuses. It must match `schema_after` before commit, or the transaction rolls back. Rollback checks the reverse.
+- **Fingerprint gate.** Fingerprints cover only objects the chain manages, so unmanaged objects can't fail a run. Live schema must match `schema_before`, or the run refuses. A single-transaction migration must match `schema_after` before commit, or it rolls back. A multi-step migration can't, because its steps commit separately, so the check runs after the last step, and a mismatch marks it `failed` for `rollback --failed`. Rollback checks the reverse.
 - **Postgres features.** `[migrations] min_postgres` (default 15) sets the oldest server the project targets. `makemigrations` refuses a model feature that server can't run, such as `uuidv7()` before 18, and `morm` refuses to connect to a server below 15. `doctor` reports the server version.
 - **Postgres versions.** Catalog text can differ between majors, so `pg_major` is recorded. On a mismatch, the expected state is rebuilt by replaying the chain on the target's version in a temporary database. Without `CREATEDB` it refuses unless `--skip-fingerprint` is given. `refingerprint` handles upgrades.
 - **One migrator:** session advisory lock on a dedicated connection. If that connection is lost, the run stops.
@@ -1274,7 +1297,7 @@ morm-migrations/
 
 ### Rolling deploys
 
-Static column lists mean a dropped column breaks the old binary mid-deploy. Migrations carry `phase: expand | contract`, and `--phase` splits them. `contract` refuses while a required `#[col(deprecated)]` hasn't shipped. A rename decision offers an expand/contract form for live tables: add the new column, keep both in sync with a generated trigger, backfill in batches, and drop the old column and trigger in `contract`. `db.check_schema()` checks compatibility at startup, not equality, so an old binary restarting during an expand phase still boots. Every column the binary reads or writes must exist with the same type, or one the conversion layer accepts. Extra columns and objects are fine. Two cases that would fail that binary's inserts are reported: an extra `NOT NULL` column with no default, and a column the binary may leave out that is no longer nullable and has lost its default.
+Static column lists mean a dropped column breaks the old binary mid-deploy. Migrations carry `phase: expand | contract`, and `--phase` splits them. `contract` refuses while a required `#[col(deprecated)]` hasn't shipped. Marking a `NOT NULL` column with no default as `deprecated` generates an expand step dropping that `NOT NULL`, because the new binary stops writing it. A rename decision offers an expand/contract form for live tables: add the new column, keep both in sync with a generated trigger, backfill in batches, and drop the old column and trigger in `contract`. `db.check_schema()` checks compatibility at startup, not equality, so an old binary restarting during an expand phase still boots. Every column the binary reads or writes must exist with the same type, or one the conversion layer accepts. Extra columns and objects are fine. Two cases that would fail that binary's inserts are reported: an extra `NOT NULL` column with no default, and a column the binary may leave out that is no longer nullable and has lost its default.
 
 ### Data migrations
 
@@ -1288,7 +1311,7 @@ All are `morm-admin mgr <command>`:
 makemigrations [--plan] [--json] [-n name] [--decide ID=OPT] [--decisions F] [--empty] [--fast]
 migrate [--plan] [--json] [--yes] [--to ID] [--resume] [--phase expand|contract]
 rollback [--last N | --to ID | --orphans | --failed] [--plan] [--yes] [--accept-data-loss] [--production --reason R]
-revert ID [--plan] [--decide ID=OPT]    mode [development | production]    squash --to ID
+revert ID [--plan] [--decide ID=OPT]    mode [development --confirm NAME | production]    squash --to ID
 status [--json]    verify [--json]    check    lint    check-sql
 rehearse --url URL    purge --older-than D | --now ID    baseline    rebase-chain
 repair --reason R     refingerprint           sql ID
@@ -1300,7 +1323,7 @@ repair --reason R     refingerprint           sql ID
 - `lint`: statement risk, in the style of `squawk`, plus index advice. With `--url` it reads real table sizes and reports risky operations only on tables big enough to matter.
 - `check-sql`: `PREPARE` and `EXPLAIN` on every registered query.
 - `baseline`: adopts an existing database as migration zero, without running anything.
-- `squash --to ID`: replaces the chain up to `ID` with one baseline generated by replaying it. A database that has applied all of them just continues, and one partway through is refused until it catches up. Run it only when every database has passed `ID`.
+- `squash --to ID`: replaces the chain up to `ID` with one baseline generated by replaying it. A database that has applied all of them just continues, and one partway through is refused until it catches up. Run it only when every database has passed `ID`. It refuses while retired objects from those migrations haven't been purged, because their rollback path would be gone.
 
 **Run migrations as a deploy step,** before new code goes live, so a failed migration stops the deploy. The app binary has no migration code, so it can't migrate on start.
 
@@ -1317,7 +1340,7 @@ repair --reason R     refingerprint           sql ID
 - **Errors:** a pool wait timeout becomes a typed `PoolBusy`.
 - **Sizing:** warm start, idle shrinking and limit checks, below.
 
-Each query takes a connection, runs, and releases it. Connections are not shared between tasks, so one slow query only holds its own connection, a dropped connection fails only its own request, and timeouts work normally. Tasks can still pipeline several queries within one checkout.
+Each query takes a connection, runs, and releases it. Connections are not shared between tasks, so one slow query only holds its own connection, a dropped connection fails only its own request, and timeouts work normally. Queries joined on one `tx` are pipelined on its connection.
 
 Everything goes through `db`, so the pool can be replaced later without changing application code.
 
@@ -1354,7 +1377,7 @@ At startup, morm reads `max_connections` and the reserved slots, then computes:
 budget = (max_connections - reserved - safety margin) / processes
 ```
 
-If `min` or `max` exceed the budget, including explicit values, morm lowers them and emits a warning, through `tracing` when enabled and stderr otherwise. `morm-admin doctor` runs the same check.
+Pools open in one process share the budget, so `db.pool("jobs")` beside the default pool can't double it. If `min` or `max` exceed the budget, including explicit values, morm lowers them and emits a warning, through `tracing` when enabled and stderr otherwise. `morm-admin doctor` runs the same check.
 
 ```
 morm: pool max 160 lowered to 92 (max_connections=100, reserved=3, margin=5)
@@ -1477,27 +1500,28 @@ db.release(held).await;      // or held.release().await
 
 | Setting | Default | Holds |
 |---|---|---|
-| `statement_cache` | 256 | Compile-time SQL: `get`, `insert`, `delete` by primary key, `sql!`, and anything else with a `&'static str` |
-| `shape_cache` | 128 | SQL built at runtime: inserts with defaulted fields, `update`, `update_q`, `.apply()`, `get_q`, `delete_q`, and any query with a `.tag()` |
+| `statement_cache` | 256 | SQL fixed at compile time: `get` and `delete` by primary key, a model's static `insert`, `sql!`, `db.sql()` and `db.raw()` |
+| `shape_cache` | 128 | SQL put together at runtime: `select` builders including `filter_cols` and `.q()`, `get_by`, `get_where`, `get_q`, `delete_by`, `delete_where`, `delete_q`, inserts with defaulted fields, `update`, `update_q`, `.apply()`, and any query with a `.tag()` |
 
 - **Why two:** each combination of columns is different SQL text, so a 10-field patch has up to 1,023 shapes, and a client chooses which one it sends. morm can't tell a fixed `.set()` chain from a conditional one, so the split is by how the SQL is made. A fixed chain is one busy shape and stays cached.
 - **A shape is prepared the second time it's seen.** Its first use runs through `query_typed`, in one round trip, with no cache entry. A small fixed table of shape hashes per connection records what has been seen, and a collision only prepares a shape one use early.
+- `.limit(n)` is always a bound parameter, so a client's page size can't create new shapes.
 - **Worst case:** random one-off shapes are never prepared and evict nothing. A client repeating hundreds of shapes can churn `shape_cache`, but it can't touch `statement_cache`. The `tracing` feature logs heavy churn.
 - **Query tags:** `.tag("orders.list")` adds a fixed comment, `/* orders.list */`, so server logs, `auto_explain` and `pg_stat_activity` show which code ran a query. It costs nothing unless used.
   - It takes only `&'static str`, so it can't hold a request id, which would make every query text unique. Characters outside letters, digits, `.`, `_`, `:` and `-` become `_`, so a tag can't close the comment.
   - One tag is one extra statement: the same SQL under two tags is prepared twice.
   - `pg_stat_statements` ignores comments, so those two calls merge into one entry showing the first tag seen. Use logs for tags, and `pg_stat_statements` for totals per query.
 - Built SQL text is kept in a small bounded map keyed by model and column bitmask, so a repeated shape doesn't rebuild the string.
-- Other dynamic SQL and overflow go through `query_typed`, which needs no prepare round trips.
+- Other dynamic SQL and overflow go through `query_typed`, which needs no prepare round trips. It needs each parameter's Postgres type, and `ToSql` doesn't give that, so parameters are `&dyn morm::Param`, a trait that adds the type. Builder code knows the type from `F`.
 - The first benchmark run measures this split against a single cache, and a patch through `query_typed` against a prepared one.
 - `cached plan must not change result type` (0A000): evict and re-prepare once outside a transaction, typed error inside.
 
 ### Query path
 
-- SQL for select, get and delete is a compile-time `&'static str`, and so is insert for models with no defaulted optional fields (section 8).
+- SQL for `get` and `delete` by primary key is a compile-time `&'static str`, as are a model's column list and its insert when it has no defaulted optional fields (section 8).
 - `= ANY($1)` instead of `IN` lists, so list length doesn't create statement variants.
 - Bulk insert via `UNNEST` (one stable statement, no 65,535-parameter limit), and `COPY` above a threshold, whose value comes from the benchmark.
-- Positional decoding; borrowed parameters (`&dyn ToSql`), not boxed.
+- Positional decoding; borrowed parameters (`&dyn morm::Param`), not boxed.
 - `BEGIN`, statement and `COMMIT` pipelined to cut auto-transaction round trips. This applies only to models without post hooks, because `post_insert` and `post_update` must run before the `COMMIT`.
 - Rows carry no per-row metadata.
 - No dynamic dispatch in hot paths.
@@ -1515,13 +1539,13 @@ morm has no vendor code. It emits OpenTelemetry-shaped data through `tracing` an
 | `tracing` compiled in, no subscriber | One relaxed atomic load |
 | `tracing` on, query not sampled | That load, a thread-local counter, and two clock reads for `slow_query` |
 | `tracing` on, query sampled | One span, with fields recorded only then |
-| `metrics` on | None beyond the always-on counters |
+| `metrics` on | Two clock reads and one uncontended bucket increment |
 
 **Spans.** `span_sample` picks every Nth query with a thread-local counter, so sampling takes no lock and no shared atomic. The decision comes before any span exists, which is why this is cheaper than sampling only in the exporter.
 
 - **Whole requests:** per-query sampling leaves gaps in a trace. `morm::sample_scope(keep, fut)` overrides `span_sample` for everything inside `fut` through a task-local, so middleware can pass the trace's own sampling decision and keep a request's queries together.
 - **`slow_query`:** a query that wasn't sampled but ran over the limit is reported as a `tracing` event with its durations, attached to the current span. A span can't be started after the fact. The limit includes pool wait, which Postgres can't see, so this doesn't repeat the server's slow log.
-- **Field names** follow the OpenTelemetry database conventions: `db.system.name`, `db.query.text`, `db.operation.name`, `db.collection.name`, `db.namespace`, plus `db.morm.tag` and `db.morm.pool_wait_us`. Query text holds only `$1` placeholders.
+- **Field names** follow the OpenTelemetry database conventions: `db.system.name`, `db.query.text`, `db.operation.name`, `db.collection.name`, `db.namespace`, plus `db.morm.tag` and `db.morm.pool_wait_us`. Query text holds only `$1` placeholders. `q_unchecked` and `sql_unchecked` text can contain values, so spans leave it out.
 
 **Metrics.** Nothing is published from the query path. Each connection keeps plain counters and fixed-bucket duration histograms. A connection has one user at a time, so these are uncontended. One background task per pool adds them up every `metrics_interval` and publishes them, and a closing connection adds its totals to the pool first.
 
@@ -1571,6 +1595,9 @@ morm has no vendor code. It emits OpenTelemetry-shaped data through `tracing` an
 | A rounded `numeric` value | Error on read and on write |
 | Pool settings that don't fit the server | `morm-admin size` exits with `1`, so CI can catch it; `doctor` reports it |
 | A nullable keyset column | Compile error |
+| A generated `Default` disagreeing with a SQL default | Literals are read into `Default`; other defaults on non-`Option` fields are compile errors |
+| Forgetting to pass a `version` | Compile error: `.version(v)` or `.ignore_version()` is required |
+| A mask handle exposing restricted columns | Reads on a handle fail closed with `Forbidden` |
 | An upsert resetting columns the row didn't supply | Only supplied columns are in `DO UPDATE SET` |
 | A view or generated column still using a retired column | Retire refuses and lists it; `purge` never cascades |
 | A retired column blocking deletes | Retiring drops its outgoing foreign keys, CHECKs and triggers |
@@ -1591,8 +1618,8 @@ The compiler can't see a query inside a loop, so that one is caught in tests and
 Tests are written with the code: **a milestone isn't done until its tests pass in CI.**
 
 - **Unit:** macro output, SQL generation, diff, naming.
-- **Compile-fail (`trybuild`):** every compile-time guarantee, including hidden view fields, `HasPk`, unfiltered update and delete, update with no `.set()`, list with no limit, a nullable keyset column, an `upsert` target with no unique key, a deferrable one or an ambiguous one, every write path on an `insert_only` column, `self` absent in update and delete hooks, `Deserialize` on models and on views without `input` or `patch`, protected columns in `input` and `patch`, a derived `Serialize` or `Debug` on a model, non-static `q()` and `sql()`, uppercase names without `keep_case`, columns narrower than their Rust type, `usize` and `isize`, unknown group names, scoped groups on `#[model(groups)]`, a scoped mask on another model, duplicate indexes, duplicate base fields, over-long and colliding names, `Decimal` and float on unsuitable `numeric` columns.
-- **Integration on real Postgres:** insert, every get, update and delete form, views, groups, hook inputs (`Changes`, `Target`), hooks order, the loop detector, `after_commit` on commit and skip on rollback, all list and JSON paths, pool growth and idle shrinking, `max_connections` adjustment, `db.hold()` release on every exit path, `ConnectionLost`, cancellation, forced deadlocks in both kinds, swallowed errors never reporting a commit, `CommitUnknown`, savepoint behaviour after deadlocks, single-statement and transaction retry limits, every timeout, cancelled queries releasing their locks, `max_holds`, `.lock_ordered()` and bulk writes under concurrent load, advisory key stability, `skip_locked` with rival workers, `.in_batches` stopping and resuming, every `insert_many` path at a million rows, keyset pages under concurrent writes and with mixed sort directions, tampered cursors, `order_by_allowed`, `.custom_plan()`, connections discarded on `25006`, `load_related` with `.limit_each`, `secret` absent from every JSON path and `Debug`, unknown input fields rejected, `patch` missing, null and value states on nullable and NOT NULL columns, `EmptyPatch` and `.allow_empty()`, `.set()` winning over `.apply()`, `shape_cache` isolation under random and repeated shapes, every integer type at its limits through insert, read and JSON, range CHECKs rejecting direct SQL writes, `OutOfRange`, `InvalidText`, `json_string` on every path, `db.close()` finishing in-flight work, models in several schemas, array columns on every `insert_many` path with property tests on escaping, `upsert` leaving unsupplied and `insert_only` columns alone, `.update_only`, `upsert` on partial unique indexes, `upsert` on expression unique indexes through `UK`, `upsert` outcomes on models with no primary key and with a NULL key under `NULLS NOT DISTINCT`, `upsert` outcomes, hooks and `after_commit` on each Postgres version, `upsert` with nothing to update, including the row deleted between its two statements, concurrent `.explicit_ids()` runs and fresh sequences, `NestedConnection` with `join!` and with a stream moved between tasks, `.explicit_ids()` with both identity kinds and with sequences ahead of the data, changed defaults reaching old binaries, `OrDefault`, `tx.lock` with and without `.for_key_change()` against child inserts, `clean` and lazy connections, `blocking`, `check_schema` during expand phases and after a dropped default, every `pooler = "transaction"` rule and the skipped limit check behind a real PgBouncer, `.tag()` in server logs and its character filtering, `span_sample` at 0, 1 and between, `sample_scope`, `slow_query` events including pool wait, metric totals surviving a closing connection, `doctor` warnings on parameter logging, `morm-admin size` estimates checked against measured memory, `--here` with and without cgroup limits, `--measure`.
+- **Compile-fail (`trybuild`):** every compile-time guarantee, including hidden view fields, `HasPk`, unfiltered update and delete, update with no `.set()`, list with no limit, a nullable keyset column, a non-literal default on a non-`Option` field, a missing `.version()`, `changes.set` on a `blocking` field, `fetch_json` with `skip_json_if`, an `upsert` target with no unique key, a deferrable one or an ambiguous one, every write path on an `insert_only` column, `self` absent in update and delete hooks, `Deserialize` on models and on views without `input` or `patch`, protected columns in `input` and `patch`, a derived `Serialize` or `Debug` on a model, non-static `q()` and `sql()`, uppercase names without `keep_case`, columns narrower than their Rust type, `usize` and `isize`, unknown group names, scoped groups on `#[model(groups)]`, a scoped mask on another model, duplicate indexes, duplicate base fields, over-long and colliding names, `Decimal` and float on unsuitable `numeric` columns.
+- **Integration on real Postgres:** insert, every get, update and delete form, views, groups, hook inputs (`Changes`, `Target`), hooks order, the loop detector, `after_commit` on commit and skip on rollback, all list and JSON paths, pool growth and idle shrinking, `max_connections` adjustment, `db.hold()` release on every exit path, `ConnectionLost`, cancellation, forced deadlocks in both kinds, swallowed errors never reporting a commit, `CommitUnknown`, savepoint behaviour after deadlocks, single-statement and transaction retry limits, every timeout, cancelled queries releasing their locks, `max_holds`, `.lock_ordered()` and bulk writes under concurrent load, advisory key stability, `skip_locked` with rival workers, `.in_batches` stopping and resuming, every `insert_many` path at a million rows, keyset pages under concurrent writes and with mixed sort directions, tampered cursors, `order_by_allowed`, `.custom_plan()`, connections discarded on `25006`, `load_related` with `.limit_each`, `secret` absent from every JSON path and `Debug`, unknown input fields rejected, `patch` missing, null and value states on nullable and NOT NULL columns, `EmptyPatch` and `.allow_empty()`, `.set()` winning over `.apply()`, `shape_cache` isolation under random and repeated shapes, every integer type at its limits through insert, read and JSON, range CHECKs rejecting direct SQL writes, `OutOfRange`, `InvalidText`, `json_string` on every path, `db.close()` finishing in-flight work, models in several schemas, hook slices on `insert` and `insert_many`, group rules on a handle for every read and write path, `.version()` conflicts, `.limit()` sharing one statement across values, fragment renumbering, `fetch_json` formats for `NaN`, `numeric`, `bytea` and timestamps, two pools sharing the connection budget, array columns on every `insert_many` and `update_each` path with property tests on escaping for each element type, `upsert` leaving unsupplied and `insert_only` columns alone, `.update_only`, `upsert` on partial unique indexes, `upsert` on expression unique indexes through `UK`, `upsert` outcomes on models with no primary key and with a NULL key under `NULLS NOT DISTINCT`, `upsert` outcomes, hooks and `after_commit` on each Postgres version, `upsert` with nothing to update, including the row deleted between its two statements, concurrent `.explicit_ids()` runs and fresh sequences, `NestedConnection` with `join!` and with a stream moved between tasks, `.explicit_ids()` with both identity kinds and with sequences ahead of the data, changed defaults reaching old binaries, `OrDefault`, `tx.lock` with and without `.for_key_change()` against child inserts, `clean` and lazy connections, `blocking`, `check_schema` during expand phases and after a dropped default, every `pooler = "transaction"` rule and the skipped limit check behind a real PgBouncer, `.tag()` in server logs and its character filtering, `span_sample` at 0, 1 and between, `sample_scope`, `slow_query` events including pool wait, metric totals surviving a closing connection, `doctor` warnings on parameter logging, `morm-admin size` estimates checked against measured memory, `--here` with and without cgroup limits, `--measure`.
 - **Property tests:** random models and data round-trip through insert, read and JSON.
 - **Doc tests:** every README and doc example compiles and runs.
 - **`#[morm::test]`:** gives each test a database cloned from a migrated template, for this project and its users.
@@ -1605,6 +1632,7 @@ Migration tests:
 - **Concurrency:** rival migrators, migration under live traffic, lock-timeout retry.
 - **Retire:** deleting a parent succeeds after its child column is retired, rollback recreates the constraints, orphaned rows produce a decision, every recorded dependency from a live object refuses the retire, including `BEGIN ATOMIC` functions, `purge` never cascades and re-checks dependencies, and retires and renames named in a trigger function are caught, both managed and unmanaged.
 - **Safe forms:** `ADD PRIMARY KEY` on a nullable column takes no scan under lock, writes during a type-change copy aren't lost, long retired names don't collide, and `drop now` removes the data.
+- **Multi-step:** a fingerprint mismatch after the last step marks the migration `failed`.
 - **Forward only:** `rollback` and `rehearse` refused on production mode, the default on a new database, and `revert` restoring retired data.
 - **Squash:** a squashed chain gives the same schema as the full chain, and a database partway through is refused.
 - **Full chain:** all up → all down → all up on Postgres 15–18.
@@ -1691,6 +1719,9 @@ One compact, complete file at the repo root. It must be enough to use morm effic
 | `tx.get_for_update` | Your logic must see the current row before changing it, and `set_expr` can't express it |
 | `#[col(version)]` | Users edit a row over time, and a stale save must fail, not overwrite |
 | `.in_batches(n)` | You change so many rows that one transaction would hold locks too long, and it needn't be atomic |
+| `.version(v)` | You update a `version` column and hold the value the client read |
+| `.ignore_version()` | A server-side update may overwrite whatever version is there |
+| `tx.set_local(name, &value)` | A setting must last one transaction, such as the tenant for RLS |
 | `db.insert_stream` | Your rows are too many to hold in memory, such as an import from a file |
 | `db.load_related` | You need the child rows of a whole list |
 | `.keyset(...)` | You page through a list that can go deep |
@@ -1713,6 +1744,14 @@ One compact, complete file at the repo root. It must be enough to use morm effic
 | `tx.advisory_lock(&keys)` | Only one process may do this work at a time, such as a billing run |
 | `db.extra_conn()` | You need a write to survive a rollback, such as an audit row, or a query beside an open stream |
 | `.update_only(...)` | An upsert must change only certain columns on conflict |
+| `db_set` | Postgres always fills a column on insert, and your field's value should be ignored |
+| `deferrable` | Rows in one transaction may break a constraint until commit, such as swapping two unique values |
+| `#[morm::hooks]` | You write `impl Hooks` for a model |
+| `db.tx()` | A hook needs `tx.emit` or another `tx`-only call |
+| `.pause_ms(n)` | Batches must leave room for other work, such as replicas catching up |
+| `.limit_each(n)` | You load related rows and each parent needs only a few |
+| `db.check_schema()` | A binary should refuse to boot against a schema it can't use |
+| `#[col(deprecated)]` | You're removing a column, and old binaries still run |
 | `insert_only` | A column is set once on insert and must never change afterwards |
 | `Product::UK.<name>` | An upsert targets an expression unique index, or two partial indexes share columns |
 | `db.hold()` | You need `LISTEN`, temp tables, session advisory locks or `SET` |
@@ -1760,7 +1799,7 @@ One compact, complete file at the repo root. It must be enough to use morm effic
 ### Risks
 
 - **Managed objects:** functions, triggers and policies with exact inverses are the hardest engine work.
-- **Needs proof early:** borrowed `ProductRef` decoding, the loop detector, macro feasibility for `#[view]` and `#[morm::base]`, macro-counted group mask sizes on stable Rust, `AsyncFn` closures for `.retry()`, hook signatures including the lazy `db`, `NestedConnection` detection for stream loops, including `join!` and streams moved between tasks, and upsert conflict-target markers across macro expansions.
+- **Needs proof early:** borrowed `ProductRef` decoding, the loop detector, macro feasibility for `#[view]` and `#[morm::base]`, macro-counted group mask sizes on stable Rust, `AsyncFn` closures for `.retry()`, hook signatures including the lazy `db`, `NestedConnection` detection for stream loops, including `join!` and streams moved between tasks, upsert conflict-target markers across macro expansions, `morm::Param` with `query_typed` on every supported type, and registration with `cfg(morm_mgr)` across crates.
 - **Scratch databases:** `makemigrations` needs a Postgres where it can `CREATE DATABASE`.
 - **Scope:** migrations alone outweigh the runtime.
 
@@ -1770,7 +1809,7 @@ One compact, complete file at the repo root. It must be enough to use morm effic
 
 ### Later
 
-Shared reads: a small opt-in lane that pipelines primary-key reads on a few connections, added only if a benchmark shows real gains with no worse p99 under mixed load. Also partitioning, a `dynamic` registry for by-name admin CRUD, sensitive-column prompts in `import`, and `morm-admin size --live`, which compares the estimate with `pg_stat_activity` and live pool figures to spot oversized pools.
+Shared reads: a small opt-in lane that pipelines primary-key reads on a few connections, added only if a benchmark shows real gains with no worse p99 under mixed load. Also partitioning, a `dynamic` registry for by-name admin CRUD, sensitive-column prompts in `import`, exclusion constraints on models, and `morm-admin size --live`, which compares the estimate with `pg_stat_activity` and live pool figures to spot oversized pools.
 
 ### Confirmed for after 0.1
 
