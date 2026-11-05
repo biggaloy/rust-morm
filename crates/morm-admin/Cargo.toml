@@ -1,0 +1,12 @@
+[package]
+name = "morm-admin"
+description = "The admin tool for morm."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+morm-core.workspace = true
+morm-migrate.workspace = true

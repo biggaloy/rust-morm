@@ -1,0 +1,50 @@
+# covers: R-0794, R-0957
+name: bench
+
+on:
+  schedule:
+    - cron: "41 4 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  bench:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-rust
+      - run: cargo bench --locked --workspace --exclude morm-tests
+      - name: Measure binary size and RSS
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y time
+          cargo build --locked --release -p morm-admin
+          size=$(stat -c %s target/release/morm-admin)
+          rss=$(/usr/bin/time -f %M target/release/morm-admin 2>&1)
+          mkdir bench-results
+          printf '{"morm-admin binary bytes": %s, "morm-admin peak RSS KiB": %s}\n' "$size" "$rss" > bench-results/metrics.json
+      - name: Fetch the last run's measurements
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          last=$(gh run list --workflow bench.yml --branch "$GITHUB_REF_NAME" --status success --limit 1 --json databaseId --jq '.[0].databaseId')
+          if [ -n "$last" ]; then
+            gh run download "$last" --name bench-results --dir previous
+          fi
+      - name: Compare with the last run
+        run: python3 .github/scripts/bench_compare.py bench-results/metrics.json previous/metrics.json | tee -a "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: bench-results
+          path: bench-results
+          retention-days: 90

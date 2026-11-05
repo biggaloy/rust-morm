@@ -1,0 +1,30 @@
+[package]
+name = "morm-tests"
+description = "Integration tests for morm against real Postgres."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = false
+
+[features]
+# Needs a PgBouncer service, so plain `cargo test` leaves it out.
+pooler = []
+# Compiler output depends on the toolchain, so ci.yml runs it on one version.
+ui = ["dep:trybuild"]
+
+[dependencies]
+morm.workspace = true
+serde_json = "1"
+tokio = { version = "1", features = ["macros", "rt"] }
+tokio-postgres = "0.7"
+trybuild = { version = "1", optional = true }
+
+[[test]]
+name = "pooler"
+required-features = ["pooler"]
+
+[[test]]
+name = "ui"
+required-features = ["ui"]
