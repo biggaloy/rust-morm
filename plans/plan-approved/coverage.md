@@ -929,7 +929,7 @@ Totals: 959 requirements, 133 test obligations.
 | R-0917 | info | 02 | 1804 | - **Needs proof early:** borrowed `ProductRef` decoding, the loop detector, macro feasibil… |
 | R-0918 | code | 29 | 1805 | - **Scratch databases:** `makemigrations` needs a Postgres where it can `CREATE DATABASE`. |
 | R-0919 | info | index | 1806 | - **Scope:** migrations alone outweigh the runtime. |
-| R-0920 | code | 50 | 1810 | - `morm`, `morm-macros`, `morm-migrate`, `morm-admin` and `morm-mgr` were free on crates.i… |
+| R-0920 | code | 50 | 1810 | - All six names (`morm`, `morm-core`, `morm-macros`, `morm-migrate`, `morm-admin`, `morm-m… |
 | R-0921 | info | index | 1814 | Shared reads: a small opt-in lane that pipelines primary-key reads on a few connections, a… |
 | R-0922 | info | index | 1818 | Features we will build are in `later-defo-build.plan`: automatic read routing and online k… |
 | R-0923 | code | 05 | 1822 | Encrypted columns, including per-user keys and rotation, are not designed yet. Nothing in … |

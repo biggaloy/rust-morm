@@ -181,7 +181,7 @@ MOVE2 = [  # (start of block, step)
     ("- **Input:** a view with", "hooks"), ("- **Holds can't use up the pool.**", "hold-pooler"),
     ("- **`citext`**", "reads"), ("| `default_fn` |", "inserts"), ("- an empty `impl Hooks`", "hooks"),
     ("```\nmorm-admin init [path]", "admin-init"),
-    ("- `morm`, `morm-macros`, `morm-migrate`", "readme-release"),
+    ("- All six names", "readme-release"),
     ("**Everything an application's schema", "schema-ir"), ("Tables and other objects with no definition", "retire"),
 ]
 INFO2 = [  # examples and labels: the rules around them carry the tests
@@ -237,6 +237,8 @@ SPLIT2 = [  # fifth-pass sizing: (old step, block pattern, new step)
 def final_fix(units):
     out = []
     for u in units:
+        if u["text"].startswith("- `morm`, `morm-macros`, `morm-migrate`"):
+            u["text"] = "- All six names (`morm`, `morm-core`, `morm-macros`, `morm-migrate`, `morm-admin`, `morm-mgr`) are reserved on crates.io at `0.0.0`. The release publishes over them."
         t = u["text"]
         for start, step in MOVE2:
             if t.startswith(start):

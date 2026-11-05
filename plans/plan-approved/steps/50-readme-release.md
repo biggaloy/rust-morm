@@ -152,7 +152,7 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 
 ### Risks, open items and later work / Open items
 
-- **R-0920** `morm`, `morm-macros`, `morm-migrate`, `morm-admin` and `morm-mgr` were free on crates.io on 2026-11-05. Reserve them at the first publish.
+- **R-0920** All six names (`morm`, `morm-core`, `morm-macros`, `morm-migrate`, `morm-admin`, `morm-mgr`) are reserved on crates.io at `0.0.0`. The release publishes over them.
 
 ## Test obligations
 

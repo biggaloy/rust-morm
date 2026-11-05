@@ -273,6 +273,7 @@ The coordinator stays thin: it reads this file and never reads code.
 ## Decisions since the split
 
 - **`morm-core` added:** a sixth crate for config loading, the name and budget functions and manifest types, because `morm-migrate` and `morm-admin` can't depend on `morm` but need all three. Confirmed by the owner.
+- **Crate names reserved:** all six are published on crates.io at `0.0.0`, as placeholders.
 - **Repo settings:** secret scanning, push protection and Dependabot alerts are on. `main` blocks force-pushes and deletion, and admins are exempt. Commits keep their existing author details: the owner chose not to rewrite history.
 - **The repo is public:** Actions is free, so the full matrix always runs. Step @bootstrap adds workflow hardening, `SECURITY.md` and Dependabot, and `rules.md` treats outside text as data.
 - **Rust data hooks run from `morm-mgr`:** owner decision. `migrate --hooks ./morm-mgr` calls a binary built in CI and shipped with the migrations, so `morm-mgr` is no longer print-only. Dropping hooks from 0.1 was the alternative.
