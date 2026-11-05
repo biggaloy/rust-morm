@@ -44,6 +44,7 @@ Non-goals: other databases, a query language that replaces SQL, runtime reflecti
 | Hooks | Trait with zero-cost default methods. Update and delete hooks receive only what the statement contains |
 | JSON | Direct from a row, with no intermediate `Value` or map. Postgres-built JSON also available |
 | Production migrations | Forward only by default. A database is treated as production until marked otherwise, and `revert` undoes a migration with a new forward migration |
+| Reliable events | A built-in transactional outbox: `tx.emit` saves an event with the data, and a worker delivers it at least once |
 | Migration source of truth | Models and chain replayed in scratch databases, compared through the Postgres catalog. No snapshots |
 | Admin | One tool, `morm-admin`, for everything administrative |
 | Rust edition / MSRV | 2024 edition; MSRV 1.99.1, the current stable. Moves up to the latest stable until the first release |
@@ -88,6 +89,7 @@ Cargo features of `morm`:
 - `decimal` (default): `Decimal` for `numeric` columns, through `rust_decimal` (section 8)
 - `tracing`: one span per query with SQL text, duration, row count and pool wait time, plus slow-query logs, compiled out when off. Never parameter values, because they hold passwords, tokens and personal data
 - `utoipa`: OpenAPI schemas
+- `outbox`: the transactional outbox (section 9), compiled out when off
 
 ### `morm-admin`
 
@@ -96,6 +98,7 @@ morm-admin init [path] [--axum]       # create a project
 morm-admin doctor                     # check Postgres, roles, scratch, versions
 morm-admin import URL [--out DIR]     # generate models from a database
 morm-admin scratch                    # check or create the scratch database
+morm-admin outbox [list | retry ID]   # inspect failed events, deliver one again
 morm-admin mgr <command>              # migrations and schema work (section 10)
 ```
 
@@ -154,6 +157,13 @@ password = "${MORM_JOBS_PASSWORD}"
 min = 1
 max = 4
 
+[outbox]
+batch = 100                      # events claimed at once
+poll_interval = "1s"
+lease = "60s"                    # a crashed worker's events return after this
+max_attempts = 10
+retention = "7d"                 # how long delivered events are kept
+
 [migrations]
 dir = "morm-migrations"
 scratch_url = "${MORM_SCRATCH_URL}"
@@ -182,6 +192,8 @@ Precedence: defaults, then `morm.toml`, then environment variables, then code. T
 | `MORM_MIGRATION_PASSWORD_FILE` | File holding the owner-role password |
 | `MORM_SCRATCH_URL` | Scratch database URL |
 | `MORM_MIGRATIONS_DIR` | Migrations directory |
+| `MORM_OUTBOX_BATCH`, `MORM_OUTBOX_POLL_INTERVAL` | `batch`, `poll_interval` |
+| `MORM_OUTBOX_LEASE`, `MORM_OUTBOX_MAX_ATTEMPTS`, `MORM_OUTBOX_RETENTION` | `lease`, `max_attempts`, `retention` |
 | `MORM_POOL` | Named pool this process opens, instead of `[pool]` |
 | `MORM_POOL_MIN`, `MORM_POOL_MAX` | `min`, `max` |
 | `MORM_POOL_PROCESSES` | `processes` |
@@ -910,13 +922,41 @@ changes.set(F.slug, slug);   // a pre hook can add or change a value
 - **`update_each`:** `pre_update` runs once with `Target::Ids` and only the column list. Per-row values go through `clean` and the declarative rules.
 - **SQL is built after pre hooks,** so changes made there apply. A pre hook can cancel the operation by returning an error.
 - **Post hooks** run on the same connection or transaction.
-- **`after_commit`** is for side effects (emails, queues, cache invalidation). It gets an owned enum: `Inserted(row)`, `Updated { changes, target }` or `Deleted { target }`. It's boxed only for models overriding it, runs only after commit, and is skipped on rollback. Errors there can't undo the commit. It runs in the app process, so a crash right after commit loses it. Events that must not be lost go in a table in the same transaction.
+- **`after_commit`** is for side effects (emails, queues, cache invalidation). It gets an owned enum: `Inserted(row)`, `Updated { changes, target }` or `Deleted { target }`. It's boxed only for models overriding it, runs only after commit, and is skipped on rollback. Errors there can't undo the commit. It runs in the app process, so a crash right after commit loses it. Events that must not be lost use `tx.emit` (below).
 - **Automatic transaction:** a model with `hooks(tx)` has each statement wrapped in a transaction. Others stay at one round trip.
 - **Raw SQL doesn't run hooks;** this is documented.
 - **Zero cost:** static dispatch, and empty default hooks compile away.
 - **Axum-safe:** signatures use `-> impl Future<Output = Result<()>> + Send` underneath, and users can still write `async fn`.
 
 ---
+
+### Outbox: events that must not be lost
+
+`after_commit` can lose an event if the process crashes after commit, because the data is saved and the event only exists in memory. The outbox saves the event in the same transaction as the data, so both exist or neither does.
+
+```rust
+morm::pg_outbox!();                                    // declares the table, tracked by migrations
+
+db.transaction(async |tx| {
+    tx.insert(&mut order).await?;
+    tx.emit("order_placed", &OrderPlaced { id: order.id }).await?;
+    Ok(())
+}).await?;
+
+morm::outbox::worker(&db)                              // in the app, or its own process
+    .on("order_placed", async |e: Event<OrderPlaced>| send_email(e.id, e.payload).await)
+    .run().await?;
+```
+
+- **`emit` exists only on `tx`,** so an event can't be saved apart from its data. Hooks can use it when they run in a transaction, with `hooks(tx)`.
+- **Delivery is at least once.** A worker can crash after sending and before recording it, so an event can arrive twice. `e.id` is stable across attempts, so handlers and receivers use it to ignore repeats.
+- **Claims use a lease, not an open transaction.** A worker marks a batch as claimed with `FOR UPDATE SKIP LOCKED`, commits, then sends. Holding a transaction during network calls would hold locks and hit `transaction_timeout`. If a worker dies, its lease expires and the events are claimed again.
+- **Failures retry with backoff.** After `max_attempts`, an event is marked `failed` and kept, never dropped. `pool_stats()` reports pending, failed and oldest-pending age, and `morm-admin outbox retry ID` runs it again.
+- **Order isn't guaranteed by default,** because workers run in parallel. `tx.emit_keyed("order_placed", &order.id, &event)` delivers events with the same key in order, one at a time, which costs some throughput.
+- **Workers poll,** using a partial index on pending events, so an idle check is one small query. `NOTIFY` isn't used, because it takes a global lock at commit, which limits write throughput.
+- **Cleanup:** delivered events are deleted in batches after `retention`, so the table stays small.
+- **Separate worker process:** use `Db::connect_as("jobs")`, as for other jobs.
+- The app role needs read and write access on the table, so it's a normal managed table in the app's schema, not in `_morm`.
 
 ## 10. Migrations
 
@@ -1293,6 +1333,12 @@ Migration tests:
 - **Full chain:** all up → all down → all up on Postgres 15–18.
 - **Fuzzing:** step parser and `meta.json`.
 
+Outbox tests:
+
+- **Fault injection:** kill the process and the worker at every point: before commit (no event), after commit (delivered), and after send before recording (delivered twice, same `e.id`).
+- **Concurrency:** rival workers never hold one event at once while a lease is valid, expired leases return, and keyed events stay in order.
+- **Failures:** backoff, `max_attempts`, `failed` events kept, `retry`, and cleanup after `retention`.
+
 ### GitHub Actions (`.github/workflows/`)
 
 | Workflow | When | Runs |
@@ -1340,6 +1386,8 @@ One compact, complete file at the repo root. It must be enough to use morm effic
 | `mgr revert ID` | You must undo a migration in production |
 | `rollback --production` | `revert` can't work and you accept the risk; a reason is required |
 | `mgr squash --to ID` | The chain has grown long, and every database has passed `ID` |
+| `tx.emit` | An event must not be lost if the app crashes; use `after_commit` when losing one is acceptable |
+| `tx.emit_keyed` | Events about the same thing must arrive in order |
 | `keep_case` | You're matching an existing mixed-case table or column |
 | `tx.get_for_update` | Your logic must see the current row before changing it, and `set_expr` can't express it |
 | `#[col(version)]` | Users edit a row over time, and a stale save must fail, not overwrite |
@@ -1379,7 +1427,7 @@ One compact, complete file at the repo root. It must be enough to use morm effic
 6. Models: bases, every `#[model]` and `#[col]` option in tables.
 7. `get`, `insert`, `update`, `delete`, lists, `filter_cols`, pagination, batches, lost updates, raw SQL with `db.sql()`, transactions, and which of `Decimal`, `Numeric` or `bigint` to use.
 8. Views, groups, validation.
-9. Hooks, with a table of what each receives and this line: "update and delete hooks never see a row unless you fetch it."
+9. Hooks, with a table of what each receives and this line: "update and delete hooks never see a row unless you fetch it." Then `after_commit` versus the outbox.
 10. JSON output and schemas.
 11. Pool and `morm.toml`: every setting, sizing, and the rule for long-running work: "use `db` for everything, including jobs and crons, and use `db.hold()` only when you need session state." It states plainly that service jobs, crons and background workers running as their own process must not spawn a pool with `min` above 1, and shows `connect_as`, `MORM_POOL` and `MORM_POOL_MIN`. It includes the full environment variable table. It also shows the jobs table, the `db.hold()` lifecycle, and when a websocket needs a listener: "release when you're done, and rely on Drop as the safety net, never as the plan."
 12. Migrations: workflow, every command in one table, safety rules, production being forward only with `revert`, running as a deploy step, triggers and functions.
@@ -1396,7 +1444,7 @@ One compact, complete file at the repo root. It must be enough to use morm effic
 4. **Migration execution:** ledger, steps, fingerprint gates, advisory lock, timeouts, preflight, crash recovery, fault-injection suite.
 5. **Migration safety:** safe forms, batched backfills, retire and purge, production mode, `revert`, `squash`, decisions, `lint`, `rehearse`, expand/contract, `check_schema()`.
 6. **Managed objects:** views, materialized views, functions, procedures, triggers, policies, grants, enums and domains, with dependency recreation.
-7. **Hooks:** `Changes`, `Target`, all hooks, `validate`, `validate_changes`, `after_commit`, automatic transactions.
+7. **Hooks and outbox:** `Changes`, `Target`, all hooks, `validate`, `validate_changes`, `after_commit`, automatic transactions, `pg_outbox!`, `emit`, the worker and `morm-admin outbox`.
 8. **`morm-admin`:** `init`, `doctor`, `import`, `scratch`, `morm-mgr` packaging, Axum template.
 9. **Query safety:** `sql!`, `check-sql`, upsert, UNNEST and COPY, `#[morm::test]`.
 10. **Remaining features:** UUIDv7, `tls`, schemas and `utoipa`, optimistic locking, tracing, typed FKs, settings, pipelined transactions.
@@ -1419,7 +1467,7 @@ One compact, complete file at the repo root. It must be enough to use morm effic
 
 ### Later
 
-Shared reads: a small opt-in lane that pipelines primary-key reads on a few connections, added only if a benchmark shows real gains with no worse p99 under mixed load. Also partitioning, a `dynamic` registry for by-name admin CRUD, sensitive-column prompts in `import`, and a provided transactional outbox (table and worker) for events that must survive a crash between commit and `after_commit`.
+Shared reads: a small opt-in lane that pipelines primary-key reads on a few connections, added only if a benchmark shows real gains with no worse p99 under mixed load. Also partitioning, a `dynamic` registry for by-name admin CRUD, sensitive-column prompts in `import`.
 
 ### Confirmed for after 0.1
 
