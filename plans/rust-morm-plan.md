@@ -264,11 +264,14 @@ pub struct Product {
 
 ### Table and column names
 
-Generated SQL always quotes every table and column name, so reserved words like `order` and `type` work as they are. Quoting makes Postgres case-sensitive: unquoted names fold to lowercase, so `userID` in hand-written SQL means `userid`, while `"userID"` is a different column.
+Generated SQL always quotes every table and column name, so reserved words like `order` and `type` work as they are.
 
-- **Names are stored exactly as written,** and the default `table` and `name` are lowercase snake_case, which behave the same quoted or unquoted.
-- **Mixed-case names work** when you set them, as in `#[col(name = "userID")]`, and `import` keeps existing ones.
-- `lint` warns about mixed-case names, because hand-written SQL must then quote them. `sql!` with `F` constants quotes for you, and `check-sql` catches the mistake in registered queries.
+**Names are lowercase only.** Postgres folds unquoted names to lowercase but keeps quoted ones exactly, so `userID` in hand-written SQL means `userid`, while `"userID"` is a different column. With lowercase names, quoted and unquoted always match, and the trap can't happen.
+
+- An uppercase letter in `table` or `name` is a compile error. The defaults are already lowercase snake_case.
+- morm can't treat everything as lowercase, because `"userID"` and `userid` are separate names in Postgres, and folding one would point at a column that doesn't exist.
+- `keep_case` is the exception for existing tables, as in `#[col(name = "userID", keep_case)]`. `import` adds it automatically. Hand-written SQL must then quote the name, and `check-sql` catches the mistake in registered queries.
+- Generated constraint and index names keep their `__UNQ_` style, because only morm uses them.
 - A table or column name over 63 bytes is a compile error, because Postgres would silently cut it.
 
 ### Bases
@@ -311,7 +314,8 @@ pub struct Invoice { pub total: Decimal }       // invoice.tenant_id is a plain 
 
 | Option | Meaning |
 |---|---|
-| `table` | table name (default: snake_case of the struct name) |
+| `table` | table name (default: snake_case of the struct name); lowercase only unless `keep_case` is set |
+| `keep_case` | allow uppercase in an existing table's name |
 | `base` | `"common"`, `"common_uuid"`, `"pk_only"`, `"pk_uuid_only"`, `"bare"`, or a `#[morm::base]` type |
 | `ordering` | default sort, `-` prefix for descending |
 | `was` | previous table name (rename hint for migrations) |
@@ -345,7 +349,8 @@ pub struct Invoice { pub total: Decimal }       // invoice.tenant_id is a plain 
 | `skip_json_if` | omit a value from JSON output when a function returns true |
 | `help` | description, used in schemas |
 | `auto_now` | set to `now()` on every update |
-| `name` | column name override, for example `type_` with `name = "type"` |
+| `name` | column name override, for example `type_` with `name = "type"`; lowercase only unless `keep_case` is set |
+| `keep_case` | allow uppercase in an existing column's name |
 | `was` | previous column name (rename hint) |
 
 ### Type inference
@@ -1226,7 +1231,7 @@ The compiler can't see a query inside a loop, so that one is caught in tests and
 Tests are written with the code: **a milestone isn't done until its tests pass in CI.**
 
 - **Unit:** macro output, SQL generation, diff, naming.
-- **Compile-fail (`trybuild`):** every compile-time guarantee, including hidden view fields, `HasPk`, unfiltered update and delete, update with no `.set()`, list with no limit, `self` absent in update and delete hooks, non-static `q()` and `sql()`, unknown group names, scoped groups on `#[model(groups)]`, a scoped mask on another model, duplicate indexes, duplicate base fields, over-long and colliding names, `Decimal` and float on unsuitable `numeric` columns.
+- **Compile-fail (`trybuild`):** every compile-time guarantee, including hidden view fields, `HasPk`, unfiltered update and delete, update with no `.set()`, list with no limit, `self` absent in update and delete hooks, non-static `q()` and `sql()`, uppercase names without `keep_case`, unknown group names, scoped groups on `#[model(groups)]`, a scoped mask on another model, duplicate indexes, duplicate base fields, over-long and colliding names, `Decimal` and float on unsuitable `numeric` columns.
 - **Integration on real Postgres:** insert, every get, update and delete form, views, groups, hook inputs (`Changes`, `Target`), hooks order, the loop detector, `after_commit` on commit and skip on rollback, all list and JSON paths, pool growth and idle shrinking, `max_connections` adjustment, `db.hold()` release on every exit path, `ConnectionLost`, cancellation, forced deadlocks in both kinds, swallowed errors never reporting a commit, `CommitUnknown`, savepoint behaviour after deadlocks, single-statement and transaction retry limits, every timeout, cancelled queries releasing their locks, `max_holds`, `.lock_ordered()` and bulk writes under concurrent load, advisory key stability, `skip_locked` with rival workers, `.in_batches` stopping and resuming, keyset pages under concurrent writes and with mixed sort directions, tampered cursors, `order_by_allowed`, `.custom_plan()`, connections discarded on `25006`.
 - **Property tests:** random models and data round-trip through insert, read and JSON.
 - **Doc tests:** every README and doc example compiles and runs.
@@ -1282,6 +1287,7 @@ One compact, complete file at the repo root. It must be enough to use morm effic
 | Call | Use this when |
 |---|---|
 | `.allow_missing()` | You will not handle a 0-row error |
+| `keep_case` | You're matching an existing mixed-case table or column |
 | `tx.get_for_update` | Your logic must see the current row before changing it, and `set_expr` can't express it |
 | `#[col(version)]` | Users edit a row over time, and a stale save must fail, not overwrite |
 | `.in_batches(n)` | You change so many rows that one statement would hold locks too long, and it needn't be atomic |
@@ -1359,7 +1365,11 @@ One compact, complete file at the repo root. It must be enough to use morm effic
 
 ### Later
 
-Shared reads: a small opt-in lane that pipelines primary-key reads on a few connections, added only if a benchmark shows real gains with no worse p99 under mixed load. Also automatic read routing with `db.read()` and `db.write()`, including replica lag tracking so reads after a write stay correct, `schema = "x"`, partitioning, a `dynamic` registry for by-name admin CRUD, sensitive-column prompts in `import`.
+Shared reads: a small opt-in lane that pipelines primary-key reads on a few connections, added only if a benchmark shows real gains with no worse p99 under mixed load. Also `schema = "x"`, partitioning, a `dynamic` registry for by-name admin CRUD, sensitive-column prompts in `import`.
+
+### Confirmed for after 0.1
+
+Features we will build are in `later-defo-build.plan`: automatic read routing so far.
 
 ### Later: field-level encryption
 
