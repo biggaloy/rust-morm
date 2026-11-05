@@ -32,13 +32,13 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 
 | ID | Option | Meaning |
 |---|---|---|
-| R-0175 | `min`, `max`, `len`, `choices`, `clean`, `blocking`, `db_check` | validation (section 6) |
+| R-0176 | `min`, `max`, `len`, `choices`, `clean`, `blocking`, `db_check` | validation (section 6) |
 
 ### Validation
 
-**R-0290** One mechanism, instead of python-morm's overlapping `validator`, `modifier` and `_clean_*`. The compiler replaces type checks, native decoding replaces JSON modifiers, and the rest is declarative rules or `clean`.
+**R-0291** One mechanism, instead of python-morm's overlapping `validator`, `modifier` and `_clean_*`. The compiler replaces type checks, native decoding replaces JSON modifiers, and the rest is declarative rules or `clean`.
 
-**R-0291**
+**R-0292**
 
 ```rust
 #[col(min = 1, max = 100)]            pub qty: i32,      // declarative, generated inline
@@ -47,8 +47,8 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 #[col(clean = "hash_password", blocking)] pub password: String,  // fn(T) -> Result<T>
 ```
 
-- **R-0294** **No function pointers per field.** Everything is static and inlined, and a field without rules generates no code.
-- **R-0301** `db_check` also emits a declarative rule as a real `CHECK` constraint.
+- **R-0295** **No function pointers per field.** Everything is static and inlined, and a field without rules generates no code.
+- **R-0302** `db_check` also emits a declarative rule as a real `CHECK` constraint.
 
 ## Test obligations
 

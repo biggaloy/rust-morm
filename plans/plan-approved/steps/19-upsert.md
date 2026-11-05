@@ -48,32 +48,32 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 
 | ID | Option | Meaning |
 |---|---|---|
-| R-0181 | `insert_only` | written by `insert`, then never changed: left out of `upsert` updates, and `.set()`, `set_expr`, `update_each`, `.update_only` or a `patch` naming it is a compile error. Bases set it on `created_at`, and custom bases use it the same way |
+| R-0182 | `insert_only` | written by `insert`, then never changed: left out of `upsert` updates, and `.set()`, `set_expr`, `update_each`, `.update_only` or a `patch` naming it is a compile error. Bases set it on `created_at`, and custom bases use it the same way |
 
 ### Reading and writing / Insert and update
 
-- **R-0345** A large `upsert` uses `UNNEST` in chunks in one transaction, because `COPY` can't handle conflicts.
-- **R-0362** `upsert` also increments a `version` column.
-- **R-0369** Afterwards morm knows what happened, through `RETURNING old.ctid IS NULL` on Postgres 18 and later, and `RETURNING (xmax = 0)` before it. `ctid` works for every model, because a user column can't be trusted here: a model may have no primary key, and under `NULLS NOT DISTINCT` a NULL key column can conflict, which would report an update as an insert. That second form is undocumented but long established, and CI proves it on 15–17. `upsert` returns `Inserted`, `Updated` or `Unchanged`.
-- **R-0376** Conflict targets can be one column, a tuple as in `(F.vendor_id, F.sku)`, or a generated unique key such as `Product::UK.lower_email`, which is the only way to target an expression unique index.
-- **R-0377** **An upsert only overwrites what the row supplies.** A field left out of the `INSERT` isn't in the `DO UPDATE SET` list, because `EXCLUDED.col` would hold the column's default and reset an existing value. The list also leaves out the conflict target, the primary key and `insert_only` columns, decided by attributes and never by name, and `updated_at` and `auto_now` columns get `now()`. `None` on a nullable column with no default is a value, so it writes NULL. `.update_only(&[F.price, F.stock])` narrows the list further, for upserts that must leave everything else alone.
-- **R-0378** **Conflict targets are checked at compile time.** The target must match a unique constraint or unique index, or it's a compile error, and so is a deferrable constraint, which Postgres refuses as an arbiter. The model macro emits a marker per unique key, and `upsert` requires it. Two partial unique indexes on the same columns with different filters make the columns ambiguous, which is a compile error asking for the `UK` name. For a partial unique index, the macro adds its `filter` as the `WHERE` of the `ON CONFLICT` clause, because Postgres doesn't match that index otherwise.
-- **R-0379** **An upsert with nothing to update still returns the row.** When the `SET` list is empty, it runs `DO NOTHING`, which writes nothing but returns no row on a conflict, then `SELECT`s by the conflict target, including any `filter`. That's a second round trip only on a conflict. If the row was deleted between the two, the upsert retries once. This path takes no row lock, unlike an upsert with a `SET` list, so inside a transaction use `tx.get_for_update` if you need one. A no-op `SET` was rejected, because it locks the row and writes a new row version on every call.
-- **R-0945** `db.upsert_many(&mut rows, target)` is the batch form of `upsert`, taking the same conflict targets. It's the call the plan's "batch upsert" and "`upsert` batches" mean.
-- **R-0946** Array columns work through `upsert` and `upsert_many` the same way as `insert_many`.
+- **R-0346** A large `upsert` uses `UNNEST` in chunks in one transaction, because `COPY` can't handle conflicts.
+- **R-0363** `upsert` also increments a `version` column.
+- **R-0370** Afterwards morm knows what happened, through `RETURNING old.ctid IS NULL` on Postgres 18 and later, and `RETURNING (xmax = 0)` before it. `ctid` works for every model, because a user column can't be trusted here: a model may have no primary key, and under `NULLS NOT DISTINCT` a NULL key column can conflict, which would report an update as an insert. That second form is undocumented but long established, and CI proves it on 15–17. `upsert` returns `Inserted`, `Updated` or `Unchanged`.
+- **R-0377** Conflict targets can be one column, a tuple as in `(F.vendor_id, F.sku)`, or a generated unique key such as `Product::UK.lower_email`, which is the only way to target an expression unique index.
+- **R-0378** **An upsert only overwrites what the row supplies.** A field left out of the `INSERT` isn't in the `DO UPDATE SET` list, because `EXCLUDED.col` would hold the column's default and reset an existing value. The list also leaves out the conflict target, the primary key and `insert_only` columns, decided by attributes and never by name, and `updated_at` and `auto_now` columns get `now()`. `None` on a nullable column with no default is a value, so it writes NULL. `.update_only(&[F.price, F.stock])` narrows the list further, for upserts that must leave everything else alone.
+- **R-0379** **Conflict targets are checked at compile time.** The target must match a unique constraint or unique index, or it's a compile error, and so is a deferrable constraint, which Postgres refuses as an arbiter. The model macro emits a marker per unique key, and `upsert` requires it. Two partial unique indexes on the same columns with different filters make the columns ambiguous, which is a compile error asking for the `UK` name. For a partial unique index, the macro adds its `filter` as the `WHERE` of the `ON CONFLICT` clause, because Postgres doesn't match that index otherwise.
+- **R-0380** **An upsert with nothing to update still returns the row.** When the `SET` list is empty, it runs `DO NOTHING`, which writes nothing but returns no row on a conflict, then `SELECT`s by the conflict target, including any `filter`. That's a second round trip only on a conflict. If the row was deleted between the two, the upsert retries once. This path takes no row lock, unlike an upsert with a `SET` list, so inside a transaction use `tx.get_for_update` if you need one. A no-op `SET` was rejected, because it locks the row and writes a new row version on every call.
+- **R-0946** `db.upsert_many(&mut rows, target)` is the batch form of `upsert`, taking the same conflict targets. It's the call the plan's "batch upsert" and "`upsert` batches" mean.
+- **R-0947** Array columns work through `upsert` and `upsert_many` the same way as `insert_many`.
 
 ### Hard to misuse
 
 | ID | Mistake | Caught by |
 |---|---|---|
-| R-0777 | An upsert resetting columns the row didn't supply | Only supplied columns are in `DO UPDATE SET` |
-| R-0781 | An `upsert` target with no matching unique key | Compile error |
+| R-0778 | An upsert resetting columns the row didn't supply | Only supplied columns are in `DO UPDATE SET` |
+| R-0782 | An `upsert` target with no matching unique key | Compile error |
 
 ### README.md
 
 | ID | Call | Use this when |
 |---|---|---|
-| R-0881 | `insert_only` | A column is set once on insert and must never change afterwards |
+| R-0882 | `insert_only` | A column is set once on insert and must never change afterwards |
 
 ## Test obligations
 

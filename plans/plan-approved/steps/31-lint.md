@@ -31,24 +31,24 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 
 ### Crates and tools / Configuration: `morm.toml`
 
-**R-0109** `lint` warns about a `SECURITY DEFINER` function with no `SET search_path` of its own.
+**R-0110** `lint` warns about a `SECURITY DEFINER` function with no `SET search_path` of its own.
 
 ### Views and groups / Public input and output
 
-- **R-0262** `lint` warns about columns named like `password`, `token`, `secret` or `api_key` that aren't `secret`, hidden or write-only.
+- **R-0263** `lint` warns about columns named like `password`, `token`, `secret` or `api_key` that aren't `secret`, hidden or write-only.
 
 ### Indexes
 
-- **R-0317** `morm-admin mgr lint` warns about foreign key columns without an index, and redundant indexes such as a hash and a btree on one column, or an index on `a` when one on `a, b` exists.
+- **R-0318** `morm-admin mgr lint` warns about foreign key columns without an index, and redundant indexes such as a hash and a btree on one column, or an index on `a` when one on `a, b` exists.
 
 ### Reading and writing / Decimal
 
-- **R-0426** **Unbounded `numeric`** with `Decimal`: `lint` warns.
+- **R-0427** **Unbounded `numeric`** with `Decimal`: `lint` warns.
 
 ### Migrations / Commands
 
-- **R-0618** `lint`: statement risk, in the style of `squawk`, plus index advice. With `--url` it reads real table sizes and reports risky operations only on tables big enough to matter.
-- **R-0954** `morm-admin mgr <command>` runs migration and schema work, and each `mgr` command lives in its own module.
+- **R-0619** `lint`: statement risk, in the style of `squawk`, plus index advice. With `--url` it reads real table sizes and reports risky operations only on tables big enough to matter.
+- **R-0955** `morm-admin mgr <command>` runs migration and schema work, and each `mgr` command lives in its own module.
 
 ## Test obligations
 

@@ -30,9 +30,9 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 
 ### Migrations / Triggers, functions and other objects
 
-**R-0529** They live next to the model they belong to. Objects are ordinary Rust items, auto-registered with no central list. Short ones go inline. Long ones go in a real `.sql` file beside the module, so editors highlight them and they can be pasted into `psql`.
+**R-0530** They live next to the model they belong to. Objects are ordinary Rust items, auto-registered with no central list. Short ones go inline. Long ones go in a real `.sql` file beside the module, so editors highlight them and they can be pasted into `psql`.
 
-**R-0530**
+**R-0531**
 
 ```
 src/users/
@@ -42,7 +42,7 @@ src/users/
     └── active_users.sql
 ```
 
-**R-0531**
+**R-0532**
 
 ```rust
 // src/users/mod.rs
@@ -59,9 +59,9 @@ morm::pg_grant!(on = User, "SELECT, UPDATE TO app_rw");
 pub struct ActiveUser { pub id: i64, pub email: String }
 ```
 
-- **R-0532** `file` paths are relative to the Rust file, like `include_str!`, so editing the SQL triggers a rebuild.
-- **R-0533** `on = User` is a real type reference, so a typo fails to compile and table renames carry through.
-- **R-0536** **These definitions never reach the app binary.** They're compiled only into `morm-mgr`.
+- **R-0533** `file` paths are relative to the Rust file, like `include_str!`, so editing the SQL triggers a rebuild.
+- **R-0534** `on = User` is a real type reference, so a typo fails to compile and table renames carry through.
+- **R-0537** **These definitions never reach the app binary.** They're compiled only into `morm-mgr`.
 
 ## Test obligations
 

@@ -31,32 +31,32 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 
 ### Migrations / Principles
 
-- **R-0522** Never trust generated SQL until it has run.
-- **R-0523** Check the real database before and after every migration.
-- **R-0524** Every failure has a defined state and a way forward, including a killed process.
-- **R-0525** Down is a first-class product: dropped data is kept where possible.
-- **R-0526** Nothing destructive is guessed.
+- **R-0523** Never trust generated SQL until it has run.
+- **R-0524** Check the real database before and after every migration.
+- **R-0525** Every failure has a defined state and a way forward, including a killed process.
+- **R-0526** Down is a first-class product: dropped data is kept where possible.
+- **R-0527** Nothing destructive is guessed.
 
 ### Migrations / Source of truth
 
-- **R-0546** Diff into typed operations.
+- **R-0547** Diff into typed operations.
 
-**R-0547** Column position isn't compared.
+**R-0548** Column position isn't compared.
 
 ### Migrations / Typed operations
 
-**R-0550** The diff yields `Op` values, not SQL strings. Each declares:
+**R-0551** The diff yields `Op` values, not SQL strings. Each declares:
 
 | ID | Property | Use |
 |---|---|---|
-| R-0551 | forward SQL | up step |
-| R-0552 | inverse op | down exists **by construction** |
-| R-0553 | lock level, rewrite, scan | `lint`, `--plan`, ordering |
-| R-0554 | transaction mode | `tx`, `no-tx`, `batch` |
-| R-0555 | data effect | `none`, `retires`, `lossy`, `irreversible` |
-| R-0556 | precondition | catalog check that makes re-running safe |
+| R-0552 | forward SQL | up step |
+| R-0553 | inverse op | down exists **by construction** |
+| R-0554 | lock level, rewrite, scan | `lint`, `--plan`, ordering |
+| R-0555 | transaction mode | `tx`, `no-tx`, `batch` |
+| R-0556 | data effect | `none`, `retires`, `lossy`, `irreversible` |
+| R-0557 | precondition | catalog check that makes re-running safe |
 
-**R-0557** The planner topologically sorts ops (foreign key cycles are resolved by adding constraints last), takes table locks in a consistent order to avoid deadlocks, and groups ops into **steps**, each with its own transaction boundary.
+**R-0558** The planner topologically sorts ops (foreign key cycles are resolved by adding constraints last), takes table locks in a consistent order to avoid deadlocks, and groups ops into **steps**, each with its own transaction boundary.
 
 ## Test obligations
 

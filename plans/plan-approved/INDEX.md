@@ -109,9 +109,9 @@ The coordinator stays thin: it reads this file and never reads code.
 
 ## Decisions since the split
 
-- **`morm-core` added:** a sixth crate for config loading, the name and budget functions and manifest types, because `morm-migrate` and `morm-admin` can't depend on `morm` but need all three. The owner should confirm this.
-- **Open, for the owner:** Rust data hooks (step 41) have no place to run, because `morm-admin` can't link a project's code. See that step.
-- **`db.upsert_many` named:** the plan said "batch upsert" with no call. The owner should confirm the name.
+- **`morm-core` added:** a sixth crate for config loading, the name and budget functions and manifest types, because `morm-migrate` and `morm-admin` can't depend on `morm` but need all three. Confirmed by the owner.
+- **Rust data hooks run from `morm-mgr`:** owner decision. `migrate --hooks ./morm-mgr` calls a binary built in CI and shipped with the migrations, so `morm-mgr` is no longer print-only. Dropping hooks from 0.1 was the alternative.
+- **`db.upsert_many` named:** the plan said "batch upsert" with no call. Confirmed by the owner.
 - **`morm::pg_outbox!()` given its own requirement,** because the only text about it was an example.
 - **Doctor, `lint` and `import` rules gathered:** sentences about them moved from their topic into those tools' own steps, so no earlier step depends on a later tool.
 
@@ -121,61 +121,61 @@ Superseded milestones, later work and build decisions, kept for traceability. No
 
 ### Milestones
 
-- **R-0902** **Repo bootstrap:** workspace in `biggaloy/rust-morm`, CI workflows, README skeleton.
-- **R-0903** **Core models:** macro, `schema`, every integer type with range CHECKs, bases including `#[morm::base]`, index and name rules, views, global and model-scoped groups, declarative rules and `clean`, inference, `F`, compile-time checks.
-- **R-0904** **Runtime:** `morm.toml` and environment variables, `morm::Pool` on the `deadpool` core (start with a quick proof-of-concept), `[server]`, dynamic size, named pools, `max_connections` adjustment, `db.hold()`, bounded `statement_cache` and `shape_cache`, insert, `get`/`update`/`delete` forms, `patch` views and `.apply()`, query builder, `filter_cols`, `db.sql()` and `#[derive(morm::Row)]`, `keyset`, `.in_batches`, `order_by_allowed`, `.custom_plan()`, `get_for_update`, failover handling, `Decimal` and `Numeric`, loop detector, typed errors, transactions, deadlock measures, all list and JSON paths, calibrated per-connection memory figures for `size`. → **First publish** (`0.1.0-alpha`).
-- **R-0905** **Migration foundation:** `Schema` IR, catalog reader, diff, typed ops with inverses, scratch, proof pipeline.
-- **R-0906** **Migration execution:** ledger, steps, fingerprint gates, advisory lock, timeouts, preflight, crash recovery, fault-injection suite.
-- **R-0907** **Migration safety:** safe forms, batched backfills, retire and purge, production mode, `revert`, `squash`, decisions, `lint`, `rehearse`, expand/contract, `check_schema()`.
-- **R-0908** **Managed objects:** views, materialized views, functions, procedures, triggers, policies, grants, enums and domains, with dependency recreation.
-- **R-0909** **Hooks and outbox:** `Changes`, `Target`, all hooks, `validate`, `validate_changes`, `after_commit`, automatic transactions, `pg_outbox!`, `emit`, the worker and `morm-admin outbox`.
-- **R-0910** **`morm-admin`:** `init`, `doctor`, `import`, `scratch`, `size`, `morm-mgr` packaging, Axum template.
-- **R-0911** **Query safety:** `sql!`, `check-sql`, upsert, UNNEST and COPY, `#[morm::test]`.
-- **R-0912** **Remaining features:** UUIDv7, `tls`, schemas and `utoipa`, optimistic locking, tracing, `metrics`, `[telemetry]`, `.tag()`, typed FKs, settings, pipelined transactions.
-- **R-0913** **Benchmarks, lock-order detector, hardening, full README, 0.1.0 release.**
+- **R-0903** **Repo bootstrap:** workspace in `biggaloy/rust-morm`, CI workflows, README skeleton.
+- **R-0904** **Core models:** macro, `schema`, every integer type with range CHECKs, bases including `#[morm::base]`, index and name rules, views, global and model-scoped groups, declarative rules and `clean`, inference, `F`, compile-time checks.
+- **R-0905** **Runtime:** `morm.toml` and environment variables, `morm::Pool` on the `deadpool` core (start with a quick proof-of-concept), `[server]`, dynamic size, named pools, `max_connections` adjustment, `db.hold()`, bounded `statement_cache` and `shape_cache`, insert, `get`/`update`/`delete` forms, `patch` views and `.apply()`, query builder, `filter_cols`, `db.sql()` and `#[derive(morm::Row)]`, `keyset`, `.in_batches`, `order_by_allowed`, `.custom_plan()`, `get_for_update`, failover handling, `Decimal` and `Numeric`, loop detector, typed errors, transactions, deadlock measures, all list and JSON paths, calibrated per-connection memory figures for `size`. → **First publish** (`0.1.0-alpha`).
+- **R-0906** **Migration foundation:** `Schema` IR, catalog reader, diff, typed ops with inverses, scratch, proof pipeline.
+- **R-0907** **Migration execution:** ledger, steps, fingerprint gates, advisory lock, timeouts, preflight, crash recovery, fault-injection suite.
+- **R-0908** **Migration safety:** safe forms, batched backfills, retire and purge, production mode, `revert`, `squash`, decisions, `lint`, `rehearse`, expand/contract, `check_schema()`.
+- **R-0909** **Managed objects:** views, materialized views, functions, procedures, triggers, policies, grants, enums and domains, with dependency recreation.
+- **R-0910** **Hooks and outbox:** `Changes`, `Target`, all hooks, `validate`, `validate_changes`, `after_commit`, automatic transactions, `pg_outbox!`, `emit`, the worker and `morm-admin outbox`.
+- **R-0911** **`morm-admin`:** `init`, `doctor`, `import`, `scratch`, `size`, `morm-mgr` packaging, Axum template.
+- **R-0912** **Query safety:** `sql!`, `check-sql`, upsert, UNNEST and COPY, `#[morm::test]`.
+- **R-0913** **Remaining features:** UUIDv7, `tls`, schemas and `utoipa`, optimistic locking, tracing, `metrics`, `[telemetry]`, `.tag()`, typed FKs, settings, pipelined transactions.
+- **R-0914** **Benchmarks, lock-order detector, hardening, full README, 0.1.0 release.**
 
 ### Risks, open items and later work / Risks
 
-- **R-0914** **Managed objects:** functions, triggers and policies with exact inverses are the hardest engine work.
-- **R-0917** **Scope:** migrations alone outweigh the runtime.
+- **R-0915** **Managed objects:** functions, triggers and policies with exact inverses are the hardest engine work.
+- **R-0918** **Scope:** migrations alone outweigh the runtime.
 
 ### Risks, open items and later work / Later
 
-**R-0919** Shared reads: a small opt-in lane that pipelines primary-key reads on a few connections, added only if a benchmark shows real gains with no worse p99 under mixed load. Also partitioning, a `dynamic` registry for by-name admin CRUD, sensitive-column prompts in `import`, exclusion constraints on models, and `morm-admin size --live`, which compares the estimate with `pg_stat_activity` and live pool figures to spot oversized pools.
+**R-0920** Shared reads: a small opt-in lane that pipelines primary-key reads on a few connections, added only if a benchmark shows real gains with no worse p99 under mixed load. Also partitioning, a `dynamic` registry for by-name admin CRUD, sensitive-column prompts in `import`, exclusion constraints on models, and `morm-admin size --live`, which compares the estimate with `pg_stat_activity` and live pool figures to spot oversized pools.
 
 ### Risks, open items and later work / Confirmed for after 0.1
 
-**R-0920** Features we will build are in `later-defo-build.plan`: automatic read routing and online key type changes across foreign keys.
+**R-0921** Features we will build are in `later-defo-build.plan`: automatic read routing and online key type changes across foreign keys.
 
 ### Risks, open items and later work / Not carried over from python-morm
 
-- **R-0924** **`save`:** replaced by explicit `insert` and `update`.
-- **R-0925** **`exclude_values_up/down`:** rarely useful, and it would make insert SQL vary per row. `Option` `None` already defers to the DB default, and `skip_json_if` covers output. It can come back if a real need appears.
-- **R-0926** **`validator` and `modifier`:** replaced by the type system, native decoding, and declarative rules.
-- **R-0927** **`pre_save` and `post_save`:** removed with `save`.
+- **R-0925** **`save`:** replaced by explicit `insert` and `update`.
+- **R-0926** **`exclude_values_up/down`:** rarely useful, and it would make insert SQL vary per row. `Option` `None` already defers to the DB default, and `skip_json_if` covers output. It can come back if a real need appears.
+- **R-0927** **`validator` and `modifier`:** replaced by the type system, native decoding, and declarative rules.
+- **R-0928** **`pre_save` and `post_save`:** removed with `save`.
 
 ### How this gets built
 
-**R-0928** After the final review, this plan is split into `plans/plan-approved/`:
+**R-0929** After the final review, this plan is split into `plans/plan-approved/`:
 
-- **R-0929** `INDEX.md`: order, dependencies, what can run in parallel, and status.
-- **R-0930** `rules.md`: how every step works and when it counts as done.
-- **R-0931** `contracts.md`: shared types and signatures that parallel steps rely on.
-- **R-0932** `coverage.md`: every requirement, by ID, mapped to its step and tests. A script fails if a requirement has no step or no test.
-- **R-0933** `steps/`: one self-contained file per step, about 26 in total, small enough for one fresh session.
+- **R-0930** `INDEX.md`: order, dependencies, what can run in parallel, and status.
+- **R-0931** `rules.md`: how every step works and when it counts as done.
+- **R-0932** `contracts.md`: shared types and signatures that parallel steps rely on.
+- **R-0933** `coverage.md`: every requirement, by ID, mapped to its step and tests. A script fails if a requirement has no step or no test.
+- **R-0934** `steps/`: one self-contained file per step, about 26 in total, small enough for one fresh session.
 
-**R-0934** The first splitting step assigns the requirement IDs, because this file has none.
+**R-0935** The first splitting step assigns the requirement IDs, because this file has none.
 
-**R-0935** **Decisions:**
+**R-0936** **Decisions:**
 
-- **R-0936** `plan-approved/` becomes the working source of truth once it's built. This file is then frozen as the record, so two live copies can't drift apart.
-- **R-0937** Steps and reviews run as subagents, each with fresh context, and each reads only `rules.md`, `contracts.md` and its own step file. A thin coordinating session tracks `INDEX.md`.
-- **R-0938** The owner approves the Foundation PRs. Later PRs merge once CI and an independent review both pass.
+- **R-0937** `plan-approved/` becomes the working source of truth once it's built. This file is then frozen as the record, so two live copies can't drift apart.
+- **R-0938** Steps and reviews run as subagents, each with fresh context, and each reads only `rules.md`, `contracts.md` and its own step file. A thin coordinating session tracks `INDEX.md`.
+- **R-0939** The owner approves the Foundation PRs. Later PRs merge once CI and an independent review both pass.
 
-**R-0939** **Rules for every step:**
+**R-0940** **Rules for every step:**
 
-- **R-0940** The session that writes a step doesn't approve it. A separate one checks the work against the step file.
-- **R-0941** Done means every test passes on Postgres 15–18, with nothing deferred or stubbed.
-- **R-0942** If a step finds the plan is wrong, it stops and asks, and it doesn't improvise.
-- **R-0943** Parallel steps use separate worktrees and branches, and run in parallel only when `contracts.md` covers what they share.
-- **R-0944** The early proofs step comes before anything depends on the risky parts in section 16.
+- **R-0941** The session that writes a step doesn't approve it. A separate one checks the work against the step file.
+- **R-0942** Done means every test passes on Postgres 15–18, with nothing deferred or stubbed.
+- **R-0943** If a step finds the plan is wrong, it stops and asks, and it doesn't improvise.
+- **R-0944** Parallel steps use separate worktrees and branches, and run in parallel only when `contracts.md` covers what they share.
+- **R-0945** The early proofs step comes before anything depends on the risky parts in section 16.

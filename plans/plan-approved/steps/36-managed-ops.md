@@ -33,10 +33,10 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 
 ### Migrations / Triggers, functions and other objects
 
-- **R-0534** A `.sql` file holds the complete `CREATE` statement, plain Postgres. morm has no SQL parser: it runs the statement on scratch and reads what was created from the catalog.
-- **R-0537** **Models over views are read-only.** `#[pg_view]` and `#[pg_view(materialized)]` models have no insert, update or delete, so a write is a compile error. `db.refresh::<T>()` refreshes a materialized view, concurrently when it has a unique index.
-- **R-0538** Macros also generate a typed caller where the signature allows, for example `db.call(archive_users, &days)`.
-- **R-0539** Roles are cluster-wide, so they aren't created. `morm-admin scratch` makes placeholder roles so policies and grants can run on scratch.
+- **R-0535** A `.sql` file holds the complete `CREATE` statement, plain Postgres. morm has no SQL parser: it runs the statement on scratch and reads what was created from the catalog.
+- **R-0538** **Models over views are read-only.** `#[pg_view]` and `#[pg_view(materialized)]` models have no insert, update or delete, so a write is a compile error. `db.refresh::<T>()` refreshes a materialized view, concurrently when it has a unique index.
+- **R-0539** Macros also generate a typed caller where the signature allows, for example `db.call(archive_users, &days)`.
+- **R-0540** Roles are cluster-wide, so they aren't created. `morm-admin scratch` makes placeholder roles so policies and grants can run on scratch.
 
 ## Test obligations
 

@@ -37,19 +37,19 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 
 ### Migrations / What's managed
 
-**R-0527** **Everything an application's schema depends on, from v1:** tables, columns (type, collation, nullability, default, identity, generated, comment), constraints (including deferrable and validated state), indexes, enums, domains, composite types, sequences, extensions, **database views, materialized views, functions, procedures, triggers, RLS policies, and grants** on managed objects.
+**R-0528** **Everything an application's schema depends on, from v1:** tables, columns (type, collation, nullability, default, identity, generated, comment), constraints (including deferrable and validated state), indexes, enums, domains, composite types, sequences, extensions, **database views, materialized views, functions, procedures, triggers, RLS policies, and grants** on managed objects.
 
 ### Migrations / Source of truth
 
-**R-0542** No snapshots. `makemigrations` uses a scratch Postgres (`MORM_SCRATCH_URL`) and never touches staging or production:
+**R-0543** No snapshots. `makemigrations` uses a scratch Postgres (`MORM_SCRATCH_URL`) and never touches staging or production:
 
-- **R-0543** Replay the migration chain into temporary database A.
-- **R-0544** Create the models and objects in temporary database B.
-- **R-0545** Read both through the same catalog queries (`pg_get_viewdef`, `pg_get_functiondef`, `pg_get_triggerdef` and so on) into a typed `Schema` IR, so Postgres normalizes everything.
+- **R-0544** Replay the migration chain into temporary database A.
+- **R-0545** Create the models and objects in temporary database B.
+- **R-0546** Read both through the same catalog queries (`pg_get_viewdef`, `pg_get_functiondef`, `pg_get_triggerdef` and so on) into a typed `Schema` IR, so Postgres normalizes everything.
 
 ### Risks, open items and later work / Risks
 
-- **R-0916** **Scratch databases:** `makemigrations` needs a Postgres where it can `CREATE DATABASE`.
+- **R-0917** **Scratch databases:** `makemigrations` needs a Postgres where it can `CREATE DATABASE`.
 
 ## Test obligations
 

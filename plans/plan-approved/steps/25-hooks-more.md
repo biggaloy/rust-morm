@@ -30,30 +30,30 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 
 ### Reading and writing / Insert and update
 
-- **R-0370** **Hooks and outcome.** `upsert` holds a whole row, so `pre_insert` always runs, before Postgres decides.
-- **R-0371** An insert runs `post_insert` and fires `Inserted(rows)`.
-- **R-0372** An update runs `post_update`, with `Changes` holding the `SET` columns, and fires `Updated`.
-- **R-0373** `pre_update` can't run, because the outcome isn't known yet.
-- **R-0374** `Unchanged` writes nothing, so no post hook or `after_commit` runs.
-- **R-0375** A batch upsert fires one `Upserted { inserted, updated }` event per statement, with counts.
+- **R-0371** **Hooks and outcome.** `upsert` holds a whole row, so `pre_insert` always runs, before Postgres decides.
+- **R-0372** An insert runs `post_insert` and fires `Inserted(rows)`.
+- **R-0373** An update runs `post_update`, with `Changes` holding the `SET` columns, and fires `Updated`.
+- **R-0374** `pre_update` can't run, because the outcome isn't known yet.
+- **R-0375** `Unchanged` writes nothing, so no post hook or `after_commit` runs.
+- **R-0376** A batch upsert fires one `Upserted { inserted, updated }` event per statement, with counts.
 
 ### Reading and writing / Delete
 
-**R-0385** Hooks run once per batch.
+**R-0386** Hooks run once per batch.
 
 ### Hooks / Order
 
 | ID | Operation | Order |
 |---|---|---|
-| R-0494 | `upsert` | `clean` and rules → `pre_insert` → `validate` → **UPSERT** → `post_insert` or `post_update`, or neither if unchanged → *(commit)* → `after_commit` |
+| R-0495 | `upsert` | `clean` and rules → `pre_insert` → `validate` → **UPSERT** → `post_insert` or `post_update`, or neither if unchanged → *(commit)* → `after_commit` |
 
 ### Hooks / Rules
 
-- **R-0499** **`update_each`:** `pre_update` runs once with `Target::Ids` and only the column list. Per-row values go through `clean` and the declarative rules.
+- **R-0500** **`update_each`:** `pre_update` runs once with `Target::Ids` and only the column list. Per-row values go through `clean` and the declarative rules.
 
 ### Performance and memory / `db.hold()`
 
-- **R-0700** **Shutdown:** `db.close()` stops new checkouts, then waits up to `shutdown_timeout` for running transactions, `after_commit` handlers and holds to finish, then closes every connection. Apps call it after they stop accepting requests, so a deploy doesn't roll back work or lose events.
+- **R-0701** **Shutdown:** `db.close()` stops new checkouts, then waits up to `shutdown_timeout` for running transactions, `after_commit` handlers and holds to finish, then closes every connection. Apps call it after they stop accepting requests, so a deploy doesn't roll back work or lose events.
 
 ## Test obligations
 

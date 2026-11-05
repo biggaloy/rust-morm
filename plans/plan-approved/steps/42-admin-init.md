@@ -2,7 +2,7 @@
 
 - **Phase:** Tools
 - **Depends on:** 38, 27, 17, 16
-- **Can run beside:** 08, 23, 26, 39, 41, 47
+- **Can run beside:** 08, 23, 26, 39, 47
 - **Crates:** `morm-admin`, `morm-macros`
 - **PR approval:** CI and an independent review
 
@@ -61,11 +61,11 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 
 | ID | Name | Kind | Job |
 |---|---|---|---|
-| R-0043 | `morm-mgr` | small package in each project | Links your models and prints their schema and queries as JSON. Nothing else |
+| R-0043 | `morm-mgr` | small package in each project | Links your models and prints their schema and queries as JSON. |
 
 ### Crates and tools / `morm-admin`
 
-**R-0056**
+**R-0057**
 
 ```
 morm-admin init [path] [--axum]       # create a project
@@ -77,28 +77,28 @@ morm-admin outbox [list | retry ID]   # inspect failed events, deliver one again
 morm-admin mgr <command>              # migrations and schema work (section 10)
 ```
 
-**R-0057** `init` creates the `morm-mgr` package, `morm-migrations/`, `morm.toml`, `.env.example`, a sample model, and a CI workflow. `--axum` adds the app template and a systemd unit.
+**R-0058** `init` creates the `morm-mgr` package, `morm-migrations/`, `morm.toml`, `.env.example`, a sample model, and a CI workflow. `--axum` adds the app template and a systemd unit.
 
-- **R-0953** `morm-admin init [path] [--axum]`, `morm-admin scratch` to check or create the scratch database, and `morm-admin outbox [list | retry ID]` to inspect failed events and deliver one again.
+- **R-0954** `morm-admin init [path] [--axum]`, `morm-admin scratch` to check or create the scratch database, and `morm-admin outbox [list | retry ID]` to inspect failed events and deliver one again.
 
 ### Crates and tools / Configuration: `morm.toml`
 
-**R-0103** **Detection:** `morm-admin init` finds the socket and writes it into `morm.toml` and `.env.example`, so most projects never set it by hand:
+**R-0104** **Detection:** `morm-admin init` finds the socket and writes it into `morm.toml` and `.env.example`, so most projects never set it by hand:
 
-- **R-0104** Look for `.s.PGSQL.<port>` files in `/var/run/postgresql`, `/run/postgresql` and `/tmp`, plus any path given by `--socket-dir`. The filename also gives the port.
-- **R-0105** If several servers are found, ask which to use. Without a terminal, take the default directory if it's among them, otherwise exit with code `3` and list the choices.
-- **R-0106** If none is found, keep the default and print a warning, with the TCP settings as a commented-out alternative.
-- **R-0107** Once connected, compare with `SHOW unix_socket_directories` and warn on a mismatch.
+- **R-0105** Look for `.s.PGSQL.<port>` files in `/var/run/postgresql`, `/run/postgresql` and `/tmp`, plus any path given by `--socket-dir`. The filename also gives the port.
+- **R-0106** If several servers are found, ask which to use. Without a terminal, take the default directory if it's among them, otherwise exit with code `3` and list the choices.
+- **R-0107** If none is found, keep the default and print a warning, with the TCP settings as a commented-out alternative.
+- **R-0108** Once connected, compare with `SHOW unix_socket_directories` and warn on a mismatch.
 
 ### Hooks / Outbox: events that must not be lost
 
-- **R-0515** `morm-admin outbox retry ID` runs a failed event again.
-- **R-0955** `morm::pg_outbox!()` declares the outbox table as a managed table, tracked by migrations.
+- **R-0516** `morm-admin outbox retry ID` runs a failed event again.
+- **R-0956** `morm::pg_outbox!()` declares the outbox table as a managed table, tracked by migrations.
 
 ### Migrations / Commands
 
-- **R-0620** `baseline`: adopts an existing database as migration zero, without running anything.
-- **R-0952** `baseline`.
+- **R-0621** `baseline`: adopts an existing database as migration zero, without running anything.
+- **R-0953** `baseline`.
 
 ## Test obligations
 

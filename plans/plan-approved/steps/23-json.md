@@ -30,42 +30,42 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 
 ### Crates and tools
 
-- **R-0050** `json` (default): `jsonb` and JSON output
-- **R-0054** `utoipa`: OpenAPI schemas
+- **R-0051** `json` (default): `jsonb` and JSON output
+- **R-0055** `utoipa`: OpenAPI schemas
 
 ### Models / Field options (`#[col(...)]`)
 
 | ID | Option | Meaning |
 |---|---|---|
-| R-0176 | `skip_json_if` | omit a value from JSON output when a function returns true |
-| R-0177 | `json_string` | write an integer as a JSON string (section 8) |
+| R-0177 | `skip_json_if` | omit a value from JSON output when a function returns true |
+| R-0178 | `json_string` | write an integer as a JSON string (section 8) |
 
 ### Models / Type inference
 
-- **R-0203** **JSON:** `u64`, `i128` and `u128` are always JSON strings, because JavaScript clients would lose digits. `json_string` does the same for other integers.
-- **R-0204** **Floats:** JSON has no `NaN` or `Infinity`, so they're written as `null`, and the README says so.
+- **R-0204** **JSON:** `u64`, `i128` and `u128` are always JSON strings, because JavaScript clients would lose digits. `json_string` does the same for other integers.
+- **R-0205** **Floats:** JSON has no `NaN` or `Infinity`, so they're written as `null`, and the README says so.
 
 ### Models / Generated per model
 
-- **R-0218** `json_schema()` is generated per model.
+- **R-0219** `json_schema()` is generated per model.
 
 ### Reading and writing / Decimal
 
-- **R-0428** **JSON:** always a string, such as `"34.50"`, because a JSON number would lose digits in JavaScript clients. `Numeric` follows the same rule.
+- **R-0429** **JSON:** always a string, such as `"34.50"`, because a JSON number would lose digits in JavaScript clients. `Numeric` follows the same rule.
 
 ### Reading and writing / JSON output and schemas
 
-**R-0476** **Rule: data never passes through `serde_json::Value` or a map.** Each path has at most one conversion in each direction.
+**R-0477** **Rule: data never passes through `serde_json::Value` or a map.** Each path has at most one conversion in each direction.
 
-- **R-0477** `user.to_json()`, or `Serialize` from the `json` feature.
-- **R-0479** `ProductRef` also serializes directly, so `fetch_ref` is the path for rows you process and then send.
-- **R-0480** `jsonb` columns can decode as `&RawValue`, so stored JSON is embedded without being parsed and rewritten.
-- **R-0482** **Schema:** `User::json_schema(Up | Down)` as generated static strings, plus optional `utoipa` for OpenAPI.
-- **R-0483** **Large integers:** JavaScript loses digits above 2^53, so `#[col(json_string)]` writes an integer as a JSON string, on every JSON path.
-- **R-0484** Formats are fixed and documented: `Decimal` as a string, timestamps as RFC 3339, `bytea` as base64, `None` as `null`, `jsonb` embedded as JSON.
-- **R-0485** **`fetch_json()` on a model or view follows the same formats.** Postgres would write `numeric` as a JSON number, `bytea` as hex and a float `NaN` as the string `"NaN"`, so generated SQL converts those columns, including `json_string` integers and timestamps, which are always written in UTC. `skip_json_if` is a Rust function that Postgres can't run, so `fetch_json` and `stream_json` on such a model are compile errors. `db.sql(...).fetch_json()` has no model to go by, so Postgres's own formats apply there, and your SQL can cast.
+- **R-0478** `user.to_json()`, or `Serialize` from the `json` feature.
+- **R-0480** `ProductRef` also serializes directly, so `fetch_ref` is the path for rows you process and then send.
+- **R-0481** `jsonb` columns can decode as `&RawValue`, so stored JSON is embedded without being parsed and rewritten.
+- **R-0483** **Schema:** `User::json_schema(Up | Down)` as generated static strings, plus optional `utoipa` for OpenAPI.
+- **R-0484** **Large integers:** JavaScript loses digits above 2^53, so `#[col(json_string)]` writes an integer as a JSON string, on every JSON path.
+- **R-0485** Formats are fixed and documented: `Decimal` as a string, timestamps as RFC 3339, `bytea` as base64, `None` as `null`, `jsonb` embedded as JSON.
+- **R-0486** **`fetch_json()` on a model or view follows the same formats.** Postgres would write `numeric` as a JSON number, `bytea` as hex and a float `NaN` as the string `"NaN"`, so generated SQL converts those columns, including `json_string` integers and timestamps, which are always written in UTC. `skip_json_if` is a Rust function that Postgres can't run, so `fetch_json` and `stream_json` on such a model are compile errors. `db.sql(...).fetch_json()` has no model to go by, so Postgres's own formats apply there, and your SQL can cast.
 
-**R-0486** `fetch_json()` isn't automatically fastest: it moves the CPU work into Postgres, where it occupies a connection. Benchmarks compare it with `fetch_ref()`, and the docs state the result.
+**R-0487** `fetch_json()` isn't automatically fastest: it moves the CPU work into Postgres, where it occupies a connection. Benchmarks compare it with `fetch_ref()`, and the docs state the result.
 
 ## Test obligations
 

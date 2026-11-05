@@ -35,13 +35,13 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 
 ### Reading and writing / Deadlocks
 
-**R-0475** **Lock-order detector:** debug builds and `#[morm::test]` record the order each transaction touches tables, including foreign key locks that can conflict, such as cascades. If one path goes `accounts → orders` and another `orders → accounts`, it reports the cycle, even if no deadlock happened. Unregistered raw SQL is invisible to it, and table-level tracking can give false alarms, so it warns by default.
+**R-0476** **Lock-order detector:** debug builds and `#[morm::test]` record the order each transaction touches tables, including foreign key locks that can conflict, such as cascades. If one path goes `accounts → orders` and another `orders → accounts`, it reports the cycle, even if no deadlock happened. Unregistered raw SQL is invisible to it, and table-level tracking can give false alarms, so it warns by default.
 
 ### Hard to misuse
 
 | ID | Mistake | Caught by |
 |---|---|---|
-| R-0767 | Locks taken in opposite order across transactions | Lock-order detector in debug builds and tests |
+| R-0768 | Locks taken in opposite order across transactions | Lock-order detector in debug builds and tests |
 
 ## Test obligations
 

@@ -30,11 +30,11 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 
 ### Reading and writing / Get
 
-- **R-0335** `tx.get_for_update::<T>(id)` locks the row while reading it, for read-then-write logic. It exists only on `tx`.
+- **R-0336** `tx.get_for_update::<T>(id)` locks the row while reading it, for read-then-write logic. It exists only on `tx`.
 
 ### Reading and writing / Transactions
 
-**R-0434**
+**R-0435**
 
 ```rust
 db.transaction(|tx| async move {
@@ -49,33 +49,33 @@ db.transaction(async |tx| {                       // runs again on 40001 or 40P0
 }).isolation(Serializable).retry(3).await?;
 ```
 
-**R-0435** Same API as `db`, with savepoints and per-transaction settings (`statement_timeout`, `lock_timeout`, `transaction_timeout`). `tx.set_local("app.user", &id)` sets a value for RLS through `set_config(..., true)`, so it takes a parameter, which `SET LOCAL` can't.
+**R-0436** Same API as `db`, with savepoints and per-transaction settings (`statement_timeout`, `lock_timeout`, `transaction_timeout`). `tx.set_local("app.user", &id)` sets a value for RLS through `set_config(..., true)`, so it takes a parameter, which `SET LOCAL` can't.
 
-**R-0436** **A commit is confirmed, never assumed.** After a failed statement, Postgres turns `COMMIT` into `ROLLBACK` with no error, and tokio-postgres's `commit()` returns `Ok` either way, so a swallowed error would look like a saved transaction. Two checks prevent that:
+**R-0437** **A commit is confirmed, never assumed.** After a failed statement, Postgres turns `COMMIT` into `ROLLBACK` with no error, and tokio-postgres's `commit()` returns `Ok` either way, so a swallowed error would look like a saved transaction. Two checks prevent that:
 
-- **R-0437** Any Postgres error marks the transaction as failed. Further use returns that error, and a closure returning `Ok` still gets it.
-- **R-0438** `COMMIT` is sent as `SELECT 1; COMMIT` in one message. In a failed transaction the `SELECT` errors and Postgres skips the `COMMIT`, so this also catches errors morm didn't see, with no extra round trip. morm then rolls back and returns `TransactionAborted`.
+- **R-0438** Any Postgres error marks the transaction as failed. Further use returns that error, and a closure returning `Ok` still gets it.
+- **R-0439** `COMMIT` is sent as `SELECT 1; COMMIT` in one message. In a failed transaction the `SELECT` errors and Postgres skips the `COMMIT`, so this also catches errors morm didn't see, with no extra round trip. morm then rolls back and returns `TransactionAborted`.
 
-**R-0440** **Savepoints** clear the failed mark, except after a deadlock or serialization error, which always fails the whole transaction. Rolling back to a savepoint keeps earlier locks, so a deadlock could repeat, and a serialization failure can't succeed on the same snapshot.
+**R-0441** **Savepoints** clear the failed mark, except after a deadlock or serialization error, which always fails the whole transaction. Rolling back to a savepoint keeps earlier locks, so a deadlock could repeat, and a serialization failure can't succeed on the same snapshot.
 
-**R-0441** **`.retry(n)`** is available only for a closure that can run again (`AsyncFn`), so a closure that changes a captured row doesn't compile. Rows are built inside the closure, so each attempt starts fresh and `pre_insert` can't run twice on one row, for example hashing a password twice. Between attempts the transaction rolls back and the connection is released during the jittered backoff.
+**R-0442** **`.retry(n)`** is available only for a closure that can run again (`AsyncFn`), so a closure that changes a captured row doesn't compile. Rows are built inside the closure, so each attempt starts fresh and `pre_insert` can't run twice on one row, for example hashing a password twice. Between attempts the transaction rolls back and the connection is released during the jittered backoff.
 
-**R-0443** **Read-only pools:** Postgres refuses `SERIALIZABLE` on a hot standby, so `.isolation(Serializable)` on a `read_only` pool returns `ReadOnly` before reaching the server.
+**R-0444** **Read-only pools:** Postgres refuses `SERIALIZABLE` on a hot standby, so `.isolation(Serializable)` on a `read_only` pool returns `ReadOnly` before reaching the server.
 
 ### Performance and memory / `morm::Pool`
 
-**R-0629** Queries joined on one `tx` are pipelined on its connection.
+**R-0630** Queries joined on one `tx` are pipelined on its connection.
 
 ### Performance and memory / Statements
 
-- **R-0718** `cached plan must not change result type` (0A000) inside a transaction returns a typed error.
+- **R-0719** `cached plan must not change result type` (0A000) inside a transaction returns a typed error.
 
 ### Hard to misuse
 
 | ID | Mistake | Caught by |
 |---|---|---|
-| R-0764 | Swallowing an error, then committing | `TransactionAborted` at runtime |
-| R-0766 | `.retry()` on a closure that changes captured rows | Compile error |
+| R-0765 | Swallowing an error, then committing | `TransactionAborted` at runtime |
+| R-0767 | `.retry()` on a closure that changes captured rows | Compile error |
 
 ## Test obligations
 

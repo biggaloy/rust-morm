@@ -11,7 +11,7 @@ What parallel steps share. Signatures here are the starting point, taken from th
 | `morm` | `morm-macros`, `morm-core`, `tokio-postgres`, `deadpool` | Runtime |
 | `morm-migrate` | `morm-core`, `tokio-postgres` | Migration engine. Doesn't depend on `morm` |
 | `morm-admin` | `morm-migrate`, `morm-core` | The binary. Doesn't depend on the user's models |
-| `morm-mgr` | generated per project; `morm` and the user's models | Prints the manifest as JSON |
+| `morm-mgr` | generated per project; `morm` and the user's models | Prints the manifest as JSON, and runs a migration's Rust data hooks |
 
 ## Conventions
 

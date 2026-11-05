@@ -45,11 +45,11 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 
 ### Performance and memory / Resource estimates: `morm-admin size`
 
-**R-0653** One command works in both directions, so nobody has to add up pool size, `work_mem` and caches by hand.
+**R-0654** One command works in both directions, so nobody has to add up pool size, `work_mem` and caches by hand.
 
-**R-0654** **Settings to resources.** With no sizing flags, it reads every pool in `morm.toml`, then the live `max_connections`, `shared_buffers`, `work_mem`, `hash_mem_multiplier`, maintenance and parallel worker settings:
+**R-0655** **Settings to resources.** With no sizing flags, it reads every pool in `morm.toml`, then the live `max_connections`, `shared_buffers`, `work_mem`, `hash_mem_multiplier`, maintenance and parallel worker settings:
 
-**R-0655**
+**R-0656**
 
 ```
 $ morm-admin size
@@ -69,11 +69,11 @@ Postgres memory       typical    worst case
 warning: worst case exceeds RAM. Lower work_mem to 16MB, or max to 25.
 ```
 
-**R-0656** (Figures show the format only.) Pools on the same host and port are added together, and each server is reported separately. It exits with `1` when connections or the typical total don't fit, so CI can catch a bad config. A worst case over RAM is a warning, and `doctor` prints the same result in one line.
+**R-0657** (Figures show the format only.) Pools on the same host and port are added together, and each server is reported separately. It exits with `1` when connections or the typical total don't fit, so CI can catch a bad config. A worst case over RAM is a warning, and `doctor` prints the same result in one line.
 
-**R-0657** **Resources to settings.** It prints suggested `morm.toml` and `postgresql.conf` values, each with a one-line reason:
+**R-0658** **Resources to settings.** It prints suggested `morm.toml` and `postgresql.conf` values, each with a one-line reason:
 
-**R-0658**
+**R-0659**
 
 ```
 morm-admin size --here                                  # this machine
@@ -83,27 +83,27 @@ morm-admin size --here --share 0.5                      # the server is shared w
 morm-admin size --here --emit postgres                  # only one block: morm or postgres
 ```
 
-- **R-0659** **`--here`** is for running on the machine that will host Postgres, including before Postgres is installed, since it needs no connection. It reads core count and RAM from the machine and takes the smaller of those and any cgroup limit, so a container or systemd slice gets a config for what it can really use. `--ram` and `--cores` override either value.
-- **R-0660** If `morm.toml` points at a remote host, `--here` warns that this machine isn't the database server. A Unix socket or `localhost` counts as local.
-- **R-0661** Suggestions cover `[server]`, `[pool]` `min`, `max` and `processes`, plus `max_connections`, `shared_buffers`, `effective_cache_size`, `work_mem` and `maintenance_work_mem`.
-- **R-0662** With no workload flags, it assumes the defaults from "Sizing guidance" and prints that assumption.
-- **R-0663** **It only prints.** It never changes Postgres or writes a file, and `--emit` makes the output easy to redirect.
+- **R-0660** **`--here`** is for running on the machine that will host Postgres, including before Postgres is installed, since it needs no connection. It reads core count and RAM from the machine and takes the smaller of those and any cgroup limit, so a container or systemd slice gets a config for what it can really use. `--ram` and `--cores` override either value.
+- **R-0661** If `morm.toml` points at a remote host, `--here` warns that this machine isn't the database server. A Unix socket or `localhost` counts as local.
+- **R-0662** Suggestions cover `[server]`, `[pool]` `min`, `max` and `processes`, plus `max_connections`, `shared_buffers`, `effective_cache_size`, `work_mem` and `maintenance_work_mem`.
+- **R-0663** With no workload flags, it assumes the defaults from "Sizing guidance" and prints that assumption.
+- **R-0664** **It only prints.** It never changes Postgres or writes a file, and `--emit` makes the output easy to redirect.
 
-**R-0664** **What the numbers mean:**
+**R-0665** **What the numbers mean:**
 
-- **R-0665** **Estimates, shown as a range.** One query can use `work_mem` several times, once per sort or hash, multiplied by `hash_mem_multiplier` and parallel workers. Real use is usually near the typical figure, and the worst case shows only what's possible.
-- **R-0666** **Per-connection memory** depends on how many statements are cached and how complex they are. The built-in defaults are calibrated in milestone 2 and aren't measured for your app.
-- **R-0667** **`--measure`** replaces those defaults: it prepares your app's real statements on one connection and reads `pg_backend_memory_contexts`. It needs the models through `morm-mgr`, so run it in development or CI against a test database, not on a production host.
+- **R-0666** **Estimates, shown as a range.** One query can use `work_mem` several times, once per sort or hash, multiplied by `hash_mem_multiplier` and parallel workers. Real use is usually near the typical figure, and the worst case shows only what's possible.
+- **R-0667** **Per-connection memory** depends on how many statements are cached and how complex they are. The built-in defaults are calibrated in milestone 2 and aren't measured for your app.
+- **R-0668** **`--measure`** replaces those defaults: it prepares your app's real statements on one connection and reads `pg_backend_memory_contexts`. It needs the models through `morm-mgr`, so run it in development or CI against a test database, not on a production host.
 
 ### Performance and memory / Behind a pooler
 
-- **R-0675** With `pooler = "transaction"`, the `max_connections` check in `size` is skipped.
+- **R-0676** With `pooler = "transaction"`, the `max_connections` check in `size` is skipped.
 
 ### Hard to misuse
 
 | ID | Mistake | Caught by |
 |---|---|---|
-| R-0772 | Pool settings that don't fit the server | `morm-admin size` exits with `1`, so CI can catch it; `doctor` reports it |
+| R-0773 | Pool settings that don't fit the server | `morm-admin size` exits with `1`, so CI can catch it; `doctor` reports it |
 
 ## Test obligations
 

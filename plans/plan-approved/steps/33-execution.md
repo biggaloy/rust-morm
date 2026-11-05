@@ -38,22 +38,22 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 
 ### Migrations / Files and ledger
 
-- **R-0596** `_morm.migrations`: what's applied, with exact up and down SQL, so rollback works when files are gone.
-- **R-0597** `_morm.steps`: per-step state (`pending/running/done/failed`) and batch cursors.
-- **R-0598** `_morm.history`: append-only log of every action, with user, host, duration and tool version.
+- **R-0597** `_morm.migrations`: what's applied, with exact up and down SQL, so rollback works when files are gone.
+- **R-0598** `_morm.steps`: per-step state (`pending/running/done/failed`) and batch cursors.
+- **R-0599** `_morm.history`: append-only log of every action, with user, host, duration and tool version.
 
 ### Migrations / Runtime guarantees
 
-- **R-0599** **Fingerprint gate.** Fingerprints cover only objects the chain manages, so unmanaged objects can't fail a run. Live schema must match `schema_before`, or the run refuses. A single-transaction migration must match `schema_after` before commit, or it rolls back. A multi-step migration can't, because its steps commit separately, so the check runs after the last step, and a mismatch marks it `failed` for `rollback --failed`.
-- **R-0605** **One migrator:** session advisory lock on a dedicated connection. If that connection is lost, the run stops.
-- **R-0606** **Lock safety:** `lock_timeout` on every step with bounded retry and backoff, plus per-step `statement_timeout`.
-- **R-0607** **Preflight:** privileges, long-running transactions, invalid indexes, checksums, table sizes.
+- **R-0600** **Fingerprint gate.** Fingerprints cover only objects the chain manages, so unmanaged objects can't fail a run. Live schema must match `schema_before`, or the run refuses. A single-transaction migration must match `schema_after` before commit, or it rolls back. A multi-step migration can't, because its steps commit separately, so the check runs after the last step, and a mismatch marks it `failed` for `rollback --failed`.
+- **R-0606** **One migrator:** session advisory lock on a dedicated connection. If that connection is lost, the run stops.
+- **R-0607** **Lock safety:** `lock_timeout` on every step with bounded retry and backoff, plus per-step `statement_timeout`.
+- **R-0608** **Preflight:** privileges, long-running transactions, invalid indexes, checksums, table sizes.
 
 ### Migrations / Commands
 
-**R-0613** All are `morm-admin mgr <command>`:
+**R-0614** All are `morm-admin mgr <command>`:
 
-**R-0614**
+**R-0615**
 
 ```
 makemigrations [--plan] [--json] [-n name] [--decide ID=OPT] [--decisions F] [--empty] [--fast]
@@ -65,11 +65,11 @@ rehearse --url URL    purge --older-than D | --now ID    baseline    rebase-chai
 repair --reason R     refingerprint           sql ID
 ```
 
-- **R-0615** `check`: offline CI check of chain, checksums, models.
+- **R-0616** `check`: offline CI check of chain, checksums, models.
 
-**R-0622** **Run migrations as a deploy step,** before new code goes live, so a failed migration stops the deploy. The app binary has no migration code, so it can't migrate on start.
+**R-0623** **Run migrations as a deploy step,** before new code goes live, so a failed migration stops the deploy. The app binary has no migration code, so it can't migrate on start.
 
-- **R-0948** `migrate [--plan] [--json] [--yes] [--to ID] [--resume] [--phase expand|contract]`, where `--yes` skips the prompt and `--to ID` stops after that migration. `status [--json]`. `check`. `sql ID` prints a migration's SQL.
+- **R-0949** `migrate [--plan] [--json] [--yes] [--to ID] [--resume] [--phase expand|contract]`, where `--yes` skips the prompt and `--to ID` stops after that migration. `status [--json]`. `check`. `sql ID` prints a migration's SQL.
 
 ## Test obligations
 

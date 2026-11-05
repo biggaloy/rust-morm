@@ -45,15 +45,15 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 
 | ID | Option | Meaning |
 |---|---|---|
-| R-0161 | `default_fn` | Rust function that supplies a default on insert |
+| R-0162 | `default_fn` | Rust function that supplies a default on insert |
 
 ### Views and groups / Views: restricted models
 
-- **R-0235** **Inserts:** a view that hides a required column with no default can't be inserted.
+- **R-0236** **Inserts:** a view that hides a required column with no default can't be inserted.
 
 ### Reading and writing / Insert and update
 
-**R-0339**
+**R-0340**
 
 ```rust
 db.insert(&mut p).await?;                                  // INSERT ... RETURNING, fills p in place
@@ -66,38 +66,38 @@ db.update_each::<Product>(&rows, &[F.price]).await?;                // per-row v
 db.update::<Product>(42).set_expr(F.stock, "stock - $1", &n).run().await?;  // atomic math in SQL
 ```
 
-- **R-0341** **Large inserts need no chunking from you.** `insert_many` picks the path by size. A statement has no row limit, because `UNNEST` sends one array per column, not one parameter per value.
+- **R-0342** **Large inserts need no chunking from you.** `insert_many` picks the path by size. A statement has no row limit, because `UNNEST` sends one array per column, not one parameter per value.
 
 | ID | Rows | Path | Notes |
 |---|---|---|---|
-| R-0342 | Small | `UNNEST` | One statement, one round trip |
-| R-0343 | Large | `COPY`, streamed | Fastest, with flat memory on both sides |
-| R-0344 | Large, with `.returning()` | `UNNEST` in chunks, one transaction | `COPY` can't return rows or handle conflicts. Each Postgres value is capped at 1GB, so chunks stay well below it |
-| R-0346 | Large, with `None` on some rows of a defaulted column | `UNNEST` in chunks, one per pattern of present columns, one transaction | `COPY` can't choose a default per row |
+| R-0343 | Small | `UNNEST` | One statement, one round trip |
+| R-0344 | Large | `COPY`, streamed | Fastest, with flat memory on both sides |
+| R-0345 | Large, with `.returning()` | `UNNEST` in chunks, one transaction | `COPY` can't return rows or handle conflicts. Each Postgres value is capped at 1GB, so chunks stay well below it |
+| R-0347 | Large, with `None` on some rows of a defaulted column | `UNNEST` in chunks, one per pattern of present columns, one transaction | `COPY` can't choose a default per row |
 
-- **R-0347** `insert_many` is atomic on every path: all rows or none, in one transaction.
-- **R-0348** **`.returning()` doesn't promise input order,** because rows are sorted by key and grouped by pattern, so match returned rows by a key.
-- **R-0349** **Array columns:** `UNNEST` flattens nested arrays, so two rows holding `text[]` values would become four. A `Vec<T>` column is sent as a `text[]` of array literals and cast back per row (`x::text[]`), which keeps one statement and works with `.returning()`. These columns use the text format, so the escaping must be exact, and property tests cover quoted `"NULL"` strings, real NULLs, quotes, commas and empty arrays. `COPY` handles arrays directly.
-- **R-0351** **Explicit ids:** a normal insert always leaves an identity column to Postgres, whatever the field holds. `.explicit_ids()` on `insert` and `insert_many` writes the ids you give, adds `OVERRIDING SYSTEM VALUE` for `GENERATED ALWAYS`, and moves the sequence past them in the same transaction.
-- **R-0352** It takes the two-argument `pg_advisory_xact_lock(<morm namespace>, <sequence oid>)`, which can't collide with the hashed keys of `tx.advisory_lock`, so two imports can't overwrite each other's position, then calls `setval(seq, max(id))` only when `max(id) >= last_value`. It's `>=` because a sequence that was never used has `last_value = 1` with nothing taken, and the condition means a stale read can't move the sequence backwards.
-- **R-0353** It needs `SELECT` and `UPDATE` on the sequence, unlike normal identity inserts, so give those grants only to the role that imports.
-- **R-0354** A normal insert can still collide with an imported id above the sequence until that transaction finishes, and the advisory lock doesn't stop normal inserts. Run imports while the table is quiet.
-- **R-0355** An id set without `.explicit_ids()` is ignored, which is almost always a mistake, so debug builds warn.
-- **R-0356** `.in_batches(n)` on `insert_many` commits every `n` rows, for bulk loads that shouldn't be one huge transaction with long locks and a large WAL burst. It isn't atomic, and running it again needs `upsert` or a filter to skip rows already loaded.
-- **R-0357** `db.insert_stream::<T>(stream)` takes rows from a `Stream`, through `COPY`, so 100 million rows never sit in app memory.
-- **R-0365** **Defaults stay in the database.** A field that is `None` on a column with a default is left out of the statement, so a migration changing a default takes effect on running binaries, and identity and `GENERATED ALWAYS` columns work. A model with no such fields has one compile-time statement. Otherwise there is one statement per pattern of present columns, usually one or two, held in `shape_cache`. `insert_many` groups rows by pattern, in one transaction.
-- **R-0367** **Base columns:** a bigint `id` is an `i64`, 0 until inserted, and identity columns are never sent. A uuid `id` is a `Uuid`: left nil, `insert` generates a UUIDv7 in the app and fills it in, so the statement doesn't change. `created_at` and `updated_at` are `db_set`.
-- **R-0368** **Writing NULL over a default:** `None` on a nullable column with a default means "use the default". When you need a real NULL there, declare the field `morm::OrDefault<Option<T>>`, with the states `Default` and `Set(v)`.
+- **R-0348** `insert_many` is atomic on every path: all rows or none, in one transaction.
+- **R-0349** **`.returning()` doesn't promise input order,** because rows are sorted by key and grouped by pattern, so match returned rows by a key.
+- **R-0350** **Array columns:** `UNNEST` flattens nested arrays, so two rows holding `text[]` values would become four. A `Vec<T>` column is sent as a `text[]` of array literals and cast back per row (`x::text[]`), which keeps one statement and works with `.returning()`. These columns use the text format, so the escaping must be exact, and property tests cover quoted `"NULL"` strings, real NULLs, quotes, commas and empty arrays. `COPY` handles arrays directly.
+- **R-0352** **Explicit ids:** a normal insert always leaves an identity column to Postgres, whatever the field holds. `.explicit_ids()` on `insert` and `insert_many` writes the ids you give, adds `OVERRIDING SYSTEM VALUE` for `GENERATED ALWAYS`, and moves the sequence past them in the same transaction.
+- **R-0353** It takes the two-argument `pg_advisory_xact_lock(<morm namespace>, <sequence oid>)`, which can't collide with the hashed keys of `tx.advisory_lock`, so two imports can't overwrite each other's position, then calls `setval(seq, max(id))` only when `max(id) >= last_value`. It's `>=` because a sequence that was never used has `last_value = 1` with nothing taken, and the condition means a stale read can't move the sequence backwards.
+- **R-0354** It needs `SELECT` and `UPDATE` on the sequence, unlike normal identity inserts, so give those grants only to the role that imports.
+- **R-0355** A normal insert can still collide with an imported id above the sequence until that transaction finishes, and the advisory lock doesn't stop normal inserts. Run imports while the table is quiet.
+- **R-0356** An id set without `.explicit_ids()` is ignored, which is almost always a mistake, so debug builds warn.
+- **R-0357** `.in_batches(n)` on `insert_many` commits every `n` rows, for bulk loads that shouldn't be one huge transaction with long locks and a large WAL burst. It isn't atomic, and running it again needs `upsert` or a filter to skip rows already loaded.
+- **R-0358** `db.insert_stream::<T>(stream)` takes rows from a `Stream`, through `COPY`, so 100 million rows never sit in app memory.
+- **R-0366** **Defaults stay in the database.** A field that is `None` on a column with a default is left out of the statement, so a migration changing a default takes effect on running binaries, and identity and `GENERATED ALWAYS` columns work. A model with no such fields has one compile-time statement. Otherwise there is one statement per pattern of present columns, usually one or two, held in `shape_cache`. `insert_many` groups rows by pattern, in one transaction.
+- **R-0368** **Base columns:** a bigint `id` is an `i64`, 0 until inserted, and identity columns are never sent. A uuid `id` is a `Uuid`: left nil, `insert` generates a UUIDv7 in the app and fills it in, so the statement doesn't change. `created_at` and `updated_at` are `db_set`.
+- **R-0369** **Writing NULL over a default:** `None` on a nullable column with a default means "use the default". When you need a real NULL there, declare the field `morm::OrDefault<Option<T>>`, with the states `Default` and `Set(v)`.
 
 ### Performance and memory / Query path
 
-- **R-0721** Bulk insert via `UNNEST` (one stable statement, no 65,535-parameter limit), and `COPY` above a threshold, whose value comes from the benchmark.
+- **R-0722** Bulk insert via `UNNEST` (one stable statement, no 65,535-parameter limit), and `COPY` above a threshold, whose value comes from the benchmark.
 
 ### Hard to misuse
 
 | ID | Mistake | Caught by |
 |---|---|---|
-| R-0782 | Explicit ids leaving the sequence behind | A normal insert ignores the id; `.explicit_ids()` moves the sequence |
+| R-0783 | Explicit ids leaving the sequence behind | A normal insert ignores the id; `.explicit_ids()` moves the sequence |
 
 ## Test obligations
 

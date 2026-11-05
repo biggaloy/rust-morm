@@ -30,32 +30,32 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 
 ### Models / Table and column names
 
-- **R-0124** Hand-written SQL must then quote the name, and `check-sql` catches the mistake in registered queries.
+- **R-0125** Hand-written SQL must then quote the name, and `check-sql` catches the mistake in registered queries.
 
 ### Views and groups / Views: restricted models
 
-- **R-0234** `check-sql` flags queries selecting hidden columns.
+- **R-0235** `check-sql` flags queries selecting hidden columns.
 
 ### Reading and writing / Raw SQL, with no model
 
-- **R-0415** `sql!` also registers it for `check-sql`.
+- **R-0416** `sql!` also registers it for `check-sql`.
 
 ### Reading and writing / Query safety
 
-- **R-0430** `sql!` builds a `&'static str` from `F` constants and registers it. `morm-admin mgr check-sql` runs `PREPARE` on each against scratch and compares types. That gives checked raw SQL with no database at build time.
+- **R-0431** `sql!` builds a `&'static str` from `F` constants and registers it. `morm-admin mgr check-sql` runs `PREPARE` on each against scratch and compares types. That gives checked raw SQL with no database at build time.
 
 ### Migrations / Commands
 
-- **R-0619** `check-sql`: `PREPARE` and `EXPLAIN` on every registered query.
+- **R-0620** `check-sql`: `PREPARE` and `EXPLAIN` on every registered query.
 
 ### Hard to misuse
 
 | ID | Mistake | Caught by |
 |---|---|---|
-| R-0784 | Queries in a loop | Detector in debug builds and `#[morm::test]`: the same statement repeating many times in a short window warns, and fails the test. `fetch_page`, `.in_batches`, streams, the outbox worker and retries don't count, and `morm::allow_repeats(fut)` marks an intended loop |
-| R-0786 | Filtering on an unindexed column | `morm-admin mgr check-sql` runs `EXPLAIN` on every registered query |
+| R-0785 | Queries in a loop | Detector in debug builds and `#[morm::test]`: the same statement repeating many times in a short window warns, and fails the test. `fetch_page`, `.in_batches`, streams, the outbox worker and retries don't count, and `morm::allow_repeats(fut)` marks an intended loop |
+| R-0787 | Filtering on an unindexed column | `morm-admin mgr check-sql` runs `EXPLAIN` on every registered query |
 
-**R-0787** The compiler can't see a query inside a loop, so that one is caught in tests and debug builds, not at compile time.
+**R-0788** The compiler can't see a query inside a loop, so that one is caught in tests and debug builds, not at compile time.
 
 ## Test obligations
 

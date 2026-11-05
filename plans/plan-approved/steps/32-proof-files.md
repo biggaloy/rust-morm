@@ -47,31 +47,31 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 
 ### Models / Generated per model
 
-**R-0224** Postgres checks `filter` and `expr` on scratch, because a macro can't parse SQL.
+**R-0225** Postgres checks `filter` and `expr` on scratch, because a macro can't parse SQL.
 
 ### Migrations / Source of truth
 
-**R-0548** **Scratch must match production.** `makemigrations` proves nothing if scratch differs, `makemigrations` refuses when a model's `extensions` aren't available on scratch.
+**R-0549** **Scratch must match production.** `makemigrations` proves nothing if scratch differs, `makemigrations` refuses when a model's `extensions` aren't available on scratch.
 
 ### Migrations / Decisions
 
-**R-0586** Every rename, retire, purge, lossy change and missing backfill is a decision with an id, evidence (type match, name similarity, row presence, dependents, size) and options. They're answered interactively, by `--decide ID=OPT`, or by file. `--json` suits CI and agents. `was` is a pre-answered rename, ignored once the old name is gone.
+**R-0587** Every rename, retire, purge, lossy change and missing backfill is a decision with an id, evidence (type match, name similarity, row presence, dependents, size) and options. They're answered interactively, by `--decide ID=OPT`, or by file. `--json` suits CI and agents. `was` is a pre-answered rename, ignored once the old name is gone.
 
-**R-0587** Exit codes: `0` ok, `1` error or drift, `2` refused by a guard, `3` open decisions.
+**R-0588** Exit codes: `0` ok, `1` error or drift, `2` refused by a guard, `3` open decisions.
 
 ### Migrations / Proof before writing
 
-**R-0588** Files are written only after all of these pass on scratch:
+**R-0589** Files are written only after all of these pass on scratch:
 
-- **R-0589** `up` reaches the models exactly.
-- **R-0590** `down` returns to the previous schema exactly.
-- **R-0591** `up` again gives the same fingerprint.
-- **R-0592** **With data:** synthetic rows per column type (NULLs, boundaries, empties) go in first, and preserved-column checksums must match after up → down. Rows are also inserted and updated after `up`, so a broken trigger fails here and not in production.
-- **R-0593** `lint` passes, or each finding is explicitly accepted.
+- **R-0590** `up` reaches the models exactly.
+- **R-0591** `down` returns to the previous schema exactly.
+- **R-0592** `up` again gives the same fingerprint.
+- **R-0593** **With data:** synthetic rows per column type (NULLs, boundaries, empties) go in first, and preserved-column checksums must match after up → down. Rows are also inserted and updated after `up`, so a broken trigger fails here and not in production.
+- **R-0594** `lint` passes, or each finding is explicitly accepted.
 
 ### Migrations / Files and ledger
 
-**R-0594**
+**R-0595**
 
 ```
 morm-migrations/
@@ -82,15 +82,15 @@ morm-migrations/
                     # checksum, decisions, data_effect
 ```
 
-**R-0595** `format` is a version number, so future tools can read old files. Generated files are byte-identical for the same models: tables, columns and operations are sorted explicitly, and macro registration order is never used. `id` is permanent and `parent` forms a chain, so merged branches are detected (`diverged`) and fixed with `rebase-chain`. The directory number is cosmetic. Ledger, in its own `_morm` schema:
+**R-0596** `format` is a version number, so future tools can read old files. Generated files are byte-identical for the same models: tables, columns and operations are sorted explicitly, and macro registration order is never used. `id` is permanent and `parent` forms a chain, so merged branches are detected (`diverged`) and fixed with `rebase-chain`. The directory number is cosmetic. Ledger, in its own `_morm` schema:
 
 ### Migrations / Runtime guarantees
 
-- **R-0601** **Postgres features.** `[migrations] min_postgres` (default 15) sets the oldest server the project targets. `makemigrations` refuses a model feature that server can't run, such as `uuidv7()` before 18.
+- **R-0602** **Postgres features.** `[migrations] min_postgres` (default 15) sets the oldest server the project targets. `makemigrations` refuses a model feature that server can't run, such as `uuidv7()` before 18.
 
 ### Migrations / Commands
 
-- **R-0947** `makemigrations [--plan] [--json] [-n name] [--decide ID=OPT] [--decisions F] [--empty] [--fast]`, with `--empty` writing an empty migration for hand-written steps, and `rebase-chain` fixing a chain marked `diverged`.
+- **R-0948** `makemigrations [--plan] [--json] [-n name] [--decide ID=OPT] [--decisions F] [--empty] [--fast]`, with `--empty` writing an empty migration for hand-written steps, and `rebase-chain` fixing a chain marked `diverged`.
 
 ## Test obligations
 

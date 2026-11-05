@@ -112,13 +112,13 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 
 ### Crates and tools
 
-- **R-0055** `outbox`: the transactional outbox (section 9), compiled out when off
+- **R-0056** `outbox`: the transactional outbox (section 9), compiled out when off
 
 ### Hooks / Outbox: events that must not be lost
 
-**R-0509** `after_commit` can lose an event if the process crashes after commit, because the data is saved and the event only exists in memory. The outbox saves the event in the same transaction as the data, so both exist or neither does.
+**R-0510** `after_commit` can lose an event if the process crashes after commit, because the data is saved and the event only exists in memory. The outbox saves the event in the same transaction as the data, so both exist or neither does.
 
-**R-0510**
+**R-0511**
 
 ```rust
 morm::pg_outbox!();                                    // declares the table, tracked by migrations
@@ -134,16 +134,16 @@ morm::outbox::worker(&db)                              // in the app, or its own
     .run().await?;
 ```
 
-- **R-0511** **`emit` exists only on `tx`,** so an event can't be saved apart from its data. Hooks can reach it through `db.tx()` when they run in a transaction.
-- **R-0512** **Delivery is at least once.** A worker can crash after sending and before recording it, so an event can arrive twice. `e.id` is stable across attempts, so handlers and receivers use it to ignore repeats.
-- **R-0513** **Claims use a lease, not an open transaction.** A worker marks a batch as claimed with `FOR UPDATE SKIP LOCKED`, commits, then sends. Holding a transaction during network calls would hold locks and hit `transaction_timeout`. If a worker dies, its lease expires and the events are claimed again.
-- **R-0514** **Failures retry with backoff.** After `max_attempts`, an event is marked `failed` and kept, never dropped. `pool_stats()` reports pending, failed and oldest-pending age from the worker's last poll.
-- **R-0516** **Workers claim only event names they handle,** so an event with no handler waits during a deploy instead of burning its attempts. Its age shows in the oldest-pending figure. A payload that won't decode counts as a failed attempt.
-- **R-0517** **Order isn't guaranteed by default,** because workers run in parallel. `tx.emit_keyed("order_placed", &order.id, &event)` delivers events with the same key in order, one at a time, which costs some throughput.
-- **R-0518** **Workers poll,** using a partial index on pending events, so an idle check is one small query. `NOTIFY` isn't used, because it takes a global lock at commit, which limits write throughput.
-- **R-0519** **Cleanup:** delivered events are deleted in batches after `retention`, so the table stays small.
-- **R-0520** **Separate worker process:** use `Db::connect_as("jobs")`, as for other jobs.
-- **R-0521** The app role needs read and write access on the table, so it's a normal managed table in the app's schema, not in `_morm`.
+- **R-0512** **`emit` exists only on `tx`,** so an event can't be saved apart from its data. Hooks can reach it through `db.tx()` when they run in a transaction.
+- **R-0513** **Delivery is at least once.** A worker can crash after sending and before recording it, so an event can arrive twice. `e.id` is stable across attempts, so handlers and receivers use it to ignore repeats.
+- **R-0514** **Claims use a lease, not an open transaction.** A worker marks a batch as claimed with `FOR UPDATE SKIP LOCKED`, commits, then sends. Holding a transaction during network calls would hold locks and hit `transaction_timeout`. If a worker dies, its lease expires and the events are claimed again.
+- **R-0515** **Failures retry with backoff.** After `max_attempts`, an event is marked `failed` and kept, never dropped. `pool_stats()` reports pending, failed and oldest-pending age from the worker's last poll.
+- **R-0517** **Workers claim only event names they handle,** so an event with no handler waits during a deploy instead of burning its attempts. Its age shows in the oldest-pending figure. A payload that won't decode counts as a failed attempt.
+- **R-0518** **Order isn't guaranteed by default,** because workers run in parallel. `tx.emit_keyed("order_placed", &order.id, &event)` delivers events with the same key in order, one at a time, which costs some throughput.
+- **R-0519** **Workers poll,** using a partial index on pending events, so an idle check is one small query. `NOTIFY` isn't used, because it takes a global lock at commit, which limits write throughput.
+- **R-0520** **Cleanup:** delivered events are deleted in batches after `retention`, so the table stays small.
+- **R-0521** **Separate worker process:** use `Db::connect_as("jobs")`, as for other jobs.
+- **R-0522** The app role needs read and write access on the table, so it's a normal managed table in the app's schema, not in `_morm`.
 
 ## Test obligations
 

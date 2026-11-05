@@ -51,40 +51,40 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 
 ### Crates and tools / Configuration: `morm.toml`
 
-**R-0102** `morm-admin doctor` reports the exact socket path it tries, and warns if `host` no longer matches a live socket.
+**R-0103** `morm-admin doctor` reports the exact socket path it tries, and warns if `host` no longer matches a live socket.
 
-**R-0111** `morm-admin doctor` checks that credentials work, warns if `morm.toml` contains a literal password, and warns if Postgres can log query values: `log_parameter_max_length` and `auto_explain.log_parameter_max_length` default to full values, which puts anything sent as a parameter, including `secret` columns, in the server log.
+**R-0112** `morm-admin doctor` checks that credentials work, warns if `morm.toml` contains a literal password, and warns if Postgres can log query values: `log_parameter_max_length` and `auto_explain.log_parameter_max_length` default to full values, which puts anything sent as a parameter, including `secret` columns, in the server log.
 
 ### Migrations / Triggers, functions and other objects
 
-- **R-0540** `doctor` checks that the real roles exist.
+- **R-0541** `doctor` checks that the real roles exist.
 
 ### Migrations / Source of truth
 
-**R-0549** `doctor` compares the Postgres major version and installed extensions of scratch and the target.
+**R-0550** `doctor` compares the Postgres major version and installed extensions of scratch and the target.
 
 ### Migrations / Down that can restore data
 
-- **R-0572** `doctor` runs the same scan.
+- **R-0573** `doctor` runs the same scan.
 
 ### Migrations / Runtime guarantees
 
-- **R-0603** `doctor` reports the server version.
+- **R-0604** `doctor` reports the server version.
 
 ### Performance and memory / `max_connections`
 
-**R-0650** `morm-admin doctor` runs the same check.
+**R-0651** `morm-admin doctor` runs the same check.
 
 ### Performance and memory / Behind a pooler
 
-- **R-0670** `doctor` checks that they're there.
-- **R-0678** `doctor` warns if `MORM_MIGRATION_URL` doesn't point at Postgres directly.
+- **R-0671** `doctor` checks that they're there.
+- **R-0679** `doctor` warns if `MORM_MIGRATION_URL` doesn't point at Postgres directly.
 
 ### Hard to misuse
 
 | ID | Mistake | Caught by |
 |---|---|---|
-| R-0785 | Query values, such as password hashes, reaching the Postgres log | `doctor` warns when statements are logged and `log_parameter_max_length` isn't `0` |
+| R-0786 | Query values, such as password hashes, reaching the Postgres log | `doctor` warns when statements are logged and `log_parameter_max_length` isn't `0` |
 
 ## Test obligations
 

@@ -37,23 +37,23 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 
 ### Crates and tools / Configuration: `morm.toml`
 
-**R-0117** **`morm-admin import`** is a simple starting point for any existing database. It reads the catalog only, never rows, and writes model files that match the schema exactly: types, nullability, defaults, indexes, constraints and their names. Nothing is "improved". Anything models can't express, such as exclusion constraints or partitioned tables, is listed in its output and stays unmanaged. `morm-admin mgr baseline` then records that state as migration zero. Views, hooks and validation are added by hand afterwards.
+**R-0118** **`morm-admin import`** is a simple starting point for any existing database. It reads the catalog only, never rows, and writes model files that match the schema exactly: types, nullability, defaults, indexes, constraints and their names. Nothing is "improved". Anything models can't express, such as exclusion constraints or partitioned tables, is listed in its output and stays unmanaged. `morm-admin mgr baseline` then records that state as migration zero. Views, hooks and validation are added by hand afterwards.
 
 ### Models / Table and column names
 
-- **R-0125** `import` adds it automatically.
+- **R-0126** `import` adds it automatically.
 
 ### Views and groups / Public input and output
 
-- **R-0263** `import` adds `secret` to them.
+- **R-0264** `import` adds `secret` to them.
 
 ### Indexes / Names
 
-- **R-0330** `morm-admin import` keeps existing names, as explicit `name` values where they differ.
+- **R-0331** `morm-admin import` keeps existing names, as explicit `name` values where they differ.
 
 ### Reading and writing / Decimal
 
-- **R-0427** `import` writes `Decimal` for bounded columns that fit, and `Decimal` with an explicit `sql = "numeric"` for unbounded ones.
+- **R-0428** `import` writes `Decimal` for bounded columns that fit, and `Decimal` with an explicit `sql = "numeric"` for unbounded ones.
 
 ## Test obligations
 

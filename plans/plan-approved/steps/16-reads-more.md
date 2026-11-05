@@ -31,9 +31,9 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 
 ### Reading and writing / Related rows
 
-**R-0401** morm doesn't load relations automatically, but it makes the one-query form the easiest:
+**R-0402** morm doesn't load relations automatically, but it makes the one-query form the easiest:
 
-**R-0402**
+**R-0403**
 
 ```rust
 let orders = db.get_all_by::<Order>(F.user_id, &7).limit(50).await?;
@@ -44,13 +44,13 @@ for order in &orders {
 }
 ```
 
-**R-0403** It runs one `WHERE order_id = ANY($1)` query for the whole list. Rows are kept in one sorted `Vec`, so `of` returns a borrowed slice with no per-parent allocation. It's bounded by the parent list, so it doesn't need `.limit()`, and `.limit_each(n)` caps rows per parent. It takes a view, so hidden columns stay hidden. Each relation is one visible call, so nothing loads by surprise.
+**R-0404** It runs one `WHERE order_id = ANY($1)` query for the whole list. Rows are kept in one sorted `Vec`, so `of` returns a borrowed slice with no per-parent allocation. It's bounded by the parent list, so it doesn't need `.limit()`, and `.limit_each(n)` caps rows per parent. It takes a view, so hidden columns stay hidden. Each relation is one visible call, so nothing loads by surprise.
 
 ### Reading and writing / Pagination
 
-**R-0404** `OFFSET 100000` reads and discards 100,000 rows on every page, so morm has no `.offset()` helper. Keyset pagination is equally fast at any depth:
+**R-0405** `OFFSET 100000` reads and discards 100,000 rows on every page, so morm has no `.offset()` helper. Keyset pagination is equally fast at any depth:
 
-**R-0405**
+**R-0406**
 
 ```rust
 let page = db.select::<Order>().filter()
@@ -64,16 +64,16 @@ page.rows;                                       // Vec<Order>
 page.next;                                       // opaque cursor, None on the last page
 ```
 
-- **R-0406** The last key must be unique, so rows can't be skipped, and without a unique column it's a compile error. Mixed ascending and descending columns are supported.
-- **R-0407** **A nullable key column is a compile error.** `(a, b) > (1, 1)` is unknown when `b` is NULL, so that row would never appear on any page. Use a `NOT NULL` column.
-- **R-0408** A cursor is base64 of the key values. They're decoded as typed parameters, so a tampered cursor returns `InvalidCursor` or a different page, never SQL. Cursors aren't a secret.
-- **R-0409** Writes between pages can't shift rows, as they do with `OFFSET`.
+- **R-0407** The last key must be unique, so rows can't be skipped, and without a unique column it's a compile error. Mixed ascending and descending columns are supported.
+- **R-0408** **A nullable key column is a compile error.** `(a, b) > (1, 1)` is unknown when `b` is NULL, so that row would never appear on any page. Use a `NOT NULL` column.
+- **R-0409** A cursor is base64 of the key values. They're decoded as typed parameters, so a tampered cursor returns `InvalidCursor` or a different page, never SQL. Cursors aren't a secret.
+- **R-0410** Writes between pages can't shift rows, as they do with `OFFSET`.
 
 ### Reading and writing / Raw SQL, with no model
 
-**R-0410** `db.sql()` runs any statement. No model, hooks, validation or ordering are involved.
+**R-0411** `db.sql()` runs any statement. No model, hooks, validation or ordering are involved.
 
-**R-0411**
+**R-0412**
 
 ```rust
 #[derive(morm::Row)]
@@ -89,18 +89,18 @@ let n: i64 = db.sql("SELECT count(*) FROM orders", &[]).fetch_val().await?;  // 
 let changed = db.sql("UPDATE orders SET seen = true WHERE id = $1", &[&id]).run().await?;  // row count
 ```
 
-- **R-0412** Every list and single-result call works here, including `fetch_ref`, `stream` and `stream_json`.
-- **R-0413** `#[derive(morm::Row)]` decodes by column name, for any plain struct. Columns the struct lacks are ignored, and a missing column is an error.
-- **R-0414** The SQL must be `&'static str`, as with `.q()`, and `sql_unchecked(String)` is the visible escape hatch.
-- **R-0416** **The list rule still applies.** `.limit(n)` appends a `LIMIT` on a new line, so a trailing `--` comment can't swallow it, and as a parameter, so different limits share one statement, and `.all()` runs it as written. `run()`, `fetch_val()`, `fetch_one()` and `fetch_opt()` don't need either.
-- **R-0417** It uses the same bounded statement cache, and `db.raw::<T>()` remains for raw SQL decoding into a model or view.
+- **R-0413** Every list and single-result call works here, including `fetch_ref`, `stream` and `stream_json`.
+- **R-0414** `#[derive(morm::Row)]` decodes by column name, for any plain struct. Columns the struct lacks are ignored, and a missing column is an error.
+- **R-0415** The SQL must be `&'static str`, as with `.q()`, and `sql_unchecked(String)` is the visible escape hatch.
+- **R-0417** **The list rule still applies.** `.limit(n)` appends a `LIMIT` on a new line, so a trailing `--` comment can't swallow it, and as a parameter, so different limits share one statement, and `.all()` runs it as written. `run()`, `fetch_val()`, `fetch_one()` and `fetch_opt()` don't need either.
+- **R-0418** It uses the same bounded statement cache, and `db.raw::<T>()` remains for raw SQL decoding into a model or view.
 
 ### Hard to misuse
 
 | ID | Mistake | Caught by |
 |---|---|---|
-| R-0760 | Paging with `OFFSET` | No helper exists; `keyset` is the documented path |
-| R-0773 | A nullable keyset column | Compile error |
+| R-0761 | Paging with `OFFSET` | No helper exists; `keyset` is the documented path |
+| R-0774 | A nullable keyset column | Compile error |
 
 ## Test obligations
 

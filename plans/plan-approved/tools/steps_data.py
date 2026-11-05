@@ -230,8 +230,8 @@ S("live-modes", "Production mode, revert and squash", "Migrations", ["safe-forms
 S("rolling", "Rolling deploys", "Migrations", ["live-modes", "reads"], "`morm-migrate`, `morm-admin`, `morm`, `morm-macros`", ["planner", "macro", "admin"],
   "Keep old and new binaries working through a deploy.",
   ["`phase`, expand and contract, rename sync triggers, `deprecated` steps, `db.check_schema()` with its per-model column list, data migration hooks run through `morm-mgr` with `--hooks`"],
-  "An old binary boots and works during an expand phase, and `check_schema` reports a dropped default.",
-  ["New features"],
+  "An old binary boots and works during an expand phase, a migration with a Rust data hook runs through `--hooks ./morm-mgr`, and `check_schema` reports a dropped default.",
+  ["New features"]),
 
 S("admin-init", "`morm-admin init` and project setup", "Tools", ["retire", "outbox", "inserts", "reads-more"], "`morm-admin`, `morm-macros`", ["admin"],
   "Create a working project from one command.",
