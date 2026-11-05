@@ -76,3 +76,19 @@ Changing `shared_preload_libraries` needs a restart. Then run `CREATE EXTENSION 
 Watch `pg_stat_activity` for long transactions and lock waits, and track bloat and disk use.
 
 Postgres can't see time spent outside it. morm's `pool_stats()` adds pool waits, deadlocks, retries and lock timeouts from the app's side, so watch pool wait time first when users report slowness and the server looks fine. `application_name` and `.tag()` show which app and which code ran a query.
+
+## Observability platforms
+
+Datadog, Grafana, Honeycomb and similar tools all fit the same way, and morm needs no vendor code:
+
+```
+morm spans    -> tracing -> OpenTelemetry exporter -> Datadog Agent or OTel Collector
+morm metrics  -> metrics crate -> same exporter
+Postgres logs -> Agent tails the log file or journal
+pg_stat_statements, pg_stat_activity -> Agent's database monitoring role
+```
+
+- Give the Agent its own role with `pg_monitor`, and keep `log_parameter_max_length = 0`, because shipped logs leave the server for a third party.
+- Use `service` or fixed-comment trace modes only. A per-request `traceparent` comment, such as Datadog's `full` propagation mode, makes every query unique and defeats statement caching. morm doesn't add one.
+- Keep `span_sample` low on busy services, and wrap requests in `morm::sample_scope` with the trace's own decision so a kept trace has all its queries.
+- Raise `metrics_interval` if the bill matters more than fine graphs. It changes the data volume, not query speed.

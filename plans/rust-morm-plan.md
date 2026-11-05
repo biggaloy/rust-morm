@@ -87,7 +87,8 @@ Cargo features of `morm`:
 - `uuid` (default): UUID columns and UUIDv7 generation
 - `json` (default): `jsonb` and JSON output
 - `decimal` (default): `Decimal` for `numeric` columns, through `rust_decimal` (section 8)
-- `tracing`: one span per query with SQL text, duration, row count and pool wait time, compiled out when off. Never parameter values, because they hold passwords, tokens and personal data. Slow-query logging is left to Postgres, which also gives plans and per-query statistics; morm covers only what the server can't see, which is pool waits, network and decode time, and which code ran the query
+- `tracing`: sampled query spans with SQL text, duration, row count and pool wait time, compiled out when off (section 11). Never parameter values, because they hold passwords, tokens and personal data. Slow-query logging is left to Postgres, which also gives plans and per-query statistics; morm covers only what the server can't see, which is pool waits, network and decode time, and which code ran the query
+- `metrics`: publishes pool and query metrics through the `metrics` crate on a timer, compiled out when off (section 11)
 - `utoipa`: OpenAPI schemas
 - `outbox`: the transactional outbox (section 9), compiled out when off
 
@@ -174,6 +175,11 @@ lease = "60s"                    # a crashed worker's events return after this
 max_attempts = 10
 retention = "7d"                 # how long delivered events are kept
 
+[telemetry]                      # used by the tracing and metrics features
+span_sample = 0.01               # share of queries that get a span: 0 = none, 1 = all
+slow_query = "250ms"             # always report slower queries, pool wait included; "off"
+metrics_interval = "10s"         # how often metrics are published
+
 [migrations]
 dir = "morm-migrations"
 min_postgres = 15
@@ -206,6 +212,8 @@ Precedence: defaults, then `morm.toml`, then environment variables, then code. T
 | `MORM_OUTBOX_BATCH`, `MORM_OUTBOX_POLL_INTERVAL` | `batch`, `poll_interval` |
 | `MORM_OUTBOX_LEASE`, `MORM_OUTBOX_MAX_ATTEMPTS`, `MORM_OUTBOX_RETENTION` | `lease`, `max_attempts`, `retention` |
 | `MORM_SERVER_RAM`, `MORM_SERVER_CORES` | `[server]` `ram`, `cores` |
+| `MORM_TELEMETRY_SPAN_SAMPLE`, `MORM_TELEMETRY_SLOW_QUERY` | `span_sample`, `slow_query` |
+| `MORM_TELEMETRY_METRICS_INTERVAL` | `metrics_interval` |
 | `MORM_POOL` | Named pool this process opens, instead of `[pool]` |
 | `MORM_POOL_MIN`, `MORM_POOL_MAX` | `min`, `max` |
 | `MORM_POOL_PROCESSES` | `processes` |
@@ -1454,10 +1462,39 @@ db.release(held).await;      // or held.release().await
 - No dynamic dispatch in hot paths.
 - Minimal dependencies and features; no CLI framework in `morm-admin`.
 
+### Telemetry
+
+morm has no vendor code. It emits OpenTelemetry-shaped data through `tracing` and `metrics`, so Datadog, Grafana, Honeycomb and the rest work through the app's exporter, the Datadog Agent or an OpenTelemetry Collector. Logs and database monitoring come from Postgres directly, as `app_suggestions.md` describes.
+
+**Cheap by construction:**
+
+| Situation | Cost per query |
+|---|---|
+| Features compiled out | None |
+| `tracing` compiled in, no subscriber | One relaxed atomic load |
+| `tracing` on, query not sampled | That load, a thread-local counter, and two clock reads for `slow_query` |
+| `tracing` on, query sampled | One span, with fields recorded only then |
+| `metrics` on | None beyond the always-on counters |
+
+**Spans.** `span_sample` picks every Nth query with a thread-local counter, so sampling takes no lock and no shared atomic. The decision comes before any span exists, which is why this is cheaper than sampling only in the exporter.
+
+- **Whole requests:** per-query sampling leaves gaps in a trace. `morm::sample_scope(keep, fut)` overrides `span_sample` for everything inside `fut` through a task-local, so middleware can pass the trace's own sampling decision and keep a request's queries together.
+- **`slow_query`:** a query that wasn't sampled but ran over the limit is reported as a `tracing` event with its durations, attached to the current span. A span can't be started after the fact. The limit includes pool wait, which Postgres can't see, so this doesn't repeat the server's slow log.
+- **Field names** follow the OpenTelemetry database conventions: `db.system.name`, `db.query.text`, `db.operation.name`, `db.collection.name`, `db.namespace`, plus `db.morm.tag` and `db.morm.pool_wait_us`. Query text holds only `$1` placeholders.
+
+**Metrics.** Nothing is published from the query path. Each connection keeps plain counters and fixed-bucket duration histograms. A connection has one user at a time, so these are uncontended. One background task per pool adds them up every `metrics_interval` and publishes them, and a closing connection adds its totals to the pool first.
+
+- Names follow the same conventions: `db.client.connection.count`, `db.client.connection.max`, `db.client.connection.pending_requests`, `db.client.connection.wait_time`, `db.client.operation.duration`.
+- morm adds `db.morm.*` metrics for deadlocks, retries, lock timeouts and `shape_cache` churn.
+- A shorter interval gives finer graphs but more data points, and the platform's bill rises with it. It adds no cost per query.
+
+**No per-request SQL comments.** Trace-linking modes such as Datadog's `full` propagation add a `traceparent` comment to every statement. That makes every query text unique, so no statement could be reused. morm won't do it. `application_name` and `.tag()` give the fixed, service-level equivalent. A query still appears inside its request trace through the app-side span, and only the jump from a database sample to one exact trace is lost.
+
 ### Build and benchmarks
 
 - Release profile for benches and examples, recommended in the docs: `lto = "fat"`, `codegen-units = 1`, `strip = true`, `panic = "unwind"` (so a panicking handler doesn't kill the server). A library's profile doesn't reach its users.
 - Criterion benchmarks in CI against raw tokio-postgres, SQLx, SeaORM and Diesel.
+- Telemetry overhead on a primary-key read, for each row of the cost table in section 11. Target: under 1% with `tracing` on and the default `span_sample`. A miss is a bug, not a note in the docs.
 - Also: `morm::Pool` vs `deadpool-postgres`, pool sizes under mixed fast and slow queries, `fetch_ref` vs `fetch` vs `fetch_json`, morm's `Decimal` decoding vs `rust_decimal`'s, binary size and RSS with `tls` compiled in but unused, and RSS on both app and Postgres.
 
 ---
@@ -1473,6 +1510,7 @@ db.release(held).await;      // or held.release().await
 | A list with no limit | Compile error: requires `.limit(n)`, `.all()` or `stream()` |
 | Reading a hidden field | Compile error |
 | Parsing a request body into a model | Compile error: only views with `input` or `patch` have `Deserialize` |
+| A per-request id in SQL, which would defeat every statement cache | `.tag()` takes only `&'static str`, and no trace comments are added |
 | A client sending an empty update | `EmptyPatch` at runtime |
 | Client-chosen fields evicting hot statements | Runtime-built SQL has its own cache, and one-off shapes are never prepared |
 | Returning a password in JSON | `secret` is never serialized, even with `sudo` |
@@ -1505,7 +1543,7 @@ Tests are written with the code: **a milestone isn't done until its tests pass i
 
 - **Unit:** macro output, SQL generation, diff, naming.
 - **Compile-fail (`trybuild`):** every compile-time guarantee, including hidden view fields, `HasPk`, unfiltered update and delete, update with no `.set()`, list with no limit, `self` absent in update and delete hooks, `Deserialize` on models and on views without `input` or `patch`, protected columns in `input` and `patch`, a derived `Serialize` or `Debug` on a model, non-static `q()` and `sql()`, uppercase names without `keep_case`, columns narrower than their Rust type, `usize` and `isize`, unknown group names, scoped groups on `#[model(groups)]`, a scoped mask on another model, duplicate indexes, duplicate base fields, over-long and colliding names, `Decimal` and float on unsuitable `numeric` columns.
-- **Integration on real Postgres:** insert, every get, update and delete form, views, groups, hook inputs (`Changes`, `Target`), hooks order, the loop detector, `after_commit` on commit and skip on rollback, all list and JSON paths, pool growth and idle shrinking, `max_connections` adjustment, `db.hold()` release on every exit path, `ConnectionLost`, cancellation, forced deadlocks in both kinds, swallowed errors never reporting a commit, `CommitUnknown`, savepoint behaviour after deadlocks, single-statement and transaction retry limits, every timeout, cancelled queries releasing their locks, `max_holds`, `.lock_ordered()` and bulk writes under concurrent load, advisory key stability, `skip_locked` with rival workers, `.in_batches` stopping and resuming, every `insert_many` path at a million rows, keyset pages under concurrent writes and with mixed sort directions, tampered cursors, `order_by_allowed`, `.custom_plan()`, connections discarded on `25006`, `load_related` with `.limit_each`, `secret` absent from every JSON path and `Debug`, unknown input fields rejected, `patch` missing, null and value states on nullable and NOT NULL columns, `EmptyPatch` and `.allow_empty()`, `.set()` winning over `.apply()`, `shape_cache` isolation under random and repeated shapes, every integer type at its limits through insert, read and JSON, range CHECKs rejecting direct SQL writes, `OutOfRange`, `InvalidText`, `json_string` on every path, `db.close()` finishing in-flight work, models in several schemas, `.tag()` in server logs and its character filtering, `doctor` warnings on parameter logging, `morm-admin size` estimates checked against measured memory, `--here` with and without cgroup limits, `--measure`.
+- **Integration on real Postgres:** insert, every get, update and delete form, views, groups, hook inputs (`Changes`, `Target`), hooks order, the loop detector, `after_commit` on commit and skip on rollback, all list and JSON paths, pool growth and idle shrinking, `max_connections` adjustment, `db.hold()` release on every exit path, `ConnectionLost`, cancellation, forced deadlocks in both kinds, swallowed errors never reporting a commit, `CommitUnknown`, savepoint behaviour after deadlocks, single-statement and transaction retry limits, every timeout, cancelled queries releasing their locks, `max_holds`, `.lock_ordered()` and bulk writes under concurrent load, advisory key stability, `skip_locked` with rival workers, `.in_batches` stopping and resuming, every `insert_many` path at a million rows, keyset pages under concurrent writes and with mixed sort directions, tampered cursors, `order_by_allowed`, `.custom_plan()`, connections discarded on `25006`, `load_related` with `.limit_each`, `secret` absent from every JSON path and `Debug`, unknown input fields rejected, `patch` missing, null and value states on nullable and NOT NULL columns, `EmptyPatch` and `.allow_empty()`, `.set()` winning over `.apply()`, `shape_cache` isolation under random and repeated shapes, every integer type at its limits through insert, read and JSON, range CHECKs rejecting direct SQL writes, `OutOfRange`, `InvalidText`, `json_string` on every path, `db.close()` finishing in-flight work, models in several schemas, `.tag()` in server logs and its character filtering, `span_sample` at 0, 1 and between, `sample_scope`, `slow_query` events including pool wait, metric totals surviving a closing connection, `doctor` warnings on parameter logging, `morm-admin size` estimates checked against measured memory, `--here` with and without cgroup limits, `--measure`.
 - **Property tests:** random models and data round-trip through insert, read and JSON.
 - **Doc tests:** every README and doc example compiles and runs.
 - **`#[morm::test]`:** gives each test a database cloned from a migrated template, for this project and its users.
@@ -1580,6 +1618,10 @@ One compact, complete file at the repo root. It must be enough to use morm effic
 | `input = "..."` | A view takes a request body that creates a row |
 | `patch = "..."` | A view takes a partial update, such as a PATCH body |
 | `.allow_empty()` | An empty update is fine, and you will not handle `EmptyPatch` |
+| `span_sample` | You want more or fewer query spans in your tracing platform |
+| `morm::sample_scope` | A traced request must keep all of its query spans |
+| `slow_query` | You want slow queries reported from the app, including time waiting for a connection |
+| `metrics_interval` | Your graphs need finer detail, or your platform bill needs to come down |
 | `.tag()` | You need to trace a query in the server logs back to the code that ran it |
 | `morm-admin size` | You change pool or Postgres memory settings and want to check they fit the server |
 | `size --here` | You need a starting config for the machine you're on |
@@ -1648,7 +1690,7 @@ One compact, complete file at the repo root. It must be enough to use morm effic
 7. **Hooks and outbox:** `Changes`, `Target`, all hooks, `validate`, `validate_changes`, `after_commit`, automatic transactions, `pg_outbox!`, `emit`, the worker and `morm-admin outbox`.
 8. **`morm-admin`:** `init`, `doctor`, `import`, `scratch`, `size`, `morm-mgr` packaging, Axum template.
 9. **Query safety:** `sql!`, `check-sql`, upsert, UNNEST and COPY, `#[morm::test]`.
-10. **Remaining features:** UUIDv7, `tls`, schemas and `utoipa`, optimistic locking, tracing, `.tag()`, typed FKs, settings, pipelined transactions.
+10. **Remaining features:** UUIDv7, `tls`, schemas and `utoipa`, optimistic locking, tracing, `metrics`, `[telemetry]`, `.tag()`, typed FKs, settings, pipelined transactions.
 11. **Benchmarks, lock-order detector, hardening, full README, 0.1.0 release.**
 
 ---
