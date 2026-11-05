@@ -1,5 +1,7 @@
 # rust-morm: plan
 
+> **Frozen on 2026-11-05 as the record.** The working source of truth is `plan-approved/`, which was split from this file word for word. Don't edit this file: changes go into the step files.
+
 A complete re-engineering of morm in Rust: define PostgreSQL models in code, track them with rock-solid up and down migrations, and write queries in plain SQL. There is no extra query language. This is a new design, not a port. python-morm is a reference for what real projects need, and nothing is kept just for compatibility.
 
 - **Repo:** `biggaloy/rust-morm`
