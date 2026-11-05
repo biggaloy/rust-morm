@@ -107,18 +107,18 @@ db.delete_where::<Log>(F.created_at, "< $1", &[&cutoff]).in_batches(5000).pause_
 
 ### Performance and memory / Query path
 
-- **R-0719** `= ANY($1)` instead of `IN` lists, so list length doesn't create statement variants.
+- **R-0720** `= ANY($1)` instead of `IN` lists, so list length doesn't create statement variants.
 
 ### Hard to misuse
 
 | ID | Mistake | Caught by |
 |---|---|---|
-| R-0746 | `update` or `delete` with no filter | Compile error (`update_all` and `delete_all` are explicit) |
-| R-0747 | `update` with no `.set()` | Compile error |
-| R-0748 | Forgetting `.run()` | `#[must_use]` warning, `-D warnings` in CI |
-| R-0754 | A client sending an empty update | `EmptyPatch` at runtime |
-| R-0764 | Updating or deleting a missing id | `NotFound` at runtime |
-| R-0774 | Forgetting to pass a `version` | Compile error: `.version(v)` or `.ignore_version()` is required |
+| R-0747 | `update` or `delete` with no filter | Compile error (`update_all` and `delete_all` are explicit) |
+| R-0748 | `update` with no `.set()` | Compile error |
+| R-0749 | Forgetting `.run()` | `#[must_use]` warning, `-D warnings` in CI |
+| R-0755 | A client sending an empty update | `EmptyPatch` at runtime |
+| R-0765 | Updating or deleting a missing id | `NotFound` at runtime |
+| R-0775 | Forgetting to pass a `version` | Compile error: `.version(v)` or `.ignore_version()` is required |
 
 ## Test obligations
 

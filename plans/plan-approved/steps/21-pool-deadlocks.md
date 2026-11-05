@@ -42,7 +42,7 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 
 | ID | Mistake | Caught by |
 |---|---|---|
-| R-0757 | Using `db` inside a transaction or stream loop | `NestedConnection` at runtime; `db.extra_conn()` is the visible escape hatch |
+| R-0758 | Using `db` inside a transaction or stream loop | `NestedConnection` at runtime; `db.extra_conn()` is the visible escape hatch |
 
 ## Test obligations
 

@@ -1,8 +1,8 @@
 # Step 49: Lock-order detector and hardening
 
 - **Phase:** Finish
-- **Depends on:** 26, 27, 41, 46, 47
-- **Can run beside:** 43, 44, 45, 48
+- **Depends on:** 26, 27, 41, 45, 47
+- **Can run beside:** 43, 44, 46, 48
 - **Crates:** all
 - **PR approval:** CI and an independent review
 
@@ -41,7 +41,7 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 
 | ID | Mistake | Caught by |
 |---|---|---|
-| R-0766 | Locks taken in opposite order across transactions | Lock-order detector in debug builds and tests |
+| R-0767 | Locks taken in opposite order across transactions | Lock-order detector in debug builds and tests |
 
 ## Test obligations
 

@@ -86,7 +86,11 @@ morm-migrations/
 
 ### Migrations / Runtime guarantees
 
-- **R-0600** **Postgres features.** `[migrations] min_postgres` (default 15) sets the oldest server the project targets. `makemigrations` refuses a model feature that server can't run, such as `uuidv7()` before 18.
+- **R-0601** **Postgres features.** `[migrations] min_postgres` (default 15) sets the oldest server the project targets. `makemigrations` refuses a model feature that server can't run, such as `uuidv7()` before 18.
+
+### Migrations / Commands
+
+- **R-0947** `makemigrations [--plan] [--json] [-n name] [--decide ID=OPT] [--decisions F] [--empty] [--fast]`, with `--empty` writing an empty migration for hand-written steps, and `rebase-chain` fixing a chain marked `diverged`.
 
 ## Test obligations
 

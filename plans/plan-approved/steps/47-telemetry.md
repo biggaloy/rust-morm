@@ -2,7 +2,7 @@
 
 - **Phase:** Tools
 - **Depends on:** 14, 25
-- **Can run beside:** 08, 23, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45
+- **Can run beside:** 08, 23, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 46
 - **Crates:** `morm`
 - **PR approval:** CI and an independent review
 
@@ -122,35 +122,35 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 
 ### Performance and memory / Statements
 
-- **R-0708** The `tracing` feature logs heavy churn.
+- **R-0709** The `tracing` feature logs heavy churn.
 
 ### Performance and memory / Telemetry
 
-**R-0726** morm has no vendor code. It emits OpenTelemetry-shaped data through `tracing` and `metrics`, so Datadog, Grafana, Honeycomb and in-house stacks work through exporters the app chooses, and morm depends on no exporter or vendor. Spans reach an agent through `tracing-opentelemetry` and OTLP. Metrics usually go through `metrics-exporter-prometheus`, scraped by the agent, because the `metrics` crate has no official OTLP exporter. Logs and database monitoring come from Postgres directly, as `app_suggestions.md` describes.
+**R-0727** morm has no vendor code. It emits OpenTelemetry-shaped data through `tracing` and `metrics`, so Datadog, Grafana, Honeycomb and in-house stacks work through exporters the app chooses, and morm depends on no exporter or vendor. Spans reach an agent through `tracing-opentelemetry` and OTLP. Metrics usually go through `metrics-exporter-prometheus`, scraped by the agent, because the `metrics` crate has no official OTLP exporter. Logs and database monitoring come from Postgres directly, as `app_suggestions.md` describes.
 
-**R-0727** **Cheap by construction:**
+**R-0728** **Cheap by construction:**
 
 | ID | Situation | Cost per query |
 |---|---|---|
-| R-0728 | Features compiled out | None |
-| R-0729 | `tracing` compiled in, no subscriber | One relaxed atomic load |
-| R-0730 | `tracing` on, query not sampled | That load, a thread-local counter, and two clock reads for `slow_query` |
-| R-0731 | `tracing` on, query sampled | One span, with fields recorded only then |
-| R-0732 | `metrics` on | Two clock reads and one uncontended bucket increment |
+| R-0729 | Features compiled out | None |
+| R-0730 | `tracing` compiled in, no subscriber | One relaxed atomic load |
+| R-0731 | `tracing` on, query not sampled | That load, a thread-local counter, and two clock reads for `slow_query` |
+| R-0732 | `tracing` on, query sampled | One span, with fields recorded only then |
+| R-0733 | `metrics` on | Two clock reads and one uncontended bucket increment |
 
-**R-0733** **Spans.** `span_sample` picks every Nth query with a thread-local counter, so sampling takes no lock and no shared atomic. The decision comes before any span exists, which is why this is cheaper than sampling only in the exporter.
+**R-0734** **Spans.** `span_sample` picks every Nth query with a thread-local counter, so sampling takes no lock and no shared atomic. The decision comes before any span exists, which is why this is cheaper than sampling only in the exporter.
 
-- **R-0734** **Whole requests:** per-query sampling leaves gaps in a trace. `morm::sample_scope(keep, fut)` overrides `span_sample` for everything inside `fut` through a task-local, so middleware can pass the trace's own sampling decision and keep a request's queries together.
-- **R-0735** **`slow_query`:** a query that wasn't sampled but ran over the limit is reported as a `tracing` event with its durations, attached to the current span. A span can't be started after the fact. The limit includes pool wait, which Postgres can't see, so this doesn't repeat the server's slow log.
-- **R-0736** **Field names** follow the OpenTelemetry database conventions: `db.system.name`, `db.query.text`, `db.operation.name`, `db.collection.name`, `db.namespace`, plus `db.morm.tag` and `db.morm.pool_wait_us`. Query text holds only `$1` placeholders. `q_unchecked` and `sql_unchecked` text can contain values, so spans leave it out.
+- **R-0735** **Whole requests:** per-query sampling leaves gaps in a trace. `morm::sample_scope(keep, fut)` overrides `span_sample` for everything inside `fut` through a task-local, so middleware can pass the trace's own sampling decision and keep a request's queries together.
+- **R-0736** **`slow_query`:** a query that wasn't sampled but ran over the limit is reported as a `tracing` event with its durations, attached to the current span. A span can't be started after the fact. The limit includes pool wait, which Postgres can't see, so this doesn't repeat the server's slow log.
+- **R-0737** **Field names** follow the OpenTelemetry database conventions: `db.system.name`, `db.query.text`, `db.operation.name`, `db.collection.name`, `db.namespace`, plus `db.morm.tag` and `db.morm.pool_wait_us`. Query text holds only `$1` placeholders. `q_unchecked` and `sql_unchecked` text can contain values, so spans leave it out.
 
-**R-0737** **Metrics.** Nothing is published from the query path. Each connection keeps plain counters and fixed-bucket duration histograms. A connection has one user at a time, so these are uncontended. One background task per pool adds them up every `metrics_interval` and publishes them, and a closing connection adds its totals to the pool first.
+**R-0738** **Metrics.** Nothing is published from the query path. Each connection keeps plain counters and fixed-bucket duration histograms. A connection has one user at a time, so these are uncontended. One background task per pool adds them up every `metrics_interval` and publishes them, and a closing connection adds its totals to the pool first.
 
-- **R-0738** Names follow the same conventions: `db.client.connection.count`, `db.client.connection.max`, `db.client.connection.pending_requests`, `db.client.connection.wait_time`, `db.client.operation.duration`.
-- **R-0739** morm adds `db.morm.*` metrics for deadlocks, retries, lock timeouts and `shape_cache` churn.
-- **R-0740** A shorter interval gives finer graphs but more data points, and the platform's bill rises with it. It adds no cost per query.
+- **R-0739** Names follow the same conventions: `db.client.connection.count`, `db.client.connection.max`, `db.client.connection.pending_requests`, `db.client.connection.wait_time`, `db.client.operation.duration`.
+- **R-0740** morm adds `db.morm.*` metrics for deadlocks, retries, lock timeouts and `shape_cache` churn.
+- **R-0741** A shorter interval gives finer graphs but more data points, and the platform's bill rises with it. It adds no cost per query.
 
-**R-0741** **No per-request SQL comments.** Trace-linking modes such as Datadog's `full` propagation add a `traceparent` comment to every statement. That makes every query text unique, so no statement could be reused. morm won't do it. `application_name` and `.tag()` give the fixed, service-level equivalent. A query still appears inside its request trace through the app-side span, and only the jump from a database sample to one exact trace is lost.
+**R-0742** **No per-request SQL comments.** Trace-linking modes such as Datadog's `full` propagation add a `traceparent` comment to every statement. That makes every query text unique, so no statement could be reused. morm won't do it. `application_name` and `.tag()` give the fixed, service-level equivalent. A query still appears inside its request trace through the app-side span, and only the jump from a database sample to one exact trace is lost.
 
 ## Test obligations
 

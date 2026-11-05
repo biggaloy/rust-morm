@@ -22,7 +22,7 @@ Raw SQL, related rows and keyset pages return correct rows on real Postgres, inc
 
 ## Out of scope
 
-- `sql!` (step 46)
+- `sql!` (step 45)
 - `fetch_json` formats (step 23)
 
 ## Requirements
@@ -99,8 +99,8 @@ let changed = db.sql("UPDATE orders SET seen = true WHERE id = $1", &[&id]).run(
 
 | ID | Mistake | Caught by |
 |---|---|---|
-| R-0759 | Paging with `OFFSET` | No helper exists; `keyset` is the documented path |
-| R-0772 | A nullable keyset column | Compile error |
+| R-0760 | Paging with `OFFSET` | No helper exists; `keyset` is the documented path |
+| R-0773 | A nullable keyset column | Compile error |
 
 ## Test obligations
 

@@ -75,15 +75,15 @@ tx.advisory_lock(&["billing", "reports"]).await?;
 
 ### Performance and memory / Behind a pooler
 
-- **R-0670** **`SET LOCAL` still works,** because it ends with the transaction.
-- **R-0672** `tx.advisory_lock` is unaffected, because it ends with the transaction.
-- **R-0675** **Prepared statements** need PgBouncer 1.21+ with `max_prepared_statements` set. On older versions, set `statement_cache = 0` and `shape_cache = 0`, so everything runs through `query_typed`.
+- **R-0671** **`SET LOCAL` still works,** because it ends with the transaction.
+- **R-0673** `tx.advisory_lock` is unaffected, because it ends with the transaction.
+- **R-0676** **Prepared statements** need PgBouncer 1.21+ with `max_prepared_statements` set. On older versions, set `statement_cache = 0` and `shape_cache = 0`, so everything runs through `query_typed`.
 
 ### Hard to misuse
 
 | ID | Mistake | Caught by |
 |---|---|---|
-| R-0767 | `tx.lock`, `advisory_lock` or `.skip_locked()` outside a transaction | Compile error |
+| R-0768 | `tx.lock`, `advisory_lock` or `.skip_locked()` outside a transaction | Compile error |
 
 ## Test obligations
 

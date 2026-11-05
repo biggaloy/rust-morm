@@ -142,13 +142,13 @@ changes.set(F.slug, slug);   // a pre hook can add or change a value
 
 ### Performance and memory / Query path
 
-- **R-0722** `BEGIN`, statement and `COMMIT` pipelined to cut auto-transaction round trips. This applies only to models without post hooks, because `post_insert` and `post_update` must run before the `COMMIT`.
+- **R-0723** `BEGIN`, statement and `COMMIT` pipelined to cut auto-transaction round trips. This applies only to models without post hooks, because `post_insert` and `post_update` must run before the `COMMIT`.
 
 ### Hard to misuse
 
 | ID | Mistake | Caught by |
 |---|---|---|
-| R-0782 | Hashing on an async thread, or while holding a connection | `clean` runs before checkout, and `blocking` moves it off the runtime |
+| R-0783 | Hashing on an async thread, or while holding a connection | `clean` runs before checkout, and `blocking` moves it off the runtime |
 
 ## Test obligations
 

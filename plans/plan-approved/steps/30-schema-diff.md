@@ -14,7 +14,7 @@ Diff two schemas into typed operations with inverses.
 
 ## Deliverables
 
-- Diff, `Op` with inverse, lock, transaction and data properties, topological planning
+- Diff, `Op` with inverse, lock, transaction and data properties, topological planning, ops for tables, columns, constraints, indexes, schemas and extensions
 
 ## End-to-end check
 

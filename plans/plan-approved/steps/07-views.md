@@ -126,9 +126,9 @@ db.update::<UserPatch>(id).apply(body).run().await?;
 
 | ID | Mistake | Caught by |
 |---|---|---|
-| R-0751 | Reading a hidden field | Compile error |
-| R-0752 | Parsing a request body into a model | Compile error: only views with `input` or `patch` have `Deserialize` |
-| R-0756 | Returning a password in JSON | `secret` is never serialized, even with `sudo` |
+| R-0752 | Reading a hidden field | Compile error |
+| R-0753 | Parsing a request body into a model | Compile error: only views with `input` or `patch` have `Deserialize` |
+| R-0757 | Returning a password in JSON | `secret` is never serialized, even with `sudo` |
 
 ## Test obligations
 

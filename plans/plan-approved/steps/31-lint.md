@@ -47,7 +47,8 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 
 ### Migrations / Commands
 
-- **R-0617** `lint`: statement risk, in the style of `squawk`, plus index advice. With `--url` it reads real table sizes and reports risky operations only on tables big enough to matter.
+- **R-0618** `lint`: statement risk, in the style of `squawk`, plus index advice. With `--url` it reads real table sizes and reports risky operations only on tables big enough to matter.
+- **R-0954** `morm-admin mgr <command>` runs migration and schema work, and each `mgr` command lives in its own module.
 
 ## Test obligations
 

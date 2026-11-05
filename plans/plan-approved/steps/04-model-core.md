@@ -149,7 +149,7 @@ db.insert(&mut p).await?;        // fills id and timestamps in place
 
 | ID | Mistake | Caught by |
 |---|---|---|
-| R-0773 | A generated `Default` disagreeing with a SQL default | Literals are read into `Default`; other defaults on non-`Option` fields are compile errors |
+| R-0774 | A generated `Default` disagreeing with a SQL default | Literals are read into `Default`; other defaults on non-`Option` fields are compile errors |
 
 ## Test obligations
 

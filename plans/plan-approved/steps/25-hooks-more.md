@@ -53,7 +53,7 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 
 ### Performance and memory / `db.hold()`
 
-- **R-0699** **Shutdown:** `db.close()` stops new checkouts, then waits up to `shutdown_timeout` for running transactions, `after_commit` handlers and holds to finish, then closes every connection. Apps call it after they stop accepting requests, so a deploy doesn't roll back work or lose events.
+- **R-0700** **Shutdown:** `db.close()` stops new checkouts, then waits up to `shutdown_timeout` for running transactions, `after_commit` handlers and holds to finish, then closes every connection. Apps call it after they stop accepting requests, so a deploy doesn't roll back work or lose events.
 
 ## Test obligations
 

@@ -39,43 +39,43 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 
 ### Performance and memory / `morm::Pool`
 
-- **R-0623** **Statement caches:** two bounded LRUs on each connection, below.
+- **R-0624** **Statement caches:** two bounded LRUs on each connection, below.
 
 ### Performance and memory / Statements
 
-- **R-0701** Two bounded LRUs per connection. Evicted statements are closed when dropped, which also frees Postgres memory.
+- **R-0702** Two bounded LRUs per connection. Evicted statements are closed when dropped, which also frees Postgres memory.
 
 | ID | Setting | Default | Holds |
 |---|---|---|---|
-| R-0702 | `statement_cache` | 256 | SQL fixed at compile time: `get` and `delete` by primary key, a model's static `insert`, `sql!`, `db.sql()` and `db.raw()` |
-| R-0703 | `shape_cache` | 128 | SQL put together at runtime: `select` builders including `filter_cols` and `.q()`, `get_by`, `get_where`, `get_q`, `delete_by`, `delete_where`, `delete_q`, inserts with defaulted fields, `update`, `update_q`, `.apply()`, and any query with a `.tag()` |
+| R-0703 | `statement_cache` | 256 | SQL fixed at compile time: `get` and `delete` by primary key, a model's static `insert`, `sql!`, `db.sql()` and `db.raw()` |
+| R-0704 | `shape_cache` | 128 | SQL put together at runtime: `select` builders including `filter_cols` and `.q()`, `get_by`, `get_where`, `get_q`, `delete_by`, `delete_where`, `delete_q`, inserts with defaulted fields, `update`, `update_q`, `.apply()`, and any query with a `.tag()` |
 
-- **R-0704** **Why two:** each combination of columns is different SQL text, so a 10-field patch has up to 1,023 shapes, and a client chooses which one it sends. morm can't tell a fixed `.set()` chain from a conditional one, so the split is by how the SQL is made. A fixed chain is one busy shape and stays cached.
-- **R-0705** **A shape is prepared the second time it's seen.** Its first use runs through `query_typed`, in one round trip, with no cache entry. A small fixed table of shape hashes per connection records what has been seen, and a collision only prepares a shape one use early.
-- **R-0706** `.limit(n)` is always a bound parameter, so a client's page size can't create new shapes.
-- **R-0707** **Worst case:** random one-off shapes are never prepared and evict nothing. A client repeating hundreds of shapes can churn `shape_cache`, but it can't touch `statement_cache`.
-- **R-0709** **Query tags:** `.tag("orders.list")` adds a fixed comment, `/* orders.list */`, so server logs, `auto_explain` and `pg_stat_activity` show which code ran a query. It costs nothing unless used.
-- **R-0710** It takes only `&'static str`, so it can't hold a request id, which would make every query text unique. Characters outside letters, digits, `.`, `_`, `:` and `-` become `_`, so a tag can't close the comment.
-- **R-0711** One tag is one extra statement: the same SQL under two tags is prepared twice.
-- **R-0712** `pg_stat_statements` ignores comments, so those two calls merge into one entry showing the first tag seen. Use logs for tags, and `pg_stat_statements` for totals per query.
-- **R-0713** Built SQL text is kept in a small bounded map keyed by model and column bitmask, so a repeated shape doesn't rebuild the string.
-- **R-0714** Other dynamic SQL and overflow go through `query_typed`, which needs no prepare round trips. It needs each parameter's Postgres type, and `ToSql` doesn't give that, so parameters are `&dyn morm::Param`, a trait that adds the type. Builder code knows the type from `F`.
-- **R-0716** `cached plan must not change result type` (0A000): evict and re-prepare once outside a transaction.
+- **R-0705** **Why two:** each combination of columns is different SQL text, so a 10-field patch has up to 1,023 shapes, and a client chooses which one it sends. morm can't tell a fixed `.set()` chain from a conditional one, so the split is by how the SQL is made. A fixed chain is one busy shape and stays cached.
+- **R-0706** **A shape is prepared the second time it's seen.** Its first use runs through `query_typed`, in one round trip, with no cache entry. A small fixed table of shape hashes per connection records what has been seen, and a collision only prepares a shape one use early.
+- **R-0707** `.limit(n)` is always a bound parameter, so a client's page size can't create new shapes.
+- **R-0708** **Worst case:** random one-off shapes are never prepared and evict nothing. A client repeating hundreds of shapes can churn `shape_cache`, but it can't touch `statement_cache`.
+- **R-0710** **Query tags:** `.tag("orders.list")` adds a fixed comment, `/* orders.list */`, so server logs, `auto_explain` and `pg_stat_activity` show which code ran a query. It costs nothing unless used.
+- **R-0711** It takes only `&'static str`, so it can't hold a request id, which would make every query text unique. Characters outside letters, digits, `.`, `_`, `:` and `-` become `_`, so a tag can't close the comment.
+- **R-0712** One tag is one extra statement: the same SQL under two tags is prepared twice.
+- **R-0713** `pg_stat_statements` ignores comments, so those two calls merge into one entry showing the first tag seen. Use logs for tags, and `pg_stat_statements` for totals per query.
+- **R-0714** Built SQL text is kept in a small bounded map keyed by model and column bitmask, so a repeated shape doesn't rebuild the string.
+- **R-0715** Other dynamic SQL and overflow go through `query_typed`, which needs no prepare round trips. It needs each parameter's Postgres type, and `ToSql` doesn't give that, so parameters are `&dyn morm::Param`, a trait that adds the type. Builder code knows the type from `F`.
+- **R-0717** `cached plan must not change result type` (0A000): evict and re-prepare once outside a transaction.
 
 ### Performance and memory / Query path
 
-- **R-0718** SQL for `get` and `delete` by primary key is a compile-time `&'static str`, as are a model's column list and its insert when it has no defaulted optional fields (section 8).
-- **R-0721** Positional decoding; borrowed parameters (`&dyn morm::Param`), not boxed.
-- **R-0723** Rows carry no per-row metadata.
-- **R-0724** No dynamic dispatch in hot paths.
+- **R-0719** SQL for `get` and `delete` by primary key is a compile-time `&'static str`, as are a model's column list and its insert when it has no defaulted optional fields (section 8).
+- **R-0722** Positional decoding; borrowed parameters (`&dyn morm::Param`), not boxed.
+- **R-0724** Rows carry no per-row metadata.
+- **R-0725** No dynamic dispatch in hot paths.
 
 ### Hard to misuse
 
 | ID | Mistake | Caught by |
 |---|---|---|
-| R-0753 | A per-request id in SQL, which would defeat every statement cache | `.tag()` takes only `&'static str`, and no trace comments are added |
-| R-0755 | Client-chosen fields evicting hot statements | Runtime-built SQL has its own cache, and one-off shapes are never prepared |
-| R-0762 | A stale cached statement after a migration | Re-prepared automatically outside a transaction |
+| R-0754 | A per-request id in SQL, which would defeat every statement cache | `.tag()` takes only `&'static str`, and no trace comments are added |
+| R-0756 | Client-chosen fields evicting hot statements | Runtime-built SQL has its own cache, and one-off shapes are never prepared |
+| R-0763 | A stale cached statement after a migration | Re-prepared automatically outside a transaction |
 
 ## Test obligations
 

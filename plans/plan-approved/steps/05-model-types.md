@@ -18,7 +18,7 @@ Map Rust types to columns, and decode rows with no needless allocation.
 
 ## End-to-end check
 
-A model with every inferred type decodes rows from a real Postgres table created by hand, borrowed and owned, and each compile-time rule is proven with `trybuild`.
+A model with every inferred type decodes rows from a real Postgres table created by hand, borrowed and owned, except the types step 13 owns: `Decimal`, `Numeric`, `Range<T>`, `IpAddr`, enums, domains and composite types. Each compile-time rule is proven with `trybuild`.
 
 ## Out of scope
 
@@ -59,14 +59,14 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 
 | ID | Mistake | Caught by |
 |---|---|---|
-| R-0761 | A Rust type wider than its column, or `usize` on a column | Compile error |
+| R-0762 | A Rust type wider than its column, or `usize` on a column | Compile error |
 
 ### Risks, open items and later work / Later: field-level encryption
 
-**R-0920** Encrypted columns, including per-user keys and rotation, are not designed yet. Nothing in 0.1 is built for them. These choices, which 0.1 needs anyway, keep them possible without breaking changes:
+**R-0921** Encrypted columns, including per-user keys and rotation, are not designed yet. Nothing in 0.1 is built for them. These choices, which 0.1 needs anyway, keep them possible without breaking changes:
 
-- **R-0921** `F` columns carry capability markers checked by the query API, so a column can refuse `.by()` or `set_expr`.
-- **R-0922** Encode and decode go through one per-column conversion layer, so a column's Rust type can differ from its stored type. It exists only at compile time: generated code calls `ToSql` and `FromSql` directly through static dispatch, with no branch, pointer, allocation or per-row state. A benchmark against hand-written tokio-postgres decoding checks that it adds no cost.
+- **R-0922** `F` columns carry capability markers checked by the query API, so a column can refuse `.by()` or `set_expr`.
+- **R-0923** Encode and decode go through one per-column conversion layer, so a column's Rust type can differ from its stored type. It exists only at compile time: generated code calls `ToSql` and `FromSql` directly through static dispatch, with no branch, pointer, allocation or per-row state. A benchmark against hand-written tokio-postgres decoding checks that it adds no cost.
 
 ## Test obligations
 

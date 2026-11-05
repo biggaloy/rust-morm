@@ -2,7 +2,7 @@
 
 - **Phase:** Runtime
 - **Depends on:** 23, 25, 08
-- **Can run beside:** 27, 29, 30, 31, 32, 33, 34, 37, 38, 39, 40, 42, 43, 44, 45, 47
+- **Can run beside:** 27, 29, 30, 31, 32, 33, 34, 37, 38, 39, 40, 42, 43, 44, 46, 47
 - **Crates:** `morm`, `morm-macros`
 - **PR approval:** CI and an independent review
 
@@ -62,7 +62,7 @@ let mask = G::from_names(&claims.roles)?;               // roles from a token or
 
 | ID | Mistake | Caught by |
 |---|---|---|
-| R-0775 | A mask handle exposing restricted columns | Reads on a handle fail closed with `Forbidden` |
+| R-0776 | A mask handle exposing restricted columns | Reads on a handle fail closed with `Forbidden` |
 
 ## Test obligations
 

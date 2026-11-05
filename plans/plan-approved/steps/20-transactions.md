@@ -64,18 +64,18 @@ db.transaction(async |tx| {                       // runs again on 40001 or 40P0
 
 ### Performance and memory / `morm::Pool`
 
-**R-0628** Queries joined on one `tx` are pipelined on its connection.
+**R-0629** Queries joined on one `tx` are pipelined on its connection.
 
 ### Performance and memory / Statements
 
-- **R-0717** `cached plan must not change result type` (0A000) inside a transaction returns a typed error.
+- **R-0718** `cached plan must not change result type` (0A000) inside a transaction returns a typed error.
 
 ### Hard to misuse
 
 | ID | Mistake | Caught by |
 |---|---|---|
-| R-0763 | Swallowing an error, then committing | `TransactionAborted` at runtime |
-| R-0765 | `.retry()` on a closure that changes captured rows | Compile error |
+| R-0764 | Swallowing an error, then committing | `TransactionAborted` at runtime |
+| R-0766 | `.retry()` on a closure that changes captured rows | Compile error |
 
 ## Test obligations
 

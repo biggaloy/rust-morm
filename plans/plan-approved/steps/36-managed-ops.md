@@ -14,7 +14,7 @@ Read each object kind from the catalog, diff it, and apply it with an exact inve
 
 ## Deliverables
 
-- IR, catalog reading, diff and `Op` with inverse for each kind: functions, procedures, triggers, policies, grants, views, materialized views, enums, domains
+- IR, catalog reading, diff and `Op` with inverse for each kind: functions, procedures, triggers, policies, grants, views, materialized views, enums, domains, composite types, sequences
 - Running `.sql` definitions on scratch
 - Placeholder roles on scratch
 - Read-only view models, `db.call`, `db.refresh`

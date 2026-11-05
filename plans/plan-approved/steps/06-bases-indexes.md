@@ -160,7 +160,7 @@ indexes(
 
 | ID | Mistake | Caught by |
 |---|---|---|
-| R-0768 | A duplicate of a unique, primary key or plain index | Compile error |
+| R-0769 | A duplicate of a unique, primary key or plain index | Compile error |
 
 ## Test obligations
 

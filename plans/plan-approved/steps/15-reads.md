@@ -116,9 +116,9 @@ let products: Vec<Product> = db.raw::<Product>("SELECT * FROM products WHERE att
 
 | ID | Mistake | Caught by |
 |---|---|---|
-| R-0749 | Building SQL from strings | Compile error (`q_unchecked` is the visible escape hatch) |
-| R-0750 | A list with no limit | Compile error: requires `.limit(n)`, `.all()` or `stream()` |
-| R-0758 | A request-supplied sort column | `.q()` refuses it; `order_by_allowed` checks it against a list |
+| R-0750 | Building SQL from strings | Compile error (`q_unchecked` is the visible escape hatch) |
+| R-0751 | A list with no limit | Compile error: requires `.limit(n)`, `.all()` or `stream()` |
+| R-0759 | A request-supplied sort column | `.q()` refuses it; `order_by_allowed` checks it against a list |
 
 ## Test obligations
 

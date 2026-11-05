@@ -39,8 +39,6 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 
 **R-0527** **Everything an application's schema depends on, from v1:** tables, columns (type, collation, nullability, default, identity, generated, comment), constraints (including deferrable and validated state), indexes, enums, domains, composite types, sequences, extensions, **database views, materialized views, functions, procedures, triggers, RLS policies, and grants** on managed objects.
 
-**R-0528** Tables and other objects with no definition in code are never changed, and morm never drops something because it's missing from the models. Other services' tables can share the database. If an unmanaged object depends on a change, that's a decision with evidence.
-
 ### Migrations / Source of truth
 
 **R-0542** No snapshots. `makemigrations` uses a scratch Postgres (`MORM_SCRATCH_URL`) and never touches staging or production:
@@ -51,7 +49,7 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 
 ### Risks, open items and later work / Risks
 
-- **R-0915** **Scratch databases:** `makemigrations` needs a Postgres where it can `CREATE DATABASE`.
+- **R-0916** **Scratch databases:** `makemigrations` needs a Postgres where it can `CREATE DATABASE`.
 
 ## Test obligations
 

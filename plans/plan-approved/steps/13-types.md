@@ -70,8 +70,8 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 
 | ID | Mistake | Caught by |
 |---|---|---|
-| R-0769 | `Decimal` on a `numeric` too large for it, or a float on `numeric` | Compile error |
-| R-0770 | A rounded `numeric` value | Error on read and on write |
+| R-0770 | `Decimal` on a `numeric` too large for it, or a float on `numeric` | Compile error |
+| R-0771 | A rounded `numeric` value | Error on read and on write |
 
 ## Test obligations
 

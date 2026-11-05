@@ -63,26 +63,26 @@ rust-morm/
 
 ### Performance and memory / Query path
 
-- **R-0725** Minimal dependencies and features; no CLI framework in `morm-admin`.
+- **R-0726** Minimal dependencies and features; no CLI framework in `morm-admin`.
 
 ### Testing and CI
 
-**R-0787** Tests are written with the code: **a milestone isn't done until its tests pass in CI.**
+**R-0788** Tests are written with the code: **a milestone isn't done until its tests pass in CI.**
 
-**R-0788** Migration tests:
+**R-0789** Migration tests:
 
-**R-0789** Outbox tests:
+**R-0790** Outbox tests:
 
 ### Testing and CI / GitHub Actions (`.github/workflows/`)
 
 | ID | Workflow | When | Runs |
 |---|---|---|---|
-| R-0790 | `ci.yml` | Every push and PR | `fmt`, `clippy -D warnings`, unit, `trybuild`, doc tests, integration on Postgres 15–18 (TCP and Unix socket), `pooler` tests against a PgBouncer service, MSRV build, feature combinations, migration suite including fault injection |
-| R-0791 | `nightly.yml` | Daily | Long property tests, fuzzing, full chain, `cargo audit` and `cargo deny` |
-| R-0792 | `bench.yml` | Weekly and on demand | Benchmarks, compared with the last run; tracks binary size and RSS |
-| R-0793 | `release.yml` | On tag | Tests, publish crates, build `morm-admin` binaries |
+| R-0791 | `ci.yml` | Every push and PR | `fmt`, `clippy -D warnings`, unit, `trybuild`, doc tests, integration on Postgres 15–18 (TCP and Unix socket), `pooler` tests against a PgBouncer service, MSRV build, feature combinations, migration suite including fault injection |
+| R-0792 | `nightly.yml` | Daily | Long property tests, fuzzing, full chain, `cargo audit` and `cargo deny` |
+| R-0793 | `bench.yml` | Weekly and on demand | Benchmarks, compared with the last run; tracks binary size and RSS |
+| R-0794 | `release.yml` | On tag | Tests, publish crates, build `morm-admin` binaries |
 
-**R-0794** Every merge to `main` requires `ci.yml` to pass. The repo is private, so Actions minutes are limited: the Postgres matrix runs fully on `main` and PRs, while pushes to other branches use one version.
+**R-0795** Every merge to `main` requires `ci.yml` to pass. The repo is private, so Actions minutes are limited: the Postgres matrix runs fully on `main` and PRs, while pushes to other branches use one version.
 
 ## Test obligations
 

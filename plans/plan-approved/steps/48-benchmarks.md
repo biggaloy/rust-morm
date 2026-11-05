@@ -1,8 +1,8 @@
 # Step 48: Benchmarks
 
 - **Phase:** Finish
-- **Depends on:** 26, 27, 47, 46
-- **Can run beside:** 39, 40, 41, 43, 44, 45, 49
+- **Depends on:** 26, 27, 47, 45
+- **Can run beside:** 39, 40, 41, 43, 44, 46, 49
 - **Crates:** `benches/`
 - **PR approval:** CI and an independent review
 
@@ -47,14 +47,14 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 
 ### Performance and memory / Statements
 
-- **R-0715** The first benchmark run measures this split against a single cache, and a patch through `query_typed` against a prepared one.
+- **R-0716** The first benchmark run measures this split against a single cache, and a patch through `query_typed` against a prepared one.
 
 ### Performance and memory / Build and benchmarks
 
-- **R-0742** Release profile for benches and examples, recommended in the docs: `lto = "fat"`, `codegen-units = 1`, `strip = true`, `panic = "unwind"` (so a panicking handler doesn't kill the server). A library's profile doesn't reach its users.
-- **R-0743** Criterion benchmarks in CI against raw tokio-postgres, SQLx, SeaORM and Diesel.
-- **R-0744** Telemetry overhead on a primary-key read, for each row of the cost table in section 11. Target: under 1% with `tracing` on and the default `span_sample`. A miss is a bug, not a note in the docs.
-- **R-0745** Also: `morm::Pool` vs `deadpool-postgres`, pool sizes under mixed fast and slow queries, `fetch_ref` vs `fetch` vs `fetch_json`, morm's `Decimal` decoding vs `rust_decimal`'s, binary size and RSS with `tls` compiled in but unused, and RSS on both app and Postgres.
+- **R-0743** Release profile for benches and examples, recommended in the docs: `lto = "fat"`, `codegen-units = 1`, `strip = true`, `panic = "unwind"` (so a panicking handler doesn't kill the server). A library's profile doesn't reach its users.
+- **R-0744** Criterion benchmarks in CI against raw tokio-postgres, SQLx, SeaORM and Diesel.
+- **R-0745** Telemetry overhead on a primary-key read, for each row of the cost table in section 11. Target: under 1% with `tracing` on and the default `span_sample`. A miss is a bug, not a note in the docs.
+- **R-0746** Also: `morm::Pool` vs `deadpool-postgres`, pool sizes under mixed fast and slow queries, `fetch_ref` vs `fetch` vs `fetch_json`, morm's `Decimal` decoding vs `rust_decimal`'s, binary size and RSS with `tls` compiled in but unused, and RSS on both app and Postgres.
 
 ## Test obligations
 

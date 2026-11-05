@@ -43,6 +43,10 @@ Owned elsewhere, and quoted so this step needs no other file. Nothing here needs
 
 Copied word for word from the approved plan. Every ID must end with a test tagged with it, as `rules.md` describes. Section references such as "section 8" mean the frozen `plans/rust-morm-plan.md`; everything a step needs is copied here or in `contracts.md`.
 
+### Migrations / What's managed
+
+**R-0528** Tables and other objects with no definition in code are never changed, and morm never drops something because it's missing from the models. Other services' tables can share the database. If an unmanaged object depends on a change, that's a decision with evidence.
+
 ### Migrations / Down that can restore data
 
 - **R-0569** **Retire instead of drop.** A dropped column is renamed `_morm_retired_<migration>_<col>`, with NOT NULL and defaults removed, and with its indexes, CHECK constraints and triggers dropped, along with foreign keys going out from the retired object. Otherwise a column the app no longer knows about would keep blocking deletes, or cascade them silently. The ledger records each definition. A dropped table moves to the `_morm_retired` schema, with its migration in the name. Long names follow the 63-byte rule with the hash suffix, because Postgres would truncate them and two could collide. The ledger records each original name. Rollback restores them with their data, rebuilds indexes concurrently, and recreates foreign keys and CHECKs as `NOT VALID`, then `VALIDATE`. Rows changed in the meantime can fail those steps, such as a parent deleted since, or a duplicate where a unique index was, so it stops with the offending rows and offers a decision: clear those values, delete those rows, or keep the constraint `NOT VALID`.
@@ -61,9 +65,13 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 
 | ID | Mistake | Caught by |
 |---|---|---|
-| R-0777 | A view or generated column still using a retired column | Retire refuses and lists it; `purge` never cascades |
-| R-0778 | A retired column blocking deletes | Retiring drops its outgoing foreign keys, CHECKs and triggers |
-| R-0779 | A retire or rename breaking a trigger's function body | `makemigrations` and `migrate` search function source and stop on a hit |
+| R-0778 | A view or generated column still using a retired column | Retire refuses and lists it; `purge` never cascades |
+| R-0779 | A retired column blocking deletes | Retiring drops its outgoing foreign keys, CHECKs and triggers |
+| R-0780 | A retire or rename breaking a trigger's function body | `makemigrations` and `migrate` search function source and stop on a hit |
+
+### Migrations / Commands
+
+- **R-0951** `purge --older-than D | --now ID`.
 
 ## Test obligations
 

@@ -21,6 +21,17 @@ Every way of adding rows, including bulk paths.
 
 A million rows go through each `insert_many` path, atomically or in batches, and defaults, arrays and explicit ids behave as specified on real Postgres.
 
+## Context from other steps
+
+Owned elsewhere, and quoted so this step needs no other file. Nothing here needs a test in this step.
+
+> **A commit is confirmed, never assumed.** After a failed statement, Postgres turns `COMMIT` into `ROLLBACK` with no error, and tokio-postgres's `commit()` returns `Ok` either way, so a swallowed error would look like a saved transaction. Two checks prevent that:
+>
+> - Any Postgres error marks the transaction as failed. Further use returns that error, and a closure returning `Ok` still gets it.
+>
+> - `COMMIT` is sent as `SELECT 1; COMMIT` in one message. In a failed transaction the `SELECT` errors and Postgres skips the `COMMIT`, so this also catches errors morm didn't see, with no extra round trip. morm then rolls back and returns `TransactionAborted`.
+>
+
 ## Out of scope
 
 - Hooks (step 24)
@@ -80,13 +91,13 @@ db.update::<Product>(42).set_expr(F.stock, "stock - $1", &n).run().await?;  // a
 
 ### Performance and memory / Query path
 
-- **R-0720** Bulk insert via `UNNEST` (one stable statement, no 65,535-parameter limit), and `COPY` above a threshold, whose value comes from the benchmark.
+- **R-0721** Bulk insert via `UNNEST` (one stable statement, no 65,535-parameter limit), and `COPY` above a threshold, whose value comes from the benchmark.
 
 ### Hard to misuse
 
 | ID | Mistake | Caught by |
 |---|---|---|
-| R-0781 | Explicit ids leaving the sequence behind | A normal insert ignores the id; `.explicit_ids()` moves the sequence |
+| R-0782 | Explicit ids leaving the sequence behind | A normal insert ignores the id; `.explicit_ids()` moves the sequence |
 
 ## Test obligations
 

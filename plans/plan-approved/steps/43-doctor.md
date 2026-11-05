@@ -2,7 +2,7 @@
 
 - **Phase:** Tools
 - **Depends on:** 42
-- **Can run beside:** 08, 23, 26, 39, 40, 41, 44, 46, 47, 48, 49
+- **Can run beside:** 08, 23, 26, 39, 40, 41, 44, 45, 47, 48, 49
 - **Crates:** `morm-admin`, `morm-core`
 - **PR approval:** CI and an independent review
 
@@ -43,7 +43,7 @@ Owned elsewhere, and quoted so this step needs no other file. Nothing here needs
 
 ## Out of scope
 
-- `size` (step 45)
+- `size` (step 46)
 
 ## Requirements
 
@@ -69,22 +69,22 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 
 ### Migrations / Runtime guarantees
 
-- **R-0602** `doctor` reports the server version.
+- **R-0603** `doctor` reports the server version.
 
 ### Performance and memory / `max_connections`
 
-**R-0649** `morm-admin doctor` runs the same check.
+**R-0650** `morm-admin doctor` runs the same check.
 
 ### Performance and memory / Behind a pooler
 
-- **R-0669** `doctor` checks that they're there.
-- **R-0677** `doctor` warns if `MORM_MIGRATION_URL` doesn't point at Postgres directly.
+- **R-0670** `doctor` checks that they're there.
+- **R-0678** `doctor` warns if `MORM_MIGRATION_URL` doesn't point at Postgres directly.
 
 ### Hard to misuse
 
 | ID | Mistake | Caught by |
 |---|---|---|
-| R-0784 | Query values, such as password hashes, reaching the Postgres log | `doctor` warns when statements are logged and `log_parameter_max_length` isn't `0` |
+| R-0785 | Query values, such as password hashes, reaching the Postgres log | `doctor` warns when statements are logged and `log_parameter_max_length` isn't `0` |
 
 ## Test obligations
 

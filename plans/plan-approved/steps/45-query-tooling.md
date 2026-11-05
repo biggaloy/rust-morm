@@ -1,8 +1,8 @@
-# Step 46: `sql!`, `check-sql`, test support and the loop detector
+# Step 45: `sql!`, `check-sql`, test support and the loop detector
 
 - **Phase:** Tools
 - **Depends on:** 42
-- **Can run beside:** 23, 39, 40, 43, 44, 45
+- **Can run beside:** 23, 39, 40, 43, 44
 - **Crates:** `morm`, `morm-macros`, `morm-admin`
 - **PR approval:** CI and an independent review
 
@@ -46,16 +46,16 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 
 ### Migrations / Commands
 
-- **R-0618** `check-sql`: `PREPARE` and `EXPLAIN` on every registered query.
+- **R-0619** `check-sql`: `PREPARE` and `EXPLAIN` on every registered query.
 
 ### Hard to misuse
 
 | ID | Mistake | Caught by |
 |---|---|---|
-| R-0783 | Queries in a loop | Detector in debug builds and `#[morm::test]`: the same statement repeating many times in a short window warns, and fails the test. `fetch_page`, `.in_batches`, streams, the outbox worker and retries don't count, and `morm::allow_repeats(fut)` marks an intended loop |
-| R-0785 | Filtering on an unindexed column | `morm-admin mgr check-sql` runs `EXPLAIN` on every registered query |
+| R-0784 | Queries in a loop | Detector in debug builds and `#[morm::test]`: the same statement repeating many times in a short window warns, and fails the test. `fetch_page`, `.in_batches`, streams, the outbox worker and retries don't count, and `morm::allow_repeats(fut)` marks an intended loop |
+| R-0786 | Filtering on an unindexed column | `morm-admin mgr check-sql` runs `EXPLAIN` on every registered query |
 
-**R-0786** The compiler can't see a query inside a loop, so that one is caught in tests and debug builds, not at compile time.
+**R-0787** The compiler can't see a query inside a loop, so that one is caught in tests and debug builds, not at compile time.
 
 ## Test obligations
 
