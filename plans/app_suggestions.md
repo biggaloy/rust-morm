@@ -48,4 +48,31 @@ Each Postgres connection can use `work_mem` per sort or hash operation, so pool 
 
 ## Monitoring
 
-Enable `pg_stat_statements` for slow and frequent queries. Watch `pg_stat_activity` for long transactions and lock waits. Track bloat and disk use. morm's `pool_stats()` adds pool waits, deadlocks, retries and lock timeouts from the app's side.
+Use Postgres for slow queries, not the app. It gives you plans, per-query statistics and lock reports with nothing added to your binary:
+
+```conf
+shared_preload_libraries = 'pg_stat_statements,auto_explain'
+log_min_duration_statement = 500ms
+auto_explain.log_min_duration = 1s
+auto_explain.log_analyze = off                  # on adds timing overhead to every query
+log_lock_waits = on
+log_temp_files = 0
+log_parameter_max_length = 0                    # required, see below
+auto_explain.log_parameter_max_length = 0       # required, see below
+```
+
+Changing `shared_preload_libraries` needs a restart. Then run `CREATE EXTENSION pg_stat_statements;` in each database. `auto_explain` needs no `CREATE EXTENSION`.
+
+**Keep query values out of the logs.** Both parameter settings default to `-1`, full values. Any statement that gets logged, including every slow query, then writes its parameters to the log, so a slow `UPDATE` setting a password hash puts that hash in the file. Setting both to `0` keeps the SQL and drops the values. `morm-admin doctor` warns about this.
+
+| Tool | Tells you |
+|---|---|
+| `log_min_duration_statement` | Each slow query |
+| `auto_explain` | Why it was slow, through its plan |
+| `pg_stat_statements` | What to optimize: calls, total and average time per query shape |
+| `log_lock_waits` | Queries that waited longer than `deadlock_timeout` for a lock |
+| `log_temp_files` | Queries that spilled to disk because `work_mem` was too small |
+
+Watch `pg_stat_activity` for long transactions and lock waits, and track bloat and disk use.
+
+Postgres can't see time spent outside it. morm's `pool_stats()` adds pool waits, deadlocks, retries and lock timeouts from the app's side, so watch pool wait time first when users report slowness and the server looks fine. `application_name` and `.tag()` show which app and which code ran a query.

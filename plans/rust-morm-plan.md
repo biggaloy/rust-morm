@@ -87,7 +87,7 @@ Cargo features of `morm`:
 - `uuid` (default): UUID columns and UUIDv7 generation
 - `json` (default): `jsonb` and JSON output
 - `decimal` (default): `Decimal` for `numeric` columns, through `rust_decimal` (section 8)
-- `tracing`: one span per query with SQL text, duration, row count and pool wait time, plus slow-query logs, compiled out when off. Never parameter values, because they hold passwords, tokens and personal data
+- `tracing`: one span per query with SQL text, duration, row count and pool wait time, compiled out when off. Never parameter values, because they hold passwords, tokens and personal data. Slow-query logging is left to Postgres, which also gives plans and per-query statistics; morm covers only what the server can't see, which is pool waits, network and decode time, and which code ran the query
 - `utoipa`: OpenAPI schemas
 - `outbox`: the transactional outbox (section 9), compiled out when off
 
@@ -234,7 +234,7 @@ Precedence: defaults, then `morm.toml`, then environment variables, then code. T
 
 **`search_path`** is set on every connection, so another role can't shadow a table or function through a schema earlier in the path. `lint` warns about a `SECURITY DEFINER` function with no `SET search_path` of its own.
 
-**Credentials:** `MORM_DB_*` values override the matching parts of `DATABASE_URL`, so a URL can hold the address while the password comes from `MORM_DB_PASSWORD_FILE`. Setting both `MORM_DB_PASSWORD` and `MORM_DB_PASSWORD_FILE` is an error. `sslmode` values other than `disable` and `prefer` need the `tls` feature, and morm refuses to start without it, so it never silently connects unencrypted. Passwords are never logged, and they're masked in `Debug` output and error messages. `morm-admin doctor` checks that credentials work and warns if `morm.toml` contains a literal password.
+**Credentials:** `MORM_DB_*` values override the matching parts of `DATABASE_URL`, so a URL can hold the address while the password comes from `MORM_DB_PASSWORD_FILE`. Setting both `MORM_DB_PASSWORD` and `MORM_DB_PASSWORD_FILE` is an error. `sslmode` values other than `disable` and `prefer` need the `tls` feature, and morm refuses to start without it, so it never silently connects unencrypted. Passwords are never logged, and they're masked in `Debug` output and error messages. `morm-admin doctor` checks that credentials work, warns if `morm.toml` contains a literal password, and warns if Postgres can log query values: `log_parameter_max_length` and `auto_explain.log_parameter_max_length` default to full values, which puts anything sent as a parameter, including `secret` columns, in the server log.
 
 **Named pools** are full connection profiles. Any `[database]` field can be set in `[pools.<name>]`, so a job can log in as another role or reach another host. Unset connection fields come from `[database]`, and unset pool settings from `[pool]`, except `min`, which defaults to 1. A separate process can open only its own profile, so job settings live in the same file:
 
@@ -1306,7 +1306,7 @@ Everything goes through `db`, so the pool can be replaced later without changing
 
 - Connections needed ≈ queries per second × seconds each query holds a connection. For example, 2,000 queries/s × 5ms needs about 10.
 - Only as many queries run at once as Postgres has free CPU cores. Extra connections help when queries wait on disk, locks or a slow network. When everything is CPU-bound, they only move the queue into Postgres and add contention and memory.
-- `db.pool_stats()` reports wait time, busy connections and holds. If tasks wait while Postgres CPU isn't maxed out, raise `max`. If Postgres CPU is maxed out, a bigger pool won't help, so fix the queries or add cores.
+- `db.pool_stats()` reports wait time, busy, idle and waiting connections, and holds. These are plain atomic counters and always on, because a request waiting for a connection is invisible to Postgres: the server sees fast queries while users see slow responses. If tasks wait while Postgres CPU isn't maxed out, raise `max`. If Postgres CPU is maxed out, a bigger pool won't help, so fix the queries or add cores.
 
 ### `max_connections`
 
@@ -1429,11 +1429,15 @@ db.release(held).await;      // or held.release().await
 | Setting | Default | Holds |
 |---|---|---|
 | `statement_cache` | 256 | Compile-time SQL: `get`, `insert`, `delete` by primary key, `sql!`, and anything else with a `&'static str` |
-| `shape_cache` | 128 | SQL built at runtime: `update`, `update_q`, `.apply()`, `get_q`, `delete_q` |
+| `shape_cache` | 128 | SQL built at runtime: `update`, `update_q`, `.apply()`, `get_q`, `delete_q`, and any query with a `.tag()` |
 
 - **Why two:** each combination of columns is different SQL text, so a 10-field patch has up to 1,023 shapes, and a client chooses which one it sends. morm can't tell a fixed `.set()` chain from a conditional one, so the split is by how the SQL is made. A fixed chain is one busy shape and stays cached.
 - **A shape is prepared the second time it's seen.** Its first use runs through `query_typed`, in one round trip, with no cache entry. A small fixed table of shape hashes per connection records what has been seen, and a collision only prepares a shape one use early.
 - **Worst case:** random one-off shapes are never prepared and evict nothing. A client repeating hundreds of shapes can churn `shape_cache`, but it can't touch `statement_cache`. The `tracing` feature logs heavy churn.
+- **Query tags:** `.tag("orders.list")` adds a fixed comment, `/* orders.list */`, so server logs, `auto_explain` and `pg_stat_activity` show which code ran a query. It costs nothing unless used.
+  - It takes only `&'static str`, so it can't hold a request id, which would make every query text unique. Characters outside letters, digits, `.`, `_`, `:` and `-` become `_`, so a tag can't close the comment.
+  - One tag is one extra statement: the same SQL under two tags is prepared twice.
+  - `pg_stat_statements` ignores comments, so those two calls merge into one entry showing the first tag seen. Use logs for tags, and `pg_stat_statements` for totals per query.
 - Built SQL text is kept in a small bounded map keyed by model and column bitmask, so a repeated shape doesn't rebuild the string.
 - Other dynamic SQL and overflow go through `query_typed`, which needs no prepare round trips.
 - The first benchmark run measures this split against a single cache, and a patch through `query_typed` against a prepared one.
@@ -1488,6 +1492,7 @@ db.release(held).await;      // or held.release().await
 | A rounded `numeric` value | Error on read and on write |
 | Pool settings that don't fit the server | `morm-admin size` exits with `1`, so CI can catch it; `doctor` reports it |
 | Queries in a loop | Detector in debug builds and `#[morm::test]`: the same statement repeating in one task warns, and fails the test |
+| Query values, such as password hashes, reaching the Postgres log | `doctor` warns when statements are logged and `log_parameter_max_length` isn't `0` |
 | Filtering on an unindexed column | `morm-admin mgr check-sql` runs `EXPLAIN` on every registered query |
 
 The compiler can't see a query inside a loop, so that one is caught in tests and debug builds, not at compile time.
@@ -1500,7 +1505,7 @@ Tests are written with the code: **a milestone isn't done until its tests pass i
 
 - **Unit:** macro output, SQL generation, diff, naming.
 - **Compile-fail (`trybuild`):** every compile-time guarantee, including hidden view fields, `HasPk`, unfiltered update and delete, update with no `.set()`, list with no limit, `self` absent in update and delete hooks, `Deserialize` on models and on views without `input` or `patch`, protected columns in `input` and `patch`, a derived `Serialize` or `Debug` on a model, non-static `q()` and `sql()`, uppercase names without `keep_case`, columns narrower than their Rust type, `usize` and `isize`, unknown group names, scoped groups on `#[model(groups)]`, a scoped mask on another model, duplicate indexes, duplicate base fields, over-long and colliding names, `Decimal` and float on unsuitable `numeric` columns.
-- **Integration on real Postgres:** insert, every get, update and delete form, views, groups, hook inputs (`Changes`, `Target`), hooks order, the loop detector, `after_commit` on commit and skip on rollback, all list and JSON paths, pool growth and idle shrinking, `max_connections` adjustment, `db.hold()` release on every exit path, `ConnectionLost`, cancellation, forced deadlocks in both kinds, swallowed errors never reporting a commit, `CommitUnknown`, savepoint behaviour after deadlocks, single-statement and transaction retry limits, every timeout, cancelled queries releasing their locks, `max_holds`, `.lock_ordered()` and bulk writes under concurrent load, advisory key stability, `skip_locked` with rival workers, `.in_batches` stopping and resuming, every `insert_many` path at a million rows, keyset pages under concurrent writes and with mixed sort directions, tampered cursors, `order_by_allowed`, `.custom_plan()`, connections discarded on `25006`, `load_related` with `.limit_each`, `secret` absent from every JSON path and `Debug`, unknown input fields rejected, `patch` missing, null and value states on nullable and NOT NULL columns, `EmptyPatch` and `.allow_empty()`, `.set()` winning over `.apply()`, `shape_cache` isolation under random and repeated shapes, every integer type at its limits through insert, read and JSON, range CHECKs rejecting direct SQL writes, `OutOfRange`, `InvalidText`, `json_string` on every path, `db.close()` finishing in-flight work, models in several schemas, `morm-admin size` estimates checked against measured memory, `--here` with and without cgroup limits, `--measure`.
+- **Integration on real Postgres:** insert, every get, update and delete form, views, groups, hook inputs (`Changes`, `Target`), hooks order, the loop detector, `after_commit` on commit and skip on rollback, all list and JSON paths, pool growth and idle shrinking, `max_connections` adjustment, `db.hold()` release on every exit path, `ConnectionLost`, cancellation, forced deadlocks in both kinds, swallowed errors never reporting a commit, `CommitUnknown`, savepoint behaviour after deadlocks, single-statement and transaction retry limits, every timeout, cancelled queries releasing their locks, `max_holds`, `.lock_ordered()` and bulk writes under concurrent load, advisory key stability, `skip_locked` with rival workers, `.in_batches` stopping and resuming, every `insert_many` path at a million rows, keyset pages under concurrent writes and with mixed sort directions, tampered cursors, `order_by_allowed`, `.custom_plan()`, connections discarded on `25006`, `load_related` with `.limit_each`, `secret` absent from every JSON path and `Debug`, unknown input fields rejected, `patch` missing, null and value states on nullable and NOT NULL columns, `EmptyPatch` and `.allow_empty()`, `.set()` winning over `.apply()`, `shape_cache` isolation under random and repeated shapes, every integer type at its limits through insert, read and JSON, range CHECKs rejecting direct SQL writes, `OutOfRange`, `InvalidText`, `json_string` on every path, `db.close()` finishing in-flight work, models in several schemas, `.tag()` in server logs and its character filtering, `doctor` warnings on parameter logging, `morm-admin size` estimates checked against measured memory, `--here` with and without cgroup limits, `--measure`.
 - **Property tests:** random models and data round-trip through insert, read and JSON.
 - **Doc tests:** every README and doc example compiles and runs.
 - **`#[morm::test]`:** gives each test a database cloned from a migrated template, for this project and its users.
@@ -1575,6 +1580,7 @@ One compact, complete file at the repo root. It must be enough to use morm effic
 | `input = "..."` | A view takes a request body that creates a row |
 | `patch = "..."` | A view takes a partial update, such as a PATCH body |
 | `.allow_empty()` | An empty update is fine, and you will not handle `EmptyPatch` |
+| `.tag()` | You need to trace a query in the server logs back to the code that ran it |
 | `morm-admin size` | You change pool or Postgres memory settings and want to check they fit the server |
 | `size --here` | You need a starting config for the machine you're on |
 | `size --measure` | You want estimates based on your app's real statements |
@@ -1642,7 +1648,7 @@ One compact, complete file at the repo root. It must be enough to use morm effic
 7. **Hooks and outbox:** `Changes`, `Target`, all hooks, `validate`, `validate_changes`, `after_commit`, automatic transactions, `pg_outbox!`, `emit`, the worker and `morm-admin outbox`.
 8. **`morm-admin`:** `init`, `doctor`, `import`, `scratch`, `size`, `morm-mgr` packaging, Axum template.
 9. **Query safety:** `sql!`, `check-sql`, upsert, UNNEST and COPY, `#[morm::test]`.
-10. **Remaining features:** UUIDv7, `tls`, schemas and `utoipa`, optimistic locking, tracing, typed FKs, settings, pipelined transactions.
+10. **Remaining features:** UUIDv7, `tls`, schemas and `utoipa`, optimistic locking, tracing, `.tag()`, typed FKs, settings, pipelined transactions.
 11. **Benchmarks, lock-order detector, hardening, full README, 0.1.0 release.**
 
 ---
