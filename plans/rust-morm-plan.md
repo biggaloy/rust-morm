@@ -44,7 +44,7 @@ Non-goals: other databases, a query language that replaces SQL, runtime reflecti
 | JSON | Direct from a row, with no intermediate `Value` or map. Postgres-built JSON also available |
 | Migration source of truth | Models and chain replayed in scratch databases, compared through the Postgres catalog. No snapshots |
 | Admin | One tool, `morm-admin`, for everything administrative |
-| Rust edition / MSRV | 2024 edition; MSRV 1.99, the current stable. Moves up to the latest stable until the first release |
+| Rust edition / MSRV | 2024 edition; MSRV 1.99.1, the current stable. Moves up to the latest stable until the first release |
 | Decimal | `numeric` maps to `Decimal` where it fits exactly and to `morm::Numeric` otherwise. Values are never silently rounded |
 | Names | morm's `__UNQ_`, `__IDX_`, `__FK_` convention, shortened with a hash at Postgres's 63-byte limit |
 | License | BSD-3-Clause (same as python-morm) |
@@ -337,7 +337,7 @@ db.insert(&mut p).await?;        // fills id and timestamps in place
 - an empty `impl Hooks` (unless `hooks` is set)
 - schema metadata, compiled only into `morm-mgr`, with no model list to maintain
 
-Compile-time checks: unknown columns in `ordering`, `indexes` and `include`; foreign keys whose types don't match; generic structs. Postgres checks `filter` and `expr` on scratch, because a macro can't parse SQL. Groups are `u64` masks with one bit per group, so a model can have up to 64 groups, with no limit on fields.
+Compile-time checks: unknown columns in `ordering`, `indexes` and `include`; foreign keys whose types don't match; generic structs. Postgres checks `filter` and `expr` on scratch, because a macro can't parse SQL. Groups are `u64` masks with one bit per group, so a permission check is one AND with no allocation. A model can have up to 64 groups, and a 65th is a compile error. Fields have no limit.
 
 ---
 
@@ -378,7 +378,7 @@ pub(in crate::auth) struct UserAdmin { /* every column */ }
 
 - **Fields without a group** are open to everyone.
 - **Compile time:** `#[view(pub Mod, groups = "mod")]` builds a view from ungrouped fields plus that group.
-- **Runtime:** each group is a generated `u64` mask (`User::G.admin`). `db.groups(User::G.admin | User::G.mod)` or `db.sudo()` returns a scoped handle.
+- **Runtime:** each group is a generated `u64` mask (`User::G.admin`). `db.groups(User::G.admin | User::G.mod)` or `db.sudo()` returns a scoped handle. Bit numbers are per model, so masks are typed (`Mask<User>`), and using a `User` mask on another model is a compile error.
 - **Runtime enforcement is on write and on output.** An `update` setting fields outside the mask fails, and `to_json_for(mask)` omits them. It's a single bit operation.
 - **On a whole model:** `#[model(groups = "staff")]` puts every field without its own `groups` into that group, so the rule covers the whole model in one place. `#[model(sudo)]` does the same with `sudo`. A field's own `groups` takes priority.
 - `Model::groups()` lists the model's groups, and `Model::group_fields("mod")` lists a group's fields.
