@@ -38,7 +38,7 @@ Non-goals: other databases, a query language that replaces SQL, runtime reflecti
 | Base models | Built-in `common`, `common_uuid`, `pk_only`, `pk_uuid_only`, `bare`, plus your own with `#[morm::base]` |
 | Change tracking | None. There is no `save`. Updates name their columns, and never load a row first |
 | Rows | Plain structs with public fields and zero per-row overhead |
-| Field access control | Views at compile time, groups at runtime, on a field or a whole model. `sudo` is a group with a reserved name |
+| Field access control | Views at compile time, groups at runtime. Global groups mean the same everywhere and apply to fields and whole models; model-scoped groups apply to one model's fields. `sudo` is a built-in global group |
 | Validation | One mechanism: declarative rules and `clean`, generated inline, run only on write |
 | Hooks | Trait with zero-cost default methods. Update and delete hooks receive only what the statement contains |
 | JSON | Direct from a row, with no intermediate `Value` or map. Postgres-built JSON also available |
@@ -284,7 +284,8 @@ pub struct Invoice { pub total: Decimal }       // invoice.tenant_id is a plain 
 | `indexes(...)` | list of indexes (section 7) |
 | `extensions` | Postgres extensions the model needs |
 | `hooks` | the model has its own `impl Hooks`; `hooks(tx)` also runs its statements in a transaction |
-| `groups`, `sudo` | groups for the whole model (section 5) |
+| `groups`, `sudo` | global groups for the whole model (section 5) |
+| `scoped_groups` | declares groups that exist only on this model (section 5) |
 | `no_default` | don't generate `Default` |
 
 ### Field options (`#[col(...)]`)
@@ -333,11 +334,11 @@ db.insert(&mut p).await?;        // fills id and timestamps in place
 - positional decoding (`from_row`), name-based decoding for raw queries (`from_row_named`), and a borrowed `ProductRef<'r>`
 - `Product::F.<field>`: typed, quoted column references, checked at compile time; `Product::F.alias("p")` for JOINs, with prefix decoding for two models in one row
 - `Default` (unless `no_default`), `Product::new(...)`, `Serialize`, `Deserialize`, `json_schema()`
-- `Product::G.<group>` masks, when the model has groups
+- `Product::G.<group>` masks, when the model has scoped groups
 - an empty `impl Hooks` (unless `hooks` is set)
 - schema metadata, compiled only into `morm-mgr`, with no model list to maintain
 
-Compile-time checks: unknown columns in `ordering`, `indexes` and `include`; foreign keys whose types don't match; generic structs. Postgres checks `filter` and `expr` on scratch, because a macro can't parse SQL. Groups are `u64` masks with one bit per group, so a permission check is one AND with no allocation. A model can have up to 64 groups, and a 65th is a compile error. Fields have no limit.
+Compile-time checks: unknown columns in `ordering`, `indexes` and `include`; foreign keys whose types don't match; generic structs. Postgres checks `filter` and `expr` on scratch, because a macro can't parse SQL. Group limits are in section 5.
 
 ---
 
@@ -368,20 +369,55 @@ pub(in crate::auth) struct UserAdmin { /* every column */ }
 
 ### Groups: granular field access
 
+There are two kinds of group:
+
+| Kind | Declared | Applies to | Mask |
+|---|---|---|---|
+| **Global** | Once, with `morm::groups!` | Models and fields, everywhere. The same name is the same group on every model | `G.admin` |
+| **Model-scoped** | On one model, with `scoped_groups` | That model's fields only | `User::G.billing` |
+
 ```rust
-#[col(groups = "admin,mod")]  pub subscriptions: Vec<i32>,
-#[col(groups = "staff")]      pub active_subscriptions: Vec<i32>,
-#[col(sudo)]                  pub password: String,   // sugar for groups = "sudo"
+// src/groups.rs: one declaration for the whole app
+morm::groups!(admin, staff, moderator);         // sudo is always included
+
+// src/users/mod.rs
+use crate::groups::G;
+
+#[model(table = "users", base = "common", scoped_groups = "billing, support")]
+pub struct UserAdmin {
+    #[col(groups = "admin,moderator")]  pub subscriptions: Vec<i32>,   // global
+    #[col(groups = "billing")]          pub card_token: String,        // scoped to this model
+    #[col(groups = "staff,support")]    pub notes: String,             // one of each
+    #[col(sudo)]                        pub password: String,          // sugar for groups = "sudo"
+}
+
+#[model(table = "audit_log", base = "common", groups = "staff")]       // global, whole model
+pub struct AuditLog { /* ... */ }
 ```
 
-`sudo` is an ordinary group with a reserved name.
+`sudo` is an ordinary global group with a reserved name, always present, so it works with no declaration.
 
-- **Fields without a group** are open to everyone.
-- **Compile time:** `#[view(pub Mod, groups = "mod")]` builds a view from ungrouped fields plus that group.
-- **Runtime:** each group is a generated `u64` mask (`User::G.admin`). `db.groups(User::G.admin | User::G.mod)` or `db.sudo()` returns a scoped handle. Bit numbers are per model, so masks are typed (`Mask<User>`), and using a `User` mask on another model is a compile error.
-- **Runtime enforcement is on write and on output.** An `update` setting fields outside the mask fails, and `to_json_for(mask)` omits them. It's a single bit operation.
-- **On a whole model:** `#[model(groups = "staff")]` puts every field without its own `groups` into that group, so the rule covers the whole model in one place. `#[model(sudo)]` does the same with `sudo`. A field's own `groups` takes priority.
-- `Model::groups()` lists the model's groups, and `Model::group_fields("mod")` lists a group's fields.
+- **Resolving names:** a name listed in the model's `scoped_groups` is scoped. Any other name is global and resolves to `G`, so a typo is a compile error. A scoped name hiding a global one is a compile error too.
+- **Access:** a field with no groups is open to everyone. A grouped field needs the caller to be in at least one of its groups.
+- **Whole model:** `#[model(groups = "staff")]` puts every field without its own `groups` into that group. `#[model(sudo)]` does the same with `sudo`. Only global groups work here, and a field's own `groups` takes priority.
+- **Compile time:** `#[view(pub Moderator, groups = "moderator")]` builds a view from ungrouped fields plus that group. Views take both kinds.
+- **Enforcement at runtime** is on write and on output. An `update` setting fields outside the caller's groups fails, and `to_json_for(mask)` omits them.
+- `Model::groups()` lists the model's groups, and `Model::group_fields("moderator")` lists a group's fields.
+
+### Masks
+
+```rust
+let db = db.groups(G.admin | G.staff);                  // works on every model
+let db = db.sudo();                                     // same as db.groups(G.sudo)
+let db = db.groups(G.staff | User::G.billing);          // works on User only
+let mask = G::from_names(&claims.roles)?;               // roles from a token or a table
+```
+
+- A mask holds two `u128`s, global bits and scoped bits, and a check is two ANDs with no allocation. Fields without groups store nothing, grouped fields use a static table, and rows carry no extra bytes.
+- **Limits:** 128 global groups in total, `sudo` included, and 128 scoped groups per model. Going over is a compile error. Fields have no limit.
+- **Scoped bits are per model,** so a mask containing them is typed `Mask<User>`, and using it on another model is a compile error. A caller with scoped groups on two models uses two handles. A mask of only global groups works everywhere.
+- **Bit numbers aren't stable.** They change when the list changes, so store group names, never mask values, and convert with `from_names`. An unknown name is an error.
+- **Room to grow:** `u128` is Rust's largest integer. Masks are opaque types, so they could later become arrays of integers with no API change.
 
 ---
 
@@ -1031,7 +1067,7 @@ The compiler can't see a query inside a loop, so that one is caught in tests and
 Tests are written with the code: **a milestone isn't done until its tests pass in CI.**
 
 - **Unit:** macro output, SQL generation, diff, naming.
-- **Compile-fail (`trybuild`):** every compile-time guarantee, including hidden view fields, `HasPk`, unfiltered update and delete, update with no `.set()`, list with no limit, `self` absent in update and delete hooks, non-static `q()` and `sql()`, duplicate indexes, duplicate base fields, over-long and colliding names, `Decimal` and float on unsuitable `numeric` columns.
+- **Compile-fail (`trybuild`):** every compile-time guarantee, including hidden view fields, `HasPk`, unfiltered update and delete, update with no `.set()`, list with no limit, `self` absent in update and delete hooks, non-static `q()` and `sql()`, unknown group names, scoped groups on `#[model(groups)]`, a scoped mask on another model, duplicate indexes, duplicate base fields, over-long and colliding names, `Decimal` and float on unsuitable `numeric` columns.
 - **Integration on real Postgres:** insert, every get, update and delete form, views, groups, hook inputs (`Changes`, `Target`), hooks order, the loop detector, `after_commit` on commit and skip on rollback, all list and JSON paths, pool growth and idle shrinking, `max_connections` adjustment, `db.hold()` release on every exit path, `ConnectionLost`, cancellation.
 - **Property tests:** random models and data round-trip through insert, read and JSON.
 - **Doc tests:** every README and doc example compiles and runs.
@@ -1096,7 +1132,7 @@ One compact, complete file at the repo root. It must be enough to use morm effic
 ## 15. Milestones
 
 0. **Repo bootstrap:** workspace in `biggaloy/rust-morm`, CI workflows, README skeleton.
-1. **Core models:** macro, bases including `#[morm::base]`, index and name rules, views, groups at field and model level, declarative rules and `clean`, inference, `F`, compile-time checks.
+1. **Core models:** macro, bases including `#[morm::base]`, index and name rules, views, global and model-scoped groups, declarative rules and `clean`, inference, `F`, compile-time checks.
 2. **Runtime:** `morm.toml` and environment variables, `morm::Pool` on the `deadpool` core (start with a quick proof-of-concept), dynamic size, named pools, `max_connections` adjustment, `db.hold()`, bounded statement cache, insert, `get`/`update`/`delete` forms, query builder, `filter_cols`, `db.sql()` and `#[derive(morm::Row)]`, `Decimal` and `Numeric`, loop detector, typed errors, transactions, all list and JSON paths. → **First publish** (`0.1.0-alpha`).
 3. **Migration foundation:** `Schema` IR, catalog reader, diff, typed ops with inverses, scratch, proof pipeline.
 4. **Migration execution:** ledger, steps, fingerprint gates, advisory lock, timeouts, preflight, crash recovery, fault-injection suite.
