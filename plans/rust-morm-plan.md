@@ -1750,7 +1750,7 @@ Shared reads: a small opt-in lane that pipelines primary-key reads on a few conn
 
 ### Confirmed for after 0.1
 
-Features we will build are in `later-defo-build.plan`: automatic read routing so far.
+Features we will build are in `later-defo-build.plan`: automatic read routing and online key type changes across foreign keys.
 
 ### Later: field-level encryption
 
