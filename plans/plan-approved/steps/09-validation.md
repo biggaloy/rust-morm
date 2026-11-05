@@ -2,11 +2,11 @@
 
 - **Phase:** Models
 - **Depends on:** 04
-- **Can run beside:** 10, 11, 12, 14, 15, 16, 17, 18, 19, 20, 21, 22, 28, 29, 30, 31, 32, 33, 35, 36, 37, 38
+- **Can run beside:** 10, 11, 12, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 29, 30, 31, 32, 33, 34, 37, 38, 39, 40
 - **Crates:** `morm-macros`, `morm`
 - **PR approval:** CI and an independent review
 
-Read `../rules.md` and `../contracts.md` first. Everything needed for this step is in those two files and this one.
+Read `../rules.md`, `../contracts.md` and, once it exists, `../proofs.md` first. Everything needed for this step is in those files and this one.
 
 ## Goal
 
@@ -22,7 +22,7 @@ Every rule accepts and rejects at its boundary in unit tests, and a field with n
 
 ## Out of scope
 
-- When rules run in a write (step 23)
+- When rules run in a write (step 24)
 
 ## Requirements
 
@@ -32,13 +32,13 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 
 | ID | Option | Meaning |
 |---|---|---|
-| R-0174 | `min`, `max`, `len`, `choices`, `clean`, `blocking`, `db_check` | validation (section 6) |
+| R-0175 | `min`, `max`, `len`, `choices`, `clean`, `blocking`, `db_check` | validation (section 6) |
 
 ### Validation
 
-**R-0288** One mechanism, instead of python-morm's overlapping `validator`, `modifier` and `_clean_*`. The compiler replaces type checks, native decoding replaces JSON modifiers, and the rest is declarative rules or `clean`.
+**R-0290** One mechanism, instead of python-morm's overlapping `validator`, `modifier` and `_clean_*`. The compiler replaces type checks, native decoding replaces JSON modifiers, and the rest is declarative rules or `clean`.
 
-**R-0289**
+**R-0291**
 
 ```rust
 #[col(min = 1, max = 100)]            pub qty: i32,      // declarative, generated inline
@@ -47,8 +47,8 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 #[col(clean = "hash_password", blocking)] pub password: String,  // fn(T) -> Result<T>
 ```
 
-- **R-0292** **No function pointers per field.** Everything is static and inlined, and a field without rules generates no code.
-- **R-0299** `db_check` also emits a declarative rule as a real `CHECK` constraint.
+- **R-0294** **No function pointers per field.** Everything is static and inlined, and a field without rules generates no code.
+- **R-0301** `db_check` also emits a declarative rule as a real `CHECK` constraint.
 
 ## Test obligations
 

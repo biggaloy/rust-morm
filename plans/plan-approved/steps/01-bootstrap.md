@@ -6,7 +6,7 @@
 - **Crates:** workspace, all five crates as empty shells
 - **PR approval:** the owner approves the PR
 
-Read `../rules.md` and `../contracts.md` first. Everything needed for this step is in those two files and this one.
+Read `../rules.md`, `../contracts.md` and, once it exists, `../proofs.md` first. Everything needed for this step is in those files and this one.
 
 ## Goal
 
@@ -15,7 +15,7 @@ Create the workspace so every later step has a place to land, and CI that runs t
 ## Deliverables
 
 - Cargo workspace with `crates/morm`, `crates/morm-core`, `crates/morm-macros`, `crates/morm-migrate`, `crates/morm-admin`, `examples/app`, `tests/`, edition 2024, MSRV 1.99.1
-- `ci.yml`, `nightly.yml`, `bench.yml` and `release.yml`, including Postgres 15–18 over TCP and Unix socket and a PgBouncer service
+- `ci.yml`, `nightly.yml`, `bench.yml` and `release.yml`, including Postgres 15–18 over TCP and Unix socket and a PgBouncer service. `nightly.yml` also has `workflow_dispatch`, so it can run on a branch
 - `ci.yml` runs `plans/plan-approved/tools/check_coverage.py --code crates tests benches fuzz .github`
 - A test helper that starts or connects to each Postgres version, and a `trybuild` harness
 - README skeleton, included as crate docs
@@ -63,26 +63,26 @@ rust-morm/
 
 ### Performance and memory / Query path
 
-- **R-0722** Minimal dependencies and features; no CLI framework in `morm-admin`.
+- **R-0725** Minimal dependencies and features; no CLI framework in `morm-admin`.
 
 ### Testing and CI
 
-**R-0784** Tests are written with the code: **a milestone isn't done until its tests pass in CI.**
+**R-0787** Tests are written with the code: **a milestone isn't done until its tests pass in CI.**
 
-**R-0785** Migration tests:
+**R-0788** Migration tests:
 
-**R-0786** Outbox tests:
+**R-0789** Outbox tests:
 
 ### Testing and CI / GitHub Actions (`.github/workflows/`)
 
 | ID | Workflow | When | Runs |
 |---|---|---|---|
-| R-0787 | `ci.yml` | Every push and PR | `fmt`, `clippy -D warnings`, unit, `trybuild`, doc tests, integration on Postgres 15–18 (TCP and Unix socket), `pooler` tests against a PgBouncer service, MSRV build, feature combinations, migration suite including fault injection |
-| R-0788 | `nightly.yml` | Daily | Long property tests, fuzzing, full chain, `cargo audit` and `cargo deny` |
-| R-0789 | `bench.yml` | Weekly and on demand | Benchmarks, compared with the last run; tracks binary size and RSS |
-| R-0790 | `release.yml` | On tag | Tests, publish crates, build `morm-admin` binaries |
+| R-0790 | `ci.yml` | Every push and PR | `fmt`, `clippy -D warnings`, unit, `trybuild`, doc tests, integration on Postgres 15–18 (TCP and Unix socket), `pooler` tests against a PgBouncer service, MSRV build, feature combinations, migration suite including fault injection |
+| R-0791 | `nightly.yml` | Daily | Long property tests, fuzzing, full chain, `cargo audit` and `cargo deny` |
+| R-0792 | `bench.yml` | Weekly and on demand | Benchmarks, compared with the last run; tracks binary size and RSS |
+| R-0793 | `release.yml` | On tag | Tests, publish crates, build `morm-admin` binaries |
 
-**R-0791** Every merge to `main` requires `ci.yml` to pass. The repo is private, so Actions minutes are limited: the Postgres matrix runs fully on `main` and PRs, while pushes to other branches use one version.
+**R-0794** Every merge to `main` requires `ci.yml` to pass. The repo is private, so Actions minutes are limited: the Postgres matrix runs fully on `main` and PRs, while pushes to other branches use one version.
 
 ## Test obligations
 

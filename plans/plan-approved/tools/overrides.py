@@ -178,11 +178,14 @@ MOVE2 = [  # (start of block, step)
     ("- **Scoped bits are per model,**", "group-enforcement"), ("**Read replicas** work", "reads"),
     ("- **Statement caches:** two bounded", "statements"), ("- **`SET LOCAL` still works", "locks-timeouts"),
     ("- **Prepared statements** need", "locks-timeouts"), ("- **NUL bytes:**", "statements"),
-    ("| Large, with `.returning()`", "upsert"), ("- **Input:** a view with", "hooks"),
+    ("- **Input:** a view with", "hooks"), ("- **Holds can't use up the pool.**", "hold-pooler"),
+    ("- **`citext`**", "reads"), ("| `default_fn` |", "inserts"), ("- an empty `impl Hooks`", "hooks"),
+    ("```\nmorm-admin init [path]", "admin-init"),
     ("- `morm`, `morm-macros`, `morm-migrate`", "readme-release"),
     ("**Everything an application's schema", "schema-ir"), ("Tables and other objects with no definition", "schema-ir"),
 ]
 INFO2 = [  # examples and labels: the rules around them carry the tests
+    "```\nmorm-admin init [path]", "```\nmakemigrations [--plan]",
     "```rust\nuse morm::{model, Timestamp};", "```rust\nlet mut p = Product {", "```rust\npub enum Patch<T>",
     "```rust\ndb.insert(&mut p).await?;", "```rust\n#[derive(morm::Row)]", "```rust\nmorm::pg_outbox!();",
     "Cargo features of `morm`:", "**Custom bases** are ordinary", "There are two kinds of group:",
@@ -197,7 +200,10 @@ PIECES2 = [  # (start of block, exact text, step, new block or None)
     ("- `cached plan must not change", ", typed error inside", "transactions", "`cached plan must not change result type` (0A000) inside a transaction returns a typed error."),
     ("- **Worst case:** random one-off", "The `tracing` feature logs heavy churn.", "telemetry", None),
     ("- The SQL must be `&'static str`", "`sql!` also registers it for `check-sql`.", "query-tooling", None),
-    ("- **Array columns:**", ", `upsert` and `update_each`", "updates", "Array columns work through `update_each`, and through `upsert`, the same way."),
+    ("- **Array columns:**", ", `upsert` and `update_each`", "updates", "Array columns work through `update_each` the same way."),
+    ("| Large, with `.returning()`", " or an `upsert`", "upsert", "A large `upsert` uses `UNNEST` in chunks in one transaction, because `COPY` can't handle conflicts."),
+    ("| `generated`, `identity`, `check`", ", and `.set()` on it is a compile error", "updates", "`.set()` on a generated column is a compile error."),
+    ("- `Product::F.<field>`", "; `Product::F.alias(\"p\")` for JOINs, with prefix decoding for two models in one row", "reads", "`Product::F.alias(\"p\")` works for JOINs, with prefix decoding for two models in one row."),
     ("- **`#[col(version)]`:**", " and `upsert`", "upsert", "`upsert` also increments a `version` column."),
     ("- **`.apply()` acts as one", "so hooks, `clean`, rules, `Changes<Self>` and group masks work unchanged, and `clean` runs only on fields that were sent.", "hooks", "`.apply()` goes through hooks, `clean`, rules, `Changes<Self>` and group masks exactly as `.set()` does, and `clean` runs only on fields that were sent."),
     ("**`.retry(n)`** is available", "Each attempt starts with no queued `after_commit` events.", "hooks", None),
@@ -214,7 +220,9 @@ SPLIT2 = [  # fifth-pass sizing: (old step, block pattern, new step)
     ("model-core", r"^- positional decoding|^Encrypted columns|^- `F` columns carry|^- Encode and decode|^\| A Rust type wider", "model-types"),
     ("schema-diff", r"^No snapshots|^1\. Replay|^2\. Create the models|^3\. Read both|^- \*\*Scratch databases", "schema-ir"),
     ("execution", r"^- \*\*A failed migration|^- \*\*Crash recovery|^- \*\*Tamper refusal|^- \*\*LIFO rollback|^- \*\*Postgres versions|^- `verify`", "recovery"),
-    ("admin-core", r"doctor|^\| Query values", "doctor"),
+    ("admin-core", r"^(- )?(`morm-admin doctor`|`doctor`)|^\| Query values", "doctor"),
+    ("reads", r"^morm doesn't load relations|^```rust\nlet orders|^It runs one `WHERE|^`OFFSET 100000|^```rust\nlet page|^- The last key|^- \*\*A nullable key|^- A cursor is|^- Writes between|^`db\.sql\(\)`|^```rust\n#\[derive|^- Every list and single|^- `#\[derive\(morm::Row|^- The SQL must|^- \*\*The list rule|^- It uses the same|^\| Paging with|^\| A nullable keyset", "reads-more"),
+    ("managed-decl", r"^- \*\*Models over views|^- Macros also generate|^- Roles are cluster|^- A `\.sql` file", "managed-ops"),
     ("hooks", r"^- \*\*Hooks and outcome|^- An insert runs|^- An update runs|^- `pre_update` can't|^- `Unchanged`|^- A batch upsert|^Hooks run once per batch|^\| `upsert` \||^- \*\*Shutdown|^- \*\*`update_each`", "hooks-more"),
 ]
 
@@ -237,10 +245,14 @@ def final_fix(units):
         out.append(u)
         for txt, step in extra:
             v = dict(u)
-            v["text"] = ("- " if u["kind"] == "bullet" else "") + txt
+            if u["kind"] == "row":
+                v["kind"] = "bullet"
+                v["head"] = None
+            v["text"] = ("- " if v["kind"] == "bullet" else "") + txt
             v["step"] = step
             v["forced_info"] = False
             out.append(v)
+    out.extend(NEW_BLOCKS)
     for u in out:
         for old, pat, new in SPLIT2:
             if u["step"] == old and re.search(pat, u["text"]):
@@ -250,6 +262,17 @@ def final_fix(units):
     return out
 
 
+def nb(text, step, h2, h3):
+    return dict(kind="bullet", h2=h2, h3=h3, h4="", text="- " + text, head=None, line=0, step=step,
+                forced_info=False, orig_sha="")
+
+
+# owner-confirmed additions after the split; INDEX.md lists them
+NEW_BLOCKS = [
+    nb("`db.upsert_many(&mut rows, target)` is the batch form of `upsert`, taking the same conflict targets. It's the call the plan's \"batch upsert\" and \"`upsert` batches\" mean.", "upsert", "8. Reading and writing", "Insert and update"),
+    nb("`morm::pg_outbox!()` declares the outbox table as a managed table, tracked by migrations.", "admin-init", "9. Hooks", "Outbox: events that must not be lost"),
+]
+
 TEST_SPLIT["**Failures:** backoff, `max_attempts`, `failed` events kept, `retry`, and cleanup after `retention`."] = [
     ("**Failures:** backoff, `max_attempts`, `failed` events kept, and cleanup after `retention`", "outbox"),
     ("`morm-admin outbox retry ID` on a failed event", "admin-init")]
@@ -258,4 +281,5 @@ TEST_MOVE += [
     (r"`InvalidText`", "statements"), (r"`secret` absent", "group-enforcement"),
     (r"`upsert` outcomes, hooks|`db\.close\(\)`", "hooks-more"), (r"array columns on every", "updates"),
     (r"^`doctor`|`doctor` warnings", "doctor"),
+    (r"keyset|tampered|`load_related`", "reads-more"),
 ]

@@ -6,7 +6,7 @@
 - **Crates:** `morm-macros`, `morm-core`
 - **PR approval:** CI and an independent review
 
-Read `../rules.md` and `../contracts.md` first. Everything needed for this step is in those two files and this one.
+Read `../rules.md`, `../contracts.md` and, once it exists, `../proofs.md` first. Everything needed for this step is in those files and this one.
 
 ## Goal
 
@@ -24,7 +24,7 @@ Models with every index form and base compile, their metadata matches expected o
 
 ## Out of scope
 
-- Creating anything in a database (step 29 reads this metadata)
+- Creating anything in a database (step 30 reads this metadata)
 
 ## Requirements
 
@@ -91,32 +91,32 @@ pub struct Invoice { pub total: Decimal }       // invoice.tenant_id is a plain 
 
 ### Models / Plain structs, no `save`
 
-**R-0211** **Doc comments are schema comments.** `///` on a model or field becomes `COMMENT ON TABLE` or `COMMENT ON COLUMN`, tracked by migrations, so the schema explains itself in `psql` and database tools. Comments reach only `morm-mgr`, except where `json_schema()` uses them.
+**R-0212** **Doc comments are schema comments.** `///` on a model or field becomes `COMMENT ON TABLE` or `COMMENT ON COLUMN`, tracked by migrations, so the schema explains itself in `psql` and database tools. Comments reach only `morm-mgr`, except where `json_schema()` uses them.
 
 ### Models / Generated per model
 
-- **R-0218** `Product::UK.<name>`: one constant per unique constraint and unique index, for `upsert` targets
+- **R-0220** `Product::UK.<name>`: one constant per unique constraint and unique index, for `upsert` targets
 
-**R-0221** Compile-time checks: unknown columns in `ordering`, `indexes` and `include`; foreign keys whose types don't match; generic structs. Group limits are in section 5.
+**R-0223** Compile-time checks: unknown columns in `ordering`, `indexes` and `include`; foreign keys whose types don't match; generic structs. Group limits are in section 5.
 
 ### Indexes
 
-**R-0300** Declared in `indexes(...)` on the struct, or with field shortcuts.
+**R-0302** Declared in `indexes(...)` on the struct, or with field shortcuts.
 
 | ID | Option | Meaning | Default |
 |---|---|---|---|
-| R-0301 | `cols` | columns, each with optional `ASC`/`DESC`, `NULLS FIRST`/`NULLS LAST` | required unless `expr` |
-| R-0302 | `expr` | expression index, e.g. `lower(email)` | none |
-| R-0303 | `unique` | unique index | off |
-| R-0304 | `deferrable` | with `unique`, a constraint checked at commit. It can't be an `upsert` target | off |
-| R-0305 | `nulls_not_distinct` | with `unique`, treat NULLs as equal, so only one NULL is allowed | off |
-| R-0306 | `using` | `btree`, `hash`, `gin`, `gist`, `brin`, `spgist` | `btree` |
-| R-0307 | `ops` | operator class, e.g. `jsonb_path_ops`, `gin_trgm_ops` | none |
-| R-0308 | `filter` | `WHERE` clause (partial index) | none |
-| R-0309 | `include` | extra non-key columns (covering index) | none |
-| R-0310 | `name` | explicit name | generated |
+| R-0303 | `cols` | columns, each with optional `ASC`/`DESC`, `NULLS FIRST`/`NULLS LAST` | required unless `expr` |
+| R-0304 | `expr` | expression index, e.g. `lower(email)` | none |
+| R-0305 | `unique` | unique index | off |
+| R-0306 | `deferrable` | with `unique`, a constraint checked at commit. It can't be an `upsert` target | off |
+| R-0307 | `nulls_not_distinct` | with `unique`, treat NULLs as equal, so only one NULL is allowed | off |
+| R-0308 | `using` | `btree`, `hash`, `gin`, `gist`, `brin`, `spgist` | `btree` |
+| R-0309 | `ops` | operator class, e.g. `jsonb_path_ops`, `gin_trgm_ops` | none |
+| R-0310 | `filter` | `WHERE` clause (partial index) | none |
+| R-0311 | `include` | extra non-key columns (covering index) | none |
+| R-0312 | `name` | explicit name | generated |
 
-**R-0311**
+**R-0313**
 
 ```rust
 indexes(
@@ -132,35 +132,35 @@ indexes(
 )
 ```
 
-**R-0312** Rules:
+**R-0314** Rules:
 
-- **R-0313** **`unique` gives both a constraint and an index.** Postgres backs a UNIQUE constraint with a unique index of the same name, so morm creates one object that serves as both. This applies to `#[col(unique)]` and to `index(cols = "a, b", unique)`, and `include` is kept on the constraint. A unique index with `filter` or `expr` stays an index only, because constraints can't be partial or use expressions.
-- **R-0314** **Duplicates are compile errors.** The macro sees every declaration, so it rejects a second btree index with the same columns in the same order, as `#[col(unique, index)]`, `#[col(unique)]` plus `index(cols = "email")`, a repeated `indexes(...)` entry, or an index matching the primary key. Inherited base fields are included. Indexes differing in `using`, `ops`, `filter`, `expr` or `include` are allowed, and `lint` reports the ones that look redundant.
+- **R-0315** **`unique` gives both a constraint and an index.** Postgres backs a UNIQUE constraint with a unique index of the same name, so morm creates one object that serves as both. This applies to `#[col(unique)]` and to `index(cols = "a, b", unique)`, and `include` is kept on the constraint. A unique index with `filter` or `expr` stays an index only, because constraints can't be partial or use expressions.
+- **R-0316** **Duplicates are compile errors.** The macro sees every declaration, so it rejects a second btree index with the same columns in the same order, as `#[col(unique, index)]`, `#[col(unique)]` plus `index(cols = "email")`, a repeated `indexes(...)` entry, or an index matching the primary key. Inherited base fields are included. Indexes differing in `using`, `ops`, `filter`, `expr` or `include` are allowed, and `lint` reports the ones that look redundant.
 
 ### Indexes / Names
 
-**R-0317** The convention is python-morm's, so models can match its databases without explicit names:
+**R-0319** The convention is python-morm's, so models can match its databases without explicit names:
 
 | ID | Object | Name |
 |---|---|---|
-| R-0318 | Unique on one column | `__UNQ_{table}_{column}__` |
-| R-0319 | Unique on several columns | `__UNQ_{table}_{name}__` |
-| R-0320 | Index on one column | `__IDX_{table}_{column}_{method}__` |
-| R-0321 | Index on several columns | `__IDX_{table}_{name}_{method}__` |
-| R-0322 | Foreign key | `__FK_{table}_{column}__` |
-| R-0323 | Check | `__CHK_{table}_{name}__` (new; python-morm has no convention for it) |
+| R-0320 | Unique on one column | `__UNQ_{table}_{column}__` |
+| R-0321 | Unique on several columns | `__UNQ_{table}_{name}__` |
+| R-0322 | Index on one column | `__IDX_{table}_{column}_{method}__` |
+| R-0323 | Index on several columns | `__IDX_{table}_{name}_{method}__` |
+| R-0324 | Foreign key | `__FK_{table}_{column}__` |
+| R-0325 | Check | `__CHK_{table}_{name}__` (new; python-morm has no convention for it) |
 
-**R-0324** `{name}` is the `name` you give, or the column names joined by `_`. For an `expr` index with no `name`, it's the expression with everything but letters, digits and `_` collapsed to `_`, so `lower(email)` gives `lower_email`. `Product::UK` uses the same `{name}`. A primary key keeps the Postgres name `{table}_pkey`, and an identity column's sequence keeps `{table}_{column}_seq`.
+**R-0326** `{name}` is the `name` you give, or the column names joined by `_`. For an `expr` index with no `name`, it's the expression with everything but letters, digits and `_` collapsed to `_`, so `lower(email)` gives `lower_email`. `Product::UK` uses the same `{name}`. A primary key keeps the Postgres name `{table}_pkey`, and an identity column's sequence keeps `{table}_{column}_seq`.
 
-- **R-0325** **63-byte limit:** Postgres silently cuts longer names, so two long names could collide. morm counts bytes, not characters. A longer name is cut and ends in 8 hex characters of its full SHA-256, as `__IDX_{start of name}_{hash}__`, so it stays at 63 bytes, is stable across builds and still shows the table.
-- **R-0326** A generated name used twice in one model, for example two partial indexes on one column, is a compile error asking for an explicit `name`.
-- **R-0327** An explicit `name` is used as written. Over 63 bytes is a compile error.
+- **R-0327** **63-byte limit:** Postgres silently cuts longer names, so two long names could collide. morm counts bytes, not characters. A longer name is cut and ends in 8 hex characters of its full SHA-256, as `__IDX_{start of name}_{hash}__`, so it stays at 63 bytes, is stable across builds and still shows the table.
+- **R-0328** A generated name used twice in one model, for example two partial indexes on one column, is a compile error asking for an explicit `name`.
+- **R-0329** An explicit `name` is used as written. Over 63 bytes is a compile error.
 
 ### Hard to misuse
 
 | ID | Mistake | Caught by |
 |---|---|---|
-| R-0765 | A duplicate of a unique, primary key or plain index | Compile error |
+| R-0768 | A duplicate of a unique, primary key or plain index | Compile error |
 
 ## Test obligations
 

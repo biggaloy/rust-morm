@@ -2,11 +2,11 @@
 
 - **Phase:** Runtime
 - **Depends on:** 11
-- **Can run beside:** 04, 05, 06, 07, 08, 09, 13, 14, 15, 16, 17, 18, 19, 22, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39
+- **Can run beside:** 04, 05, 06, 07, 08, 09, 13, 14, 15, 16, 17, 18, 19, 20, 23, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41
 - **Crates:** `morm`
 - **PR approval:** CI and an independent review
 
-Read `../rules.md` and `../contracts.md` first. Everything needed for this step is in those two files and this one.
+Read `../rules.md`, `../contracts.md` and, once it exists, `../proofs.md` first. Everything needed for this step is in those files and this one.
 
 ## Goal
 
@@ -113,29 +113,35 @@ Owned elsewhere, and quoted so this step needs no other file. Nothing here needs
 >
 > - Suggestions cover `[server]`, `[pool]` `min`, `max` and `processes`, plus `max_connections`, `shared_buffers`, `effective_cache_size`, `work_mem` and `maintenance_work_mem`.
 >
+> - **Shutdown:** `db.close()` stops new checkouts, then waits up to `shutdown_timeout` for running transactions, `after_commit` handlers and holds to finish, then closes every connection. Apps call it after they stop accepting requests, so a deploy doesn't roll back work or lose events.
+>
 
 ## Out of scope
 
-- Waiting for `after_commit` on shutdown (step 23)
+- Waiting for `after_commit` on shutdown (step 25)
 
 ## Requirements
 
 Copied word for word from the approved plan. Every ID must end with a test tagged with it, as `rules.md` describes. Section references such as "section 8" mean the frozen `plans/rust-morm-plan.md`; everything a step needs is copied here or in `contracts.md`.
 
+### Reading and writing / Deadlocks
+
+- **R-0449** **Holds can't use up the pool.** `max_holds` defaults to a quarter of `max`, at least 1. `db.hold()` past it returns `PoolBusy`.
+
 ### Performance and memory / Behind a pooler
 
-**R-0664** `morm::Pool` makes a pooler unnecessary for one process, but large fleets and managed Postgres often have PgBouncer in front. `pooler = "transaction"` says so:
+**R-0667** `morm::Pool` makes a pooler unnecessary for one process, but large fleets and managed Postgres often have PgBouncer in front. `pooler = "transaction"` says so:
 
-- **R-0665** **No startup parameters.** PgBouncer rejects unknown ones by default. Falling back to session `SET` isn't safe here, because in transaction mode that setting stays on a server connection other clients will share. So set `lock_timeout`, `idle_in_transaction_session_timeout`, `client_connection_check_interval` and `search_path` on the role with `ALTER ROLE`.
-- **R-0668** **Session features refuse.** `db.hold()` returns `PoolerMode`, since a session can't be kept.
-- **R-0670** **Connection limits:** `SHOW max_connections` reports Postgres's limit, but the real ones are PgBouncer's `max_client_conn` and pool size, which morm can't see. So the startup adjustment are skipped, and `max` must be set explicitly: `auto` is refused.
-- **R-0673** **Migrations must bypass the pooler.** The migrator holds a session advisory lock, so `MORM_MIGRATION_URL` has to point at Postgres directly.
+- **R-0668** **No startup parameters.** PgBouncer rejects unknown ones by default. Falling back to session `SET` isn't safe here, because in transaction mode that setting stays on a server connection other clients will share. So set `lock_timeout`, `idle_in_transaction_session_timeout`, `client_connection_check_interval` and `search_path` on the role with `ALTER ROLE`.
+- **R-0671** **Session features refuse.** `db.hold()` returns `PoolerMode`, since a session can't be kept.
+- **R-0673** **Connection limits:** `SHOW max_connections` reports Postgres's limit, but the real ones are PgBouncer's `max_client_conn` and pool size, which morm can't see. So the startup adjustment are skipped, and `max` must be set explicitly: `auto` is refused.
+- **R-0676** **Migrations must bypass the pooler.** The migrator holds a session advisory lock, so `MORM_MIGRATION_URL` has to point at Postgres directly.
 
 ### Performance and memory / Jobs and long-running work
 
-**R-0675** Crons, background jobs and service workers use the pool like everything else. Every `db` call takes a connection and releases it, so a job that sleeps for hours holds nothing, and idle closing and reconnects need no code.
+**R-0678** Crons, background jobs and service workers use the pool like everything else. Every `db` call takes a connection and releases it, so a job that sleeps for hours holds nothing, and idle closing and reconnects need no code.
 
-**R-0676**
+**R-0679**
 
 ```rust
 loop {
@@ -146,17 +152,17 @@ loop {
 
 | ID | Case | Use |
 |---|---|---|
-| R-0677 | Normal request, job or cron | `db` |
-| R-0678 | Websocket query | `db`, per message |
-| R-0679 | Several statements that must be atomic | `db.transaction(...)`, in small batches. A long transaction blocks vacuum and can hold locks |
-| R-0680 | A very long query | `db`. It holds its slot until done, so size `max` for it |
-| R-0681 | A heavy job in the same process as the web app | A named pool: `db.pool("jobs")` |
-| R-0682 | `LISTEN`, temp tables, advisory locks, `SET` | `db.hold()` |
-| R-0683 | Server push from Postgres to websockets | One `db.hold()` listener for the whole app, fanned out to the sockets. Not one per socket, and not needed for ordinary websockets |
+| R-0680 | Normal request, job or cron | `db` |
+| R-0681 | Websocket query | `db`, per message |
+| R-0682 | Several statements that must be atomic | `db.transaction(...)`, in small batches. A long transaction blocks vacuum and can hold locks |
+| R-0683 | A very long query | `db`. It holds its slot until done, so size `max` for it |
+| R-0684 | A heavy job in the same process as the web app | A named pool: `db.pool("jobs")` |
+| R-0685 | `LISTEN`, temp tables, advisory locks, `SET` | `db.hold()` |
+| R-0686 | Server push from Postgres to websockets | One `db.hold()` listener for the whole app, fanned out to the sockets. Not one per socket, and not needed for ordinary websockets |
 
 ### Performance and memory / `db.hold()`
 
-**R-0684**
+**R-0687**
 
 ```rust
 let held = db.hold().await?;
@@ -165,24 +171,24 @@ held.listen("orders").await?;
 db.release(held).await;      // or held.release().await
 ```
 
-**R-0685** `db.hold()` keeps one pool connection until released, and no limit or idle rule touches it. `release` takes ownership, so using `held` afterwards is a compile error. Holds count against `max`, and `max_holds` caps them so they can't starve queries.
+**R-0688** `db.hold()` keeps one pool connection until released, and no limit or idle rule touches it. `release` takes ownership, so using `held` afterwards is a compile error. Holds count against `max`, and `max_holds` caps them so they can't starve queries.
 
-**R-0686** **Release is guaranteed wherever the process survives,** and the server cleans up where it doesn't:
+**R-0689** **Release is guaranteed wherever the process survives,** and the server cleans up where it doesn't:
 
 | ID | How it ends | What releases it |
 |---|---|---|
-| R-0687 | Normal release | `db.release(held)` |
-| R-0688 | Forgot to release, early return, `?` error | Drop |
-| R-0689 | Panic, or task cancelled | Drop, with `panic = "unwind"` |
-| R-0690 | Process crash, `kill -9`, `panic = "abort"` | The OS closes the socket, and Postgres ends the session and releases its locks |
-| R-0691 | Machine or network dies (TCP) | morm sets TCP keepalives, and the server clears the session after about a minute |
-| R-0692 | Postgres restarts | Every session ends. The next use of `held` returns `ConnectionLost`, and the slot is freed |
+| R-0690 | Normal release | `db.release(held)` |
+| R-0691 | Forgot to release, early return, `?` error | Drop |
+| R-0692 | Panic, or task cancelled | Drop, with `panic = "unwind"` |
+| R-0693 | Process crash, `kill -9`, `panic = "abort"` | The OS closes the socket, and Postgres ends the session and releases its locks |
+| R-0694 | Machine or network dies (TCP) | morm sets TCP keepalives, and the server clears the session after about a minute |
+| R-0695 | Postgres restarts | Every session ends. The next use of `held` returns `ConnectionLost`, and the slot is freed |
 
-- **R-0693** **Held connections are closed on release, never reused.** They can carry `LISTEN`, temp tables, `SET` values or advisory locks, and reusing one could leak that state into the next query. The slot is free immediately, and the pool opens a clean connection when needed.
-- **R-0694** **Reconnecting:** `db.hold().on_connect(...)` re-applies session state after a lost connection. `held.listen()` channels re-subscribe automatically.
-- **R-0695** **Forgotten holds:** `#[must_use]` warns if a guard is discarded straight away. Rust can't force an explicit `release`, so Drop is the safety net. `pool_stats()` lists each hold with its age and where it was created, and `hold_warn_after` logs a warning. It only warns, because long-running holds are allowed.
+- **R-0696** **Held connections are closed on release, never reused.** They can carry `LISTEN`, temp tables, `SET` values or advisory locks, and reusing one could leak that state into the next query. The slot is free immediately, and the pool opens a clean connection when needed.
+- **R-0697** **Reconnecting:** `db.hold().on_connect(...)` re-applies session state after a lost connection. `held.listen()` channels re-subscribe automatically.
+- **R-0698** **Forgotten holds:** `#[must_use]` warns if a guard is discarded straight away. Rust can't force an explicit `release`, so Drop is the safety net. `pool_stats()` lists each hold with its age and where it was created, and `hold_warn_after` logs a warning. It only warns, because long-running holds are allowed.
 
-**R-0697** **Limit:** one app process has one budget, so several processes or hosts must be sized together against `max_connections`. One multi-threaded Tokio process is the recommended deployment.
+**R-0700** **Limit:** one app process has one budget, so several processes or hosts must be sized together against `max_connections`. One multi-threaded Tokio process is the recommended deployment.
 
 ## Test obligations
 

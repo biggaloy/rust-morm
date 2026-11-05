@@ -35,6 +35,11 @@ if "--step" in argv:
     del argv[i:i + 2]
     if "--code" not in argv:
         sys.exit("--step needs --code")
+for a in argv:
+    if a.startswith("-") and a != "--code":
+        sys.exit(f"unknown argument {a}")
+if argv and argv[0] != "--code":
+    sys.exit(f"unknown argument {argv[0]}")
 
 master = (ROOT.parent / "rust-morm-plan.md").read_bytes()
 if hashlib.sha256(master).hexdigest() != man["master_sha256"]:
@@ -54,9 +59,24 @@ coverage = (ROOT / "coverage.md").read_text(encoding="utf-8")
 
 
 def exact(block, hay):
-    """The block appears whole, and nothing is appended to it."""
-    at = hay.find(block)
-    return at >= 0 and hay[at + len(block):at + len(block) + 1] in ("", "\n")
+    """The block appears whole on its own lines."""
+    return ("\n" + block + "\n") in ("\n" + hay + "\n")
+
+
+stem = {f: f[3:-3] for f in texts}
+for f, t in texts.items():
+    # nothing may sit among the requirements unless it's a block of the manifest
+    sec = t.split("## Requirements\n", 1)[-1].split("## Test obligations\n", 1)[0]
+    for r in man["reqs"]:
+        if r["step"] == stem[f]:
+            sec = ("\n" + sec + "\n").replace("\n" + r["block"] + "\n", "\n")
+    for line in sec.splitlines():
+        if line.strip() and not line.startswith(("### ", "Copied word for word", "None beyond", "|---", "| ID ")):
+            errs.append(f"{f}: unexpected line among requirements: {line[:70]}")
+    sec = t.split("## Test obligations\n", 1)[-1]
+    for line in sec.splitlines():
+        if line.startswith("| T-") and not any(line == f"| {x['id']} | {x['kind']} | {x['text']} |" for x in man["tests"] if x["step"] == stem[f]):
+            errs.append(f"{f}: test row doesn't match the manifest: {line[:70]}")
 
 
 for r in man["reqs"]:
@@ -64,12 +84,16 @@ for r in man["reqs"]:
     if not re.search(rf"^\| {n} \|", coverage, re.M):
         errs.append(f"{n}: missing from coverage.md")
     if r["step"] in ("contracts", "index"):
+        if placed[n]:
+            errs.append(f"{n}: belongs in {r['step']}, but it's in {placed[n]}")
         hay = contracts if r["step"] == "contracts" else index
         if not exact(r["block"], hay):
             errs.append(f"{n}: missing or changed in {'contracts.md' if r['step'] == 'contracts' else 'INDEX.md'}")
         continue
     if len(placed[n]) != 1:
         errs.append(f"{n}: expected in one step, found {placed[n]}")
+    elif stem[placed[n][0]] != r["step"]:
+        errs.append(f"{n}: in {placed[n][0]}, but the manifest says {r['step']}")
     elif not exact(r["block"], texts[placed[n][0]]):
         errs.append(f"{n}: changed in {placed[n][0]}; an approved edit must update tools/manifest.json too")
 for t in man["tests"]:
@@ -78,8 +102,14 @@ for t in man["tests"]:
         errs.append(f"{n}: missing from coverage.md")
     if len(placed[n]) != 1:
         errs.append(f"{n}: expected in one step, found {placed[n]}")
+    elif stem[placed[n][0]] != t["step"]:
+        errs.append(f"{n}: in {placed[n][0]}, but the manifest says {t['step']}")
     elif f"| {n} | {t['kind']} | {t['text']} |" not in texts[placed[n][0]]:
         errs.append(f"{n}: changed in {placed[n][0]}; an approved edit must update tools/manifest.json too")
+
+for item in man["reqs"] + man["tests"]:
+    if item["step"] not in ("contracts", "index") and item["step"] not in stem.values():
+        errs.append(f"{item['id']}: no step file named {item['step']}")
 
 rows = re.findall(r"^\| (\d{2}) \|.*\|\s*([^|]*?)\s*\|\s*$", index, re.M)
 if len(rows) != len(texts):

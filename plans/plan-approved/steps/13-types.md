@@ -2,11 +2,11 @@
 
 - **Phase:** Runtime
 - **Depends on:** 05
-- **Can run beside:** 10, 11, 12, 28, 29, 30, 31, 32, 33
+- **Can run beside:** 10, 11, 12, 29, 30
 - **Crates:** `morm`, `morm-macros`
 - **PR approval:** CI and an independent review
 
-Read `../rules.md` and `../contracts.md` first. Everything needed for this step is in those two files and this one.
+Read `../rules.md`, `../contracts.md` and, once it exists, `../proofs.md` first. Everything needed for this step is in those files and this one.
 
 ## Goal
 
@@ -14,7 +14,7 @@ Exact encoding and decoding for every supported type, with no silent rounding.
 
 ## Deliverables
 
-- `Decimal` decoding with no heap use, `morm::Numeric`, every integer path, `morm::Param` for every type, `Range<T>`, `IpAddr`, timestamps, `TextEnum`, `PgEnum`, domains and composite types, `InvalidText`
+- `Decimal` decoding with no heap use, `morm::Numeric`, every integer path, `morm::Param` for every type, `Range<T>`, `IpAddr`, timestamps, `TextEnum`, `PgEnum`, domains and composite types
 
 ## End-to-end check
 
@@ -22,7 +22,7 @@ Every type round-trips through a real Postgres at its limits, and a value that c
 
 ## Out of scope
 
-- JSON formats (step 22)
+- JSON formats (step 23)
 
 ## Requirements
 
@@ -36,42 +36,42 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 
 ### Models / Type inference
 
-**R-0185** `#[derive(TextEnum)]` maps a Rust enum to `text` with a CHECK constraint, the recommended form, because adding or removing a value is an ordinary migration.
+**R-0186** `#[derive(TextEnum)]` maps a Rust enum to `text` with a CHECK constraint, the recommended form, because adding or removing a value is an ordinary migration.
 
-**R-0186** `#[derive(PgEnum)]` maps to a Postgres enum, mainly to match existing tables, because removing a value from one is very hard.
+**R-0187** `#[derive(PgEnum)]` maps to a Postgres enum, mainly to match existing tables, because removing a value from one is very hard.
 
-**R-0187** Domains and composite types are also supported.
+**R-0188** Domains and composite types are also supported.
 
-- **R-0205** **Timestamps:** Postgres stores microseconds and chrono nanoseconds, so a value can compare unequal after a round trip. `Timestamp::now()` truncates to microseconds, and `insert` fills database-set timestamps in place. Compare stored values, not values read from the clock.
+- **R-0206** **Timestamps:** Postgres stores microseconds and chrono nanoseconds, so a value can compare unequal after a round trip. `Timestamp::now()` truncates to microseconds, and `insert` fills database-set timestamps in place. Compare stored values, not values read from the clock.
 
 ### Reading and writing / Decimal
 
-**R-0415** Postgres `numeric` goes up to 131,072 digits before the point, and also holds `NaN` and `Infinity`. No fixed-size Rust type covers that. `rust_decimal::Decimal` is 16 bytes, needs no heap and is `Copy`, but holds only 28 digits or so. Two types cover both cases:
+**R-0418** Postgres `numeric` goes up to 131,072 digits before the point, and also holds `NaN` and `Infinity`. No fixed-size Rust type covers that. `rust_decimal::Decimal` is 16 bytes, needs no heap and is `Copy`, but holds only 28 digits or so. Two types cover both cases:
 
 | ID | Rust type | Holds | Use for |
 |---|---|---|---|
-| R-0416 | `Decimal` (`rust_decimal`) | Up to 28 significant digits | Money, quantities, rates |
-| R-0417 | `morm::Numeric` | Every `numeric` value, `NaN` and `Infinity` included, with no arithmetic of its own | Larger values, and columns of unknown range |
+| R-0419 | `Decimal` (`rust_decimal`) | Up to 28 significant digits | Money, quantities, rates |
+| R-0420 | `morm::Numeric` | Every `numeric` value, `NaN` and `Infinity` included, with no arithmetic of its own | Larger values, and columns of unknown range |
 
-**R-0418**
+**R-0421**
 
 ```rust
 #[col(sql = "numeric(12,2)")] pub price: Decimal,   // fits, so checked at compile time
 #[col(sql = "numeric(40,2)")] pub total: Numeric,   // Decimal here is a compile error
 ```
 
-- **R-0419** **Never silently rounded on read.** `rust_decimal`'s own decoding rounds fractional digits it can't hold, and it allocates per value. morm decodes `Decimal` itself, with no heap use. A value that doesn't fit exactly returns `Error::Decimal`, as do `NaN` and `Infinity`.
-- **R-0420** **Never silently rounded on write.** Postgres rounds to a column's scale without complaint, so `1.005` into `numeric(12,2)` would change. With the scale known from `sql`, a value with too many decimal places returns a validation error. Use `clean` when rounding is what you want.
-- **R-0421** **Types are checked at compile time.** `Decimal` on `numeric(p,s)` with `p` or `s` above 28 is a compile error. `f32` or `f64` on `numeric` is a compile error, because floats can't hold decimal fractions exactly.
-- **R-0422** **Unbounded `numeric`** with `Decimal` compiles, because existing tables have it, a value that doesn't fit fails at read time.
-- **R-0426** **Speed:** `numeric` decoding is slower than integer decoding. When a column holds a fixed number of decimal places and speed matters most, `bigint` minor units (cents) are the fastest choice. The README says so.
+- **R-0422** **Never silently rounded on read.** `rust_decimal`'s own decoding rounds fractional digits it can't hold, and it allocates per value. morm decodes `Decimal` itself, with no heap use. A value that doesn't fit exactly returns `Error::Decimal`, as do `NaN` and `Infinity`.
+- **R-0423** **Never silently rounded on write.** Postgres rounds to a column's scale without complaint, so `1.005` into `numeric(12,2)` would change. With the scale known from `sql`, a value with too many decimal places returns a validation error. Use `clean` when rounding is what you want.
+- **R-0424** **Types are checked at compile time.** `Decimal` on `numeric(p,s)` with `p` or `s` above 28 is a compile error. `f32` or `f64` on `numeric` is a compile error, because floats can't hold decimal fractions exactly.
+- **R-0425** **Unbounded `numeric`** with `Decimal` compiles, because existing tables have it, a value that doesn't fit fails at read time.
+- **R-0429** **Speed:** `numeric` decoding is slower than integer decoding. When a column holds a fixed number of decimal places and speed matters most, `bigint` minor units (cents) are the fastest choice. The README says so.
 
 ### Hard to misuse
 
 | ID | Mistake | Caught by |
 |---|---|---|
-| R-0766 | `Decimal` on a `numeric` too large for it, or a float on `numeric` | Compile error |
-| R-0767 | A rounded `numeric` value | Error on read and on write |
+| R-0769 | `Decimal` on a `numeric` too large for it, or a float on `numeric` | Compile error |
+| R-0770 | A rounded `numeric` value | Error on read and on write |
 
 ## Test obligations
 

@@ -261,7 +261,7 @@ def write_steps(reqs, tests):
         L.append(f"- **Can run beside:** {', '.join(f'{STEPS[x]['n']:02d}' for x in beside(key)) or 'nothing'}")
         L.append(f"- **Crates:** {s['crates']}")
         L.append(f"- **PR approval:** {s.get('approve', 'CI and an independent review')}")
-        L.append(f"\nRead `../rules.md` and `../contracts.md` first. Everything needed for this step is in those two files and this one.\n")
+        L.append(f"\nRead `../rules.md`, `../contracts.md` and, once it exists, `../proofs.md` first. Everything needed for this step is in those files and this one.\n")
         L.append(f"## Goal\n\n{s['goal']}\n")
         L.append("## Deliverables\n")
         L.extend(f"- {x}" for x in s["deliver"])

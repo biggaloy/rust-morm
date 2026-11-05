@@ -2,11 +2,11 @@
 
 - **Phase:** Runtime
 - **Depends on:** 10
-- **Can run beside:** 04, 05, 06, 07, 08, 09, 13, 27, 28, 29, 30, 31, 32, 33
+- **Can run beside:** 04, 05, 06, 07, 08, 09, 13, 28, 29, 30, 31, 32, 33, 34, 35
 - **Crates:** `morm`
 - **PR approval:** CI and an independent review
 
-Read `../rules.md` and `../contracts.md` first. Everything needed for this step is in those two files and this one.
+Read `../rules.md`, `../contracts.md` and, once it exists, `../proofs.md` first. Everything needed for this step is in those files and this one.
 
 ## Goal
 
@@ -14,7 +14,7 @@ The pool, with sizing, budget and failure rules.
 
 ## Deliverables
 
-- `morm::Pool` on `deadpool`, dynamic size, idle shrinking, recycling, `recycle_when`, the shared `max_connections` budget, version refusal, failover, `pool_stats()`, an internal query entry point that later steps build on
+- `morm::Pool` on `deadpool`, dynamic size, idle shrinking, recycling, `recycle_when`, the shared `max_connections` budget through the `morm-core` function, version refusal, failover, `pool_stats()`, an internal query entry point that later steps build on
 
 ## End-to-end check
 
@@ -125,64 +125,64 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 
 ### Migrations / Runtime guarantees
 
-- **R-0598** `morm` refuses to connect to a server below 15.
+- **R-0601** `morm` refuses to connect to a server below 15.
 
 ### Performance and memory / `morm::Pool`
 
-**R-0619** `morm::Pool` is the generic `deadpool` crate with our own connection manager, not `deadpool-postgres`, whose statement cache has no size limit. `deadpool` provides the tested parts: waiting with timeouts, closing and resizing. morm provides the rest:
+**R-0622** `morm::Pool` is the generic `deadpool` crate with our own connection manager, not `deadpool-postgres`, whose statement cache has no size limit. `deadpool` provides the tested parts: waiting with timeouts, closing and resizing. morm provides the rest:
 
-- **R-0621** **Health check:** `client.is_closed()` at checkout, with no extra query, so checkout adds no round trip.
-- **R-0622** **Errors:** a pool wait timeout becomes a typed `PoolBusy`.
-- **R-0623** **Sizing:** warm start, idle shrinking and limit checks, below.
+- **R-0624** **Health check:** `client.is_closed()` at checkout, with no extra query, so checkout adds no round trip.
+- **R-0625** **Errors:** a pool wait timeout becomes a typed `PoolBusy`.
+- **R-0626** **Sizing:** warm start, idle shrinking and limit checks, below.
 
-**R-0624** Each query takes a connection, runs, and releases it. Connections are not shared between tasks, so one slow query only holds its own connection, a dropped connection fails only its own request, and timeouts work normally.
+**R-0627** Each query takes a connection, runs, and releases it. Connections are not shared between tasks, so one slow query only holds its own connection, a dropped connection fails only its own request, and timeouts work normally.
 
-**R-0626** Everything goes through `db`, so the pool can be replaced later without changing application code.
+**R-0629** Everything goes through `db`, so the pool can be replaced later without changing application code.
 
 ### Performance and memory / Dynamic size
 
 | ID | Setting | Default | Meaning |
 |---|---|---|---|
-| R-0627 | `min` | 2 × cores | Connections opened at startup |
-| R-0628 | `max` | 10 × `min` | The ceiling |
-| R-0629 | `idle_timeout` | 5m | Idle connections close, down to 1 |
-| R-0630 | `last_idle_timeout` | 1h | The last connection closes too, so an idle app can reach 0 |
-| R-0631 | `max_queries` | 50000 | Replace a connection after this many queries; 0 disables it |
-| R-0632 | `max_lifetime` | off | Replace a connection after this age |
+| R-0630 | `min` | 2 × cores | Connections opened at startup |
+| R-0631 | `max` | 10 × `min` | The ceiling |
+| R-0632 | `idle_timeout` | 5m | Idle connections close, down to 1 |
+| R-0633 | `last_idle_timeout` | 1h | The last connection closes too, so an idle app can reach 0 |
+| R-0634 | `max_queries` | 50000 | Replace a connection after this many queries; 0 disables it |
+| R-0635 | `max_lifetime` | off | Replace a connection after this age |
 
-- **R-0633** **`min` is not a floor.** It only sets the warm start. Connections reopen on demand, and the first query after a full idle period pays the connection cost.
-- **R-0634** **Limits never interrupt work.** `max_queries` and `max_lifetime` are checked only when a connection returns to the pool.
-- **R-0635** **Custom rules:** `Db::connect().recycle_when(|c| c.queries > 50_000 || c.age > hours(6))`.
-- **R-0636** **Cores:** Postgres doesn't report its core count over SQL. The default uses `[server] cores`, or the machine running the app when that's unset. If the database is elsewhere, set `[server]`.
-- **R-0637** **Failover:** on a pool that isn't `read_only`, a connection that returns `25006` (read-only transaction, after a primary switch) or an admin shutdown error is discarded, not reused. With several hosts and `target_session_attrs = "read-write"`, replacements find the new primary.
-- **R-0638** **Queues:** a request that can't get a connection waits up to `wait_timeout`, then returns `PoolBusy`. Waits are never infinite.
-- **R-0639** **Separate processes:** a service job, cron or background worker running as its own process must not start a pool with `min` above 1. It should use `Db::connect_as("jobs")`, `MORM_POOL=jobs`, or `MORM_POOL_MIN=1`, because the default of 2 × cores would open connections it doesn't need. The pool still grows on demand.
+- **R-0636** **`min` is not a floor.** It only sets the warm start. Connections reopen on demand, and the first query after a full idle period pays the connection cost.
+- **R-0637** **Limits never interrupt work.** `max_queries` and `max_lifetime` are checked only when a connection returns to the pool.
+- **R-0638** **Custom rules:** `Db::connect().recycle_when(|c| c.queries > 50_000 || c.age > hours(6))`.
+- **R-0639** **Cores:** Postgres doesn't report its core count over SQL. The default uses `[server] cores`, or the machine running the app when that's unset. If the database is elsewhere, set `[server]`.
+- **R-0640** **Failover:** on a pool that isn't `read_only`, a connection that returns `25006` (read-only transaction, after a primary switch) or an admin shutdown error is discarded, not reused. With several hosts and `target_session_attrs = "read-write"`, replacements find the new primary.
+- **R-0641** **Queues:** a request that can't get a connection waits up to `wait_timeout`, then returns `PoolBusy`. Waits are never infinite.
+- **R-0642** **Separate processes:** a service job, cron or background worker running as its own process must not start a pool with `min` above 1. It should use `Db::connect_as("jobs")`, `MORM_POOL=jobs`, or `MORM_POOL_MIN=1`, because the default of 2 × cores would open connections it doesn't need. The pool still grows on demand.
 
 ### Performance and memory / Sizing guidance
 
-- **R-0640** Connections needed ≈ queries per second × seconds each query holds a connection. For example, 2,000 queries/s × 5ms needs about 10.
-- **R-0641** Only as many queries run at once as Postgres has free CPU cores. Extra connections help when queries wait on disk, locks or a slow network. When everything is CPU-bound, they only move the queue into Postgres and add contention and memory.
-- **R-0642** `db.pool_stats()` reports wait time, busy, idle and waiting connections, and holds. These are plain atomic counters and always on, because a request waiting for a connection is invisible to Postgres: the server sees fast queries while users see slow responses. If tasks wait while Postgres CPU isn't maxed out, raise `max`. If Postgres CPU is maxed out, a bigger pool won't help, so fix the queries or add cores.
+- **R-0643** Connections needed ≈ queries per second × seconds each query holds a connection. For example, 2,000 queries/s × 5ms needs about 10.
+- **R-0644** Only as many queries run at once as Postgres has free CPU cores. Extra connections help when queries wait on disk, locks or a slow network. When everything is CPU-bound, they only move the queue into Postgres and add contention and memory.
+- **R-0645** `db.pool_stats()` reports wait time, busy, idle and waiting connections, and holds. These are plain atomic counters and always on, because a request waiting for a connection is invisible to Postgres: the server sees fast queries while users see slow responses. If tasks wait while Postgres CPU isn't maxed out, raise `max`. If Postgres CPU is maxed out, a bigger pool won't help, so fix the queries or add cores.
 
 ### Performance and memory / `max_connections`
 
-**R-0643** At startup, morm reads `max_connections` and the reserved slots, then computes:
+**R-0646** At startup, morm reads `max_connections` and the reserved slots, then computes:
 
-**R-0644**
+**R-0647**
 
 ```
 budget = (max_connections - reserved - safety margin) / processes
 ```
 
-**R-0645** Pools open in one process share the budget, so `db.pool("jobs")` beside the default pool can't double it. If `min` or `max` exceed the budget, including explicit values, morm lowers them and emits a warning, through `tracing` when enabled and stderr otherwise.
+**R-0648** Pools open in one process share the budget, so `db.pool("jobs")` beside the default pool can't double it. If `min` or `max` exceed the budget, including explicit values, morm lowers them and emits a warning, through `tracing` when enabled and stderr otherwise.
 
-**R-0647**
+**R-0650**
 
 ```
 morm: pool max 160 lowered to 92 (max_connections=100, reserved=3, margin=5)
 ```
 
-**R-0648** The default `max` is deliberately generous. On a larger server, raise `max_connections` in Postgres to match, and `morm-admin size` suggests the value. morm can't see other apps on the same server, which is what the margin is for, and `processes` is set by hand. When several separate processes share a server, Postgres is the real limit: on "too many clients", morm retries with a short backoff before returning the error.
+**R-0651** The default `max` is deliberately generous. On a larger server, raise `max_connections` in Postgres to match, and `morm-admin size` suggests the value. morm can't see other apps on the same server, which is what the margin is for, and `processes` is set by hand. When several separate processes share a server, Postgres is the real limit: on "too many clients", morm retries with a short backoff before returning the error.
 
 ## Test obligations
 

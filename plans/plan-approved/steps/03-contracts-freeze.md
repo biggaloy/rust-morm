@@ -6,7 +6,7 @@
 - **Crates:** `morm`, `morm-core`, `morm-macros`: traits and types only
 - **PR approval:** the owner approves the PR
 
-Read `../rules.md` and `../contracts.md` first. Everything needed for this step is in those two files and this one.
+Read `../rules.md`, `../contracts.md` and, once it exists, `../proofs.md` first. Everything needed for this step is in those files and this one.
 
 ## Goal
 

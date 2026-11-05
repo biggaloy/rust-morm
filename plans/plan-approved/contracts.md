@@ -29,6 +29,7 @@ pub type Result<T, E = Error> = std::result::Result<T, E>;
 
 pub trait Model: Sized + Send + Sync + 'static {
     type Pk: PkValue;                 // () for a model with no primary key
+    type Global;                      // the app's global mask, from morm::groups!
     type Scoped;                      // scoped group mask, () when the model has none
     const TABLE: &'static str;
     const SELECT: &'static str;
@@ -36,7 +37,7 @@ pub trait Model: Sized + Send + Sync + 'static {
     fn from_row_named(row: &tokio_postgres::Row) -> Result<Self>;
 }
 pub trait HasPk: Model {}             // absent on models with no primary key
-pub trait PkValue {}                  // one Param, or a tuple for a composite key
+pub trait PkValue: Send + Sync + 'static {}   // one Param, or a tuple for a composite key
 
 // Product::F.<field>. Capability markers let a column refuse .set(), .by() or set_expr
 pub struct Column<M, T, Cap> { /* name, marker data */ }
@@ -52,7 +53,7 @@ pub enum OrDefault<T> { Default, Set(T) }
 pub struct WriteOnly<T>(/* private */);
 
 pub struct Bits<const N: usize>([u64; N]);
-pub struct Mask<G, M: Model> { /* global bits G, plus M::Scoped */ }
+pub struct Mask<M: Model> { global: M::Global, scoped: M::Scoped }
 
 // Connection-like: db, a held connection, or tx
 pub trait Conn: Send + Sync { fn tx(&self) -> Option<&Tx>; /* every query entry point */ }
@@ -79,6 +80,7 @@ pub enum Committed<M: Model> {
     Deleted { target: Target<M> },
 }
 pub enum Upserted { Inserted, Updated, Unchanged }
+// db.upsert returns Upserted; db.upsert_many returns counts
 
 pub enum Error {
     Unique { constraint: String, field: Option<&'static str> },
@@ -87,6 +89,7 @@ pub enum Error {
     PoolerMode, NotFound, EmptyPatch, Conflict, Forbidden, Validation,
     PoolBusy, ConnectionLost, ReadOnly, OutOfRange, InvalidText,
     InvalidOrder, InvalidCursor, Decimal,
+    Config, Connect, ServerTooOld, Postgres,   // config, connecting, a server below 15, any other database error
     // payloads settled in step 03
 }
 ```
@@ -105,23 +108,23 @@ These are shared by steps that can run side by side, so each is written and froz
 | The conversion layer between a field and its column | `morm` | Models, types, reads, writes |
 | `ModelMeta`, the metadata every model emits | `morm-core` | Models, manifest, migrations |
 | The name function, with the 63-byte rule | `morm-core` | Macros, migrations |
-| The connection budget function | `morm-core` | Pool, `doctor`, `size` |
+| The connection budget function, implemented in step 11 | `morm-core` | Pool, `doctor`, `size` |
 | `Timestamp`, re-exported `Uuid`, `Range<T>` as types | `morm` | Bases and inference, before `types` adds their encoding |
-| The internal transaction with confirmed commit, used by `insert_many` and chunked paths before `db.transaction` exists | `morm` | Inserts, updates, upsert, transactions |
+| The internal transaction with confirmed commit, implemented in step 17 for `insert_many` and chunked paths, before `db.transaction` exists | `morm` | Inserts, updates, upsert, transactions |
 | `PoolStats`, with every counter the plan names | `morm` | Pool, hold-pooler, locks, outbox, telemetry |
 | The internal warning sink: stderr now, `tracing` when enabled | `morm-core` | Every step that warns |
 | Expansion layout: `#[model]` calls one module per feature, so model steps add a module and don't edit one shared function | `morm-macros` | Model steps, `manifest`, `rolling` |
 | The config structs | `morm-core` | `morm`, `morm-migrate`, `morm-admin` |
 
-`Op`, the typed migration operation, is defined in step 29. Migration steps run one at a time, so it needs no earlier freeze.
+`Op`, the typed migration operation, is defined in step 30. Migration steps run one at a time, so it needs no earlier freeze.
 
 ## Between `morm-mgr` and `morm-admin`
 
-`morm-mgr` prints one JSON manifest: `format`, then models (table, schema, columns, types, nullability, defaults, flags, indexes, constraints, `was` hints, comments), managed objects, extensions, and registered `sql!` queries. Step 27 defines it, in `morm-core`. Everything else reads it, and it's versioned by `format`.
+`morm-mgr` prints one JSON manifest: `format`, then models (table, schema, columns, types, nullability, defaults, flags, indexes, constraints, `was` hints, comments), managed objects, extensions, and registered `sql!` queries. Step 28 defines it, in `morm-core`. Everything else reads it, and it's versioned by `format`.
 
 ## `morm-admin` layout
 
-Each command is its own module, registered in one table, so steps adding commands don't edit the same code. Step 30 creates this dispatcher. It uses no CLI framework.
+Each command is its own module, registered in one table, so steps adding commands don't edit the same code. Step 31 creates this dispatcher. It uses no CLI framework.
 
 ## Approved key decisions
 

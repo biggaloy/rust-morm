@@ -2,11 +2,11 @@
 
 - **Phase:** Runtime
 - **Depends on:** 03
-- **Can run beside:** 04, 05, 06, 07, 08, 09, 13, 27
+- **Can run beside:** 04, 05, 06, 07, 08, 09, 13, 28
 - **Crates:** `morm-core`, `morm`
 - **PR approval:** CI and an independent review
 
-Read `../rules.md` and `../contracts.md` first. Everything needed for this step is in those two files and this one.
+Read `../rules.md`, `../contracts.md` and, once it exists, `../proofs.md` first. Everything needed for this step is in those files and this one.
 
 ## Goal
 
@@ -24,7 +24,7 @@ An app connects from `morm.toml` alone, and from environment variables alone, ov
 ## Out of scope
 
 - The pool (step 11)
-- `init` socket detection (step 40)
+- `init` socket detection (step 42)
 
 ## Requirements
 
@@ -183,7 +183,7 @@ let db = morm::Db::connect_as("jobs").await?;   // opens only [pools.jobs]
 
 ### Reading and writing / Connecting
 
-**R-0330**
+**R-0332**
 
 ```rust
 let db = morm::Db::connect().await?;                       // reads morm.toml: [database], [pool]
@@ -191,7 +191,7 @@ let db = morm::Db::connect_as("jobs").await?;              // reads morm.toml: [
 let db = morm::Db::connect_to(url).min(10).max(90).await?; // or set values in code
 ```
 
-**R-0331** `connect` honours `MORM_POOL`, so a process can switch profile without a code change. `connect_as` names the profile in code and fails if it doesn't exist. Both return a builder, so `.min()` and `.max()` work there too.
+**R-0333** `connect` honours `MORM_POOL`, so a process can switch profile without a code change. `connect_as` names the profile in code and fails if it doesn't exist. Both return a builder, so `.min()` and `.max()` work there too.
 
 ## Test obligations
 

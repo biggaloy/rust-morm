@@ -53,7 +53,7 @@ All of these must be true:
 
 ## Independent review
 
-The session that wrote a step never approves it. A fresh agent reads `rules.md`, `contracts.md`, the step file and the diff, and checks, requirement by requirement:
+The session that wrote a step never approves it. A fresh agent reads `rules.md`, `contracts.md`, `proofs.md`, the step file and the diff, and checks, requirement by requirement:
 
 - Is it built as written?
 - Does each tagged test really prove it?
@@ -109,6 +109,7 @@ pub type Result<T, E = Error> = std::result::Result<T, E>;
 
 pub trait Model: Sized + Send + Sync + 'static {
     type Pk: PkValue;                 // () for a model with no primary key
+    type Global;                      // the app's global mask, from morm::groups!
     type Scoped;                      // scoped group mask, () when the model has none
     const TABLE: &'static str;
     const SELECT: &'static str;
@@ -116,7 +117,7 @@ pub trait Model: Sized + Send + Sync + 'static {
     fn from_row_named(row: &tokio_postgres::Row) -> Result<Self>;
 }
 pub trait HasPk: Model {}             // absent on models with no primary key
-pub trait PkValue {}                  // one Param, or a tuple for a composite key
+pub trait PkValue: Send + Sync + 'static {}   // one Param, or a tuple for a composite key
 
 // Product::F.<field>. Capability markers let a column refuse .set(), .by() or set_expr
 pub struct Column<M, T, Cap> { /* name, marker data */ }
@@ -132,7 +133,7 @@ pub enum OrDefault<T> { Default, Set(T) }
 pub struct WriteOnly<T>(/* private */);
 
 pub struct Bits<const N: usize>([u64; N]);
-pub struct Mask<G, M: Model> { /* global bits G, plus M::Scoped */ }
+pub struct Mask<M: Model> { global: M::Global, scoped: M::Scoped }
 
 // Connection-like: db, a held connection, or tx
 pub trait Conn: Send + Sync { fn tx(&self) -> Option<&Tx>; /* every query entry point */ }
@@ -159,6 +160,7 @@ pub enum Committed<M: Model> {
     Deleted { target: Target<M> },
 }
 pub enum Upserted { Inserted, Updated, Unchanged }
+// db.upsert returns Upserted; db.upsert_many returns counts
 
 pub enum Error {
     Unique { constraint: String, field: Option<&'static str> },
@@ -167,6 +169,7 @@ pub enum Error {
     PoolerMode, NotFound, EmptyPatch, Conflict, Forbidden, Validation,
     PoolBusy, ConnectionLost, ReadOnly, OutOfRange, InvalidText,
     InvalidOrder, InvalidCursor, Decimal,
+    Config, Connect, ServerTooOld, Postgres,   // config, connecting, a server below 15, any other database error
     // payloads settled in step @contracts-freeze
 }
 ```
@@ -185,9 +188,9 @@ These are shared by steps that can run side by side, so each is written and froz
 | The conversion layer between a field and its column | `morm` | Models, types, reads, writes |
 | `ModelMeta`, the metadata every model emits | `morm-core` | Models, manifest, migrations |
 | The name function, with the 63-byte rule | `morm-core` | Macros, migrations |
-| The connection budget function | `morm-core` | Pool, `doctor`, `size` |
+| The connection budget function, implemented in step @pool | `morm-core` | Pool, `doctor`, `size` |
 | `Timestamp`, re-exported `Uuid`, `Range<T>` as types | `morm` | Bases and inference, before `types` adds their encoding |
-| The internal transaction with confirmed commit, used by `insert_many` and chunked paths before `db.transaction` exists | `morm` | Inserts, updates, upsert, transactions |
+| The internal transaction with confirmed commit, implemented in step @inserts for `insert_many` and chunked paths, before `db.transaction` exists | `morm` | Inserts, updates, upsert, transactions |
 | `PoolStats`, with every counter the plan names | `morm` | Pool, hold-pooler, locks, outbox, telemetry |
 | The internal warning sink: stderr now, `tracing` when enabled | `morm-core` | Every step that warns |
 | Expansion layout: `#[model]` calls one module per feature, so model steps add a module and don't edit one shared function | `morm-macros` | Model steps, `manifest`, `rolling` |
@@ -255,7 +258,7 @@ Steps run in parallel only when `contracts.md` covers what they share. Each gets
 The coordinator stays thin: it reads this file and never reads code.
 
 1. Pick steps whose dependencies are all `done`, and mark them `in progress`.
-2. Start a fresh agent for each one, with this prompt: read `plans/plan-approved/rules.md`, `contracts.md` and `steps/NN-name.md`, then do the step.
+2. Start a fresh agent for each one, with this prompt: read `plans/plan-approved/rules.md`, `contracts.md`, `proofs.md` and `steps/NN-name.md`, then do the step.
 3. When it opens a PR, mark it `in review` and start a fresh review agent as `rules.md` describes.
 4. Relay findings until the review is clean, then merge or ask the owner, as `rules.md` says.
 5. Mark the step `done`. Take any design question straight to the owner.
@@ -263,6 +266,8 @@ The coordinator stays thin: it reads this file and never reads code.
 ## Decisions since the split
 
 - **`morm-core` added:** a sixth crate for config loading, the name and budget functions and manifest types, because `morm-migrate` and `morm-admin` can't depend on `morm` but need all three. The owner should confirm this.
+- **`db.upsert_many` named:** the plan said "batch upsert" with no call. The owner should confirm the name.
+- **`morm::pg_outbox!()` given its own requirement,** because the only text about it was an example.
 - **Doctor, `lint` and `import` rules gathered:** sentences about them moved from their topic into those tools' own steps, so no earlier step depends on a later tool.
 
 ## Record from the frozen plan
