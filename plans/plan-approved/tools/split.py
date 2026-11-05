@@ -250,6 +250,8 @@ def render_requirements(rs):
 def write_steps(reqs, tests):
     d = ROOT / "steps"
     d.mkdir(exist_ok=True)
+    for old in d.glob("*.md"):
+        old.unlink()
     for key, s in STEPS.items():
         rs = [r for r in reqs if r["step"] == key]
         ts = [t for t in tests if t["step"] == key]
