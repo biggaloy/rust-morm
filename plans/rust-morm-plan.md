@@ -350,6 +350,7 @@ pub struct Invoice { pub total: Decimal }       // invoice.tenant_id is a plain 
 | `groups`, `sudo` | global groups for the whole model (section 5) |
 | `scoped_groups` | declares groups that exist only on this model (section 5) |
 | `no_default` | don't generate `Default` |
+| `deserialize` | generate `Deserialize` for the full model, for trusted data only (section 5) |
 | `checks(...)` | table-level CHECK constraints, tracked by migrations: `checks(name = "ends_after_starts", sql = "ends_at > starts_at")` |
 | `storage` | table storage settings, tracked by migrations: `storage = "fillfactor=90"` |
 
@@ -370,6 +371,7 @@ pub struct Invoice { pub total: Decimal }       // invoice.tenant_id is a plain 
 | `version` | optimistic locking; a stale update fails with `Conflict` |
 | `deprecated` | removes the field from reads and writes while the column remains (rolling deploys) |
 | `groups`, `sudo` | field access groups (section 5) |
+| `secret` | never in JSON or schemas, redacted in `Debug` (section 5) |
 | `min`, `max`, `len`, `choices`, `clean`, `db_check` | validation (section 6) |
 | `skip_json_if` | omit a value from JSON output when a function returns true |
 | `json_string` | write an integer as a JSON string (section 8) |
@@ -426,7 +428,7 @@ db.insert(&mut p).await?;        // fills id and timestamps in place
 - compile-time SQL constants (`SELECT`, `GET`, `INSERT`, `DELETE`, `RETURNING`, `ORDER BY`)
 - positional decoding (`from_row`), name-based decoding for raw queries (`from_row_named`), and a borrowed `ProductRef<'r>`
 - `Product::F.<field>`: typed, quoted column references, checked at compile time; `Product::F.alias("p")` for JOINs, with prefix decoding for two models in one row
-- `Default` (unless `no_default`), `Product::new(...)`, `Serialize`, `Deserialize`, `json_schema()`
+- `Default` (unless `no_default`), `Product::new(...)`, `Debug`, `Serialize`, `json_schema()`. `Deserialize` only as described in section 5
 - `Product::G.<group>` masks, when the model has scoped groups
 - an empty `impl Hooks` (unless `hooks` is set)
 - schema metadata, compiled only into `morm-mgr`, with no model list to maintain
@@ -453,12 +455,45 @@ pub(in crate::auth) struct UserAdmin { /* every column */ }
 - Each view is a real generated plain struct with its own columns, `F`, `SELECT` constant and decoder.
 - **Hidden means absent.** `user.password` and `User::F.password` are compile errors, and JSON output can't include the field.
 - **Write-only works:** `read_hide` without `write_hide` generates a `WriteOnly<T>` field, which can be set but has no reader, `Debug` or `Serialize`.
-- **Read-only works:** `write_hide` fields can't be used in `.set()` (compile error) and are ignored on JSON input.
+- **Read-only works:** `write_hide` fields can't be used in `.set()` (compile error).
 - **Privilege follows Rust visibility.** With `UserAdmin` private to `crate::auth`, the compiler proves no other module touches passwords.
 - **Narrowing is one-way.** `From<UserAdmin> for User` exists; nothing goes the other way.
 - **Raw SQL stays safe.** Named decoding ignores columns a view lacks, and `check-sql` flags queries selecting hidden columns.
 - **Inserts:** a view that hides a required column with no default can't be inserted.
 - Only the definition is migrated. `clean` and declarative rules apply to every view, and `impl Hooks` is per type.
+
+### Public input and output
+
+Hide lists fail open: a column added later is exposed until someone remembers to hide it. So public-facing views list what they allow.
+
+```rust
+#[model(table = "users", base = "common")]
+#[view(pub UserOut, fields = "id, name, email")]                 // response body
+#[view(pub UserIn, input = "name, email, password")]             // request body
+pub(in crate::auth) struct UserAdmin {
+    pub name: String,
+    pub email: String,
+    #[col(secret)] pub password: String,
+    pub is_admin: bool,
+}
+```
+
+- **`fields`** is an allow-list for reads, the opposite of `read_hide`. A new column stays out until it's added.
+- **`input`** is an allow-list for request bodies. **Only a view with `input` gets `Deserialize`**, and only those fields are accepted, so a client can't set `id`, `is_admin` or `created_at`. This closes mass assignment by default: parsing a request into a model or any other view is a compile error.
+- **Unknown JSON fields are rejected,** so a client sending `is_admin` gets a clear error.
+- `input` can't list a primary key, identity, generated, `expr`, `version`, `auto_now` or `deprecated` column, or `created_at` and `updated_at`. That's a compile error.
+- A `secret` field can be listed in `input`, because a password has to arrive somewhere. It becomes a `WriteOnly<T>` field in that view, so it can't be read back or printed.
+- `#[model(deserialize)]` opts a full model in, for trusted data such as a cache or a file. It's marked as unsafe for request bodies in the docs.
+
+**`#[col(secret)]` protects a field on every model, including one with no views:**
+
+- It never appears in `Serialize`, `to_json`, `to_json_for`, `fetch_json`, `stream_json` or `json_schema`, not even with `sudo`.
+- `Debug` prints it as `***`.
+- Code can still read it, because a login has to check a hash. Keep such models private with Rust visibility.
+- `Serialize` and `Debug` are generated by the macro, so deriving your own on a model is a compile error, and a secret can't be exposed by accident.
+- `lint` warns about columns named like `password`, `token`, `secret` or `api_key` that aren't `secret`, hidden or write-only. `import` adds `secret` to them.
+
+**Return a view from public endpoints, never a full model.** The README says so plainly.
 
 ### Groups: granular field access
 
@@ -900,7 +935,7 @@ tx.advisory_lock(&["billing", "reports"]).await?;
 - `user.to_json()`, or `Serialize` from the `json` feature. `user.to_json_for(mask)` limits output to groups.
 - `ProductRef` also serializes directly, so `fetch_ref` is the path for rows you process and then send.
 - `jsonb` columns can decode as `&RawValue`, so stored JSON is embedded without being parsed and rewritten.
-- **Input:** `Deserialize` on a view accepts only its writable fields, so `UserProfile` doubles as the safe request body. `insert` and `update` run `clean` and the rules. No separate input type.
+- **Input:** a view with `input` is the request body (section 5). `insert` and `update` run `clean` and the rules. No hand-written input type is needed.
 - **Schema:** `User::json_schema(Up | Down)` as generated static strings, plus optional `utoipa` for OpenAPI.
 - **Large integers:** JavaScript loses digits above 2^53, so `#[col(json_string)]` writes an integer as a JSON string, on every JSON path.
 - Formats are fixed and documented: `Decimal` as a string, timestamps as RFC 3339, `bytea` as base64, `None` as `null`, `jsonb` embedded as JSON.
@@ -1332,6 +1367,8 @@ db.release(held).await;      // or held.release().await
 | Building SQL from strings | Compile error (`q_unchecked` is the visible escape hatch) |
 | A list with no limit | Compile error: requires `.limit(n)`, `.all()` or `stream()` |
 | Reading a hidden field | Compile error |
+| Parsing a request body into a model | Compile error: only views with `input` have `Deserialize` |
+| Returning a password in JSON | `secret` is never serialized, even with `sudo` |
 | Using `db` inside a transaction or stream loop | `NestedConnection` at runtime; `db.extra_conn()` is the visible escape hatch |
 | A request-supplied sort column | `.q()` refuses it; `order_by_allowed` checks it against a list |
 | Paging with `OFFSET` | No helper exists; `keyset` is the documented path |
@@ -1358,8 +1395,8 @@ The compiler can't see a query inside a loop, so that one is caught in tests and
 Tests are written with the code: **a milestone isn't done until its tests pass in CI.**
 
 - **Unit:** macro output, SQL generation, diff, naming.
-- **Compile-fail (`trybuild`):** every compile-time guarantee, including hidden view fields, `HasPk`, unfiltered update and delete, update with no `.set()`, list with no limit, `self` absent in update and delete hooks, non-static `q()` and `sql()`, uppercase names without `keep_case`, columns narrower than their Rust type, `usize` and `isize`, unknown group names, scoped groups on `#[model(groups)]`, a scoped mask on another model, duplicate indexes, duplicate base fields, over-long and colliding names, `Decimal` and float on unsuitable `numeric` columns.
-- **Integration on real Postgres:** insert, every get, update and delete form, views, groups, hook inputs (`Changes`, `Target`), hooks order, the loop detector, `after_commit` on commit and skip on rollback, all list and JSON paths, pool growth and idle shrinking, `max_connections` adjustment, `db.hold()` release on every exit path, `ConnectionLost`, cancellation, forced deadlocks in both kinds, swallowed errors never reporting a commit, `CommitUnknown`, savepoint behaviour after deadlocks, single-statement and transaction retry limits, every timeout, cancelled queries releasing their locks, `max_holds`, `.lock_ordered()` and bulk writes under concurrent load, advisory key stability, `skip_locked` with rival workers, `.in_batches` stopping and resuming, every `insert_many` path at a million rows, keyset pages under concurrent writes and with mixed sort directions, tampered cursors, `order_by_allowed`, `.custom_plan()`, connections discarded on `25006`, `load_related` with `.limit_each`, every integer type at its limits through insert, read and JSON, range CHECKs rejecting direct SQL writes, `OutOfRange`, `InvalidText`, `json_string` on every path, `db.close()` finishing in-flight work, models in several schemas.
+- **Compile-fail (`trybuild`):** every compile-time guarantee, including hidden view fields, `HasPk`, unfiltered update and delete, update with no `.set()`, list with no limit, `self` absent in update and delete hooks, `Deserialize` on models and non-`input` views, protected columns in `input`, a derived `Serialize` or `Debug` on a model, non-static `q()` and `sql()`, uppercase names without `keep_case`, columns narrower than their Rust type, `usize` and `isize`, unknown group names, scoped groups on `#[model(groups)]`, a scoped mask on another model, duplicate indexes, duplicate base fields, over-long and colliding names, `Decimal` and float on unsuitable `numeric` columns.
+- **Integration on real Postgres:** insert, every get, update and delete form, views, groups, hook inputs (`Changes`, `Target`), hooks order, the loop detector, `after_commit` on commit and skip on rollback, all list and JSON paths, pool growth and idle shrinking, `max_connections` adjustment, `db.hold()` release on every exit path, `ConnectionLost`, cancellation, forced deadlocks in both kinds, swallowed errors never reporting a commit, `CommitUnknown`, savepoint behaviour after deadlocks, single-statement and transaction retry limits, every timeout, cancelled queries releasing their locks, `max_holds`, `.lock_ordered()` and bulk writes under concurrent load, advisory key stability, `skip_locked` with rival workers, `.in_batches` stopping and resuming, every `insert_many` path at a million rows, keyset pages under concurrent writes and with mixed sort directions, tampered cursors, `order_by_allowed`, `.custom_plan()`, connections discarded on `25006`, `load_related` with `.limit_each`, `secret` absent from every JSON path and `Debug`, unknown input fields rejected, every integer type at its limits through insert, read and JSON, range CHECKs rejecting direct SQL writes, `OutOfRange`, `InvalidText`, `json_string` on every path, `db.close()` finishing in-flight work, models in several schemas.
 - **Property tests:** random models and data round-trip through insert, read and JSON.
 - **Doc tests:** every README and doc example compiles and runs.
 - **`#[morm::test]`:** gives each test a database cloned from a migrated template, for this project and its users.
@@ -1430,6 +1467,10 @@ One compact, complete file at the repo root. It must be enough to use morm effic
 | `mgr squash --to ID` | The chain has grown long, and every database has passed `ID` |
 | `tx.emit` | An event must not be lost if the app crashes; use `after_commit` when losing one is acceptable |
 | `tx.emit_keyed` | Events about the same thing must arrive in order |
+| `fields = "..."` | A view is public, and new columns must stay out until you add them |
+| `input = "..."` | A view takes a request body |
+| `#[col(secret)]` | A column must never reach JSON or logs, such as a password hash |
+| `#[model(deserialize)]` | You load a full model from trusted data, such as a cache; never from a request |
 | `keep_case` | You're matching an existing mixed-case table or column |
 | `tx.get_for_update` | Your logic must see the current row before changing it, and `set_expr` can't express it |
 | `#[col(version)]` | Users edit a row over time, and a stale save must fail, not overwrite |
@@ -1469,7 +1510,7 @@ One compact, complete file at the repo root. It must be enough to use morm effic
 
 6. Models: bases, every `#[model]` and `#[col]` option in tables.
 7. `get`, `insert`, `update`, `delete`, lists, `filter_cols`, related rows, pagination, batches, lost updates, raw SQL with `db.sql()`, transactions, and which of `Decimal`, `Numeric` or `bigint` to use.
-8. Views, groups, validation.
+8. Views, including public input and output with `fields`, `input` and `secret`, groups, validation.
 9. Hooks, with a table of what each receives and this line: "update and delete hooks never see a row unless you fetch it." Then `after_commit` versus the outbox.
 10. JSON output and schemas.
 11. Pool and `morm.toml`: every setting, sizing, and the rule for long-running work: "use `db` for everything, including jobs and crons, and use `db.hold()` only when you need session state." It states plainly that service jobs, crons and background workers running as their own process must not spawn a pool with `min` above 1, and shows `connect_as`, `MORM_POOL` and `MORM_POOL_MIN`. It includes the full environment variable table. It also shows the jobs table, the `db.hold()` lifecycle, and when a websocket needs a listener: "release when you're done, and rely on Drop as the safety net, never as the plan."
