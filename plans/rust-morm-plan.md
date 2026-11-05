@@ -416,8 +416,8 @@ let mask = G::from_names(&claims.roles)?;               // roles from a token or
 ```
 
 - **Structure:** bits live in an opaque `Bits<N>`, a plain `[u64; N]` array. A group number `n` is bit `n % 64` of word `n / 64`, and a check ANDs the arrays word by word. The widths are constants, so a limit can be raised with one change and no API change.
-- **Limits:** 256 global groups in total, `sudo` included (`[u64; 4]`), and 128 scoped groups per model (`[u64; 2]`). Going over is a compile error. Fields have no limit.
-- **Cost:** a mask is 48 bytes, held by value in the handle with no allocation. Each grouped field has a 48-byte entry in a static table, and rows carry no extra bytes. A throwaway C benchmark on one machine measured about 2ns per check at this width, against about 1ns at 128 bits. The real figure comes from the milestone 2 benchmark.
+- **Limits:** 128 global groups in total, `sudo` included, and 128 scoped groups per model, each a `[u64; 2]`, the same 16 bytes as a `u128`. Going over is a compile error. Fields have no limit.
+- **Cost:** a mask is 32 bytes, held by value in the handle with no allocation. Each grouped field has a 32-byte entry in a static table, and rows carry no extra bytes. A throwaway C benchmark on one machine measured about 1ns per check at this width. The real figure comes from the milestone 2 benchmark.
 - **Only grouped fields are checked.** A field without groups generates no check. `.set()` checks once per call, and `to_json_for` works out its field list once per mask, so output cost doesn't grow with the number of rows.
 - **Scoped bits are per model,** so a mask containing them is typed `Mask<User>`, and using it on another model is a compile error. A caller with scoped groups on two models uses two handles. A mask of only global groups works everywhere.
 - **Bit numbers aren't stable.** They change when the list changes, so store group names, never mask values, and convert with `from_names`. An unknown name is an error.
