@@ -397,6 +397,8 @@ pub struct AuditLog { /* ... */ }
 
 `sudo` is an ordinary global group with a reserved name, always present, so it works with no declaration.
 
+**Declaring global groups:** call `morm::groups!` once per app, in any module. It's plain Rust, not `morm.toml`, so names are checked by the compiler. It generates a constant `G`, with one field per group numbered in the order listed, and `sudo` as bit 0. Models find `G` through a normal `use`. If models span several crates, put the call in a crate they all depend on.
+
 - **Resolving names:** a name listed in the model's `scoped_groups` is scoped. Any other name is global and resolves to `G`, so a typo is a compile error. A scoped name hiding a global one is a compile error too.
 - **Access:** a field with no groups is open to everyone. A grouped field needs the caller to be in at least one of its groups.
 - **Whole model:** `#[model(groups = "staff")]` puts every field without its own `groups` into that group. `#[model(sudo)]` does the same with `sudo`. Only global groups work here, and a field's own `groups` takes priority.
@@ -413,11 +415,12 @@ let db = db.groups(G.staff | User::G.billing);          // works on User only
 let mask = G::from_names(&claims.roles)?;               // roles from a token or a table
 ```
 
-- A mask holds two `u128`s, global bits and scoped bits, and a check is two ANDs with no allocation. Fields without groups store nothing, grouped fields use a static table, and rows carry no extra bytes.
-- **Limits:** 128 global groups in total, `sudo` included, and 128 scoped groups per model. Going over is a compile error. Fields have no limit.
+- **Structure:** bits live in an opaque `Bits<N>`, a plain `[u64; N]` array. A group number `n` is bit `n % 64` of word `n / 64`, and a check ANDs the arrays word by word. The widths are constants, so a limit can be raised with one change and no API change.
+- **Limits:** 256 global groups in total, `sudo` included (`[u64; 4]`), and 128 scoped groups per model (`[u64; 2]`). Going over is a compile error. Fields have no limit.
+- **Cost:** a mask is 48 bytes, held by value in the handle with no allocation. Each grouped field has a 48-byte entry in a static table, and rows carry no extra bytes. A throwaway C benchmark on one machine measured about 2ns per check at this width, against about 1ns at 128 bits. The real figure comes from the milestone 2 benchmark.
+- **Only grouped fields are checked.** A field without groups generates no check. `.set()` checks once per call, and `to_json_for` works out its field list once per mask, so output cost doesn't grow with the number of rows.
 - **Scoped bits are per model,** so a mask containing them is typed `Mask<User>`, and using it on another model is a compile error. A caller with scoped groups on two models uses two handles. A mask of only global groups works everywhere.
 - **Bit numbers aren't stable.** They change when the list changes, so store group names, never mask values, and convert with `from_names`. An unknown name is an error.
-- **Room to grow:** `u128` is Rust's largest integer. Masks are opaque types, so they could later become arrays of integers with no API change.
 
 ---
 
