@@ -1188,7 +1188,7 @@ The planner topologically sorts ops (foreign key cycles are resolved by adding c
 | Add NOT NULL column | Add nullable, batched backfill, then as above |
 | Add column with a volatile default, such as `gen_random_uuid()` | Add with no default, `SET DEFAULT` so new rows get it, then batched backfill. A constant default is instant and stays one step |
 | Type change that is lossy or rewrites the table, such as `int` to `bigint` | New column, sync trigger so writes during the copy aren't lost, batched copy, swap (old column retired) |
-| Type change on a key referenced by foreign keys | Refused with guidance on a live table, because every referencing column and the identity sequence must change together. `--fast` does it in one rewrite for small tables or maintenance windows. An online form is in Later |
+| Type change on a key referenced by foreign keys | Refused with guidance on a live table, because every referencing column and the identity sequence must change together. `--fast` does it in one rewrite for small tables or maintenance windows. An online form is in `later-defo-build.plan` |
 | Widening type change | In place when no rewrite is needed |
 
 New tables use plain DDL in one transaction. `--fast` allows the simple forms for small tables or maintenance windows.
@@ -1346,7 +1346,7 @@ If `min` or `max` exceed the budget, including explicit values, morm lowers them
 morm: pool max 160 lowered to 92 (max_connections=100, reserved=3, margin=5)
 ```
 
-morm can't see other apps on the same server, which is what the margin is for, and `processes` is set by hand. When several separate processes share a server, Postgres is the real limit: on "too many clients", morm retries with a short backoff before returning the error.
+The default `max` is deliberately generous. On a larger server, raise `max_connections` in Postgres to match, and `morm-admin size` suggests the value. morm can't see other apps on the same server, which is what the margin is for, and `processes` is set by hand. When several separate processes share a server, Postgres is the real limit: on "too many clients", morm retries with a short backoff before returning the error.
 
 ### Resource estimates: `morm-admin size`
 
@@ -1746,7 +1746,7 @@ One compact, complete file at the repo root. It must be enough to use morm effic
 
 ### Later
 
-Shared reads: a small opt-in lane that pipelines primary-key reads on a few connections, added only if a benchmark shows real gains with no worse p99 under mixed load. Also partitioning, a `dynamic` registry for by-name admin CRUD, sensitive-column prompts in `import`, an online form of key type changes across foreign keys, and `morm-admin size --live`, which compares the estimate with `pg_stat_activity` and live pool figures to spot oversized pools.
+Shared reads: a small opt-in lane that pipelines primary-key reads on a few connections, added only if a benchmark shows real gains with no worse p99 under mixed load. Also partitioning, a `dynamic` registry for by-name admin CRUD, sensitive-column prompts in `import`, and `morm-admin size --live`, which compares the estimate with `pg_stat_activity` and live pool figures to spot oversized pools.
 
 ### Confirmed for after 0.1
 
