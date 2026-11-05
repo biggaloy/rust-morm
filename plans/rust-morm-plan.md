@@ -29,6 +29,7 @@ Non-goals: other databases, a query language that replaces SQL, runtime reflecti
 | Pool | `morm::Pool`: the `deadpool` core crate with our own connection manager. Dynamic size, one exclusive checkout per query |
 | Configuration | `morm.toml`, shared by the app and `morm-admin`, so settings need no Rust |
 | Long-running work | Jobs and crons use the pool normally. `db.hold()` is only for session state |
+| Deadlocks | `db` inside a transaction is refused, bulk writes are sorted, single statements retry once, and locks wait at most 5s by default (section 8) |
 | Statement cache | Bounded per-connection LRU, with `query_typed` for dynamic SQL and overflow |
 | Connection | Unix socket by default (`host=/var/run/postgresql`), the lowest latency and allows peer auth. TCP also supported |
 | TLS | Optional cargo feature `tls` (rustls). Not compiled in unless enabled. Compiling it in costs binary size and build time; RAM and CPU are only spent on connections that use TLS |
@@ -126,6 +127,8 @@ last_idle_timeout = "1h"         # then close the last one
 max_queries = 50000              # 0 = no limit
 max_lifetime = "off"
 hold_warn_after = "1h"
+lock_timeout = "5s"              # longest wait for a lock; "off" disables it
+idle_in_transaction_timeout = "1m"  # end transactions left open and idle
 
 [pools.jobs]                     # optional named profile
 user = "app_jobs"                # any [database] field can be set here
@@ -165,6 +168,8 @@ Precedence: defaults, then `morm.toml`, then environment variables, then code. T
 | `MORM_POOL_IDLE_TIMEOUT`, `MORM_POOL_LAST_IDLE_TIMEOUT` | `idle_timeout`, `last_idle_timeout` |
 | `MORM_POOL_MAX_QUERIES`, `MORM_POOL_MAX_LIFETIME` | `max_queries`, `max_lifetime` |
 | `MORM_POOL_HOLD_WARN_AFTER` | `hold_warn_after` |
+| `MORM_POOL_LOCK_TIMEOUT` | `lock_timeout` |
+| `MORM_POOL_IDLE_IN_TRANSACTION_TIMEOUT` | `idle_in_transaction_timeout` |
 
 `MORM_POOL_*` variables apply to the pool this process opens at startup.
 
@@ -653,7 +658,7 @@ Postgres `numeric` goes up to 131,072 digits before the point, and also holds `N
 
 - `sql!` builds a `&'static str` from `F` constants and registers it. `morm-admin mgr check-sql` runs `PREPARE` on each against scratch and compares types. That gives checked raw SQL with no database at build time.
 - `.q()` accepts only `&'static str`, so `format!`-ed input won't compile. `q_unchecked(String)` is the visible escape hatch.
-- Typed errors: `Unique { constraint, field }`, `ForeignKey`, `NotNull`, `Check`, `Serialization`, `Deadlock`, `Conflict`, `PoolBusy`, `ConnectionLost`.
+- Typed errors: `Unique { constraint, field }`, `ForeignKey`, `NotNull`, `Check`, `Serialization`, `Deadlock`, `LockTimeout`, `NestedConnection`, `Conflict`, `PoolBusy`, `ConnectionLost`, `Decimal`.
 
 ### Transactions
 
@@ -664,7 +669,45 @@ db.transaction(|tx| async move {
 }).isolation(Serializable).retry(3).await?;
 ```
 
-Same API as `db`, with savepoints, retry on 40001 and 40P01, and per-transaction settings (`statement_timeout`, `SET LOCAL` for tenant RLS).
+Same API as `db`, with savepoints, retry on 40001 and 40P01, and per-transaction settings (`statement_timeout`, `lock_timeout`, `SET LOCAL` for tenant RLS).
+
+### Deadlocks
+
+There are two kinds. In **Postgres**, two transactions lock the same rows in opposite order, and Postgres kills one with `40P01`, by default after `deadlock_timeout` (1s). In the **pool**, tasks holding a connection wait for a second one while every connection is taken, and Postgres can't see that.
+
+**Pool deadlocks:**
+
+- **`db` inside a transaction is refused.** Using `db` instead of `tx` inside a transaction closure returns `NestedConnection` immediately, where it would otherwise wait for a second connection. This can't be a compile error, because the closure can capture `db`, so it's a task-local flag costing a few nanoseconds per query.
+- `db.outside_tx()` allows deliberate cases, such as an audit row that must survive a rollback. It can still wait for a connection, so `PoolBusy` remains the backstop.
+- **Limit:** a task spawned inside the closure has its own task-local state, so the check can't see it. `PoolBusy` ends the wait there too.
+
+**Postgres deadlocks:**
+
+```rust
+db.transaction(|tx| async move {
+    tx.lock::<Account>(&[from, to]).await?;             // sorted, so order is always the same
+    tx.update::<Account>(from).set_expr(F.balance, "balance - $1", &amount).run().await?;
+    tx.update::<Account>(to).set_expr(F.balance, "balance + $1", &amount).run().await?;
+    Ok(())
+}).retry(3).await?;
+
+db.update_q::<Job>().any(F.id, &ids).set(F.done, true).lock_ordered().run().await?;
+
+tx.select::<Job>().filter().qc(F.state, "=", &"queued")
+    .limit(10).skip_locked().fetch().await?;            // queue workers skip claimed rows
+```
+
+- **Bulk writes are sorted.** `insert_many`, `upsert` batches, `update_each` and `delete_ids` sort their input by key before sending, which removes the classic opposite-order upsert deadlock. It makes deadlocks much less likely but isn't a guarantee, because Postgres may lock rows in a different order from the input.
+- **`tx.lock::<T>(&ids)`** runs `SELECT ... WHERE pk = ANY($1) ORDER BY pk FOR NO KEY UPDATE`. `NO KEY` means inserts of child rows aren't blocked by foreign key checks. It needs a transaction, so it exists only on `tx`.
+- **`.lock_ordered()`** on `update_q` and `delete_q` locks rows in key order inside the same statement, with no extra round trip. It costs some query work, so it's opt-in.
+- **Single statements retry once automatically.** A statement outside a transaction that hits `40P01` changed nothing, so retrying is safe, and the retry waits a short random delay. A statement inside a transaction never retries alone, because the whole transaction has been aborted.
+- **Transactions retry only with `.retry(n)`,** with jittered backoff, because the closure might do outside work. Side effects belong in `after_commit`, which runs once, after the commit succeeds.
+
+**Limiting the damage:**
+
+- **Timeouts:** `lock_timeout` (default 5s) and `idle_in_transaction_timeout` (default 1m) are sent as connection startup parameters, so they add no round trip. A lock wait past the limit returns `LockTimeout`, so a stuck task can't queue others behind it forever. A slow batch raises it per transaction with `.lock_timeout("30s")`. Migrations use their own per-step timeouts.
+- **Visibility:** `pool_stats()` counts deadlocks, retries, lock timeouts and `NestedConnection` errors. Postgres's deadlock detail is logged through `tracing`, with no parameter values.
+- **`.skip_locked()`** on a list adds `FOR UPDATE SKIP LOCKED`, so queue workers skip claimed rows and don't wait on them. It exists only on `tx`, because the locks end with the transaction.
 
 ### JSON output and schemas
 
@@ -1057,6 +1100,8 @@ db.release(held).await;      // or held.release().await
 | Building SQL from strings | Compile error (`q_unchecked` is the visible escape hatch) |
 | A list with no limit | Compile error: requires `.limit(n)`, `.all()` or `stream()` |
 | Reading a hidden field | Compile error |
+| Using `db` inside a transaction | `NestedConnection` at runtime; `db.outside_tx()` is the visible escape hatch |
+| `tx.lock` or `.skip_locked()` outside a transaction | Compile error |
 | A duplicate of a unique, primary key or plain index | Compile error |
 | `Decimal` on a `numeric` too large for it, or a float on `numeric` | Compile error |
 | A rounded `numeric` value | Error on read and on write |
@@ -1073,7 +1118,7 @@ Tests are written with the code: **a milestone isn't done until its tests pass i
 
 - **Unit:** macro output, SQL generation, diff, naming.
 - **Compile-fail (`trybuild`):** every compile-time guarantee, including hidden view fields, `HasPk`, unfiltered update and delete, update with no `.set()`, list with no limit, `self` absent in update and delete hooks, non-static `q()` and `sql()`, unknown group names, scoped groups on `#[model(groups)]`, a scoped mask on another model, duplicate indexes, duplicate base fields, over-long and colliding names, `Decimal` and float on unsuitable `numeric` columns.
-- **Integration on real Postgres:** insert, every get, update and delete form, views, groups, hook inputs (`Changes`, `Target`), hooks order, the loop detector, `after_commit` on commit and skip on rollback, all list and JSON paths, pool growth and idle shrinking, `max_connections` adjustment, `db.hold()` release on every exit path, `ConnectionLost`, cancellation.
+- **Integration on real Postgres:** insert, every get, update and delete form, views, groups, hook inputs (`Changes`, `Target`), hooks order, the loop detector, `after_commit` on commit and skip on rollback, all list and JSON paths, pool growth and idle shrinking, `max_connections` adjustment, `db.hold()` release on every exit path, `ConnectionLost`, cancellation, forced deadlocks in both kinds, single-statement and transaction retry, `lock_timeout`, sorted bulk writes under concurrent load, `skip_locked` with rival workers.
 - **Property tests:** random models and data round-trip through insert, read and JSON.
 - **Doc tests:** every README and doc example compiles and runs.
 - **`#[morm::test]`:** gives each test a database cloned from a migrated template, for this project and its users.
@@ -1122,7 +1167,7 @@ One compact, complete file at the repo root. It must be enough to use morm effic
 | Add many rows | `insert_many` | A loop of `insert` |
 | Handle huge results | `stream` | `.all()` |
 
-4. **Performance rules:** never query in a loop, always limit lists, select through the narrowest view, keep transactions short with no network calls inside them, index what you filter on, release every `db.hold()`.
+4. **Performance rules:** never query in a loop, always limit lists, select through the narrowest view, keep transactions short with no network calls inside them, index what you filter on, release every `db.hold()`, use `tx` and never `db` inside a transaction, lock several rows with `tx.lock`, put side effects in `after_commit`.
 5. Models: bases, every `#[model]` and `#[col]` option in tables.
 6. `get`, `insert`, `update`, `delete`, lists, `filter_cols`, raw SQL with `db.sql()`, transactions, and which of `Decimal`, `Numeric` or `bigint` to use.
 7. Views, groups, validation.
@@ -1138,7 +1183,7 @@ One compact, complete file at the repo root. It must be enough to use morm effic
 
 0. **Repo bootstrap:** workspace in `biggaloy/rust-morm`, CI workflows, README skeleton.
 1. **Core models:** macro, bases including `#[morm::base]`, index and name rules, views, global and model-scoped groups, declarative rules and `clean`, inference, `F`, compile-time checks.
-2. **Runtime:** `morm.toml` and environment variables, `morm::Pool` on the `deadpool` core (start with a quick proof-of-concept), dynamic size, named pools, `max_connections` adjustment, `db.hold()`, bounded statement cache, insert, `get`/`update`/`delete` forms, query builder, `filter_cols`, `db.sql()` and `#[derive(morm::Row)]`, `Decimal` and `Numeric`, loop detector, typed errors, transactions, all list and JSON paths. → **First publish** (`0.1.0-alpha`).
+2. **Runtime:** `morm.toml` and environment variables, `morm::Pool` on the `deadpool` core (start with a quick proof-of-concept), dynamic size, named pools, `max_connections` adjustment, `db.hold()`, bounded statement cache, insert, `get`/`update`/`delete` forms, query builder, `filter_cols`, `db.sql()` and `#[derive(morm::Row)]`, `Decimal` and `Numeric`, loop detector, typed errors, transactions, deadlock measures, all list and JSON paths. → **First publish** (`0.1.0-alpha`).
 3. **Migration foundation:** `Schema` IR, catalog reader, diff, typed ops with inverses, scratch, proof pipeline.
 4. **Migration execution:** ledger, steps, fingerprint gates, advisory lock, timeouts, preflight, crash recovery, fault-injection suite.
 5. **Migration safety:** safe forms, batched backfills, retire and purge, decisions, `lint`, `rehearse`, expand/contract, `check_schema()`.
