@@ -368,7 +368,7 @@ pub struct Invoice { pub total: Decimal }       // invoice.tenant_id is a plain 
 
 `i16` → smallint, `i32` → integer, `i64` → bigint, `f32` → real, `f64` → double precision, `bool` → boolean, `String` → text, `Vec<u8>` → bytea, `DateTime<Utc>` / `Timestamp` → timestamptz, `NaiveDateTime` → timestamp, `NaiveDate` → date, `NaiveTime` → time, `Uuid` → uuid, `serde_json::Value` → jsonb, `Vec<T>` → `T[]`. `Option<T>` → nullable. `#[derive(TextEnum)]` maps a Rust enum to `text` with a CHECK constraint, the recommended form, because adding or removing a value is an ordinary migration. `#[derive(PgEnum)]` maps to a Postgres enum, mainly to match existing tables, because removing a value from one is very hard. Domains and composite types are also supported. Anything else requires an explicit `sql`, including `Decimal` and `Numeric`, which need their precision stated (section 8).
 
-- **Unsigned integers:** Postgres has none, so `u8` → smallint, `u16` → integer and `u32` → bigint, each with a generated range CHECK. `u64` doesn't fit `bigint`, so it's a compile error: use `i64`, or `Numeric` with an explicit `sql`.
+- **Unsigned integers:** Postgres has none, so `u8` → smallint, `u16` → integer and `u32` → bigint, each with a generated range CHECK. `u64` can exceed `bigint`'s maximum, so it needs an explicit `#[col(sql = "numeric(20,0)")]`, which holds every value with a range CHECK but is larger and slower than `bigint`. Without that, `u64` is a compile error, so a large value can't wrap or fail at runtime. `i64` is the better choice when values fit.
 - **Timestamps:** Postgres stores microseconds and chrono nanoseconds, so a value can compare unequal after a round trip. `Timestamp::now()` truncates to microseconds, and `insert` fills database-set timestamps in place. Compare stored values, not values read from the clock.
 - **NUL bytes:** Postgres rejects `\0` in text. morm doesn't scan every string for it, which would cost time on every write; Postgres's error becomes a typed `InvalidText`.
 
@@ -606,6 +606,18 @@ db.update::<Product>(42).set_expr(F.stock, "stock - $1", &n).run().await?;  // a
 ```
 
 - An update never loads a row, and it writes exactly the columns named. Only `.returning()` brings rows back.
+- **Large inserts need no chunking from you.** `insert_many` picks the path by size. A statement has no row limit, because `UNNEST` sends one array per column, not one parameter per value.
+
+| Rows | Path | Notes |
+|---|---|---|
+| Small | `UNNEST` | One statement, one round trip |
+| Large | `COPY`, streamed | Fastest, with flat memory on both sides |
+| Large, with `.returning()` or an `upsert` | `UNNEST` in chunks, one transaction | `COPY` can't return rows or handle conflicts. Each Postgres value is capped at 1GB, so chunks stay well below it |
+| Large, with `None` on some rows of a defaulted column | `UNNEST` in chunks, one transaction | `COPY` can't choose a default per row |
+
+- `insert_many` is atomic on every path: all rows or none, in one transaction.
+- `.in_batches(n)` on `insert_many` commits every `n` rows, for bulk loads that shouldn't be one huge transaction with long locks and a large WAL burst. It isn't atomic, and running it again needs `upsert` or a filter to skip rows already loaded.
+- `db.insert_stream::<T>(stream)` takes rows from a `Stream`, through `COPY`, so 100 million rows never sit in app memory.
 - **`update` and `delete` by primary key return `NotFound` when no row matched,** so a mistyped id can't pass as success. `.allow_missing()` returns a count, for deletes that may have already happened. `update_q`, `update_each` and the other filtered and bulk forms return a count, because zero rows is a normal result for a filter.
 - `updated_at` and `auto_now` columns are set to `now()` in SQL.
 - **Lost updates:** under Read Committed, two requests can read `stock = 10` and both write `9`. Use `set_expr` for arithmetic, `#[col(version)]` for optimistic locking (`Conflict` on a stale write), or `tx.get_for_update` when logic must see the current row.
@@ -625,7 +637,7 @@ db.delete_q::<Hist>().by(F.owner_id, &1).by(F.app, &"chat").any(F.key, &keys).ru
 
 Filtered and bulk deletes return a count, and `.returning()` gives the rows back. A delete with no filter doesn't compile; `db.delete_all::<T>()` is the explicit form. The same rule applies to `db.update_all::<T>()`.
 
-**Batches:** one statement over millions of rows holds locks for a long time, delays replicas and causes bloat. `.in_batches(n)` on `update_q`, `delete_q`, `delete_where`, `update_all` and `delete_all` works through the rows by primary key:
+**Batches:** one statement over millions of rows holds locks for a long time, delays replicas and causes bloat. `.in_batches(n)` on `update_q`, `delete_q`, `delete_where`, `update_all` and `delete_all` works through the rows by primary key, and it works on `insert_many` too (above):
 
 ```rust
 db.delete_where::<Log>(F.created_at, "< $1", &[&cutoff]).in_batches(5000).pause_ms(50).await?;
@@ -1213,7 +1225,7 @@ db.release(held).await;      // or held.release().await
 
 - SQL for select, get, delete and insert is a compile-time `&'static str`.
 - `= ANY($1)` instead of `IN` lists, so list length doesn't create statement variants.
-- Bulk insert via `UNNEST` (one stable statement, no 65,535-parameter limit), and `COPY` above a threshold.
+- Bulk insert via `UNNEST` (one stable statement, no 65,535-parameter limit), and `COPY` above a threshold, whose value comes from the benchmark.
 - Positional decoding; borrowed parameters (`&dyn ToSql`), not boxed.
 - `BEGIN`, statement and `COMMIT` pipelined to cut auto-transaction round trips.
 - Rows carry no per-row metadata.
@@ -1242,7 +1254,7 @@ db.release(held).await;      // or held.release().await
 | A request-supplied sort column | `.q()` refuses it; `order_by_allowed` checks it against a list |
 | Paging with `OFFSET` | No helper exists; `keyset` is the documented path |
 | Rolling back a production database | Refused, exit code `2`, unless marked `development`; `revert` is the forward path |
-| `u64` on a column | Compile error |
+| `u64` with no explicit `sql` | Compile error |
 | A stale cached statement after a migration | Re-prepared automatically outside a transaction |
 | Swallowing an error, then committing | `TransactionAborted` at runtime |
 | Updating or deleting a missing id | `NotFound` at runtime |
@@ -1264,8 +1276,8 @@ The compiler can't see a query inside a loop, so that one is caught in tests and
 Tests are written with the code: **a milestone isn't done until its tests pass in CI.**
 
 - **Unit:** macro output, SQL generation, diff, naming.
-- **Compile-fail (`trybuild`):** every compile-time guarantee, including hidden view fields, `HasPk`, unfiltered update and delete, update with no `.set()`, list with no limit, `self` absent in update and delete hooks, non-static `q()` and `sql()`, uppercase names without `keep_case`, `u64` columns, unknown group names, scoped groups on `#[model(groups)]`, a scoped mask on another model, duplicate indexes, duplicate base fields, over-long and colliding names, `Decimal` and float on unsuitable `numeric` columns.
-- **Integration on real Postgres:** insert, every get, update and delete form, views, groups, hook inputs (`Changes`, `Target`), hooks order, the loop detector, `after_commit` on commit and skip on rollback, all list and JSON paths, pool growth and idle shrinking, `max_connections` adjustment, `db.hold()` release on every exit path, `ConnectionLost`, cancellation, forced deadlocks in both kinds, swallowed errors never reporting a commit, `CommitUnknown`, savepoint behaviour after deadlocks, single-statement and transaction retry limits, every timeout, cancelled queries releasing their locks, `max_holds`, `.lock_ordered()` and bulk writes under concurrent load, advisory key stability, `skip_locked` with rival workers, `.in_batches` stopping and resuming, keyset pages under concurrent writes and with mixed sort directions, tampered cursors, `order_by_allowed`, `.custom_plan()`, connections discarded on `25006`, unsigned ranges, `InvalidText`, `json_string` on every path, `db.close()` finishing in-flight work, models in several schemas.
+- **Compile-fail (`trybuild`):** every compile-time guarantee, including hidden view fields, `HasPk`, unfiltered update and delete, update with no `.set()`, list with no limit, `self` absent in update and delete hooks, non-static `q()` and `sql()`, uppercase names without `keep_case`, `u64` without `sql`, unknown group names, scoped groups on `#[model(groups)]`, a scoped mask on another model, duplicate indexes, duplicate base fields, over-long and colliding names, `Decimal` and float on unsuitable `numeric` columns.
+- **Integration on real Postgres:** insert, every get, update and delete form, views, groups, hook inputs (`Changes`, `Target`), hooks order, the loop detector, `after_commit` on commit and skip on rollback, all list and JSON paths, pool growth and idle shrinking, `max_connections` adjustment, `db.hold()` release on every exit path, `ConnectionLost`, cancellation, forced deadlocks in both kinds, swallowed errors never reporting a commit, `CommitUnknown`, savepoint behaviour after deadlocks, single-statement and transaction retry limits, every timeout, cancelled queries releasing their locks, `max_holds`, `.lock_ordered()` and bulk writes under concurrent load, advisory key stability, `skip_locked` with rival workers, `.in_batches` stopping and resuming, every `insert_many` path at a million rows, keyset pages under concurrent writes and with mixed sort directions, tampered cursors, `order_by_allowed`, `.custom_plan()`, connections discarded on `25006`, unsigned ranges, `InvalidText`, `json_string` on every path, `db.close()` finishing in-flight work, models in several schemas.
 - **Property tests:** random models and data round-trip through insert, read and JSON.
 - **Doc tests:** every README and doc example compiles and runs.
 - **`#[morm::test]`:** gives each test a database cloned from a migrated template, for this project and its users.
@@ -1331,7 +1343,8 @@ One compact, complete file at the repo root. It must be enough to use morm effic
 | `keep_case` | You're matching an existing mixed-case table or column |
 | `tx.get_for_update` | Your logic must see the current row before changing it, and `set_expr` can't express it |
 | `#[col(version)]` | Users edit a row over time, and a stale save must fail, not overwrite |
-| `.in_batches(n)` | You change so many rows that one statement would hold locks too long, and it needn't be atomic |
+| `.in_batches(n)` | You change so many rows that one transaction would hold locks too long, and it needn't be atomic |
+| `db.insert_stream` | Your rows are too many to hold in memory, such as an import from a file |
 | `.keyset(...)` | You page through a list that can go deep |
 | `.order_by_allowed(...)` | A client chooses the sort column |
 | `morm::quote_ident` | You use a dynamic table or column name in `q_unchecked` or `sql_unchecked` |
