@@ -10,6 +10,24 @@ These belong to the app or to operations, not to rust-morm. Anything morm handle
 | **Timeouts** | Set `statement_timeout` for the app role, for example 30s. morm also has `statement_timeout` and `idle_in_transaction_session_timeout` settings, and a role-level value covers clients that aren't morm |
 | **Collations** | A glibc upgrade can change how text sorts, which silently corrupts text indexes until they're rebuilt with `REINDEX`. ICU or `C` collations avoid this. After an OS upgrade, check collation version warnings |
 
+## Memory
+
+Each Postgres connection can use `work_mem` per sort or hash operation, so pool size × `work_mem` belongs in the server's memory budget. Raise it for the session of a heavy query, not globally.
+
+## Deploys
+
+- Run `morm-admin mgr migrate` as its own deploy step, before new code goes live, so a failed migration stops the deploy.
+- Mark every local and staging database with `morm-admin mgr mode development`. Leave production unmarked, so it stays forward only.
+- To undo a migration in production, ship `morm-admin mgr revert ID`, or a forward fix.
+- On stop: stop accepting requests, then call `db.close()`, so running work finishes.
+
+## Patterns for writes that must not be lost
+
+- **Transactional outbox:** `after_commit` can lose an event if the process crashes after commit. For events that must arrive, insert an event row in the same transaction, and have a worker deliver them using `.skip_locked()`.
+- **Idempotency keys:** when a connection drops during `COMMIT`, morm returns `CommitUnknown`, and you can't tell if the write happened. Have clients send a key, store it in a unique column in the same transaction, and return the stored result on a repeat.
+- **Job queues:** a table with `.skip_locked()` lets many workers share jobs, so you may not need Redis or a separate queue.
+- **Tenant isolation:** use row-level security with `pg_policy!`, and set the tenant per transaction with `SET LOCAL`.
+
 ## Keeping tables healthy
 
 | Area | What to do |

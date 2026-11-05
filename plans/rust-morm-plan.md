@@ -43,6 +43,7 @@ Non-goals: other databases, a query language that replaces SQL, runtime reflecti
 | Validation | One mechanism: declarative rules and `clean`, generated inline, run only on write |
 | Hooks | Trait with zero-cost default methods. Update and delete hooks receive only what the statement contains |
 | JSON | Direct from a row, with no intermediate `Value` or map. Postgres-built JSON also available |
+| Production migrations | Forward only by default. A database is treated as production until marked otherwise, and `revert` undoes a migration with a new forward migration |
 | Migration source of truth | Models and chain replayed in scratch databases, compared through the Postgres catalog. No snapshots |
 | Admin | One tool, `morm-admin`, for everything administrative |
 | Rust edition / MSRV | 2024 edition; MSRV 1.99.1, the current stable. Moves up to the latest stable until the first release |
@@ -85,7 +86,7 @@ Cargo features of `morm`:
 - `uuid` (default): UUID columns and UUIDv7 generation
 - `json` (default): `jsonb` and JSON output
 - `decimal` (default): `Decimal` for `numeric` columns, through `rust_decimal` (section 8)
-- `tracing`: spans and slow-query logs, compiled out when off. SQL text only, never parameter values
+- `tracing`: one span per query with SQL text, duration, row count and pool wait time, plus slow-query logs, compiled out when off. Never parameter values, because they hold passwords, tokens and personal data
 - `utoipa`: OpenAPI schemas
 
 ### `morm-admin`
@@ -116,6 +117,8 @@ password = "${MORM_DB_PASSWORD}" # keep secrets in the environment
 sslmode = "disable"              # disable, prefer, require, verify-ca, verify-full
 target_session_attrs = "any"     # "read-write" finds the primary among several hosts
 connect_timeout = "5s"
+application_name = "auto"        # the binary's name; shows in pg_stat_activity
+search_path = "public"           # pinned, so another role can't shadow objects
 
 [database.migration]             # owner role, so the app can run with fewer privileges
 url = "${MORM_MIGRATION_URL}"
@@ -133,6 +136,8 @@ wait_timeout = "5s"              # longest wait for a connection; can't be off
 max_holds = "auto"               # max / 4, at least 1
 lock_timeout = "5s"              # longest wait for one lock
 statement_timeout = "off"        # longest single statement
+statement_cache = 256            # prepared statements per connection
+shutdown_timeout = "30s"         # db.close() waits this long
 plan_cache_mode = "auto"         # or force_custom_plan, force_generic_plan
 transaction_timeout = "30s"      # longest db.transaction
 idle_in_transaction_session_timeout = "1m"
@@ -171,6 +176,7 @@ Precedence: defaults, then `morm.toml`, then environment variables, then code. T
 | `MORM_DB_SSLROOTCERT` | CA certificate path |
 | `MORM_DB_SSLCERT`, `MORM_DB_SSLKEY` | Client certificate and key paths |
 | `MORM_DB_TARGET_SESSION_ATTRS`, `MORM_DB_CONNECT_TIMEOUT` | `target_session_attrs`, `connect_timeout` |
+| `MORM_DB_APPLICATION_NAME`, `MORM_DB_SEARCH_PATH` | `application_name`, `search_path` |
 | `MORM_MIGRATION_URL` | Full owner-role URL for migrations |
 | `MORM_MIGRATION_USER`, `MORM_MIGRATION_PASSWORD` | Owner-role login, using the same host and database |
 | `MORM_MIGRATION_PASSWORD_FILE` | File holding the owner-role password |
@@ -188,6 +194,7 @@ Precedence: defaults, then `morm.toml`, then environment variables, then code. T
 | `MORM_POOL_CLIENT_CONNECTION_CHECK_INTERVAL` | `client_connection_check_interval` |
 | `MORM_POOL_TX_WARN_AFTER` | `tx_warn_after` |
 | `MORM_POOL_STATEMENT_TIMEOUT`, `MORM_POOL_PLAN_CACHE_MODE` | `statement_timeout`, `plan_cache_mode` |
+| `MORM_POOL_STATEMENT_CACHE`, `MORM_POOL_SHUTDOWN_TIMEOUT` | `statement_cache`, `shutdown_timeout` |
 
 `MORM_POOL_*` variables apply to the pool this process opens at startup.
 
@@ -199,6 +206,8 @@ Precedence: defaults, then `morm.toml`, then environment variables, then code. T
 2. If several servers are found, ask which to use. Without a terminal, take the default directory if it's among them, otherwise exit with code `3` and list the choices.
 3. If none is found, keep the default and print a warning, with the TCP settings as a commented-out alternative.
 4. Once connected, compare with `SHOW unix_socket_directories` and warn on a mismatch.
+
+**`search_path`** is set on every connection, so another role can't shadow a table or function through a schema earlier in the path. `lint` warns about a `SECURITY DEFINER` function with no `SET search_path` of its own.
 
 **Credentials:** `MORM_DB_*` values override the matching parts of `DATABASE_URL`, so a URL can hold the address while the password comes from `MORM_DB_PASSWORD_FILE`. Setting both `MORM_DB_PASSWORD` and `MORM_DB_PASSWORD_FILE` is an error. `sslmode` values other than `disable` and `prefer` need the `tls` feature, and morm refuses to start without it, so it never silently connects unencrypted. Passwords are never logged, and they're masked in `Debug` output and error messages. `morm-admin doctor` checks that credentials work and warns if `morm.toml` contains a literal password.
 
@@ -316,6 +325,7 @@ pub struct Invoice { pub total: Decimal }       // invoice.tenant_id is a plain 
 |---|---|
 | `table` | table name (default: snake_case of the struct name); lowercase only unless `keep_case` is set |
 | `keep_case` | allow uppercase in an existing table's name |
+| `schema` | Postgres schema, as in `schema = "billing"`. Generated SQL then uses `"billing"."invoices"`, and migrations create the schema. Omitted, the table resolves through the pinned `search_path` |
 | `base` | `"common"`, `"common_uuid"`, `"pk_only"`, `"pk_uuid_only"`, `"bare"`, or a `#[morm::base]` type |
 | `ordering` | default sort, `-` prefix for descending |
 | `was` | previous table name (rename hint for migrations) |
@@ -347,6 +357,7 @@ pub struct Invoice { pub total: Decimal }       // invoice.tenant_id is a plain 
 | `groups`, `sudo` | field access groups (section 5) |
 | `min`, `max`, `len`, `choices`, `clean`, `db_check` | validation (section 6) |
 | `skip_json_if` | omit a value from JSON output when a function returns true |
+| `json_string` | write an integer as a JSON string (section 8) |
 | `help` | description, used in schemas |
 | `auto_now` | set to `now()` on every update |
 | `name` | column name override, for example `type_` with `name = "type"`; lowercase only unless `keep_case` is set |
@@ -356,6 +367,10 @@ pub struct Invoice { pub total: Decimal }       // invoice.tenant_id is a plain 
 ### Type inference
 
 `i16` → smallint, `i32` → integer, `i64` → bigint, `f32` → real, `f64` → double precision, `bool` → boolean, `String` → text, `Vec<u8>` → bytea, `DateTime<Utc>` / `Timestamp` → timestamptz, `NaiveDateTime` → timestamp, `NaiveDate` → date, `NaiveTime` → time, `Uuid` → uuid, `serde_json::Value` → jsonb, `Vec<T>` → `T[]`. `Option<T>` → nullable. `#[derive(TextEnum)]` maps a Rust enum to `text` with a CHECK constraint, the recommended form, because adding or removing a value is an ordinary migration. `#[derive(PgEnum)]` maps to a Postgres enum, mainly to match existing tables, because removing a value from one is very hard. Domains and composite types are also supported. Anything else requires an explicit `sql`, including `Decimal` and `Numeric`, which need their precision stated (section 8).
+
+- **Unsigned integers:** Postgres has none, so `u8` → smallint, `u16` → integer and `u32` → bigint, each with a generated range CHECK. `u64` doesn't fit `bigint`, so it's a compile error: use `i64`, or `Numeric` with an explicit `sql`.
+- **Timestamps:** Postgres stores microseconds and chrono nanoseconds, so a value can compare unequal after a round trip. `Timestamp::now()` truncates to microseconds, and `insert` fills database-set timestamps in place. Compare stored values, not values read from the clock.
+- **NUL bytes:** Postgres rejects `\0` in text. morm doesn't scan every string for it, which would cost time on every write; Postgres's error becomes a typed `InvalidText`.
 
 ### Plain structs, no `save`
 
@@ -596,7 +611,7 @@ db.update::<Product>(42).set_expr(F.stock, "stock - $1", &n).run().await?;  // a
 - **Lost updates:** under Read Committed, two requests can read `stock = 10` and both write `9`. Use `set_expr` for arithmetic, `#[col(version)]` for optimistic locking (`Conflict` on a stale write), or `tx.get_for_update` when logic must see the current row.
 - **`now()` is the transaction's start time,** so every row in a long transaction gets the same `updated_at`. Use `clock_timestamp()` in `set_expr` when the actual time matters.
 - **Insert writes one static statement per model.** `Option` fields that are `None` and have a default use it, through `COALESCE($n::type, <default>)`.
-- `upsert` holds a whole row, so it runs insert hooks.
+- `upsert` holds a whole row, so it runs insert hooks. Conflict targets can be one column or a tuple, as in `(F.vendor_id, F.sku)`.
 
 ### Delete
 
@@ -823,6 +838,7 @@ tx.advisory_lock(&["billing", "reports"]).await?;
 - `jsonb` columns can decode as `&RawValue`, so stored JSON is embedded without being parsed and rewritten.
 - **Input:** `Deserialize` on a view accepts only its writable fields, so `UserProfile` doubles as the safe request body. `insert` and `update` run `clean` and the rules. No separate input type.
 - **Schema:** `User::json_schema(Up | Down)` as generated static strings, plus optional `utoipa` for OpenAPI.
+- **Large integers:** JavaScript loses digits above 2^53, so `#[col(json_string)]` writes an integer as a JSON string, on every JSON path.
 - Formats are fixed and documented: `Decimal` as a string, timestamps as RFC 3339, `bytea` as base64, `None` as `null`, `jsonb` embedded as JSON.
 - **`fetch_json()` on a model or view follows the same formats.** Postgres would write `numeric` as a JSON number and `bytea` as hex, so generated SQL converts those columns. `db.sql(...).fetch_json()` has no model to go by, so Postgres's own formats apply there, and your SQL can cast.
 
@@ -882,7 +898,7 @@ changes.set(F.slug, slug);   // a pre hook can add or change a value
 - **`update_each`:** `pre_update` runs once with `Target::Ids` and only the column list. Per-row values go through `clean` and the declarative rules.
 - **SQL is built after pre hooks,** so changes made there apply. A pre hook can cancel the operation by returning an error.
 - **Post hooks** run on the same connection or transaction.
-- **`after_commit`** is for side effects (emails, queues, cache invalidation). It gets an owned enum: `Inserted(row)`, `Updated { changes, target }` or `Deleted { target }`. It's boxed only for models overriding it, runs only after commit, and is skipped on rollback. Errors there can't undo the commit.
+- **`after_commit`** is for side effects (emails, queues, cache invalidation). It gets an owned enum: `Inserted(row)`, `Updated { changes, target }` or `Deleted { target }`. It's boxed only for models overriding it, runs only after commit, and is skipped on rollback. Errors there can't undo the commit. It runs in the app process, so a crash right after commit loses it. Events that must not be lost go in a table in the same transaction.
 - **Automatic transaction:** a model with `hooks(tx)` has each statement wrapped in a transaction. Others stay at one round trip.
 - **Raw SQL doesn't run hooks;** this is documented.
 - **Zero cost:** static dispatch, and empty default hooks compile away.
@@ -990,6 +1006,17 @@ New tables use plain DDL in one transaction. `--fast` allows the simple forms fo
 - **`morm-admin mgr purge --older-than 30d`** does the real drop later, as a recorded operation. That migration's down then becomes irreversible.
 - **Limit:** rows inserted after `up` have no value in a restored column. If it was NOT NULL, the decision must supply a `down_fill` value, or down refuses.
 - **Irreversible migrations** must be declared. `rollback` refuses them without `--accept-data-loss`.
+
+### Production is forward only
+
+Rolling back after new data has been written can fail or lose that data, so production moves forward only. `down.sql` is still proven for every migration, because `revert` and development depend on it.
+
+- **Every database is production until marked otherwise.** The mode is stored in `_morm`, not in an environment variable, so a wrong setting on a host can't turn it off, and a backup restores with it. Forgetting to mark a database leaves it safe.
+- `morm-admin mgr mode development` marks a local or staging database, and `mode` shows the current value. Every change goes in `_morm.history`.
+- **On a production database,** `rollback` and `rehearse` exit with code `2`. To rehearse on a clone of production, mark the clone first.
+- **`morm-admin mgr revert ID`** is the way to undo in production. It creates a new forward migration from that migration's down, runs the full proof on scratch, and needs the same decisions, such as `down_fill`. Retired columns and tables come back with their data, and the chain stays linear, so every database has the same history.
+- **A failed migration can always be cleaned up.** `migrate --resume` is the first choice. `rollback --failed` undoes the completed steps of a migration that never finished, because no release depends on it yet.
+- **Emergency override:** `rollback --production --reason "..."` works but is logged to `_morm.history`, and it still needs `--accept-data-loss` where that applies.
 - Retired columns are a tracked state, so `verify` doesn't report them as drift.
 
 ### Decisions
@@ -1034,7 +1061,7 @@ morm-migrations/
 - **Preflight:** privileges, long-running transactions, invalid indexes, checksums, table sizes.
 - **Crash recovery:** preconditions make steps safe to re-run. `status` reports the exact step, `migrate --resume` continues, `rollback` undoes only completed steps, failed concurrent indexes are rebuilt, and batches resume from their cursor.
 - **Tamper refusal:** edited or missing applied migrations are refused. `repair --reason "..."` re-signs and logs it.
-- **LIFO rollback,** plus `rollback --orphans` for another branch's migrations.
+- **LIFO rollback,** plus `rollback --orphans` for another branch's migrations, on development databases.
 
 ### Rolling deploys
 
@@ -1051,7 +1078,8 @@ All are `morm-admin mgr <command>`:
 ```
 makemigrations [--plan] [--json] [-n name] [--decide ID=OPT] [--decisions F] [--empty] [--fast]
 migrate [--plan] [--json] [--yes] [--to ID] [--resume] [--phase expand|contract]
-rollback [--last N | --to ID | --orphans] [--plan] [--yes] [--accept-data-loss]
+rollback [--last N | --to ID | --orphans | --failed] [--plan] [--yes] [--accept-data-loss] [--production --reason R]
+revert ID [--plan] [--decide ID=OPT]    mode [development | production]    squash --to ID
 status [--json]    verify [--json]    check    lint    check-sql
 rehearse --url URL    purge --older-than D    baseline    rebase-chain
 repair --reason R     refingerprint           sql ID
@@ -1063,6 +1091,9 @@ repair --reason R     refingerprint           sql ID
 - `lint`: statement risk, in the style of `squawk`, plus index advice. With `--url` it reads real table sizes and reports risky operations only on tables big enough to matter.
 - `check-sql`: `PREPARE` and `EXPLAIN` on every registered query.
 - `baseline`: adopts an existing database as migration zero, without running anything.
+- `squash --to ID`: replaces the chain up to `ID` with one baseline generated by replaying it. A database that has applied all of them just continues, and one partway through is refused until it catches up. Run it only when every database has passed `ID`.
+
+**Run migrations as a deploy step,** before new code goes live, so a failed migration stops the deploy. The app binary has no migration code, so it can't migrate on start.
 
 ---
 
@@ -1168,7 +1199,7 @@ db.release(held).await;      // or held.release().await
 - **Held connections are closed on release, never reused.** They can carry `LISTEN`, temp tables, `SET` values or advisory locks, and reusing one could leak that state into the next query. The slot is free immediately, and the pool opens a clean connection when needed.
 - **Reconnecting:** `db.hold().on_connect(...)` re-applies session state after a lost connection. `held.listen()` channels re-subscribe automatically.
 - **Forgotten holds:** `#[must_use]` warns if a guard is discarded straight away. Rust can't force an explicit `release`, so Drop is the safety net. `pool_stats()` lists each hold with its age and where it was created, and `hold_warn_after` logs a warning. It only warns, because long-running holds are allowed.
-- **Shutdown:** `db.close()` waits a set time for holds to finish, then closes them.
+- **Shutdown:** `db.close()` stops new checkouts, then waits up to `shutdown_timeout` for running transactions, `after_commit` handlers and holds to finish, then closes every connection. Apps call it after they stop accepting requests, so a deploy doesn't roll back work or lose events.
 
 **Limit:** one app process has one budget, so several processes or hosts must be sized together against `max_connections`. One multi-threaded Tokio process is the recommended deployment.
 
@@ -1210,6 +1241,8 @@ db.release(held).await;      // or held.release().await
 | Using `db` inside a transaction or stream loop | `NestedConnection` at runtime; `db.extra_conn()` is the visible escape hatch |
 | A request-supplied sort column | `.q()` refuses it; `order_by_allowed` checks it against a list |
 | Paging with `OFFSET` | No helper exists; `keyset` is the documented path |
+| Rolling back a production database | Refused, exit code `2`, unless marked `development`; `revert` is the forward path |
+| `u64` on a column | Compile error |
 | A stale cached statement after a migration | Re-prepared automatically outside a transaction |
 | Swallowing an error, then committing | `TransactionAborted` at runtime |
 | Updating or deleting a missing id | `NotFound` at runtime |
@@ -1231,8 +1264,8 @@ The compiler can't see a query inside a loop, so that one is caught in tests and
 Tests are written with the code: **a milestone isn't done until its tests pass in CI.**
 
 - **Unit:** macro output, SQL generation, diff, naming.
-- **Compile-fail (`trybuild`):** every compile-time guarantee, including hidden view fields, `HasPk`, unfiltered update and delete, update with no `.set()`, list with no limit, `self` absent in update and delete hooks, non-static `q()` and `sql()`, uppercase names without `keep_case`, unknown group names, scoped groups on `#[model(groups)]`, a scoped mask on another model, duplicate indexes, duplicate base fields, over-long and colliding names, `Decimal` and float on unsuitable `numeric` columns.
-- **Integration on real Postgres:** insert, every get, update and delete form, views, groups, hook inputs (`Changes`, `Target`), hooks order, the loop detector, `after_commit` on commit and skip on rollback, all list and JSON paths, pool growth and idle shrinking, `max_connections` adjustment, `db.hold()` release on every exit path, `ConnectionLost`, cancellation, forced deadlocks in both kinds, swallowed errors never reporting a commit, `CommitUnknown`, savepoint behaviour after deadlocks, single-statement and transaction retry limits, every timeout, cancelled queries releasing their locks, `max_holds`, `.lock_ordered()` and bulk writes under concurrent load, advisory key stability, `skip_locked` with rival workers, `.in_batches` stopping and resuming, keyset pages under concurrent writes and with mixed sort directions, tampered cursors, `order_by_allowed`, `.custom_plan()`, connections discarded on `25006`.
+- **Compile-fail (`trybuild`):** every compile-time guarantee, including hidden view fields, `HasPk`, unfiltered update and delete, update with no `.set()`, list with no limit, `self` absent in update and delete hooks, non-static `q()` and `sql()`, uppercase names without `keep_case`, `u64` columns, unknown group names, scoped groups on `#[model(groups)]`, a scoped mask on another model, duplicate indexes, duplicate base fields, over-long and colliding names, `Decimal` and float on unsuitable `numeric` columns.
+- **Integration on real Postgres:** insert, every get, update and delete form, views, groups, hook inputs (`Changes`, `Target`), hooks order, the loop detector, `after_commit` on commit and skip on rollback, all list and JSON paths, pool growth and idle shrinking, `max_connections` adjustment, `db.hold()` release on every exit path, `ConnectionLost`, cancellation, forced deadlocks in both kinds, swallowed errors never reporting a commit, `CommitUnknown`, savepoint behaviour after deadlocks, single-statement and transaction retry limits, every timeout, cancelled queries releasing their locks, `max_holds`, `.lock_ordered()` and bulk writes under concurrent load, advisory key stability, `skip_locked` with rival workers, `.in_batches` stopping and resuming, keyset pages under concurrent writes and with mixed sort directions, tampered cursors, `order_by_allowed`, `.custom_plan()`, connections discarded on `25006`, unsigned ranges, `InvalidText`, `json_string` on every path, `db.close()` finishing in-flight work, models in several schemas.
 - **Property tests:** random models and data round-trip through insert, read and JSON.
 - **Doc tests:** every README and doc example compiles and runs.
 - **`#[morm::test]`:** gives each test a database cloned from a migrated template, for this project and its users.
@@ -1243,6 +1276,8 @@ Migration tests:
 - **Property tests:** random schema A → B with data, including views, functions and triggers: up reaches B, down returns to A, preserved rows are intact.
 - **Op tests:** every op's inverse, with and without data, and every dependency recreate path.
 - **Concurrency:** rival migrators, migration under live traffic, lock-timeout retry.
+- **Forward only:** `rollback` and `rehearse` refused on production mode, the default on a new database, and `revert` restoring retired data.
+- **Squash:** a squashed chain gives the same schema as the full chain, and a database partway through is refused.
 - **Full chain:** all up → all down → all up on Postgres 15–18.
 - **Fuzzing:** step parser and `meta.json`.
 
@@ -1287,6 +1322,12 @@ One compact, complete file at the repo root. It must be enough to use morm effic
 | Call | Use this when |
 |---|---|
 | `.allow_missing()` | You will not handle a 0-row error |
+| `#[col(json_string)]` | JavaScript clients read this integer, and it can pass 2^53 |
+| `schema = "..."` | A model's table lives outside the default schema |
+| `mgr mode development` | This is a local or staging database, and you want `rollback` |
+| `mgr revert ID` | You must undo a migration in production |
+| `rollback --production` | `revert` can't work and you accept the risk; a reason is required |
+| `mgr squash --to ID` | The chain has grown long, and every database has passed `ID` |
 | `keep_case` | You're matching an existing mixed-case table or column |
 | `tx.get_for_update` | Your logic must see the current row before changing it, and `set_expr` can't express it |
 | `#[col(version)]` | Users edit a row over time, and a stale save must fail, not overwrite |
@@ -1328,7 +1369,7 @@ One compact, complete file at the repo root. It must be enough to use morm effic
 9. Hooks, with a table of what each receives and this line: "update and delete hooks never see a row unless you fetch it."
 10. JSON output and schemas.
 11. Pool and `morm.toml`: every setting, sizing, and the rule for long-running work: "use `db` for everything, including jobs and crons, and use `db.hold()` only when you need session state." It states plainly that service jobs, crons and background workers running as their own process must not spawn a pool with `min` above 1, and shows `connect_as`, `MORM_POOL` and `MORM_POOL_MIN`. It includes the full environment variable table. It also shows the jobs table, the `db.hold()` lifecycle, and when a websocket needs a listener: "release when you're done, and rely on Drop as the safety net, never as the plan."
-12. Migrations: workflow, every command in one table, safety rules, triggers and functions.
+12. Migrations: workflow, every command in one table, safety rules, production being forward only with `revert`, running as a deploy step, triggers and functions.
 13. Security: TLS settings, encrypting disks and backups (outside morm's job, but expected in production), and password hashing with `clean`.
 
 ---
@@ -1336,11 +1377,11 @@ One compact, complete file at the repo root. It must be enough to use morm effic
 ## 15. Milestones
 
 0. **Repo bootstrap:** workspace in `biggaloy/rust-morm`, CI workflows, README skeleton.
-1. **Core models:** macro, bases including `#[morm::base]`, index and name rules, views, global and model-scoped groups, declarative rules and `clean`, inference, `F`, compile-time checks.
+1. **Core models:** macro, `schema`, unsigned types, bases including `#[morm::base]`, index and name rules, views, global and model-scoped groups, declarative rules and `clean`, inference, `F`, compile-time checks.
 2. **Runtime:** `morm.toml` and environment variables, `morm::Pool` on the `deadpool` core (start with a quick proof-of-concept), dynamic size, named pools, `max_connections` adjustment, `db.hold()`, bounded statement cache, insert, `get`/`update`/`delete` forms, query builder, `filter_cols`, `db.sql()` and `#[derive(morm::Row)]`, `keyset`, `.in_batches`, `order_by_allowed`, `.custom_plan()`, `get_for_update`, failover handling, `Decimal` and `Numeric`, loop detector, typed errors, transactions, deadlock measures, all list and JSON paths. → **First publish** (`0.1.0-alpha`).
 3. **Migration foundation:** `Schema` IR, catalog reader, diff, typed ops with inverses, scratch, proof pipeline.
 4. **Migration execution:** ledger, steps, fingerprint gates, advisory lock, timeouts, preflight, crash recovery, fault-injection suite.
-5. **Migration safety:** safe forms, batched backfills, retire and purge, decisions, `lint`, `rehearse`, expand/contract, `check_schema()`.
+5. **Migration safety:** safe forms, batched backfills, retire and purge, production mode, `revert`, `squash`, decisions, `lint`, `rehearse`, expand/contract, `check_schema()`.
 6. **Managed objects:** views, materialized views, functions, procedures, triggers, policies, grants, enums and domains, with dependency recreation.
 7. **Hooks:** `Changes`, `Target`, all hooks, `validate`, `validate_changes`, `after_commit`, automatic transactions.
 8. **`morm-admin`:** `init`, `doctor`, `import`, `scratch`, `morm-mgr` packaging, Axum template.
@@ -1365,7 +1406,7 @@ One compact, complete file at the repo root. It must be enough to use morm effic
 
 ### Later
 
-Shared reads: a small opt-in lane that pipelines primary-key reads on a few connections, added only if a benchmark shows real gains with no worse p99 under mixed load. Also `schema = "x"`, partitioning, a `dynamic` registry for by-name admin CRUD, sensitive-column prompts in `import`.
+Shared reads: a small opt-in lane that pipelines primary-key reads on a few connections, added only if a benchmark shows real gains with no worse p99 under mixed load. Also partitioning, a `dynamic` registry for by-name admin CRUD, sensitive-column prompts in `import`, and a provided transactional outbox (table and worker) for events that must survive a crash between commit and `after_commit`.
 
 ### Confirmed for after 0.1
 
