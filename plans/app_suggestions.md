@@ -35,7 +35,7 @@ Each Postgres connection can use `work_mem` per sort or hash operation, so pool 
 | **Vacuum and bloat** | Frequently updated tables collect dead rows, so tune autovacuum for hot tables. Long transactions block vacuum across the database. Monitor transaction ID wraparound |
 | **Fast updates (HOT)** | Updates are much cheaper when no indexed column changes. Don't index columns that change constantly, such as counters or `last_seen_at`. Consider `fillfactor` 80–90 on update-heavy tables, with morm's `storage` option |
 | **Large tables** | Partition time-series data, for example by month. Dropping an old partition is instant, while deleting the same rows takes hours |
-| **Sequences** | `bigserial` values have gaps, because rolled-back inserts still use numbers. Never assume ids are contiguous |
+| **Sequences** | Identity and `bigserial` values have gaps, because rolled-back inserts still use numbers. Never assume ids are contiguous |
 
 ## Availability
 
