@@ -380,7 +380,26 @@ pub struct Invoice { pub total: Decimal }       // invoice.tenant_id is a plain 
 
 `i16` → smallint, `i32` → integer, `i64` → bigint, `f32` → real, `f64` → double precision, `bool` → boolean, `String` → text, `Vec<u8>` → bytea, `DateTime<Utc>` / `Timestamp` → timestamptz, `NaiveDateTime` → timestamp, `NaiveDate` → date, `NaiveTime` → time, `Uuid` → uuid, `serde_json::Value` → jsonb, `Vec<T>` → `T[]`. `Option<T>` → nullable. `#[derive(TextEnum)]` maps a Rust enum to `text` with a CHECK constraint, the recommended form, because adding or removing a value is an ordinary migration. `#[derive(PgEnum)]` maps to a Postgres enum, mainly to match existing tables, because removing a value from one is very hard. Domains and composite types are also supported. Anything else requires an explicit `sql`, including `Decimal` and `Numeric`, which need their precision stated (section 8).
 
-- **Unsigned integers:** Postgres has none, so `u8` → smallint, `u16` → integer and `u32` → bigint, each with a generated range CHECK. `u64` can exceed `bigint`'s maximum, so it's stored only as `numeric(20,0)`, written explicitly: `#[col(sql = "numeric(20,0)")]`. That holds every value, with a range CHECK, but it's larger and slower than `bigint`, which is why it must be stated. `u64` with no `sql`, or with any other `sql` such as `bigint`, is a compile error, so a large value can't wrap or fail at runtime. `i64` is the better choice when values fit.
+- **Integers Postgres has no exact type for** map to the smallest column that holds every value, with a generated range CHECK named `__CHK_{table}_{column}_range__`, so nothing outside the Rust type can be stored by any client:
+
+| Rust | Column | CHECK |
+|---|---|---|
+| `i8` | `smallint` | -128 to 127 |
+| `u8` | `smallint` | 0 to 255 |
+| `u16` | `integer` | 0 to 65,535 |
+| `u32` | `bigint` | 0 to 4,294,967,295 |
+| `u64` | `numeric(20,0)` | 0 to `u64::MAX` |
+| `i128` | `numeric(39,0)` | `i128::MIN` to `i128::MAX` |
+| `u128` | `numeric(39,0)` | 0 to `u128::MAX` |
+| `NonZero*` | As the base type | Adds `<> 0` |
+| `char` | `text` | `char_length = 1` |
+
+- **`usize` and `isize` are compile errors,** because their size depends on the machine, so a value could fit on one build and not another. Use a fixed-width type.
+- **A column must hold the whole Rust type.** An explicit `sql` can only widen: `u32` on `numeric` compiles, while `u64` on `bigint` or `i64` on `integer` is a compile error, so a value can't wrap or fail at runtime.
+- **The reverse is checked too.** `i32` on a `bigint` column is a compile error, because the column can hold values the field can't. If a value out of range still arrives, from a table with no CHECK, decoding returns `OutOfRange`, never a wrapped value.
+- **`numeric` is larger and slower than `bigint`,** so `u64`, `i128` and `u128` columns and their indexes cost more. Use `i64` when values fit. `#[col(sql = "uuid")]` on `u128` is a compact alternative for ids and hashes: 16 fixed bytes, with no arithmetic in SQL.
+- **JSON:** `u64`, `i128` and `u128` are always JSON strings, because JavaScript clients would lose digits. `json_string` does the same for other integers.
+- **Floats:** JSON has no `NaN` or `Infinity`, so they're written as `null`, and the README says so.
 - **Timestamps:** Postgres stores microseconds and chrono nanoseconds, so a value can compare unequal after a round trip. `Timestamp::now()` truncates to microseconds, and `insert` fills database-set timestamps in place. Compare stored values, not values read from the clock.
 - **NUL bytes:** Postgres rejects `\0` in text. morm doesn't scan every string for it, which would cost time on every write; Postgres's error becomes a typed `InvalidText`.
 
@@ -769,7 +788,7 @@ Postgres `numeric` goes up to 131,072 digits before the point, and also holds `N
 
 - `sql!` builds a `&'static str` from `F` constants and registers it. `morm-admin mgr check-sql` runs `PREPARE` on each against scratch and compares types. That gives checked raw SQL with no database at build time.
 - `.q()` accepts only `&'static str`, so `format!`-ed input won't compile. `q_unchecked(String)` is the visible escape hatch.
-- Typed errors: `Unique { constraint, field }`, `ForeignKey`, `NotNull`, `Check`, `Serialization`, `Deadlock`, `LockTimeout`, `TransactionTimeout`, `TransactionAborted`, `CommitUnknown`, `NestedConnection`, `NotFound`, `Conflict`, `PoolBusy`, `ConnectionLost`, `ReadOnly`, `InvalidOrder`, `InvalidCursor`, `Decimal`.
+- Typed errors: `Unique { constraint, field }`, `ForeignKey`, `NotNull`, `Check`, `Serialization`, `Deadlock`, `LockTimeout`, `TransactionTimeout`, `TransactionAborted`, `CommitUnknown`, `NestedConnection`, `NotFound`, `Conflict`, `PoolBusy`, `ConnectionLost`, `ReadOnly`, `OutOfRange`, `InvalidOrder`, `InvalidCursor`, `Decimal`.
 
 ### Transactions
 
@@ -1294,7 +1313,7 @@ db.release(held).await;      // or held.release().await
 | A request-supplied sort column | `.q()` refuses it; `order_by_allowed` checks it against a list |
 | Paging with `OFFSET` | No helper exists; `keyset` is the documented path |
 | Rolling back a production database | Refused, exit code `2`, unless marked `development`; `revert` is the forward path |
-| `u64` without `sql = "numeric(20,0)"` | Compile error |
+| A Rust type wider than its column, or `usize` on a column | Compile error |
 | A stale cached statement after a migration | Re-prepared automatically outside a transaction |
 | Swallowing an error, then committing | `TransactionAborted` at runtime |
 | Updating or deleting a missing id | `NotFound` at runtime |
@@ -1316,8 +1335,8 @@ The compiler can't see a query inside a loop, so that one is caught in tests and
 Tests are written with the code: **a milestone isn't done until its tests pass in CI.**
 
 - **Unit:** macro output, SQL generation, diff, naming.
-- **Compile-fail (`trybuild`):** every compile-time guarantee, including hidden view fields, `HasPk`, unfiltered update and delete, update with no `.set()`, list with no limit, `self` absent in update and delete hooks, non-static `q()` and `sql()`, uppercase names without `keep_case`, `u64` without `sql`, unknown group names, scoped groups on `#[model(groups)]`, a scoped mask on another model, duplicate indexes, duplicate base fields, over-long and colliding names, `Decimal` and float on unsuitable `numeric` columns.
-- **Integration on real Postgres:** insert, every get, update and delete form, views, groups, hook inputs (`Changes`, `Target`), hooks order, the loop detector, `after_commit` on commit and skip on rollback, all list and JSON paths, pool growth and idle shrinking, `max_connections` adjustment, `db.hold()` release on every exit path, `ConnectionLost`, cancellation, forced deadlocks in both kinds, swallowed errors never reporting a commit, `CommitUnknown`, savepoint behaviour after deadlocks, single-statement and transaction retry limits, every timeout, cancelled queries releasing their locks, `max_holds`, `.lock_ordered()` and bulk writes under concurrent load, advisory key stability, `skip_locked` with rival workers, `.in_batches` stopping and resuming, every `insert_many` path at a million rows, keyset pages under concurrent writes and with mixed sort directions, tampered cursors, `order_by_allowed`, `.custom_plan()`, connections discarded on `25006`, unsigned ranges, `InvalidText`, `json_string` on every path, `db.close()` finishing in-flight work, models in several schemas.
+- **Compile-fail (`trybuild`):** every compile-time guarantee, including hidden view fields, `HasPk`, unfiltered update and delete, update with no `.set()`, list with no limit, `self` absent in update and delete hooks, non-static `q()` and `sql()`, uppercase names without `keep_case`, columns narrower or wider than their Rust type, `usize` and `isize`, unknown group names, scoped groups on `#[model(groups)]`, a scoped mask on another model, duplicate indexes, duplicate base fields, over-long and colliding names, `Decimal` and float on unsuitable `numeric` columns.
+- **Integration on real Postgres:** insert, every get, update and delete form, views, groups, hook inputs (`Changes`, `Target`), hooks order, the loop detector, `after_commit` on commit and skip on rollback, all list and JSON paths, pool growth and idle shrinking, `max_connections` adjustment, `db.hold()` release on every exit path, `ConnectionLost`, cancellation, forced deadlocks in both kinds, swallowed errors never reporting a commit, `CommitUnknown`, savepoint behaviour after deadlocks, single-statement and transaction retry limits, every timeout, cancelled queries releasing their locks, `max_holds`, `.lock_ordered()` and bulk writes under concurrent load, advisory key stability, `skip_locked` with rival workers, `.in_batches` stopping and resuming, every `insert_many` path at a million rows, keyset pages under concurrent writes and with mixed sort directions, tampered cursors, `order_by_allowed`, `.custom_plan()`, connections discarded on `25006`, every integer type at its limits through insert, read and JSON, range CHECKs rejecting direct SQL writes, `OutOfRange`, `InvalidText`, `json_string` on every path, `db.close()` finishing in-flight work, models in several schemas.
 - **Property tests:** random models and data round-trip through insert, read and JSON.
 - **Doc tests:** every README and doc example compiles and runs.
 - **`#[morm::test]`:** gives each test a database cloned from a migrated template, for this project and its users.
@@ -1438,7 +1457,7 @@ One compact, complete file at the repo root. It must be enough to use morm effic
 ## 15. Milestones
 
 0. **Repo bootstrap:** workspace in `biggaloy/rust-morm`, CI workflows, README skeleton.
-1. **Core models:** macro, `schema`, unsigned types, bases including `#[morm::base]`, index and name rules, views, global and model-scoped groups, declarative rules and `clean`, inference, `F`, compile-time checks.
+1. **Core models:** macro, `schema`, every integer type with range CHECKs, bases including `#[morm::base]`, index and name rules, views, global and model-scoped groups, declarative rules and `clean`, inference, `F`, compile-time checks.
 2. **Runtime:** `morm.toml` and environment variables, `morm::Pool` on the `deadpool` core (start with a quick proof-of-concept), dynamic size, named pools, `max_connections` adjustment, `db.hold()`, bounded statement cache, insert, `get`/`update`/`delete` forms, query builder, `filter_cols`, `db.sql()` and `#[derive(morm::Row)]`, `keyset`, `.in_batches`, `order_by_allowed`, `.custom_plan()`, `get_for_update`, failover handling, `Decimal` and `Numeric`, loop detector, typed errors, transactions, deadlock measures, all list and JSON paths. → **First publish** (`0.1.0-alpha`).
 3. **Migration foundation:** `Schema` IR, catalog reader, diff, typed ops with inverses, scratch, proof pipeline.
 4. **Migration execution:** ledger, steps, fingerprint gates, advisory lock, timeouts, preflight, crash recovery, fault-injection suite.
