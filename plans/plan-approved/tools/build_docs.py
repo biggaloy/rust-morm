@@ -91,7 +91,7 @@ What parallel steps share. Signatures here are the starting point, taken from th
 | `morm` | `morm-macros`, `morm-core`, `tokio-postgres`, `deadpool` | Runtime |
 | `morm-migrate` | `morm-core`, `tokio-postgres` | Migration engine. Doesn't depend on `morm` |
 | `morm-admin` | `morm-migrate`, `morm-core` | The binary. Doesn't depend on the user's models |
-| `morm-mgr` | generated per project; `morm` and the user's models | Prints the manifest as JSON |
+| `morm-mgr` | generated per project; `morm` and the user's models | Prints the manifest as JSON, and runs a migration's Rust data hooks |
 
 ## Conventions
 
@@ -265,9 +265,9 @@ The coordinator stays thin: it reads this file and never reads code.
 
 ## Decisions since the split
 
-- **`morm-core` added:** a sixth crate for config loading, the name and budget functions and manifest types, because `morm-migrate` and `morm-admin` can't depend on `morm` but need all three. The owner should confirm this.
-- **Open, for the owner:** Rust data hooks (step @rolling) have no place to run, because `morm-admin` can't link a project's code. See that step.
-- **`db.upsert_many` named:** the plan said "batch upsert" with no call. The owner should confirm the name.
+- **`morm-core` added:** a sixth crate for config loading, the name and budget functions and manifest types, because `morm-migrate` and `morm-admin` can't depend on `morm` but need all three. Confirmed by the owner.
+- **Rust data hooks run from `morm-mgr`:** owner decision. `migrate --hooks ./morm-mgr` calls a binary built in CI and shipped with the migrations, so `morm-mgr` is no longer print-only. Dropping hooks from 0.1 was the alternative.
+- **`db.upsert_many` named:** the plan said "batch upsert" with no call. Confirmed by the owner.
 - **`morm::pg_outbox!()` given its own requirement,** because the only text about it was an example.
 - **Doctor, `lint` and `import` rules gathered:** sentences about them moved from their topic into those tools' own steps, so no earlier step depends on a later tool.
 

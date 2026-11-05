@@ -217,6 +217,7 @@ PIECES2 = [  # (start of block, exact text, step, new block or None)
     ("- `user.to_json()`, or", "`user.to_json_for(mask)` limits output to groups.", "group-enforcement", None),
     ("- **Failures retry with backoff.**", ", and `morm-admin outbox retry ID` runs it again", "admin-init", "`morm-admin outbox retry ID` runs a failed event again."),
     ("- **Fingerprint gate.**", "Rollback checks the reverse.", "recovery", "**Fingerprint gate:** rollback checks the fingerprints in reverse."),
+    ("| `morm-mgr` |", " Nothing else", "rolling", "`morm-mgr` also runs a migration's Rust data hooks, and nothing else. Build it in CI and ship the binary with the migrations. `migrate --hooks ./morm-mgr` and `rollback --hooks ./morm-mgr` call it as `morm-mgr hook ID up` or `down`, and a migration with hooks refuses to run without it, or if that binary doesn't contain the hook, because `morm-admin` holds no project code. A hook connects with the migration role and runs as a `no-tx` step, so it must be safe to run again on `--resume`."),
     ("- Roles are cluster-wide", ", and `doctor` checks the real ones exist", "doctor", "`doctor` checks that the real roles exist."),
 ]
 SPLIT2 = [  # fifth-pass sizing: (old step, block pattern, new step)
