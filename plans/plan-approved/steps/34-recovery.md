@@ -58,7 +58,7 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 ### Migrations / Commands
 
 - **R-0617** `verify`: live schema vs models and ledger; read-only and safe in production. Unmanaged objects are listed as information, not as drift.
-- **R-0950** `rollback [--last N | --to ID | --orphans | --failed] [--plan] [--yes] [--accept-data-loss] [--production --reason R]`. `verify [--json]`. `repair --reason R`. `refingerprint`.
+- **R-0951** `rollback [--last N | --to ID | --orphans | --failed] [--plan] [--yes] [--accept-data-loss] [--production --reason R]`. `verify [--json]`. `repair --reason R`. `refingerprint`.
 
 ## Test obligations
 

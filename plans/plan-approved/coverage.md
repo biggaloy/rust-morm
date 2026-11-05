@@ -4,7 +4,7 @@ Generated from the frozen plan. Each requirement and test obligation lives in ex
 
 Kinds: `code` needs a tagged test, `doc` is checked in the README step, `info` is context with nothing to build.
 
-Totals: 956 requirements, 133 test obligations.
+Totals: 959 requirements, 133 test obligations.
 
 ## Requirements
 
@@ -805,167 +805,170 @@ Totals: 956 requirements, 133 test obligations.
 | R-0793 | code | 01 | 1654 | \| `nightly.yml` \| Daily \| Long property tests, fuzzing, full chain, `cargo audit` and `… |
 | R-0794 | code | 01 | 1655 | \| `bench.yml` \| Weekly and on demand \| Benchmarks, compared with the last run; tracks b… |
 | R-0795 | code | 01 | 1656 | \| `release.yml` \| On tag \| Tests, publish crates, build `morm-admin` binaries \| |
-| R-0796 | code | 01 | 1658 | Every merge to `main` requires `ci.yml` to pass. The repo is private, so Actions minutes a… |
-| R-0797 | doc | 50 | 1664 | One compact, complete file at the repo root. It must be enough to use morm efficiently wit… |
-| R-0798 | doc | 50 | 1666 | 1. What it is and why: a few lines, plus benchmark numbers. |
-| R-0799 | doc | 50 | 1667 | 2. Quick start: install, `morm-admin init`, first model, first query. |
-| R-0800 | doc | 50 | 1668 | 3. **Pick the right call**, near the top: |
-| R-0801 | doc | 50 | 1672 | \| Send the data on unchanged \| `fetch_json`, `stream_json` \| `fetch`, then serialize \| |
-| R-0802 | doc | 50 | 1673 | \| Read a few columns \| `fetch_raw` \| `fetch` \| |
-| R-0803 | doc | 50 | 1674 | \| Read and compute, no changes \| `fetch_ref` \| `fetch` \| |
-| R-0804 | doc | 50 | 1675 | \| Keep or pass data around \| `fetch` \| \| |
-| R-0805 | doc | 50 | 1676 | \| Change known fields \| `update` \| Fetching the row first \| |
-| R-0806 | doc | 50 | 1677 | \| Set one value on many rows \| `update_q` \| A loop of `update` \| |
-| R-0807 | doc | 50 | 1678 | \| Set different values on many rows \| `update_each` \| A loop of `update` \| |
-| R-0808 | doc | 50 | 1679 | \| Do math on a value \| `set_expr` \| Read, compute, write \| |
-| R-0809 | doc | 50 | 1680 | \| Fetch related rows \| `= ANY` or a JOIN \| A query per row \| |
-| R-0810 | doc | 50 | 1681 | \| Add many rows \| `insert_many` \| A loop of `insert` \| |
-| R-0811 | doc | 50 | 1682 | \| Handle huge results \| `stream` \| `.all()` \| |
-| R-0812 | doc | 50 | 1684 | 4. **Performance rules:** never query in a loop, always limit lists, select through the na… |
-| R-0813 | doc | 50 | 1685 | 5. **Extra calls, one line each.** Every opt-in call, escape hatch and override gets one l… |
-| R-0814 | doc | 50 | 1689 | \| `.allow_missing()` \| You will not handle a 0-row error \| |
-| R-0815 | doc | 50 | 1690 | \| `#[col(json_string)]` \| JavaScript clients read this integer, and it can pass 2^53 \| |
-| R-0816 | doc | 50 | 1691 | \| `schema = "..."` \| A model's table lives outside the default schema \| |
-| R-0817 | doc | 50 | 1692 | \| `mgr mode development` \| This is a local or staging database, and you want `rollback` … |
-| R-0818 | doc | 50 | 1693 | \| `mgr revert ID` \| You must undo a migration in production \| |
-| R-0819 | doc | 50 | 1694 | \| `rollback --production` \| `revert` can't work and you accept the risk; a reason is req… |
-| R-0820 | doc | 50 | 1695 | \| `mgr squash --to ID` \| The chain has grown long, and every database has passed `ID` \| |
-| R-0821 | doc | 50 | 1696 | \| `tx.emit` \| An event must not be lost if the app crashes; use `after_commit` when losi… |
-| R-0822 | doc | 50 | 1697 | \| `tx.emit_keyed` \| Events about the same thing must arrive in order \| |
-| R-0823 | doc | 50 | 1698 | \| `fields = "..."` \| A view is public, and new columns must stay out until you add them … |
-| R-0824 | doc | 50 | 1699 | \| `input = "..."` \| A view takes a request body that creates a row \| |
-| R-0825 | doc | 50 | 1700 | \| `patch = "..."` \| A view takes a partial update, such as a PATCH body \| |
-| R-0826 | doc | 50 | 1701 | \| `.allow_empty()` \| An empty update is fine, and you will not handle `EmptyPatch` \| |
-| R-0827 | doc | 50 | 1702 | \| `span_sample` \| You want more or fewer query spans in your tracing platform \| |
-| R-0828 | doc | 50 | 1703 | \| `morm::sample_scope` \| A traced request must keep all of its query spans \| |
-| R-0829 | doc | 50 | 1704 | \| `slow_query` \| You want slow queries reported from the app, including time waiting for… |
-| R-0830 | doc | 50 | 1705 | \| `metrics_interval` \| Your graphs need finer detail, or your platform bill needs to com… |
-| R-0831 | doc | 50 | 1706 | \| `.explicit_ids()` \| You insert rows with ids you already have, such as an import \| |
-| R-0832 | doc | 50 | 1707 | \| `morm::OrDefault` \| A nullable column has a default, and you sometimes need a real NUL… |
-| R-0833 | doc | 50 | 1708 | \| `.for_key_change()` \| You will delete locked rows or change their keys, and other requ… |
-| R-0834 | doc | 50 | 1709 | \| `blocking` \| A `clean` function is slow, such as password hashing \| |
-| R-0835 | doc | 50 | 1710 | \| `morm::allow_repeats` \| Your code is meant to repeat one query, and the loop detector … |
-| R-0836 | doc | 50 | 1711 | \| `pooler = "transaction"` \| You connect through PgBouncer in transaction mode \| |
-| R-0837 | doc | 50 | 1712 | \| `.tag()` \| You need to trace a query in the server logs back to the code that ran it \… |
-| R-0838 | doc | 50 | 1713 | \| `morm-admin size` \| You change pool or Postgres memory settings and want to check they… |
-| R-0839 | doc | 50 | 1714 | \| `size --here` \| You need a starting config for the machine you're on \| |
-| R-0840 | doc | 50 | 1715 | \| `size --measure` \| You want estimates based on your app's real statements \| |
-| R-0841 | doc | 50 | 1716 | \| `[server]` \| The database runs on another machine, so morm can't read its size \| |
-| R-0842 | doc | 50 | 1717 | \| `shape_cache` \| Logs show churn in runtime-built queries, or your app has many builder… |
-| R-0843 | doc | 50 | 1718 | \| `#[col(secret)]` \| A column must never reach JSON or logs, such as a password hash \| |
-| R-0844 | doc | 50 | 1719 | \| `#[model(deserialize)]` \| You load a full model from trusted data, such as a cache; ne… |
-| R-0845 | doc | 50 | 1720 | \| `keep_case` \| You're matching an existing mixed-case table or column \| |
-| R-0846 | doc | 50 | 1721 | \| `tx.get_for_update` \| Your logic must see the current row before changing it, and `set… |
-| R-0847 | doc | 50 | 1722 | \| `#[col(version)]` \| Users edit a row over time, and a stale save must fail, not overwr… |
-| R-0848 | doc | 50 | 1723 | \| `.in_batches(n)` \| You change so many rows that one transaction would hold locks too l… |
-| R-0849 | doc | 50 | 1724 | \| `.version(v)` \| You update a `version` column and hold the value the client read \| |
-| R-0850 | doc | 50 | 1725 | \| `.ignore_version()` \| A server-side update may overwrite whatever version is there \| |
-| R-0851 | doc | 50 | 1726 | \| `tx.set_local(name, &value)` \| A setting must last one transaction, such as the tenant… |
-| R-0852 | doc | 50 | 1727 | \| `db.insert_stream` \| Your rows are too many to hold in memory, such as an import from … |
-| R-0853 | doc | 50 | 1728 | \| `db.load_related` \| You need the child rows of a whole list \| |
-| R-0854 | doc | 50 | 1729 | \| `.keyset(...)` \| You page through a list that can go deep \| |
-| R-0855 | doc | 50 | 1730 | \| `.order_by_allowed(...)` \| A client chooses the sort column \| |
-| R-0856 | doc | 50 | 1731 | \| `morm::quote_ident` \| You use a dynamic table or column name in `q_unchecked` or `sql_… |
-| R-0857 | doc | 50 | 1732 | \| `.custom_plan()` \| A query is slow only for some values, because your data is skewed \… |
-| R-0858 | doc | 50 | 1733 | \| `nulls_not_distinct` \| A unique column may hold only one NULL \| |
-| R-0859 | doc | 50 | 1734 | \| `#[derive(PgEnum)]` \| You're matching an existing Postgres enum; use `TextEnum` otherw… |
-| R-0860 | doc | 50 | 1735 | \| `storage = "fillfactor=90"` \| A table gets many updates to columns with no index \| |
-| R-0861 | doc | 50 | 1736 | \| `.returning()` \| You need the changed rows back \| |
-| R-0862 | doc | 50 | 1737 | \| `.all()` \| You want every row, and you know the result is small \| |
-| R-0863 | doc | 50 | 1738 | \| `set_expr` \| The new value depends on the current one, such as `stock - 1` \| |
-| R-0864 | doc | 50 | 1739 | \| `.retry(n)` \| You want the transaction to run again after a deadlock, and you build it… |
-| R-0865 | doc | 50 | 1740 | \| `.isolation(...)` \| You read rows and write based on them, and nothing may change them… |
-| R-0866 | doc | 50 | 1741 | \| `.lock_timeout(...)` \| A transaction will wait on locks for longer than 5s, such as a … |
-| R-0867 | doc | 50 | 1742 | \| `.transaction_timeout(...)` \| A transaction will run for longer than 30s, such as a la… |
-| R-0868 | doc | 50 | 1743 | \| `tx.lock(&ids)` \| You will change several rows that other requests also change, such a… |
-| R-0869 | doc | 50 | 1744 | \| `.lock_ordered()` \| You run bulk updates or deletes that can touch the same rows at th… |
-| R-0870 | doc | 50 | 1745 | \| `.skip_locked()` \| Your workers take jobs from a queue and shouldn't wait for each oth… |
-| R-0871 | doc | 50 | 1746 | \| `tx.advisory_lock(&keys)` \| Only one process may do this work at a time, such as a bil… |
-| R-0872 | doc | 50 | 1747 | \| `db.extra_conn()` \| You need a write to survive a rollback, such as an audit row, or a… |
-| R-0873 | doc | 50 | 1748 | \| `.update_only(...)` \| An upsert must change only certain columns on conflict \| |
-| R-0874 | doc | 50 | 1749 | \| `db_set` \| Postgres always fills a column on insert, and your field's value should be … |
-| R-0875 | doc | 50 | 1750 | \| `deferrable` \| Rows in one transaction may break a constraint until commit, such as sw… |
-| R-0876 | doc | 50 | 1751 | \| `#[morm::hooks]` \| You write `impl Hooks` for a model \| |
-| R-0877 | doc | 50 | 1752 | \| `db.tx()` \| A hook needs `tx.emit` or another `tx`-only call \| |
-| R-0878 | doc | 50 | 1753 | \| `.pause_ms(n)` \| Batches must leave room for other work, such as replicas catching up … |
-| R-0879 | doc | 50 | 1754 | \| `.limit_each(n)` \| You load related rows and each parent needs only a few \| |
-| R-0880 | doc | 50 | 1755 | \| `db.check_schema()` \| A binary should refuse to boot against a schema it can't use \| |
-| R-0881 | doc | 50 | 1756 | \| `#[col(deprecated)]` \| You're removing a column, and old binaries still run \| |
-| R-0882 | doc | 19 | 1757 | \| `insert_only` \| A column is set once on insert and must never change afterwards \| |
-| R-0883 | doc | 50 | 1758 | \| `Product::UK.<name>` \| An upsert targets an expression unique index, or two partial in… |
-| R-0884 | doc | 50 | 1759 | \| `db.hold()` \| You need `LISTEN`, temp tables, session advisory locks or `SET` \| |
-| R-0885 | doc | 50 | 1760 | \| `db.pool("replica")` \| You run heavy reads, such as reports, that can be slightly out … |
-| R-0886 | doc | 50 | 1761 | \| `db.pool("jobs")` \| You run heavy jobs in the web app's process, and they must not tak… |
-| R-0887 | doc | 50 | 1762 | \| `db.groups(mask)`, `db.sudo()` \| Your callers may see or change different fields \| |
-| R-0888 | doc | 50 | 1763 | \| `Numeric` \| Your values can exceed 28 digits, or be `NaN` or `Infinity` \| |
-| R-0889 | doc | 50 | 1764 | \| `q_unchecked`, `sql_unchecked` \| You must build SQL at runtime, and you will handle in… |
-| R-0890 | doc | 50 | 1765 | \| `recycle_when` \| You need your own rule for replacing connections \| |
-| R-0891 | doc | 50 | 1766 | \| `no_default` \| You want a compile error when a required field is missed \| |
-| R-0892 | doc | 50 | 1767 | \| `--fast` \| The table is small, or you're in a maintenance window \| |
-| R-0893 | doc | 50 | 1768 | \| `--accept-data-loss` \| You've read the plan, and you accept losing that data \| |
-| R-0894 | doc | 50 | 1769 | \| `--skip-fingerprint` \| Your role can't create a temporary database, and you accept a w… |
-| R-0895 | doc | 50 | 1771 | 6. Models: bases, every `#[model]` and `#[col]` option in tables. |
-| R-0896 | doc | 50 | 1772 | 7. `get`, `insert`, `update`, `delete`, lists, `filter_cols`, related rows, pagination, ba… |
-| R-0897 | doc | 50 | 1773 | 8. Views, including public input and output with `fields`, `input` and `secret`, groups, v… |
-| R-0898 | doc | 50 | 1774 | 9. Hooks, with a table of what each receives and this line: "update and delete hooks never… |
-| R-0899 | doc | 50 | 1775 | 10. JSON output and schemas. |
-| R-0900 | doc | 50 | 1776 | 11. Pool and `morm.toml`: every setting, sizing, and the rule for long-running work: "use … |
-| R-0901 | doc | 50 | 1777 | 12. Migrations: workflow, every command in one table, safety rules, production being forwa… |
-| R-0902 | doc | 50 | 1778 | 13. Security: TLS settings, encrypting disks and backups (outside morm's job, but expected… |
-| R-0903 | info | index | 1784 | 0. **Repo bootstrap:** workspace in `biggaloy/rust-morm`, CI workflows, README skeleton. |
-| R-0904 | info | index | 1785 | 1. **Core models:** macro, `schema`, every integer type with range CHECKs, bases including… |
-| R-0905 | info | index | 1786 | 2. **Runtime:** `morm.toml` and environment variables, `morm::Pool` on the `deadpool` core… |
-| R-0906 | info | index | 1787 | 3. **Migration foundation:** `Schema` IR, catalog reader, diff, typed ops with inverses, s… |
-| R-0907 | info | index | 1788 | 4. **Migration execution:** ledger, steps, fingerprint gates, advisory lock, timeouts, pre… |
-| R-0908 | info | index | 1789 | 5. **Migration safety:** safe forms, batched backfills, retire and purge, production mode,… |
-| R-0909 | info | index | 1790 | 6. **Managed objects:** views, materialized views, functions, procedures, triggers, polici… |
-| R-0910 | info | index | 1791 | 7. **Hooks and outbox:** `Changes`, `Target`, all hooks, `validate`, `validate_changes`, `… |
-| R-0911 | info | index | 1792 | 8. **`morm-admin`:** `init`, `doctor`, `import`, `scratch`, `size`, `morm-mgr` packaging, … |
-| R-0912 | info | index | 1793 | 9. **Query safety:** `sql!`, `check-sql`, upsert, UNNEST and COPY, `#[morm::test]`. |
-| R-0913 | info | index | 1794 | 10. **Remaining features:** UUIDv7, `tls`, schemas and `utoipa`, optimistic locking, traci… |
-| R-0914 | info | index | 1795 | 11. **Benchmarks, lock-order detector, hardening, full README, 0.1.0 release.** |
-| R-0915 | info | index | 1803 | - **Managed objects:** functions, triggers and policies with exact inverses are the hardes… |
-| R-0916 | info | 02 | 1804 | - **Needs proof early:** borrowed `ProductRef` decoding, the loop detector, macro feasibil… |
-| R-0917 | code | 29 | 1805 | - **Scratch databases:** `makemigrations` needs a Postgres where it can `CREATE DATABASE`. |
-| R-0918 | info | index | 1806 | - **Scope:** migrations alone outweigh the runtime. |
-| R-0919 | code | 50 | 1810 | - `morm`, `morm-macros`, `morm-migrate`, `morm-admin` and `morm-mgr` were free on crates.i… |
-| R-0920 | info | index | 1814 | Shared reads: a small opt-in lane that pipelines primary-key reads on a few connections, a… |
-| R-0921 | info | index | 1818 | Features we will build are in `later-defo-build.plan`: automatic read routing and online k… |
-| R-0922 | code | 05 | 1822 | Encrypted columns, including per-user keys and rotation, are not designed yet. Nothing in … |
-| R-0923 | code | 05 | 1824 | - `F` columns carry capability markers checked by the query API, so a column can refuse `.… |
-| R-0924 | code | 05 | 1825 | - Encode and decode go through one per-column conversion layer, so a column's Rust type ca… |
-| R-0925 | info | index | 1829 | - **`save`:** replaced by explicit `insert` and `update`. |
-| R-0926 | info | index | 1830 | - **`exclude_values_up/down`:** rarely useful, and it would make insert SQL vary per row. … |
-| R-0927 | info | index | 1831 | - **`validator` and `modifier`:** replaced by the type system, native decoding, and declar… |
-| R-0928 | info | index | 1832 | - **`pre_save` and `post_save`:** removed with `save`. |
-| R-0929 | info | index | 1838 | After the final review, this plan is split into `plans/plan-approved/`: |
-| R-0930 | info | index | 1840 | - `INDEX.md`: order, dependencies, what can run in parallel, and status. |
-| R-0931 | info | index | 1841 | - `rules.md`: how every step works and when it counts as done. |
-| R-0932 | info | index | 1842 | - `contracts.md`: shared types and signatures that parallel steps rely on. |
-| R-0933 | info | index | 1843 | - `coverage.md`: every requirement, by ID, mapped to its step and tests. A script fails if… |
-| R-0934 | info | index | 1844 | - `steps/`: one self-contained file per step, about 26 in total, small enough for one fres… |
-| R-0935 | info | index | 1846 | The first splitting step assigns the requirement IDs, because this file has none. |
-| R-0936 | info | index | 1848 | **Decisions:** |
-| R-0937 | info | index | 1850 | - `plan-approved/` becomes the working source of truth once it's built. This file is then … |
-| R-0938 | info | index | 1851 | - Steps and reviews run as subagents, each with fresh context, and each reads only `rules.… |
-| R-0939 | info | index | 1852 | - The owner approves the Foundation PRs. Later PRs merge once CI and an independent review… |
-| R-0940 | info | index | 1854 | **Rules for every step:** |
-| R-0941 | info | index | 1856 | - The session that writes a step doesn't approve it. A separate one checks the work agains… |
-| R-0942 | info | index | 1857 | - Done means every test passes on Postgres 15–18, with nothing deferred or stubbed. |
-| R-0943 | info | index | 1858 | - If a step finds the plan is wrong, it stops and asks, and it doesn't improvise. |
-| R-0944 | info | index | 1859 | - Parallel steps use separate worktrees and branches, and run in parallel only when `contr… |
-| R-0945 | info | index | 1860 | - The early proofs step comes before anything depends on the risky parts in section 16. |
-| R-0946 | code | 19 | 0 | - `db.upsert_many(&mut rows, target)` is the batch form of `upsert`, taking the same confl… |
-| R-0947 | code | 19 | 0 | - Array columns work through `upsert` and `upsert_many` the same way as `insert_many`. |
-| R-0948 | code | 32 | 0 | - `makemigrations [--plan] [--json] [-n name] [--decide ID=OPT] [--decisions F] [--empty] … |
-| R-0949 | code | 33 | 0 | - `migrate [--plan] [--json] [--yes] [--to ID] [--resume] [--phase expand\|contract]`, whe… |
-| R-0950 | code | 34 | 0 | - `rollback [--last N \| --to ID \| --orphans \| --failed] [--plan] [--yes] [--accept-data… |
-| R-0951 | code | 40 | 0 | - `revert ID [--plan] [--decide ID=OPT]`. `mode [development --confirm NAME \| production]… |
-| R-0952 | code | 38 | 0 | - `purge --older-than D \| --now ID`. |
-| R-0953 | code | 42 | 0 | - `baseline`. |
-| R-0954 | code | 42 | 0 | - `morm-admin init [path] [--axum]`, `morm-admin scratch` to check or create the scratch d… |
-| R-0955 | code | 31 | 0 | - `morm-admin mgr <command>` runs migration and schema work, and each `mgr` command lives … |
-| R-0956 | code | 42 | 0 | - `morm::pg_outbox!()` declares the outbox table as a managed table, tracked by migrations… |
+| R-0796 | code | 01 | 1658 | Every merge to `main` requires `ci.yml` to pass. |
+| R-0797 | code | 01 | 1658 | The repo is public, so Actions is free on standard runners, and the full Postgres matrix r… |
+| R-0798 | doc | 50 | 1664 | One compact, complete file at the repo root. It must be enough to use morm efficiently wit… |
+| R-0799 | doc | 50 | 1666 | 1. What it is and why: a few lines, plus benchmark numbers. |
+| R-0800 | doc | 50 | 1667 | 2. Quick start: install, `morm-admin init`, first model, first query. |
+| R-0801 | doc | 50 | 1668 | 3. **Pick the right call**, near the top: |
+| R-0802 | doc | 50 | 1672 | \| Send the data on unchanged \| `fetch_json`, `stream_json` \| `fetch`, then serialize \| |
+| R-0803 | doc | 50 | 1673 | \| Read a few columns \| `fetch_raw` \| `fetch` \| |
+| R-0804 | doc | 50 | 1674 | \| Read and compute, no changes \| `fetch_ref` \| `fetch` \| |
+| R-0805 | doc | 50 | 1675 | \| Keep or pass data around \| `fetch` \| \| |
+| R-0806 | doc | 50 | 1676 | \| Change known fields \| `update` \| Fetching the row first \| |
+| R-0807 | doc | 50 | 1677 | \| Set one value on many rows \| `update_q` \| A loop of `update` \| |
+| R-0808 | doc | 50 | 1678 | \| Set different values on many rows \| `update_each` \| A loop of `update` \| |
+| R-0809 | doc | 50 | 1679 | \| Do math on a value \| `set_expr` \| Read, compute, write \| |
+| R-0810 | doc | 50 | 1680 | \| Fetch related rows \| `= ANY` or a JOIN \| A query per row \| |
+| R-0811 | doc | 50 | 1681 | \| Add many rows \| `insert_many` \| A loop of `insert` \| |
+| R-0812 | doc | 50 | 1682 | \| Handle huge results \| `stream` \| `.all()` \| |
+| R-0813 | doc | 50 | 1684 | 4. **Performance rules:** never query in a loop, always limit lists, select through the na… |
+| R-0814 | doc | 50 | 1685 | 5. **Extra calls, one line each.** Every opt-in call, escape hatch and override gets one l… |
+| R-0815 | doc | 50 | 1689 | \| `.allow_missing()` \| You will not handle a 0-row error \| |
+| R-0816 | doc | 50 | 1690 | \| `#[col(json_string)]` \| JavaScript clients read this integer, and it can pass 2^53 \| |
+| R-0817 | doc | 50 | 1691 | \| `schema = "..."` \| A model's table lives outside the default schema \| |
+| R-0818 | doc | 50 | 1692 | \| `mgr mode development` \| This is a local or staging database, and you want `rollback` … |
+| R-0819 | doc | 50 | 1693 | \| `mgr revert ID` \| You must undo a migration in production \| |
+| R-0820 | doc | 50 | 1694 | \| `rollback --production` \| `revert` can't work and you accept the risk; a reason is req… |
+| R-0821 | doc | 50 | 1695 | \| `mgr squash --to ID` \| The chain has grown long, and every database has passed `ID` \| |
+| R-0822 | doc | 50 | 1696 | \| `tx.emit` \| An event must not be lost if the app crashes; use `after_commit` when losi… |
+| R-0823 | doc | 50 | 1697 | \| `tx.emit_keyed` \| Events about the same thing must arrive in order \| |
+| R-0824 | doc | 50 | 1698 | \| `fields = "..."` \| A view is public, and new columns must stay out until you add them … |
+| R-0825 | doc | 50 | 1699 | \| `input = "..."` \| A view takes a request body that creates a row \| |
+| R-0826 | doc | 50 | 1700 | \| `patch = "..."` \| A view takes a partial update, such as a PATCH body \| |
+| R-0827 | doc | 50 | 1701 | \| `.allow_empty()` \| An empty update is fine, and you will not handle `EmptyPatch` \| |
+| R-0828 | doc | 50 | 1702 | \| `span_sample` \| You want more or fewer query spans in your tracing platform \| |
+| R-0829 | doc | 50 | 1703 | \| `morm::sample_scope` \| A traced request must keep all of its query spans \| |
+| R-0830 | doc | 50 | 1704 | \| `slow_query` \| You want slow queries reported from the app, including time waiting for… |
+| R-0831 | doc | 50 | 1705 | \| `metrics_interval` \| Your graphs need finer detail, or your platform bill needs to com… |
+| R-0832 | doc | 50 | 1706 | \| `.explicit_ids()` \| You insert rows with ids you already have, such as an import \| |
+| R-0833 | doc | 50 | 1707 | \| `morm::OrDefault` \| A nullable column has a default, and you sometimes need a real NUL… |
+| R-0834 | doc | 50 | 1708 | \| `.for_key_change()` \| You will delete locked rows or change their keys, and other requ… |
+| R-0835 | doc | 50 | 1709 | \| `blocking` \| A `clean` function is slow, such as password hashing \| |
+| R-0836 | doc | 50 | 1710 | \| `morm::allow_repeats` \| Your code is meant to repeat one query, and the loop detector … |
+| R-0837 | doc | 50 | 1711 | \| `pooler = "transaction"` \| You connect through PgBouncer in transaction mode \| |
+| R-0838 | doc | 50 | 1712 | \| `.tag()` \| You need to trace a query in the server logs back to the code that ran it \… |
+| R-0839 | doc | 50 | 1713 | \| `morm-admin size` \| You change pool or Postgres memory settings and want to check they… |
+| R-0840 | doc | 50 | 1714 | \| `size --here` \| You need a starting config for the machine you're on \| |
+| R-0841 | doc | 50 | 1715 | \| `size --measure` \| You want estimates based on your app's real statements \| |
+| R-0842 | doc | 50 | 1716 | \| `[server]` \| The database runs on another machine, so morm can't read its size \| |
+| R-0843 | doc | 50 | 1717 | \| `shape_cache` \| Logs show churn in runtime-built queries, or your app has many builder… |
+| R-0844 | doc | 50 | 1718 | \| `#[col(secret)]` \| A column must never reach JSON or logs, such as a password hash \| |
+| R-0845 | doc | 50 | 1719 | \| `#[model(deserialize)]` \| You load a full model from trusted data, such as a cache; ne… |
+| R-0846 | doc | 50 | 1720 | \| `keep_case` \| You're matching an existing mixed-case table or column \| |
+| R-0847 | doc | 50 | 1721 | \| `tx.get_for_update` \| Your logic must see the current row before changing it, and `set… |
+| R-0848 | doc | 50 | 1722 | \| `#[col(version)]` \| Users edit a row over time, and a stale save must fail, not overwr… |
+| R-0849 | doc | 50 | 1723 | \| `.in_batches(n)` \| You change so many rows that one transaction would hold locks too l… |
+| R-0850 | doc | 50 | 1724 | \| `.version(v)` \| You update a `version` column and hold the value the client read \| |
+| R-0851 | doc | 50 | 1725 | \| `.ignore_version()` \| A server-side update may overwrite whatever version is there \| |
+| R-0852 | doc | 50 | 1726 | \| `tx.set_local(name, &value)` \| A setting must last one transaction, such as the tenant… |
+| R-0853 | doc | 50 | 1727 | \| `db.insert_stream` \| Your rows are too many to hold in memory, such as an import from … |
+| R-0854 | doc | 50 | 1728 | \| `db.load_related` \| You need the child rows of a whole list \| |
+| R-0855 | doc | 50 | 1729 | \| `.keyset(...)` \| You page through a list that can go deep \| |
+| R-0856 | doc | 50 | 1730 | \| `.order_by_allowed(...)` \| A client chooses the sort column \| |
+| R-0857 | doc | 50 | 1731 | \| `morm::quote_ident` \| You use a dynamic table or column name in `q_unchecked` or `sql_… |
+| R-0858 | doc | 50 | 1732 | \| `.custom_plan()` \| A query is slow only for some values, because your data is skewed \… |
+| R-0859 | doc | 50 | 1733 | \| `nulls_not_distinct` \| A unique column may hold only one NULL \| |
+| R-0860 | doc | 50 | 1734 | \| `#[derive(PgEnum)]` \| You're matching an existing Postgres enum; use `TextEnum` otherw… |
+| R-0861 | doc | 50 | 1735 | \| `storage = "fillfactor=90"` \| A table gets many updates to columns with no index \| |
+| R-0862 | doc | 50 | 1736 | \| `.returning()` \| You need the changed rows back \| |
+| R-0863 | doc | 50 | 1737 | \| `.all()` \| You want every row, and you know the result is small \| |
+| R-0864 | doc | 50 | 1738 | \| `set_expr` \| The new value depends on the current one, such as `stock - 1` \| |
+| R-0865 | doc | 50 | 1739 | \| `.retry(n)` \| You want the transaction to run again after a deadlock, and you build it… |
+| R-0866 | doc | 50 | 1740 | \| `.isolation(...)` \| You read rows and write based on them, and nothing may change them… |
+| R-0867 | doc | 50 | 1741 | \| `.lock_timeout(...)` \| A transaction will wait on locks for longer than 5s, such as a … |
+| R-0868 | doc | 50 | 1742 | \| `.transaction_timeout(...)` \| A transaction will run for longer than 30s, such as a la… |
+| R-0869 | doc | 50 | 1743 | \| `tx.lock(&ids)` \| You will change several rows that other requests also change, such a… |
+| R-0870 | doc | 50 | 1744 | \| `.lock_ordered()` \| You run bulk updates or deletes that can touch the same rows at th… |
+| R-0871 | doc | 50 | 1745 | \| `.skip_locked()` \| Your workers take jobs from a queue and shouldn't wait for each oth… |
+| R-0872 | doc | 50 | 1746 | \| `tx.advisory_lock(&keys)` \| Only one process may do this work at a time, such as a bil… |
+| R-0873 | doc | 50 | 1747 | \| `db.extra_conn()` \| You need a write to survive a rollback, such as an audit row, or a… |
+| R-0874 | doc | 50 | 1748 | \| `.update_only(...)` \| An upsert must change only certain columns on conflict \| |
+| R-0875 | doc | 50 | 1749 | \| `db_set` \| Postgres always fills a column on insert, and your field's value should be … |
+| R-0876 | doc | 50 | 1750 | \| `deferrable` \| Rows in one transaction may break a constraint until commit, such as sw… |
+| R-0877 | doc | 50 | 1751 | \| `#[morm::hooks]` \| You write `impl Hooks` for a model \| |
+| R-0878 | doc | 50 | 1752 | \| `db.tx()` \| A hook needs `tx.emit` or another `tx`-only call \| |
+| R-0879 | doc | 50 | 1753 | \| `.pause_ms(n)` \| Batches must leave room for other work, such as replicas catching up … |
+| R-0880 | doc | 50 | 1754 | \| `.limit_each(n)` \| You load related rows and each parent needs only a few \| |
+| R-0881 | doc | 50 | 1755 | \| `db.check_schema()` \| A binary should refuse to boot against a schema it can't use \| |
+| R-0882 | doc | 50 | 1756 | \| `#[col(deprecated)]` \| You're removing a column, and old binaries still run \| |
+| R-0883 | doc | 19 | 1757 | \| `insert_only` \| A column is set once on insert and must never change afterwards \| |
+| R-0884 | doc | 50 | 1758 | \| `Product::UK.<name>` \| An upsert targets an expression unique index, or two partial in… |
+| R-0885 | doc | 50 | 1759 | \| `db.hold()` \| You need `LISTEN`, temp tables, session advisory locks or `SET` \| |
+| R-0886 | doc | 50 | 1760 | \| `db.pool("replica")` \| You run heavy reads, such as reports, that can be slightly out … |
+| R-0887 | doc | 50 | 1761 | \| `db.pool("jobs")` \| You run heavy jobs in the web app's process, and they must not tak… |
+| R-0888 | doc | 50 | 1762 | \| `db.groups(mask)`, `db.sudo()` \| Your callers may see or change different fields \| |
+| R-0889 | doc | 50 | 1763 | \| `Numeric` \| Your values can exceed 28 digits, or be `NaN` or `Infinity` \| |
+| R-0890 | doc | 50 | 1764 | \| `q_unchecked`, `sql_unchecked` \| You must build SQL at runtime, and you will handle in… |
+| R-0891 | doc | 50 | 1765 | \| `recycle_when` \| You need your own rule for replacing connections \| |
+| R-0892 | doc | 50 | 1766 | \| `no_default` \| You want a compile error when a required field is missed \| |
+| R-0893 | doc | 50 | 1767 | \| `--fast` \| The table is small, or you're in a maintenance window \| |
+| R-0894 | doc | 50 | 1768 | \| `--accept-data-loss` \| You've read the plan, and you accept losing that data \| |
+| R-0895 | doc | 50 | 1769 | \| `--skip-fingerprint` \| Your role can't create a temporary database, and you accept a w… |
+| R-0896 | doc | 50 | 1771 | 6. Models: bases, every `#[model]` and `#[col]` option in tables. |
+| R-0897 | doc | 50 | 1772 | 7. `get`, `insert`, `update`, `delete`, lists, `filter_cols`, related rows, pagination, ba… |
+| R-0898 | doc | 50 | 1773 | 8. Views, including public input and output with `fields`, `input` and `secret`, groups, v… |
+| R-0899 | doc | 50 | 1774 | 9. Hooks, with a table of what each receives and this line: "update and delete hooks never… |
+| R-0900 | doc | 50 | 1775 | 10. JSON output and schemas. |
+| R-0901 | doc | 50 | 1776 | 11. Pool and `morm.toml`: every setting, sizing, and the rule for long-running work: "use … |
+| R-0902 | doc | 50 | 1777 | 12. Migrations: workflow, every command in one table, safety rules, production being forwa… |
+| R-0903 | doc | 50 | 1778 | 13. Security: TLS settings, encrypting disks and backups (outside morm's job, but expected… |
+| R-0904 | info | index | 1784 | 0. **Repo bootstrap:** workspace in `biggaloy/rust-morm`, CI workflows, README skeleton. |
+| R-0905 | info | index | 1785 | 1. **Core models:** macro, `schema`, every integer type with range CHECKs, bases including… |
+| R-0906 | info | index | 1786 | 2. **Runtime:** `morm.toml` and environment variables, `morm::Pool` on the `deadpool` core… |
+| R-0907 | info | index | 1787 | 3. **Migration foundation:** `Schema` IR, catalog reader, diff, typed ops with inverses, s… |
+| R-0908 | info | index | 1788 | 4. **Migration execution:** ledger, steps, fingerprint gates, advisory lock, timeouts, pre… |
+| R-0909 | info | index | 1789 | 5. **Migration safety:** safe forms, batched backfills, retire and purge, production mode,… |
+| R-0910 | info | index | 1790 | 6. **Managed objects:** views, materialized views, functions, procedures, triggers, polici… |
+| R-0911 | info | index | 1791 | 7. **Hooks and outbox:** `Changes`, `Target`, all hooks, `validate`, `validate_changes`, `… |
+| R-0912 | info | index | 1792 | 8. **`morm-admin`:** `init`, `doctor`, `import`, `scratch`, `size`, `morm-mgr` packaging, … |
+| R-0913 | info | index | 1793 | 9. **Query safety:** `sql!`, `check-sql`, upsert, UNNEST and COPY, `#[morm::test]`. |
+| R-0914 | info | index | 1794 | 10. **Remaining features:** UUIDv7, `tls`, schemas and `utoipa`, optimistic locking, traci… |
+| R-0915 | info | index | 1795 | 11. **Benchmarks, lock-order detector, hardening, full README, 0.1.0 release.** |
+| R-0916 | info | index | 1803 | - **Managed objects:** functions, triggers and policies with exact inverses are the hardes… |
+| R-0917 | info | 02 | 1804 | - **Needs proof early:** borrowed `ProductRef` decoding, the loop detector, macro feasibil… |
+| R-0918 | code | 29 | 1805 | - **Scratch databases:** `makemigrations` needs a Postgres where it can `CREATE DATABASE`. |
+| R-0919 | info | index | 1806 | - **Scope:** migrations alone outweigh the runtime. |
+| R-0920 | code | 50 | 1810 | - `morm`, `morm-macros`, `morm-migrate`, `morm-admin` and `morm-mgr` were free on crates.i… |
+| R-0921 | info | index | 1814 | Shared reads: a small opt-in lane that pipelines primary-key reads on a few connections, a… |
+| R-0922 | info | index | 1818 | Features we will build are in `later-defo-build.plan`: automatic read routing and online k… |
+| R-0923 | code | 05 | 1822 | Encrypted columns, including per-user keys and rotation, are not designed yet. Nothing in … |
+| R-0924 | code | 05 | 1824 | - `F` columns carry capability markers checked by the query API, so a column can refuse `.… |
+| R-0925 | code | 05 | 1825 | - Encode and decode go through one per-column conversion layer, so a column's Rust type ca… |
+| R-0926 | info | index | 1829 | - **`save`:** replaced by explicit `insert` and `update`. |
+| R-0927 | info | index | 1830 | - **`exclude_values_up/down`:** rarely useful, and it would make insert SQL vary per row. … |
+| R-0928 | info | index | 1831 | - **`validator` and `modifier`:** replaced by the type system, native decoding, and declar… |
+| R-0929 | info | index | 1832 | - **`pre_save` and `post_save`:** removed with `save`. |
+| R-0930 | info | index | 1838 | After the final review, this plan is split into `plans/plan-approved/`: |
+| R-0931 | info | index | 1840 | - `INDEX.md`: order, dependencies, what can run in parallel, and status. |
+| R-0932 | info | index | 1841 | - `rules.md`: how every step works and when it counts as done. |
+| R-0933 | info | index | 1842 | - `contracts.md`: shared types and signatures that parallel steps rely on. |
+| R-0934 | info | index | 1843 | - `coverage.md`: every requirement, by ID, mapped to its step and tests. A script fails if… |
+| R-0935 | info | index | 1844 | - `steps/`: one self-contained file per step, about 26 in total, small enough for one fres… |
+| R-0936 | info | index | 1846 | The first splitting step assigns the requirement IDs, because this file has none. |
+| R-0937 | info | index | 1848 | **Decisions:** |
+| R-0938 | info | index | 1850 | - `plan-approved/` becomes the working source of truth once it's built. This file is then … |
+| R-0939 | info | index | 1851 | - Steps and reviews run as subagents, each with fresh context, and each reads only `rules.… |
+| R-0940 | info | index | 1852 | - The owner approves the Foundation PRs. Later PRs merge once CI and an independent review… |
+| R-0941 | info | index | 1854 | **Rules for every step:** |
+| R-0942 | info | index | 1856 | - The session that writes a step doesn't approve it. A separate one checks the work agains… |
+| R-0943 | info | index | 1857 | - Done means every test passes on Postgres 15–18, with nothing deferred or stubbed. |
+| R-0944 | info | index | 1858 | - If a step finds the plan is wrong, it stops and asks, and it doesn't improvise. |
+| R-0945 | info | index | 1859 | - Parallel steps use separate worktrees and branches, and run in parallel only when `contr… |
+| R-0946 | info | index | 1860 | - The early proofs step comes before anything depends on the risky parts in section 16. |
+| R-0947 | code | 19 | 0 | - `db.upsert_many(&mut rows, target)` is the batch form of `upsert`, taking the same confl… |
+| R-0948 | code | 19 | 0 | - Array columns work through `upsert` and `upsert_many` the same way as `insert_many`. |
+| R-0949 | code | 32 | 0 | - `makemigrations [--plan] [--json] [-n name] [--decide ID=OPT] [--decisions F] [--empty] … |
+| R-0950 | code | 33 | 0 | - `migrate [--plan] [--json] [--yes] [--to ID] [--resume] [--phase expand\|contract]`, whe… |
+| R-0951 | code | 34 | 0 | - `rollback [--last N \| --to ID \| --orphans \| --failed] [--plan] [--yes] [--accept-data… |
+| R-0952 | code | 40 | 0 | - `revert ID [--plan] [--decide ID=OPT]`. `mode [development --confirm NAME \| production]… |
+| R-0953 | code | 38 | 0 | - `purge --older-than D \| --now ID`. |
+| R-0954 | code | 42 | 0 | - `baseline`. |
+| R-0955 | code | 42 | 0 | - `morm-admin init [path] [--axum]`, `morm-admin scratch` to check or create the scratch d… |
+| R-0956 | code | 31 | 0 | - `morm-admin mgr <command>` runs migration and schema work, and each `mgr` command lives … |
+| R-0957 | code | 01 | 0 | - **Workflows in a public repo.** Every workflow sets `permissions: contents: read` and ra… |
+| R-0958 | code | 01 | 0 | - **Repo files for a public project.** `SECURITY.md` says how to report a vulnerability pr… |
+| R-0959 | code | 42 | 0 | - `morm::pg_outbox!()` declares the outbox table as a managed table, tracked by migrations… |
 
 ## Test obligations
 

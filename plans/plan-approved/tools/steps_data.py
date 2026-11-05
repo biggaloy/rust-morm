@@ -19,7 +19,7 @@ S("bootstrap", "Repo bootstrap and CI", "Foundation", [], "workspace, all five c
    "`ci.yml`, `nightly.yml`, `bench.yml` and `release.yml`, including Postgres 15–18 over TCP and Unix socket and a PgBouncer service. `nightly.yml` also has `workflow_dispatch`, so it can run on a branch",
    "`ci.yml` runs `plans/plan-approved/tools/check_coverage.py --code crates tests benches fuzz .github`",
    "A test helper that starts or connects to each Postgres version, and a `trybuild` harness",
-   "README skeleton, included as crate docs",
+   "README skeleton, included as crate docs, plus `SECURITY.md` and Dependabot config",
    "Check that all six crate names, including `morm-mgr`, are still free on crates.io"],
   "A PR containing one trivial integration test tagged `covers: R-nnnn` passes `ci.yml` on every Postgres version and on PgBouncer. Removing the tag makes `--step` fail for that step.",
   ["Any morm feature", "Publishing crates"], approve=OWNER),

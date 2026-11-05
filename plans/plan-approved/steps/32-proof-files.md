@@ -90,7 +90,7 @@ morm-migrations/
 
 ### Migrations / Commands
 
-- **R-0948** `makemigrations [--plan] [--json] [-n name] [--decide ID=OPT] [--decisions F] [--empty] [--fast]`, with `--empty` writing an empty migration for hand-written steps, and `rebase-chain` fixing a chain marked `diverged`.
+- **R-0949** `makemigrations [--plan] [--json] [-n name] [--decide ID=OPT] [--decisions F] [--empty] [--fast]`, with `--empty` writing an empty migration for hand-written steps, and `rebase-chain` fixing a chain marked `diverged`.
 
 ## Test obligations
 

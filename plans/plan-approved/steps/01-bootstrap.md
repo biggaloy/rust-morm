@@ -18,7 +18,7 @@ Create the workspace so every later step has a place to land, and CI that runs t
 - `ci.yml`, `nightly.yml`, `bench.yml` and `release.yml`, including Postgres 15–18 over TCP and Unix socket and a PgBouncer service. `nightly.yml` also has `workflow_dispatch`, so it can run on a branch
 - `ci.yml` runs `plans/plan-approved/tools/check_coverage.py --code crates tests benches fuzz .github`
 - A test helper that starts or connects to each Postgres version, and a `trybuild` harness
-- README skeleton, included as crate docs
+- README skeleton, included as crate docs, plus `SECURITY.md` and Dependabot config
 - Check that all six crate names, including `morm-mgr`, are still free on crates.io
 
 ## End-to-end check
@@ -82,7 +82,12 @@ rust-morm/
 | R-0794 | `bench.yml` | Weekly and on demand | Benchmarks, compared with the last run; tracks binary size and RSS |
 | R-0795 | `release.yml` | On tag | Tests, publish crates, build `morm-admin` binaries |
 
-**R-0796** Every merge to `main` requires `ci.yml` to pass. The repo is private, so Actions minutes are limited: the Postgres matrix runs fully on `main` and PRs, while pushes to other branches use one version.
+**R-0796** Every merge to `main` requires `ci.yml` to pass.
+
+**R-0797** The repo is public, so Actions is free on standard runners, and the full Postgres matrix runs on every push and PR.
+
+- **R-0957** **Workflows in a public repo.** Every workflow sets `permissions: contents: read` and raises it only per job where needed. Third-party actions are pinned to a full commit SHA. `pull_request_target` is never used, and PRs from forks get no secrets and run no release or publish job. `release.yml` runs only on a tag, in a protected environment holding the crates.io token.
+- **R-0958** **Repo files for a public project.** `SECURITY.md` says how to report a vulnerability privately, and Dependabot config covers Cargo and Actions.
 
 ## Test obligations
 

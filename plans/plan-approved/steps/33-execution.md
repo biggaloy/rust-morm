@@ -69,7 +69,7 @@ repair --reason R     refingerprint           sql ID
 
 **R-0623** **Run migrations as a deploy step,** before new code goes live, so a failed migration stops the deploy. The app binary has no migration code, so it can't migrate on start.
 
-- **R-0949** `migrate [--plan] [--json] [--yes] [--to ID] [--resume] [--phase expand|contract]`, where `--yes` skips the prompt and `--to ID` stops after that migration. `status [--json]`. `check`. `sql ID` prints a migration's SQL.
+- **R-0950** `migrate [--plan] [--json] [--yes] [--to ID] [--resume] [--phase expand|contract]`, where `--yes` skips the prompt and `--to ID` stops after that migration. `status [--json]`. `check`. `sql ID` prints a migration's SQL.
 
 ## Test obligations
 

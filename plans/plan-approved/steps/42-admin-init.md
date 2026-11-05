@@ -79,7 +79,7 @@ morm-admin mgr <command>              # migrations and schema work (section 10)
 
 **R-0058** `init` creates the `morm-mgr` package, `morm-migrations/`, `morm.toml`, `.env.example`, a sample model, and a CI workflow. `--axum` adds the app template and a systemd unit.
 
-- **R-0954** `morm-admin init [path] [--axum]`, `morm-admin scratch` to check or create the scratch database, and `morm-admin outbox [list | retry ID]` to inspect failed events and deliver one again.
+- **R-0955** `morm-admin init [path] [--axum]`, `morm-admin scratch` to check or create the scratch database, and `morm-admin outbox [list | retry ID]` to inspect failed events and deliver one again.
 
 ### Crates and tools / Configuration: `morm.toml`
 
@@ -93,12 +93,12 @@ morm-admin mgr <command>              # migrations and schema work (section 10)
 ### Hooks / Outbox: events that must not be lost
 
 - **R-0516** `morm-admin outbox retry ID` runs a failed event again.
-- **R-0956** `morm::pg_outbox!()` declares the outbox table as a managed table, tracked by migrations.
+- **R-0959** `morm::pg_outbox!()` declares the outbox table as a managed table, tracked by migrations.
 
 ### Migrations / Commands
 
 - **R-0621** `baseline`: adopts an existing database as migration zero, without running anything.
-- **R-0953** `baseline`.
+- **R-0954** `baseline`.
 
 ## Test obligations
 

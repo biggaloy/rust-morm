@@ -63,10 +63,10 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 
 ### Risks, open items and later work / Later: field-level encryption
 
-**R-0922** Encrypted columns, including per-user keys and rotation, are not designed yet. Nothing in 0.1 is built for them. These choices, which 0.1 needs anyway, keep them possible without breaking changes:
+**R-0923** Encrypted columns, including per-user keys and rotation, are not designed yet. Nothing in 0.1 is built for them. These choices, which 0.1 needs anyway, keep them possible without breaking changes:
 
-- **R-0923** `F` columns carry capability markers checked by the query API, so a column can refuse `.by()` or `set_expr`.
-- **R-0924** Encode and decode go through one per-column conversion layer, so a column's Rust type can differ from its stored type. It exists only at compile time: generated code calls `ToSql` and `FromSql` directly through static dispatch, with no branch, pointer, allocation or per-row state. A benchmark against hand-written tokio-postgres decoding checks that it adds no cost.
+- **R-0924** `F` columns carry capability markers checked by the query API, so a column can refuse `.by()` or `set_expr`.
+- **R-0925** Encode and decode go through one per-column conversion layer, so a column's Rust type can differ from its stored type. It exists only at compile time: generated code calls `ToSql` and `FromSql` directly through static dispatch, with no branch, pointer, allocation or per-row state. A benchmark against hand-written tokio-postgres decoding checks that it adds no cost.
 
 ## Test obligations
 

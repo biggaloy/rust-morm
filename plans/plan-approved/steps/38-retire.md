@@ -71,7 +71,7 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 
 ### Migrations / Commands
 
-- **R-0952** `purge --older-than D | --now ID`.
+- **R-0953** `purge --older-than D | --now ID`.
 
 ## Test obligations
 

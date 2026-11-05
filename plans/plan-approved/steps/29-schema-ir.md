@@ -49,7 +49,7 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 
 ### Risks, open items and later work / Risks
 
-- **R-0917** **Scratch databases:** `makemigrations` needs a Postgres where it can `CREATE DATABASE`.
+- **R-0918** **Scratch databases:** `makemigrations` needs a Postgres where it can `CREATE DATABASE`.
 
 ## Test obligations
 

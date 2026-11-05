@@ -217,6 +217,7 @@ PIECES2 = [  # (start of block, exact text, step, new block or None)
     ("- `user.to_json()`, or", "`user.to_json_for(mask)` limits output to groups.", "group-enforcement", None),
     ("- **Failures retry with backoff.**", ", and `morm-admin outbox retry ID` runs it again", "admin-init", "`morm-admin outbox retry ID` runs a failed event again."),
     ("- **Fingerprint gate.**", "Rollback checks the reverse.", "recovery", "**Fingerprint gate:** rollback checks the fingerprints in reverse."),
+    ("Every merge to `main` requires `ci.yml`", "The repo is private, so Actions minutes are limited: the Postgres matrix runs fully on `main` and PRs, while pushes to other branches use one version.", "bootstrap", "The repo is public, so Actions is free on standard runners, and the full Postgres matrix runs on every push and PR."),
     ("| `morm-mgr` |", " Nothing else", "rolling", "`morm-mgr` also runs a migration's Rust data hooks, and nothing else. Build it in CI and ship the binary with the migrations. `migrate --hooks ./morm-mgr` and `rollback --hooks ./morm-mgr` call it as `morm-mgr hook ID up` or `down`, and a migration with hooks refuses to run without it, or if that binary doesn't contain the hook, because `morm-admin` holds no project code. A hook connects with the migration role and runs as a `no-tx` step, so it must be safe to run again on `--resume`."),
     ("- Roles are cluster-wide", ", and `doctor` checks the real ones exist", "doctor", "`doctor` checks that the real roles exist."),
 ]
@@ -285,6 +286,8 @@ NEW_BLOCKS = [
     nb("`baseline`.", "admin-init", "10. Migrations", "Commands"),
     nb("`morm-admin init [path] [--axum]`, `morm-admin scratch` to check or create the scratch database, and `morm-admin outbox [list | retry ID]` to inspect failed events and deliver one again.", "admin-init", "3. Crates and tools", "`morm-admin`"),
     nb("`morm-admin mgr <command>` runs migration and schema work, and each `mgr` command lives in its own module.", "lint", "10. Migrations", "Commands"),
+    nb("**Workflows in a public repo.** Every workflow sets `permissions: contents: read` and raises it only per job where needed. Third-party actions are pinned to a full commit SHA. `pull_request_target` is never used, and PRs from forks get no secrets and run no release or publish job. `release.yml` runs only on a tag, in a protected environment holding the crates.io token.", "bootstrap", "13. Testing and CI", "GitHub Actions (`.github/workflows/`)"),
+    nb("**Repo files for a public project.** `SECURITY.md` says how to report a vulnerability privately, and Dependabot config covers Cargo and Actions.", "bootstrap", "13. Testing and CI", "GitHub Actions (`.github/workflows/`)"),
     nb("`morm::pg_outbox!()` declares the outbox table as a managed table, tracked by migrations.", "admin-init", "9. Hooks", "Outbox: events that must not be lost"),
 ]
 

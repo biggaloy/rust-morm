@@ -6366,1288 +6366,1312 @@
 "kind": "code",
 "step": "bootstrap",
 "line": 1658,
-"text": "Every merge to `main` requires `ci.yml` to pass. The repo is private, so Actions minutes are limited: the Postgres matrix runs fully on `main` and PRs, while pushes to other branches use one version.",
-"block": "**R-0796** Every merge to `main` requires `ci.yml` to pass. The repo is private, so Actions minutes are limited: the Postgres matrix runs fully on `main` and PRs, while pushes to other branches use one version."
+"text": "Every merge to `main` requires `ci.yml` to pass.",
+"block": "**R-0796** Every merge to `main` requires `ci.yml` to pass."
 },
 {
 "id": "R-0797",
-"kind": "doc",
-"step": "readme-release",
-"line": 1664,
-"text": "One compact, complete file at the repo root. It must be enough to use morm efficiently without other docs, and it must be explicit about doing the right thing. It's included as crate docs (`#![doc = include_str!(\"../README.md\")]`), so CI compiles every example and it can't go stale.",
-"block": "**R-0797** One compact, complete file at the repo root. It must be enough to use morm efficiently without other docs, and it must be explicit about doing the right thing. It's included as crate docs (`#![doc = include_str!(\"../README.md\")]`), so CI compiles every example and it can't go stale."
+"kind": "code",
+"step": "bootstrap",
+"line": 1658,
+"text": "The repo is public, so Actions is free on standard runners, and the full Postgres matrix runs on every push and PR.",
+"block": "**R-0797** The repo is public, so Actions is free on standard runners, and the full Postgres matrix runs on every push and PR."
 },
 {
 "id": "R-0798",
 "kind": "doc",
 "step": "readme-release",
-"line": 1666,
-"text": "1. What it is and why: a few lines, plus benchmark numbers.",
-"block": "- **R-0798** What it is and why: a few lines, plus benchmark numbers."
+"line": 1664,
+"text": "One compact, complete file at the repo root. It must be enough to use morm efficiently without other docs, and it must be explicit about doing the right thing. It's included as crate docs (`#![doc = include_str!(\"../README.md\")]`), so CI compiles every example and it can't go stale.",
+"block": "**R-0798** One compact, complete file at the repo root. It must be enough to use morm efficiently without other docs, and it must be explicit about doing the right thing. It's included as crate docs (`#![doc = include_str!(\"../README.md\")]`), so CI compiles every example and it can't go stale."
 },
 {
 "id": "R-0799",
 "kind": "doc",
 "step": "readme-release",
-"line": 1667,
-"text": "2. Quick start: install, `morm-admin init`, first model, first query.",
-"block": "- **R-0799** Quick start: install, `morm-admin init`, first model, first query."
+"line": 1666,
+"text": "1. What it is and why: a few lines, plus benchmark numbers.",
+"block": "- **R-0799** What it is and why: a few lines, plus benchmark numbers."
 },
 {
 "id": "R-0800",
 "kind": "doc",
 "step": "readme-release",
-"line": 1668,
-"text": "3. **Pick the right call**, near the top:",
-"block": "- **R-0800** **Pick the right call**, near the top:"
+"line": 1667,
+"text": "2. Quick start: install, `morm-admin init`, first model, first query.",
+"block": "- **R-0800** Quick start: install, `morm-admin init`, first model, first query."
 },
 {
 "id": "R-0801",
 "kind": "doc",
 "step": "readme-release",
-"line": 1672,
-"text": "| Send the data on unchanged | `fetch_json`, `stream_json` | `fetch`, then serialize |",
-"block": "| R-0801 | Send the data on unchanged | `fetch_json`, `stream_json` | `fetch`, then serialize |"
+"line": 1668,
+"text": "3. **Pick the right call**, near the top:",
+"block": "- **R-0801** **Pick the right call**, near the top:"
 },
 {
 "id": "R-0802",
 "kind": "doc",
 "step": "readme-release",
-"line": 1673,
-"text": "| Read a few columns | `fetch_raw` | `fetch` |",
-"block": "| R-0802 | Read a few columns | `fetch_raw` | `fetch` |"
+"line": 1672,
+"text": "| Send the data on unchanged | `fetch_json`, `stream_json` | `fetch`, then serialize |",
+"block": "| R-0802 | Send the data on unchanged | `fetch_json`, `stream_json` | `fetch`, then serialize |"
 },
 {
 "id": "R-0803",
 "kind": "doc",
 "step": "readme-release",
-"line": 1674,
-"text": "| Read and compute, no changes | `fetch_ref` | `fetch` |",
-"block": "| R-0803 | Read and compute, no changes | `fetch_ref` | `fetch` |"
+"line": 1673,
+"text": "| Read a few columns | `fetch_raw` | `fetch` |",
+"block": "| R-0803 | Read a few columns | `fetch_raw` | `fetch` |"
 },
 {
 "id": "R-0804",
 "kind": "doc",
 "step": "readme-release",
-"line": 1675,
-"text": "| Keep or pass data around | `fetch` | |",
-"block": "| R-0804 | Keep or pass data around | `fetch` | |"
+"line": 1674,
+"text": "| Read and compute, no changes | `fetch_ref` | `fetch` |",
+"block": "| R-0804 | Read and compute, no changes | `fetch_ref` | `fetch` |"
 },
 {
 "id": "R-0805",
 "kind": "doc",
 "step": "readme-release",
-"line": 1676,
-"text": "| Change known fields | `update` | Fetching the row first |",
-"block": "| R-0805 | Change known fields | `update` | Fetching the row first |"
+"line": 1675,
+"text": "| Keep or pass data around | `fetch` | |",
+"block": "| R-0805 | Keep or pass data around | `fetch` | |"
 },
 {
 "id": "R-0806",
 "kind": "doc",
 "step": "readme-release",
-"line": 1677,
-"text": "| Set one value on many rows | `update_q` | A loop of `update` |",
-"block": "| R-0806 | Set one value on many rows | `update_q` | A loop of `update` |"
+"line": 1676,
+"text": "| Change known fields | `update` | Fetching the row first |",
+"block": "| R-0806 | Change known fields | `update` | Fetching the row first |"
 },
 {
 "id": "R-0807",
 "kind": "doc",
 "step": "readme-release",
-"line": 1678,
-"text": "| Set different values on many rows | `update_each` | A loop of `update` |",
-"block": "| R-0807 | Set different values on many rows | `update_each` | A loop of `update` |"
+"line": 1677,
+"text": "| Set one value on many rows | `update_q` | A loop of `update` |",
+"block": "| R-0807 | Set one value on many rows | `update_q` | A loop of `update` |"
 },
 {
 "id": "R-0808",
 "kind": "doc",
 "step": "readme-release",
-"line": 1679,
-"text": "| Do math on a value | `set_expr` | Read, compute, write |",
-"block": "| R-0808 | Do math on a value | `set_expr` | Read, compute, write |"
+"line": 1678,
+"text": "| Set different values on many rows | `update_each` | A loop of `update` |",
+"block": "| R-0808 | Set different values on many rows | `update_each` | A loop of `update` |"
 },
 {
 "id": "R-0809",
 "kind": "doc",
 "step": "readme-release",
-"line": 1680,
-"text": "| Fetch related rows | `= ANY` or a JOIN | A query per row |",
-"block": "| R-0809 | Fetch related rows | `= ANY` or a JOIN | A query per row |"
+"line": 1679,
+"text": "| Do math on a value | `set_expr` | Read, compute, write |",
+"block": "| R-0809 | Do math on a value | `set_expr` | Read, compute, write |"
 },
 {
 "id": "R-0810",
 "kind": "doc",
 "step": "readme-release",
-"line": 1681,
-"text": "| Add many rows | `insert_many` | A loop of `insert` |",
-"block": "| R-0810 | Add many rows | `insert_many` | A loop of `insert` |"
+"line": 1680,
+"text": "| Fetch related rows | `= ANY` or a JOIN | A query per row |",
+"block": "| R-0810 | Fetch related rows | `= ANY` or a JOIN | A query per row |"
 },
 {
 "id": "R-0811",
 "kind": "doc",
 "step": "readme-release",
-"line": 1682,
-"text": "| Handle huge results | `stream` | `.all()` |",
-"block": "| R-0811 | Handle huge results | `stream` | `.all()` |"
+"line": 1681,
+"text": "| Add many rows | `insert_many` | A loop of `insert` |",
+"block": "| R-0811 | Add many rows | `insert_many` | A loop of `insert` |"
 },
 {
 "id": "R-0812",
 "kind": "doc",
 "step": "readme-release",
-"line": 1684,
-"text": "4. **Performance rules:** never query in a loop, always limit lists, select through the narrowest view, keep transactions short with no network calls inside them, index what you filter on, release every `db.hold()`, use `tx` and never `db` inside a transaction, no network calls or app `Mutex` waits inside one, build rows inside a retried closure, lock several rows with `tx.lock`, use `.lock_ordered()` on contended bulk updates, put side effects in `after_commit`.",
-"block": "- **R-0812** **Performance rules:** never query in a loop, always limit lists, select through the narrowest view, keep transactions short with no network calls inside them, index what you filter on, release every `db.hold()`, use `tx` and never `db` inside a transaction, no network calls or app `Mutex` waits inside one, build rows inside a retried closure, lock several rows with `tx.lock`, use `.lock_ordered()` on contended bulk updates, put side effects in `after_commit`."
+"line": 1682,
+"text": "| Handle huge results | `stream` | `.all()` |",
+"block": "| R-0812 | Handle huge results | `stream` | `.all()` |"
 },
 {
 "id": "R-0813",
 "kind": "doc",
 "step": "readme-release",
-"line": 1685,
-"text": "5. **Extra calls, one line each.** Every opt-in call, escape hatch and override gets one line saying when to use it. A public option with no line here is a documentation bug, and CI compares this table with the public API.",
-"block": "- **R-0813** **Extra calls, one line each.** Every opt-in call, escape hatch and override gets one line saying when to use it. A public option with no line here is a documentation bug, and CI compares this table with the public API."
+"line": 1684,
+"text": "4. **Performance rules:** never query in a loop, always limit lists, select through the narrowest view, keep transactions short with no network calls inside them, index what you filter on, release every `db.hold()`, use `tx` and never `db` inside a transaction, no network calls or app `Mutex` waits inside one, build rows inside a retried closure, lock several rows with `tx.lock`, use `.lock_ordered()` on contended bulk updates, put side effects in `after_commit`.",
+"block": "- **R-0813** **Performance rules:** never query in a loop, always limit lists, select through the narrowest view, keep transactions short with no network calls inside them, index what you filter on, release every `db.hold()`, use `tx` and never `db` inside a transaction, no network calls or app `Mutex` waits inside one, build rows inside a retried closure, lock several rows with `tx.lock`, use `.lock_ordered()` on contended bulk updates, put side effects in `after_commit`."
 },
 {
 "id": "R-0814",
 "kind": "doc",
 "step": "readme-release",
-"line": 1689,
-"text": "| `.allow_missing()` | You will not handle a 0-row error |",
-"block": "| R-0814 | `.allow_missing()` | You will not handle a 0-row error |"
+"line": 1685,
+"text": "5. **Extra calls, one line each.** Every opt-in call, escape hatch and override gets one line saying when to use it. A public option with no line here is a documentation bug, and CI compares this table with the public API.",
+"block": "- **R-0814** **Extra calls, one line each.** Every opt-in call, escape hatch and override gets one line saying when to use it. A public option with no line here is a documentation bug, and CI compares this table with the public API."
 },
 {
 "id": "R-0815",
 "kind": "doc",
 "step": "readme-release",
-"line": 1690,
-"text": "| `#[col(json_string)]` | JavaScript clients read this integer, and it can pass 2^53 |",
-"block": "| R-0815 | `#[col(json_string)]` | JavaScript clients read this integer, and it can pass 2^53 |"
+"line": 1689,
+"text": "| `.allow_missing()` | You will not handle a 0-row error |",
+"block": "| R-0815 | `.allow_missing()` | You will not handle a 0-row error |"
 },
 {
 "id": "R-0816",
 "kind": "doc",
 "step": "readme-release",
-"line": 1691,
-"text": "| `schema = \"...\"` | A model's table lives outside the default schema |",
-"block": "| R-0816 | `schema = \"...\"` | A model's table lives outside the default schema |"
+"line": 1690,
+"text": "| `#[col(json_string)]` | JavaScript clients read this integer, and it can pass 2^53 |",
+"block": "| R-0816 | `#[col(json_string)]` | JavaScript clients read this integer, and it can pass 2^53 |"
 },
 {
 "id": "R-0817",
 "kind": "doc",
 "step": "readme-release",
-"line": 1692,
-"text": "| `mgr mode development` | This is a local or staging database, and you want `rollback` |",
-"block": "| R-0817 | `mgr mode development` | This is a local or staging database, and you want `rollback` |"
+"line": 1691,
+"text": "| `schema = \"...\"` | A model's table lives outside the default schema |",
+"block": "| R-0817 | `schema = \"...\"` | A model's table lives outside the default schema |"
 },
 {
 "id": "R-0818",
 "kind": "doc",
 "step": "readme-release",
-"line": 1693,
-"text": "| `mgr revert ID` | You must undo a migration in production |",
-"block": "| R-0818 | `mgr revert ID` | You must undo a migration in production |"
+"line": 1692,
+"text": "| `mgr mode development` | This is a local or staging database, and you want `rollback` |",
+"block": "| R-0818 | `mgr mode development` | This is a local or staging database, and you want `rollback` |"
 },
 {
 "id": "R-0819",
 "kind": "doc",
 "step": "readme-release",
-"line": 1694,
-"text": "| `rollback --production` | `revert` can't work and you accept the risk; a reason is required |",
-"block": "| R-0819 | `rollback --production` | `revert` can't work and you accept the risk; a reason is required |"
+"line": 1693,
+"text": "| `mgr revert ID` | You must undo a migration in production |",
+"block": "| R-0819 | `mgr revert ID` | You must undo a migration in production |"
 },
 {
 "id": "R-0820",
 "kind": "doc",
 "step": "readme-release",
-"line": 1695,
-"text": "| `mgr squash --to ID` | The chain has grown long, and every database has passed `ID` |",
-"block": "| R-0820 | `mgr squash --to ID` | The chain has grown long, and every database has passed `ID` |"
+"line": 1694,
+"text": "| `rollback --production` | `revert` can't work and you accept the risk; a reason is required |",
+"block": "| R-0820 | `rollback --production` | `revert` can't work and you accept the risk; a reason is required |"
 },
 {
 "id": "R-0821",
 "kind": "doc",
 "step": "readme-release",
-"line": 1696,
-"text": "| `tx.emit` | An event must not be lost if the app crashes; use `after_commit` when losing one is acceptable |",
-"block": "| R-0821 | `tx.emit` | An event must not be lost if the app crashes; use `after_commit` when losing one is acceptable |"
+"line": 1695,
+"text": "| `mgr squash --to ID` | The chain has grown long, and every database has passed `ID` |",
+"block": "| R-0821 | `mgr squash --to ID` | The chain has grown long, and every database has passed `ID` |"
 },
 {
 "id": "R-0822",
 "kind": "doc",
 "step": "readme-release",
-"line": 1697,
-"text": "| `tx.emit_keyed` | Events about the same thing must arrive in order |",
-"block": "| R-0822 | `tx.emit_keyed` | Events about the same thing must arrive in order |"
+"line": 1696,
+"text": "| `tx.emit` | An event must not be lost if the app crashes; use `after_commit` when losing one is acceptable |",
+"block": "| R-0822 | `tx.emit` | An event must not be lost if the app crashes; use `after_commit` when losing one is acceptable |"
 },
 {
 "id": "R-0823",
 "kind": "doc",
 "step": "readme-release",
-"line": 1698,
-"text": "| `fields = \"...\"` | A view is public, and new columns must stay out until you add them |",
-"block": "| R-0823 | `fields = \"...\"` | A view is public, and new columns must stay out until you add them |"
+"line": 1697,
+"text": "| `tx.emit_keyed` | Events about the same thing must arrive in order |",
+"block": "| R-0823 | `tx.emit_keyed` | Events about the same thing must arrive in order |"
 },
 {
 "id": "R-0824",
 "kind": "doc",
 "step": "readme-release",
-"line": 1699,
-"text": "| `input = \"...\"` | A view takes a request body that creates a row |",
-"block": "| R-0824 | `input = \"...\"` | A view takes a request body that creates a row |"
+"line": 1698,
+"text": "| `fields = \"...\"` | A view is public, and new columns must stay out until you add them |",
+"block": "| R-0824 | `fields = \"...\"` | A view is public, and new columns must stay out until you add them |"
 },
 {
 "id": "R-0825",
 "kind": "doc",
 "step": "readme-release",
-"line": 1700,
-"text": "| `patch = \"...\"` | A view takes a partial update, such as a PATCH body |",
-"block": "| R-0825 | `patch = \"...\"` | A view takes a partial update, such as a PATCH body |"
+"line": 1699,
+"text": "| `input = \"...\"` | A view takes a request body that creates a row |",
+"block": "| R-0825 | `input = \"...\"` | A view takes a request body that creates a row |"
 },
 {
 "id": "R-0826",
 "kind": "doc",
 "step": "readme-release",
-"line": 1701,
-"text": "| `.allow_empty()` | An empty update is fine, and you will not handle `EmptyPatch` |",
-"block": "| R-0826 | `.allow_empty()` | An empty update is fine, and you will not handle `EmptyPatch` |"
+"line": 1700,
+"text": "| `patch = \"...\"` | A view takes a partial update, such as a PATCH body |",
+"block": "| R-0826 | `patch = \"...\"` | A view takes a partial update, such as a PATCH body |"
 },
 {
 "id": "R-0827",
 "kind": "doc",
 "step": "readme-release",
-"line": 1702,
-"text": "| `span_sample` | You want more or fewer query spans in your tracing platform |",
-"block": "| R-0827 | `span_sample` | You want more or fewer query spans in your tracing platform |"
+"line": 1701,
+"text": "| `.allow_empty()` | An empty update is fine, and you will not handle `EmptyPatch` |",
+"block": "| R-0827 | `.allow_empty()` | An empty update is fine, and you will not handle `EmptyPatch` |"
 },
 {
 "id": "R-0828",
 "kind": "doc",
 "step": "readme-release",
-"line": 1703,
-"text": "| `morm::sample_scope` | A traced request must keep all of its query spans |",
-"block": "| R-0828 | `morm::sample_scope` | A traced request must keep all of its query spans |"
+"line": 1702,
+"text": "| `span_sample` | You want more or fewer query spans in your tracing platform |",
+"block": "| R-0828 | `span_sample` | You want more or fewer query spans in your tracing platform |"
 },
 {
 "id": "R-0829",
 "kind": "doc",
 "step": "readme-release",
-"line": 1704,
-"text": "| `slow_query` | You want slow queries reported from the app, including time waiting for a connection |",
-"block": "| R-0829 | `slow_query` | You want slow queries reported from the app, including time waiting for a connection |"
+"line": 1703,
+"text": "| `morm::sample_scope` | A traced request must keep all of its query spans |",
+"block": "| R-0829 | `morm::sample_scope` | A traced request must keep all of its query spans |"
 },
 {
 "id": "R-0830",
 "kind": "doc",
 "step": "readme-release",
-"line": 1705,
-"text": "| `metrics_interval` | Your graphs need finer detail, or your platform bill needs to come down |",
-"block": "| R-0830 | `metrics_interval` | Your graphs need finer detail, or your platform bill needs to come down |"
+"line": 1704,
+"text": "| `slow_query` | You want slow queries reported from the app, including time waiting for a connection |",
+"block": "| R-0830 | `slow_query` | You want slow queries reported from the app, including time waiting for a connection |"
 },
 {
 "id": "R-0831",
 "kind": "doc",
 "step": "readme-release",
-"line": 1706,
-"text": "| `.explicit_ids()` | You insert rows with ids you already have, such as an import |",
-"block": "| R-0831 | `.explicit_ids()` | You insert rows with ids you already have, such as an import |"
+"line": 1705,
+"text": "| `metrics_interval` | Your graphs need finer detail, or your platform bill needs to come down |",
+"block": "| R-0831 | `metrics_interval` | Your graphs need finer detail, or your platform bill needs to come down |"
 },
 {
 "id": "R-0832",
 "kind": "doc",
 "step": "readme-release",
-"line": 1707,
-"text": "| `morm::OrDefault` | A nullable column has a default, and you sometimes need a real NULL there |",
-"block": "| R-0832 | `morm::OrDefault` | A nullable column has a default, and you sometimes need a real NULL there |"
+"line": 1706,
+"text": "| `.explicit_ids()` | You insert rows with ids you already have, such as an import |",
+"block": "| R-0832 | `.explicit_ids()` | You insert rows with ids you already have, such as an import |"
 },
 {
 "id": "R-0833",
 "kind": "doc",
 "step": "readme-release",
-"line": 1708,
-"text": "| `.for_key_change()` | You will delete locked rows or change their keys, and other requests add child rows |",
-"block": "| R-0833 | `.for_key_change()` | You will delete locked rows or change their keys, and other requests add child rows |"
+"line": 1707,
+"text": "| `morm::OrDefault` | A nullable column has a default, and you sometimes need a real NULL there |",
+"block": "| R-0833 | `morm::OrDefault` | A nullable column has a default, and you sometimes need a real NULL there |"
 },
 {
 "id": "R-0834",
 "kind": "doc",
 "step": "readme-release",
-"line": 1709,
-"text": "| `blocking` | A `clean` function is slow, such as password hashing |",
-"block": "| R-0834 | `blocking` | A `clean` function is slow, such as password hashing |"
+"line": 1708,
+"text": "| `.for_key_change()` | You will delete locked rows or change their keys, and other requests add child rows |",
+"block": "| R-0834 | `.for_key_change()` | You will delete locked rows or change their keys, and other requests add child rows |"
 },
 {
 "id": "R-0835",
 "kind": "doc",
 "step": "readme-release",
-"line": 1710,
-"text": "| `morm::allow_repeats` | Your code is meant to repeat one query, and the loop detector fails it |",
-"block": "| R-0835 | `morm::allow_repeats` | Your code is meant to repeat one query, and the loop detector fails it |"
+"line": 1709,
+"text": "| `blocking` | A `clean` function is slow, such as password hashing |",
+"block": "| R-0835 | `blocking` | A `clean` function is slow, such as password hashing |"
 },
 {
 "id": "R-0836",
 "kind": "doc",
 "step": "readme-release",
-"line": 1711,
-"text": "| `pooler = \"transaction\"` | You connect through PgBouncer in transaction mode |",
-"block": "| R-0836 | `pooler = \"transaction\"` | You connect through PgBouncer in transaction mode |"
+"line": 1710,
+"text": "| `morm::allow_repeats` | Your code is meant to repeat one query, and the loop detector fails it |",
+"block": "| R-0836 | `morm::allow_repeats` | Your code is meant to repeat one query, and the loop detector fails it |"
 },
 {
 "id": "R-0837",
 "kind": "doc",
 "step": "readme-release",
-"line": 1712,
-"text": "| `.tag()` | You need to trace a query in the server logs back to the code that ran it |",
-"block": "| R-0837 | `.tag()` | You need to trace a query in the server logs back to the code that ran it |"
+"line": 1711,
+"text": "| `pooler = \"transaction\"` | You connect through PgBouncer in transaction mode |",
+"block": "| R-0837 | `pooler = \"transaction\"` | You connect through PgBouncer in transaction mode |"
 },
 {
 "id": "R-0838",
 "kind": "doc",
 "step": "readme-release",
-"line": 1713,
-"text": "| `morm-admin size` | You change pool or Postgres memory settings and want to check they fit the server |",
-"block": "| R-0838 | `morm-admin size` | You change pool or Postgres memory settings and want to check they fit the server |"
+"line": 1712,
+"text": "| `.tag()` | You need to trace a query in the server logs back to the code that ran it |",
+"block": "| R-0838 | `.tag()` | You need to trace a query in the server logs back to the code that ran it |"
 },
 {
 "id": "R-0839",
 "kind": "doc",
 "step": "readme-release",
-"line": 1714,
-"text": "| `size --here` | You need a starting config for the machine you're on |",
-"block": "| R-0839 | `size --here` | You need a starting config for the machine you're on |"
+"line": 1713,
+"text": "| `morm-admin size` | You change pool or Postgres memory settings and want to check they fit the server |",
+"block": "| R-0839 | `morm-admin size` | You change pool or Postgres memory settings and want to check they fit the server |"
 },
 {
 "id": "R-0840",
 "kind": "doc",
 "step": "readme-release",
-"line": 1715,
-"text": "| `size --measure` | You want estimates based on your app's real statements |",
-"block": "| R-0840 | `size --measure` | You want estimates based on your app's real statements |"
+"line": 1714,
+"text": "| `size --here` | You need a starting config for the machine you're on |",
+"block": "| R-0840 | `size --here` | You need a starting config for the machine you're on |"
 },
 {
 "id": "R-0841",
 "kind": "doc",
 "step": "readme-release",
-"line": 1716,
-"text": "| `[server]` | The database runs on another machine, so morm can't read its size |",
-"block": "| R-0841 | `[server]` | The database runs on another machine, so morm can't read its size |"
+"line": 1715,
+"text": "| `size --measure` | You want estimates based on your app's real statements |",
+"block": "| R-0841 | `size --measure` | You want estimates based on your app's real statements |"
 },
 {
 "id": "R-0842",
 "kind": "doc",
 "step": "readme-release",
-"line": 1717,
-"text": "| `shape_cache` | Logs show churn in runtime-built queries, or your app has many builder query shapes |",
-"block": "| R-0842 | `shape_cache` | Logs show churn in runtime-built queries, or your app has many builder query shapes |"
+"line": 1716,
+"text": "| `[server]` | The database runs on another machine, so morm can't read its size |",
+"block": "| R-0842 | `[server]` | The database runs on another machine, so morm can't read its size |"
 },
 {
 "id": "R-0843",
 "kind": "doc",
 "step": "readme-release",
-"line": 1718,
-"text": "| `#[col(secret)]` | A column must never reach JSON or logs, such as a password hash |",
-"block": "| R-0843 | `#[col(secret)]` | A column must never reach JSON or logs, such as a password hash |"
+"line": 1717,
+"text": "| `shape_cache` | Logs show churn in runtime-built queries, or your app has many builder query shapes |",
+"block": "| R-0843 | `shape_cache` | Logs show churn in runtime-built queries, or your app has many builder query shapes |"
 },
 {
 "id": "R-0844",
 "kind": "doc",
 "step": "readme-release",
-"line": 1719,
-"text": "| `#[model(deserialize)]` | You load a full model from trusted data, such as a cache; never from a request |",
-"block": "| R-0844 | `#[model(deserialize)]` | You load a full model from trusted data, such as a cache; never from a request |"
+"line": 1718,
+"text": "| `#[col(secret)]` | A column must never reach JSON or logs, such as a password hash |",
+"block": "| R-0844 | `#[col(secret)]` | A column must never reach JSON or logs, such as a password hash |"
 },
 {
 "id": "R-0845",
 "kind": "doc",
 "step": "readme-release",
-"line": 1720,
-"text": "| `keep_case` | You're matching an existing mixed-case table or column |",
-"block": "| R-0845 | `keep_case` | You're matching an existing mixed-case table or column |"
+"line": 1719,
+"text": "| `#[model(deserialize)]` | You load a full model from trusted data, such as a cache; never from a request |",
+"block": "| R-0845 | `#[model(deserialize)]` | You load a full model from trusted data, such as a cache; never from a request |"
 },
 {
 "id": "R-0846",
 "kind": "doc",
 "step": "readme-release",
-"line": 1721,
-"text": "| `tx.get_for_update` | Your logic must see the current row before changing it, and `set_expr` can't express it |",
-"block": "| R-0846 | `tx.get_for_update` | Your logic must see the current row before changing it, and `set_expr` can't express it |"
+"line": 1720,
+"text": "| `keep_case` | You're matching an existing mixed-case table or column |",
+"block": "| R-0846 | `keep_case` | You're matching an existing mixed-case table or column |"
 },
 {
 "id": "R-0847",
 "kind": "doc",
 "step": "readme-release",
-"line": 1722,
-"text": "| `#[col(version)]` | Users edit a row over time, and a stale save must fail, not overwrite |",
-"block": "| R-0847 | `#[col(version)]` | Users edit a row over time, and a stale save must fail, not overwrite |"
+"line": 1721,
+"text": "| `tx.get_for_update` | Your logic must see the current row before changing it, and `set_expr` can't express it |",
+"block": "| R-0847 | `tx.get_for_update` | Your logic must see the current row before changing it, and `set_expr` can't express it |"
 },
 {
 "id": "R-0848",
 "kind": "doc",
 "step": "readme-release",
-"line": 1723,
-"text": "| `.in_batches(n)` | You change so many rows that one transaction would hold locks too long, and it needn't be atomic |",
-"block": "| R-0848 | `.in_batches(n)` | You change so many rows that one transaction would hold locks too long, and it needn't be atomic |"
+"line": 1722,
+"text": "| `#[col(version)]` | Users edit a row over time, and a stale save must fail, not overwrite |",
+"block": "| R-0848 | `#[col(version)]` | Users edit a row over time, and a stale save must fail, not overwrite |"
 },
 {
 "id": "R-0849",
 "kind": "doc",
 "step": "readme-release",
-"line": 1724,
-"text": "| `.version(v)` | You update a `version` column and hold the value the client read |",
-"block": "| R-0849 | `.version(v)` | You update a `version` column and hold the value the client read |"
+"line": 1723,
+"text": "| `.in_batches(n)` | You change so many rows that one transaction would hold locks too long, and it needn't be atomic |",
+"block": "| R-0849 | `.in_batches(n)` | You change so many rows that one transaction would hold locks too long, and it needn't be atomic |"
 },
 {
 "id": "R-0850",
 "kind": "doc",
 "step": "readme-release",
-"line": 1725,
-"text": "| `.ignore_version()` | A server-side update may overwrite whatever version is there |",
-"block": "| R-0850 | `.ignore_version()` | A server-side update may overwrite whatever version is there |"
+"line": 1724,
+"text": "| `.version(v)` | You update a `version` column and hold the value the client read |",
+"block": "| R-0850 | `.version(v)` | You update a `version` column and hold the value the client read |"
 },
 {
 "id": "R-0851",
 "kind": "doc",
 "step": "readme-release",
-"line": 1726,
-"text": "| `tx.set_local(name, &value)` | A setting must last one transaction, such as the tenant for RLS |",
-"block": "| R-0851 | `tx.set_local(name, &value)` | A setting must last one transaction, such as the tenant for RLS |"
+"line": 1725,
+"text": "| `.ignore_version()` | A server-side update may overwrite whatever version is there |",
+"block": "| R-0851 | `.ignore_version()` | A server-side update may overwrite whatever version is there |"
 },
 {
 "id": "R-0852",
 "kind": "doc",
 "step": "readme-release",
-"line": 1727,
-"text": "| `db.insert_stream` | Your rows are too many to hold in memory, such as an import from a file |",
-"block": "| R-0852 | `db.insert_stream` | Your rows are too many to hold in memory, such as an import from a file |"
+"line": 1726,
+"text": "| `tx.set_local(name, &value)` | A setting must last one transaction, such as the tenant for RLS |",
+"block": "| R-0852 | `tx.set_local(name, &value)` | A setting must last one transaction, such as the tenant for RLS |"
 },
 {
 "id": "R-0853",
 "kind": "doc",
 "step": "readme-release",
-"line": 1728,
-"text": "| `db.load_related` | You need the child rows of a whole list |",
-"block": "| R-0853 | `db.load_related` | You need the child rows of a whole list |"
+"line": 1727,
+"text": "| `db.insert_stream` | Your rows are too many to hold in memory, such as an import from a file |",
+"block": "| R-0853 | `db.insert_stream` | Your rows are too many to hold in memory, such as an import from a file |"
 },
 {
 "id": "R-0854",
 "kind": "doc",
 "step": "readme-release",
-"line": 1729,
-"text": "| `.keyset(...)` | You page through a list that can go deep |",
-"block": "| R-0854 | `.keyset(...)` | You page through a list that can go deep |"
+"line": 1728,
+"text": "| `db.load_related` | You need the child rows of a whole list |",
+"block": "| R-0854 | `db.load_related` | You need the child rows of a whole list |"
 },
 {
 "id": "R-0855",
 "kind": "doc",
 "step": "readme-release",
-"line": 1730,
-"text": "| `.order_by_allowed(...)` | A client chooses the sort column |",
-"block": "| R-0855 | `.order_by_allowed(...)` | A client chooses the sort column |"
+"line": 1729,
+"text": "| `.keyset(...)` | You page through a list that can go deep |",
+"block": "| R-0855 | `.keyset(...)` | You page through a list that can go deep |"
 },
 {
 "id": "R-0856",
 "kind": "doc",
 "step": "readme-release",
-"line": 1731,
-"text": "| `morm::quote_ident` | You use a dynamic table or column name in `q_unchecked` or `sql_unchecked` |",
-"block": "| R-0856 | `morm::quote_ident` | You use a dynamic table or column name in `q_unchecked` or `sql_unchecked` |"
+"line": 1730,
+"text": "| `.order_by_allowed(...)` | A client chooses the sort column |",
+"block": "| R-0856 | `.order_by_allowed(...)` | A client chooses the sort column |"
 },
 {
 "id": "R-0857",
 "kind": "doc",
 "step": "readme-release",
-"line": 1732,
-"text": "| `.custom_plan()` | A query is slow only for some values, because your data is skewed |",
-"block": "| R-0857 | `.custom_plan()` | A query is slow only for some values, because your data is skewed |"
+"line": 1731,
+"text": "| `morm::quote_ident` | You use a dynamic table or column name in `q_unchecked` or `sql_unchecked` |",
+"block": "| R-0857 | `morm::quote_ident` | You use a dynamic table or column name in `q_unchecked` or `sql_unchecked` |"
 },
 {
 "id": "R-0858",
 "kind": "doc",
 "step": "readme-release",
-"line": 1733,
-"text": "| `nulls_not_distinct` | A unique column may hold only one NULL |",
-"block": "| R-0858 | `nulls_not_distinct` | A unique column may hold only one NULL |"
+"line": 1732,
+"text": "| `.custom_plan()` | A query is slow only for some values, because your data is skewed |",
+"block": "| R-0858 | `.custom_plan()` | A query is slow only for some values, because your data is skewed |"
 },
 {
 "id": "R-0859",
 "kind": "doc",
 "step": "readme-release",
-"line": 1734,
-"text": "| `#[derive(PgEnum)]` | You're matching an existing Postgres enum; use `TextEnum` otherwise |",
-"block": "| R-0859 | `#[derive(PgEnum)]` | You're matching an existing Postgres enum; use `TextEnum` otherwise |"
+"line": 1733,
+"text": "| `nulls_not_distinct` | A unique column may hold only one NULL |",
+"block": "| R-0859 | `nulls_not_distinct` | A unique column may hold only one NULL |"
 },
 {
 "id": "R-0860",
 "kind": "doc",
 "step": "readme-release",
-"line": 1735,
-"text": "| `storage = \"fillfactor=90\"` | A table gets many updates to columns with no index |",
-"block": "| R-0860 | `storage = \"fillfactor=90\"` | A table gets many updates to columns with no index |"
+"line": 1734,
+"text": "| `#[derive(PgEnum)]` | You're matching an existing Postgres enum; use `TextEnum` otherwise |",
+"block": "| R-0860 | `#[derive(PgEnum)]` | You're matching an existing Postgres enum; use `TextEnum` otherwise |"
 },
 {
 "id": "R-0861",
 "kind": "doc",
 "step": "readme-release",
-"line": 1736,
-"text": "| `.returning()` | You need the changed rows back |",
-"block": "| R-0861 | `.returning()` | You need the changed rows back |"
+"line": 1735,
+"text": "| `storage = \"fillfactor=90\"` | A table gets many updates to columns with no index |",
+"block": "| R-0861 | `storage = \"fillfactor=90\"` | A table gets many updates to columns with no index |"
 },
 {
 "id": "R-0862",
 "kind": "doc",
 "step": "readme-release",
-"line": 1737,
-"text": "| `.all()` | You want every row, and you know the result is small |",
-"block": "| R-0862 | `.all()` | You want every row, and you know the result is small |"
+"line": 1736,
+"text": "| `.returning()` | You need the changed rows back |",
+"block": "| R-0862 | `.returning()` | You need the changed rows back |"
 },
 {
 "id": "R-0863",
 "kind": "doc",
 "step": "readme-release",
-"line": 1738,
-"text": "| `set_expr` | The new value depends on the current one, such as `stock - 1` |",
-"block": "| R-0863 | `set_expr` | The new value depends on the current one, such as `stock - 1` |"
+"line": 1737,
+"text": "| `.all()` | You want every row, and you know the result is small |",
+"block": "| R-0863 | `.all()` | You want every row, and you know the result is small |"
 },
 {
 "id": "R-0864",
 "kind": "doc",
 "step": "readme-release",
-"line": 1739,
-"text": "| `.retry(n)` | You want the transaction to run again after a deadlock, and you build its rows inside the closure |",
-"block": "| R-0864 | `.retry(n)` | You want the transaction to run again after a deadlock, and you build its rows inside the closure |"
+"line": 1738,
+"text": "| `set_expr` | The new value depends on the current one, such as `stock - 1` |",
+"block": "| R-0864 | `set_expr` | The new value depends on the current one, such as `stock - 1` |"
 },
 {
 "id": "R-0865",
 "kind": "doc",
 "step": "readme-release",
-"line": 1740,
-"text": "| `.isolation(...)` | You read rows and write based on them, and nothing may change them in between |",
-"block": "| R-0865 | `.isolation(...)` | You read rows and write based on them, and nothing may change them in between |"
+"line": 1739,
+"text": "| `.retry(n)` | You want the transaction to run again after a deadlock, and you build its rows inside the closure |",
+"block": "| R-0865 | `.retry(n)` | You want the transaction to run again after a deadlock, and you build its rows inside the closure |"
 },
 {
 "id": "R-0866",
 "kind": "doc",
 "step": "readme-release",
-"line": 1741,
-"text": "| `.lock_timeout(...)` | A transaction will wait on locks for longer than 5s, such as a large batch |",
-"block": "| R-0866 | `.lock_timeout(...)` | A transaction will wait on locks for longer than 5s, such as a large batch |"
+"line": 1740,
+"text": "| `.isolation(...)` | You read rows and write based on them, and nothing may change them in between |",
+"block": "| R-0866 | `.isolation(...)` | You read rows and write based on them, and nothing may change them in between |"
 },
 {
 "id": "R-0867",
 "kind": "doc",
 "step": "readme-release",
-"line": 1742,
-"text": "| `.transaction_timeout(...)` | A transaction will run for longer than 30s, such as a large batch |",
-"block": "| R-0867 | `.transaction_timeout(...)` | A transaction will run for longer than 30s, such as a large batch |"
+"line": 1741,
+"text": "| `.lock_timeout(...)` | A transaction will wait on locks for longer than 5s, such as a large batch |",
+"block": "| R-0867 | `.lock_timeout(...)` | A transaction will wait on locks for longer than 5s, such as a large batch |"
 },
 {
 "id": "R-0868",
 "kind": "doc",
 "step": "readme-release",
-"line": 1743,
-"text": "| `tx.lock(&ids)` | You will change several rows that other requests also change, such as a money transfer |",
-"block": "| R-0868 | `tx.lock(&ids)` | You will change several rows that other requests also change, such as a money transfer |"
+"line": 1742,
+"text": "| `.transaction_timeout(...)` | A transaction will run for longer than 30s, such as a large batch |",
+"block": "| R-0868 | `.transaction_timeout(...)` | A transaction will run for longer than 30s, such as a large batch |"
 },
 {
 "id": "R-0869",
 "kind": "doc",
 "step": "readme-release",
-"line": 1744,
-"text": "| `.lock_ordered()` | You run bulk updates or deletes that can touch the same rows at the same time |",
-"block": "| R-0869 | `.lock_ordered()` | You run bulk updates or deletes that can touch the same rows at the same time |"
+"line": 1743,
+"text": "| `tx.lock(&ids)` | You will change several rows that other requests also change, such as a money transfer |",
+"block": "| R-0869 | `tx.lock(&ids)` | You will change several rows that other requests also change, such as a money transfer |"
 },
 {
 "id": "R-0870",
 "kind": "doc",
 "step": "readme-release",
-"line": 1745,
-"text": "| `.skip_locked()` | Your workers take jobs from a queue and shouldn't wait for each other |",
-"block": "| R-0870 | `.skip_locked()` | Your workers take jobs from a queue and shouldn't wait for each other |"
+"line": 1744,
+"text": "| `.lock_ordered()` | You run bulk updates or deletes that can touch the same rows at the same time |",
+"block": "| R-0870 | `.lock_ordered()` | You run bulk updates or deletes that can touch the same rows at the same time |"
 },
 {
 "id": "R-0871",
 "kind": "doc",
 "step": "readme-release",
-"line": 1746,
-"text": "| `tx.advisory_lock(&keys)` | Only one process may do this work at a time, such as a billing run |",
-"block": "| R-0871 | `tx.advisory_lock(&keys)` | Only one process may do this work at a time, such as a billing run |"
+"line": 1745,
+"text": "| `.skip_locked()` | Your workers take jobs from a queue and shouldn't wait for each other |",
+"block": "| R-0871 | `.skip_locked()` | Your workers take jobs from a queue and shouldn't wait for each other |"
 },
 {
 "id": "R-0872",
 "kind": "doc",
 "step": "readme-release",
-"line": 1747,
-"text": "| `db.extra_conn()` | You need a write to survive a rollback, such as an audit row, or a query beside an open stream |",
-"block": "| R-0872 | `db.extra_conn()` | You need a write to survive a rollback, such as an audit row, or a query beside an open stream |"
+"line": 1746,
+"text": "| `tx.advisory_lock(&keys)` | Only one process may do this work at a time, such as a billing run |",
+"block": "| R-0872 | `tx.advisory_lock(&keys)` | Only one process may do this work at a time, such as a billing run |"
 },
 {
 "id": "R-0873",
 "kind": "doc",
 "step": "readme-release",
-"line": 1748,
-"text": "| `.update_only(...)` | An upsert must change only certain columns on conflict |",
-"block": "| R-0873 | `.update_only(...)` | An upsert must change only certain columns on conflict |"
+"line": 1747,
+"text": "| `db.extra_conn()` | You need a write to survive a rollback, such as an audit row, or a query beside an open stream |",
+"block": "| R-0873 | `db.extra_conn()` | You need a write to survive a rollback, such as an audit row, or a query beside an open stream |"
 },
 {
 "id": "R-0874",
 "kind": "doc",
 "step": "readme-release",
-"line": 1749,
-"text": "| `db_set` | Postgres always fills a column on insert, and your field's value should be ignored |",
-"block": "| R-0874 | `db_set` | Postgres always fills a column on insert, and your field's value should be ignored |"
+"line": 1748,
+"text": "| `.update_only(...)` | An upsert must change only certain columns on conflict |",
+"block": "| R-0874 | `.update_only(...)` | An upsert must change only certain columns on conflict |"
 },
 {
 "id": "R-0875",
 "kind": "doc",
 "step": "readme-release",
-"line": 1750,
-"text": "| `deferrable` | Rows in one transaction may break a constraint until commit, such as swapping two unique values |",
-"block": "| R-0875 | `deferrable` | Rows in one transaction may break a constraint until commit, such as swapping two unique values |"
+"line": 1749,
+"text": "| `db_set` | Postgres always fills a column on insert, and your field's value should be ignored |",
+"block": "| R-0875 | `db_set` | Postgres always fills a column on insert, and your field's value should be ignored |"
 },
 {
 "id": "R-0876",
 "kind": "doc",
 "step": "readme-release",
-"line": 1751,
-"text": "| `#[morm::hooks]` | You write `impl Hooks` for a model |",
-"block": "| R-0876 | `#[morm::hooks]` | You write `impl Hooks` for a model |"
+"line": 1750,
+"text": "| `deferrable` | Rows in one transaction may break a constraint until commit, such as swapping two unique values |",
+"block": "| R-0876 | `deferrable` | Rows in one transaction may break a constraint until commit, such as swapping two unique values |"
 },
 {
 "id": "R-0877",
 "kind": "doc",
 "step": "readme-release",
-"line": 1752,
-"text": "| `db.tx()` | A hook needs `tx.emit` or another `tx`-only call |",
-"block": "| R-0877 | `db.tx()` | A hook needs `tx.emit` or another `tx`-only call |"
+"line": 1751,
+"text": "| `#[morm::hooks]` | You write `impl Hooks` for a model |",
+"block": "| R-0877 | `#[morm::hooks]` | You write `impl Hooks` for a model |"
 },
 {
 "id": "R-0878",
 "kind": "doc",
 "step": "readme-release",
-"line": 1753,
-"text": "| `.pause_ms(n)` | Batches must leave room for other work, such as replicas catching up |",
-"block": "| R-0878 | `.pause_ms(n)` | Batches must leave room for other work, such as replicas catching up |"
+"line": 1752,
+"text": "| `db.tx()` | A hook needs `tx.emit` or another `tx`-only call |",
+"block": "| R-0878 | `db.tx()` | A hook needs `tx.emit` or another `tx`-only call |"
 },
 {
 "id": "R-0879",
 "kind": "doc",
 "step": "readme-release",
-"line": 1754,
-"text": "| `.limit_each(n)` | You load related rows and each parent needs only a few |",
-"block": "| R-0879 | `.limit_each(n)` | You load related rows and each parent needs only a few |"
+"line": 1753,
+"text": "| `.pause_ms(n)` | Batches must leave room for other work, such as replicas catching up |",
+"block": "| R-0879 | `.pause_ms(n)` | Batches must leave room for other work, such as replicas catching up |"
 },
 {
 "id": "R-0880",
 "kind": "doc",
 "step": "readme-release",
-"line": 1755,
-"text": "| `db.check_schema()` | A binary should refuse to boot against a schema it can't use |",
-"block": "| R-0880 | `db.check_schema()` | A binary should refuse to boot against a schema it can't use |"
+"line": 1754,
+"text": "| `.limit_each(n)` | You load related rows and each parent needs only a few |",
+"block": "| R-0880 | `.limit_each(n)` | You load related rows and each parent needs only a few |"
 },
 {
 "id": "R-0881",
 "kind": "doc",
 "step": "readme-release",
-"line": 1756,
-"text": "| `#[col(deprecated)]` | You're removing a column, and old binaries still run |",
-"block": "| R-0881 | `#[col(deprecated)]` | You're removing a column, and old binaries still run |"
+"line": 1755,
+"text": "| `db.check_schema()` | A binary should refuse to boot against a schema it can't use |",
+"block": "| R-0881 | `db.check_schema()` | A binary should refuse to boot against a schema it can't use |"
 },
 {
 "id": "R-0882",
 "kind": "doc",
-"step": "upsert",
-"line": 1757,
-"text": "| `insert_only` | A column is set once on insert and must never change afterwards |",
-"block": "| R-0882 | `insert_only` | A column is set once on insert and must never change afterwards |"
+"step": "readme-release",
+"line": 1756,
+"text": "| `#[col(deprecated)]` | You're removing a column, and old binaries still run |",
+"block": "| R-0882 | `#[col(deprecated)]` | You're removing a column, and old binaries still run |"
 },
 {
 "id": "R-0883",
 "kind": "doc",
-"step": "readme-release",
-"line": 1758,
-"text": "| `Product::UK.<name>` | An upsert targets an expression unique index, or two partial indexes share columns |",
-"block": "| R-0883 | `Product::UK.<name>` | An upsert targets an expression unique index, or two partial indexes share columns |"
+"step": "upsert",
+"line": 1757,
+"text": "| `insert_only` | A column is set once on insert and must never change afterwards |",
+"block": "| R-0883 | `insert_only` | A column is set once on insert and must never change afterwards |"
 },
 {
 "id": "R-0884",
 "kind": "doc",
 "step": "readme-release",
-"line": 1759,
-"text": "| `db.hold()` | You need `LISTEN`, temp tables, session advisory locks or `SET` |",
-"block": "| R-0884 | `db.hold()` | You need `LISTEN`, temp tables, session advisory locks or `SET` |"
+"line": 1758,
+"text": "| `Product::UK.<name>` | An upsert targets an expression unique index, or two partial indexes share columns |",
+"block": "| R-0884 | `Product::UK.<name>` | An upsert targets an expression unique index, or two partial indexes share columns |"
 },
 {
 "id": "R-0885",
 "kind": "doc",
 "step": "readme-release",
-"line": 1760,
-"text": "| `db.pool(\"replica\")` | You run heavy reads, such as reports, that can be slightly out of date |",
-"block": "| R-0885 | `db.pool(\"replica\")` | You run heavy reads, such as reports, that can be slightly out of date |"
+"line": 1759,
+"text": "| `db.hold()` | You need `LISTEN`, temp tables, session advisory locks or `SET` |",
+"block": "| R-0885 | `db.hold()` | You need `LISTEN`, temp tables, session advisory locks or `SET` |"
 },
 {
 "id": "R-0886",
 "kind": "doc",
 "step": "readme-release",
-"line": 1761,
-"text": "| `db.pool(\"jobs\")` | You run heavy jobs in the web app's process, and they must not take its connections |",
-"block": "| R-0886 | `db.pool(\"jobs\")` | You run heavy jobs in the web app's process, and they must not take its connections |"
+"line": 1760,
+"text": "| `db.pool(\"replica\")` | You run heavy reads, such as reports, that can be slightly out of date |",
+"block": "| R-0886 | `db.pool(\"replica\")` | You run heavy reads, such as reports, that can be slightly out of date |"
 },
 {
 "id": "R-0887",
 "kind": "doc",
 "step": "readme-release",
-"line": 1762,
-"text": "| `db.groups(mask)`, `db.sudo()` | Your callers may see or change different fields |",
-"block": "| R-0887 | `db.groups(mask)`, `db.sudo()` | Your callers may see or change different fields |"
+"line": 1761,
+"text": "| `db.pool(\"jobs\")` | You run heavy jobs in the web app's process, and they must not take its connections |",
+"block": "| R-0887 | `db.pool(\"jobs\")` | You run heavy jobs in the web app's process, and they must not take its connections |"
 },
 {
 "id": "R-0888",
 "kind": "doc",
 "step": "readme-release",
-"line": 1763,
-"text": "| `Numeric` | Your values can exceed 28 digits, or be `NaN` or `Infinity` |",
-"block": "| R-0888 | `Numeric` | Your values can exceed 28 digits, or be `NaN` or `Infinity` |"
+"line": 1762,
+"text": "| `db.groups(mask)`, `db.sudo()` | Your callers may see or change different fields |",
+"block": "| R-0888 | `db.groups(mask)`, `db.sudo()` | Your callers may see or change different fields |"
 },
 {
 "id": "R-0889",
 "kind": "doc",
 "step": "readme-release",
-"line": 1764,
-"text": "| `q_unchecked`, `sql_unchecked` | You must build SQL at runtime, and you will handle injection safety yourself |",
-"block": "| R-0889 | `q_unchecked`, `sql_unchecked` | You must build SQL at runtime, and you will handle injection safety yourself |"
+"line": 1763,
+"text": "| `Numeric` | Your values can exceed 28 digits, or be `NaN` or `Infinity` |",
+"block": "| R-0889 | `Numeric` | Your values can exceed 28 digits, or be `NaN` or `Infinity` |"
 },
 {
 "id": "R-0890",
 "kind": "doc",
 "step": "readme-release",
-"line": 1765,
-"text": "| `recycle_when` | You need your own rule for replacing connections |",
-"block": "| R-0890 | `recycle_when` | You need your own rule for replacing connections |"
+"line": 1764,
+"text": "| `q_unchecked`, `sql_unchecked` | You must build SQL at runtime, and you will handle injection safety yourself |",
+"block": "| R-0890 | `q_unchecked`, `sql_unchecked` | You must build SQL at runtime, and you will handle injection safety yourself |"
 },
 {
 "id": "R-0891",
 "kind": "doc",
 "step": "readme-release",
-"line": 1766,
-"text": "| `no_default` | You want a compile error when a required field is missed |",
-"block": "| R-0891 | `no_default` | You want a compile error when a required field is missed |"
+"line": 1765,
+"text": "| `recycle_when` | You need your own rule for replacing connections |",
+"block": "| R-0891 | `recycle_when` | You need your own rule for replacing connections |"
 },
 {
 "id": "R-0892",
 "kind": "doc",
 "step": "readme-release",
-"line": 1767,
-"text": "| `--fast` | The table is small, or you're in a maintenance window |",
-"block": "| R-0892 | `--fast` | The table is small, or you're in a maintenance window |"
+"line": 1766,
+"text": "| `no_default` | You want a compile error when a required field is missed |",
+"block": "| R-0892 | `no_default` | You want a compile error when a required field is missed |"
 },
 {
 "id": "R-0893",
 "kind": "doc",
 "step": "readme-release",
-"line": 1768,
-"text": "| `--accept-data-loss` | You've read the plan, and you accept losing that data |",
-"block": "| R-0893 | `--accept-data-loss` | You've read the plan, and you accept losing that data |"
+"line": 1767,
+"text": "| `--fast` | The table is small, or you're in a maintenance window |",
+"block": "| R-0893 | `--fast` | The table is small, or you're in a maintenance window |"
 },
 {
 "id": "R-0894",
 "kind": "doc",
 "step": "readme-release",
-"line": 1769,
-"text": "| `--skip-fingerprint` | Your role can't create a temporary database, and you accept a weaker check |",
-"block": "| R-0894 | `--skip-fingerprint` | Your role can't create a temporary database, and you accept a weaker check |"
+"line": 1768,
+"text": "| `--accept-data-loss` | You've read the plan, and you accept losing that data |",
+"block": "| R-0894 | `--accept-data-loss` | You've read the plan, and you accept losing that data |"
 },
 {
 "id": "R-0895",
 "kind": "doc",
 "step": "readme-release",
-"line": 1771,
-"text": "6. Models: bases, every `#[model]` and `#[col]` option in tables.",
-"block": "- **R-0895** Models: bases, every `#[model]` and `#[col]` option in tables."
+"line": 1769,
+"text": "| `--skip-fingerprint` | Your role can't create a temporary database, and you accept a weaker check |",
+"block": "| R-0895 | `--skip-fingerprint` | Your role can't create a temporary database, and you accept a weaker check |"
 },
 {
 "id": "R-0896",
 "kind": "doc",
 "step": "readme-release",
-"line": 1772,
-"text": "7. `get`, `insert`, `update`, `delete`, lists, `filter_cols`, related rows, pagination, batches, lost updates, raw SQL with `db.sql()`, transactions, and which of `Decimal`, `Numeric` or `bigint` to use.",
-"block": "- **R-0896** `get`, `insert`, `update`, `delete`, lists, `filter_cols`, related rows, pagination, batches, lost updates, raw SQL with `db.sql()`, transactions, and which of `Decimal`, `Numeric` or `bigint` to use."
+"line": 1771,
+"text": "6. Models: bases, every `#[model]` and `#[col]` option in tables.",
+"block": "- **R-0896** Models: bases, every `#[model]` and `#[col]` option in tables."
 },
 {
 "id": "R-0897",
 "kind": "doc",
 "step": "readme-release",
-"line": 1773,
-"text": "8. Views, including public input and output with `fields`, `input` and `secret`, groups, validation.",
-"block": "- **R-0897** Views, including public input and output with `fields`, `input` and `secret`, groups, validation."
+"line": 1772,
+"text": "7. `get`, `insert`, `update`, `delete`, lists, `filter_cols`, related rows, pagination, batches, lost updates, raw SQL with `db.sql()`, transactions, and which of `Decimal`, `Numeric` or `bigint` to use.",
+"block": "- **R-0897** `get`, `insert`, `update`, `delete`, lists, `filter_cols`, related rows, pagination, batches, lost updates, raw SQL with `db.sql()`, transactions, and which of `Decimal`, `Numeric` or `bigint` to use."
 },
 {
 "id": "R-0898",
 "kind": "doc",
 "step": "readme-release",
-"line": 1774,
-"text": "9. Hooks, with a table of what each receives and this line: \"update and delete hooks never see a row unless you fetch it.\" Then `after_commit` versus the outbox.",
-"block": "- **R-0898** Hooks, with a table of what each receives and this line: \"update and delete hooks never see a row unless you fetch it.\" Then `after_commit` versus the outbox."
+"line": 1773,
+"text": "8. Views, including public input and output with `fields`, `input` and `secret`, groups, validation.",
+"block": "- **R-0898** Views, including public input and output with `fields`, `input` and `secret`, groups, validation."
 },
 {
 "id": "R-0899",
 "kind": "doc",
 "step": "readme-release",
-"line": 1775,
-"text": "10. JSON output and schemas.",
-"block": "- **R-0899** JSON output and schemas."
+"line": 1774,
+"text": "9. Hooks, with a table of what each receives and this line: \"update and delete hooks never see a row unless you fetch it.\" Then `after_commit` versus the outbox.",
+"block": "- **R-0899** Hooks, with a table of what each receives and this line: \"update and delete hooks never see a row unless you fetch it.\" Then `after_commit` versus the outbox."
 },
 {
 "id": "R-0900",
 "kind": "doc",
 "step": "readme-release",
-"line": 1776,
-"text": "11. Pool and `morm.toml`: every setting, sizing, and the rule for long-running work: \"use `db` for everything, including jobs and crons, and use `db.hold()` only when you need session state.\" It states plainly that service jobs, crons and background workers running as their own process must not spawn a pool with `min` above 1, and shows `connect_as`, `MORM_POOL` and `MORM_POOL_MIN`. It includes the full environment variable table. It also shows the jobs table, the `db.hold()` lifecycle, and when a websocket needs a listener: \"release when you're done, and rely on Drop as the safety net, never as the plan.\"",
-"block": "- **R-0900** Pool and `morm.toml`: every setting, sizing, and the rule for long-running work: \"use `db` for everything, including jobs and crons, and use `db.hold()` only when you need session state.\" It states plainly that service jobs, crons and background workers running as their own process must not spawn a pool with `min` above 1, and shows `connect_as`, `MORM_POOL` and `MORM_POOL_MIN`. It includes the full environment variable table. It also shows the jobs table, the `db.hold()` lifecycle, and when a websocket needs a listener: \"release when you're done, and rely on Drop as the safety net, never as the plan.\""
+"line": 1775,
+"text": "10. JSON output and schemas.",
+"block": "- **R-0900** JSON output and schemas."
 },
 {
 "id": "R-0901",
 "kind": "doc",
 "step": "readme-release",
-"line": 1777,
-"text": "12. Migrations: workflow, every command in one table, safety rules, production being forward only with `revert`, running as a deploy step, triggers and functions.",
-"block": "- **R-0901** Migrations: workflow, every command in one table, safety rules, production being forward only with `revert`, running as a deploy step, triggers and functions."
+"line": 1776,
+"text": "11. Pool and `morm.toml`: every setting, sizing, and the rule for long-running work: \"use `db` for everything, including jobs and crons, and use `db.hold()` only when you need session state.\" It states plainly that service jobs, crons and background workers running as their own process must not spawn a pool with `min` above 1, and shows `connect_as`, `MORM_POOL` and `MORM_POOL_MIN`. It includes the full environment variable table. It also shows the jobs table, the `db.hold()` lifecycle, and when a websocket needs a listener: \"release when you're done, and rely on Drop as the safety net, never as the plan.\"",
+"block": "- **R-0901** Pool and `morm.toml`: every setting, sizing, and the rule for long-running work: \"use `db` for everything, including jobs and crons, and use `db.hold()` only when you need session state.\" It states plainly that service jobs, crons and background workers running as their own process must not spawn a pool with `min` above 1, and shows `connect_as`, `MORM_POOL` and `MORM_POOL_MIN`. It includes the full environment variable table. It also shows the jobs table, the `db.hold()` lifecycle, and when a websocket needs a listener: \"release when you're done, and rely on Drop as the safety net, never as the plan.\""
 },
 {
 "id": "R-0902",
 "kind": "doc",
 "step": "readme-release",
-"line": 1778,
-"text": "13. Security: TLS settings, encrypting disks and backups (outside morm's job, but expected in production), and password hashing with `clean`.",
-"block": "- **R-0902** Security: TLS settings, encrypting disks and backups (outside morm's job, but expected in production), and password hashing with `clean`."
+"line": 1777,
+"text": "12. Migrations: workflow, every command in one table, safety rules, production being forward only with `revert`, running as a deploy step, triggers and functions.",
+"block": "- **R-0902** Migrations: workflow, every command in one table, safety rules, production being forward only with `revert`, running as a deploy step, triggers and functions."
 },
 {
 "id": "R-0903",
-"kind": "info",
-"step": "index",
-"line": 1784,
-"text": "0. **Repo bootstrap:** workspace in `biggaloy/rust-morm`, CI workflows, README skeleton.",
-"block": "- **R-0903** **Repo bootstrap:** workspace in `biggaloy/rust-morm`, CI workflows, README skeleton."
+"kind": "doc",
+"step": "readme-release",
+"line": 1778,
+"text": "13. Security: TLS settings, encrypting disks and backups (outside morm's job, but expected in production), and password hashing with `clean`.",
+"block": "- **R-0903** Security: TLS settings, encrypting disks and backups (outside morm's job, but expected in production), and password hashing with `clean`."
 },
 {
 "id": "R-0904",
 "kind": "info",
 "step": "index",
-"line": 1785,
-"text": "1. **Core models:** macro, `schema`, every integer type with range CHECKs, bases including `#[morm::base]`, index and name rules, views, global and model-scoped groups, declarative rules and `clean`, inference, `F`, compile-time checks.",
-"block": "- **R-0904** **Core models:** macro, `schema`, every integer type with range CHECKs, bases including `#[morm::base]`, index and name rules, views, global and model-scoped groups, declarative rules and `clean`, inference, `F`, compile-time checks."
+"line": 1784,
+"text": "0. **Repo bootstrap:** workspace in `biggaloy/rust-morm`, CI workflows, README skeleton.",
+"block": "- **R-0904** **Repo bootstrap:** workspace in `biggaloy/rust-morm`, CI workflows, README skeleton."
 },
 {
 "id": "R-0905",
 "kind": "info",
 "step": "index",
-"line": 1786,
-"text": "2. **Runtime:** `morm.toml` and environment variables, `morm::Pool` on the `deadpool` core (start with a quick proof-of-concept), `[server]`, dynamic size, named pools, `max_connections` adjustment, `db.hold()`, bounded `statement_cache` and `shape_cache`, insert, `get`/`update`/`delete` forms, `patch` views and `.apply()`, query builder, `filter_cols`, `db.sql()` and `#[derive(morm::Row)]`, `keyset`, `.in_batches`, `order_by_allowed`, `.custom_plan()`, `get_for_update`, failover handling, `Decimal` and `Numeric`, loop detector, typed errors, transactions, deadlock measures, all list and JSON paths, calibrated per-connection memory figures for `size`. \u2192 **First publish** (`0.1.0-alpha`).",
-"block": "- **R-0905** **Runtime:** `morm.toml` and environment variables, `morm::Pool` on the `deadpool` core (start with a quick proof-of-concept), `[server]`, dynamic size, named pools, `max_connections` adjustment, `db.hold()`, bounded `statement_cache` and `shape_cache`, insert, `get`/`update`/`delete` forms, `patch` views and `.apply()`, query builder, `filter_cols`, `db.sql()` and `#[derive(morm::Row)]`, `keyset`, `.in_batches`, `order_by_allowed`, `.custom_plan()`, `get_for_update`, failover handling, `Decimal` and `Numeric`, loop detector, typed errors, transactions, deadlock measures, all list and JSON paths, calibrated per-connection memory figures for `size`. \u2192 **First publish** (`0.1.0-alpha`)."
+"line": 1785,
+"text": "1. **Core models:** macro, `schema`, every integer type with range CHECKs, bases including `#[morm::base]`, index and name rules, views, global and model-scoped groups, declarative rules and `clean`, inference, `F`, compile-time checks.",
+"block": "- **R-0905** **Core models:** macro, `schema`, every integer type with range CHECKs, bases including `#[morm::base]`, index and name rules, views, global and model-scoped groups, declarative rules and `clean`, inference, `F`, compile-time checks."
 },
 {
 "id": "R-0906",
 "kind": "info",
 "step": "index",
-"line": 1787,
-"text": "3. **Migration foundation:** `Schema` IR, catalog reader, diff, typed ops with inverses, scratch, proof pipeline.",
-"block": "- **R-0906** **Migration foundation:** `Schema` IR, catalog reader, diff, typed ops with inverses, scratch, proof pipeline."
+"line": 1786,
+"text": "2. **Runtime:** `morm.toml` and environment variables, `morm::Pool` on the `deadpool` core (start with a quick proof-of-concept), `[server]`, dynamic size, named pools, `max_connections` adjustment, `db.hold()`, bounded `statement_cache` and `shape_cache`, insert, `get`/`update`/`delete` forms, `patch` views and `.apply()`, query builder, `filter_cols`, `db.sql()` and `#[derive(morm::Row)]`, `keyset`, `.in_batches`, `order_by_allowed`, `.custom_plan()`, `get_for_update`, failover handling, `Decimal` and `Numeric`, loop detector, typed errors, transactions, deadlock measures, all list and JSON paths, calibrated per-connection memory figures for `size`. \u2192 **First publish** (`0.1.0-alpha`).",
+"block": "- **R-0906** **Runtime:** `morm.toml` and environment variables, `morm::Pool` on the `deadpool` core (start with a quick proof-of-concept), `[server]`, dynamic size, named pools, `max_connections` adjustment, `db.hold()`, bounded `statement_cache` and `shape_cache`, insert, `get`/`update`/`delete` forms, `patch` views and `.apply()`, query builder, `filter_cols`, `db.sql()` and `#[derive(morm::Row)]`, `keyset`, `.in_batches`, `order_by_allowed`, `.custom_plan()`, `get_for_update`, failover handling, `Decimal` and `Numeric`, loop detector, typed errors, transactions, deadlock measures, all list and JSON paths, calibrated per-connection memory figures for `size`. \u2192 **First publish** (`0.1.0-alpha`)."
 },
 {
 "id": "R-0907",
 "kind": "info",
 "step": "index",
-"line": 1788,
-"text": "4. **Migration execution:** ledger, steps, fingerprint gates, advisory lock, timeouts, preflight, crash recovery, fault-injection suite.",
-"block": "- **R-0907** **Migration execution:** ledger, steps, fingerprint gates, advisory lock, timeouts, preflight, crash recovery, fault-injection suite."
+"line": 1787,
+"text": "3. **Migration foundation:** `Schema` IR, catalog reader, diff, typed ops with inverses, scratch, proof pipeline.",
+"block": "- **R-0907** **Migration foundation:** `Schema` IR, catalog reader, diff, typed ops with inverses, scratch, proof pipeline."
 },
 {
 "id": "R-0908",
 "kind": "info",
 "step": "index",
-"line": 1789,
-"text": "5. **Migration safety:** safe forms, batched backfills, retire and purge, production mode, `revert`, `squash`, decisions, `lint`, `rehearse`, expand/contract, `check_schema()`.",
-"block": "- **R-0908** **Migration safety:** safe forms, batched backfills, retire and purge, production mode, `revert`, `squash`, decisions, `lint`, `rehearse`, expand/contract, `check_schema()`."
+"line": 1788,
+"text": "4. **Migration execution:** ledger, steps, fingerprint gates, advisory lock, timeouts, preflight, crash recovery, fault-injection suite.",
+"block": "- **R-0908** **Migration execution:** ledger, steps, fingerprint gates, advisory lock, timeouts, preflight, crash recovery, fault-injection suite."
 },
 {
 "id": "R-0909",
 "kind": "info",
 "step": "index",
-"line": 1790,
-"text": "6. **Managed objects:** views, materialized views, functions, procedures, triggers, policies, grants, enums and domains, with dependency recreation.",
-"block": "- **R-0909** **Managed objects:** views, materialized views, functions, procedures, triggers, policies, grants, enums and domains, with dependency recreation."
+"line": 1789,
+"text": "5. **Migration safety:** safe forms, batched backfills, retire and purge, production mode, `revert`, `squash`, decisions, `lint`, `rehearse`, expand/contract, `check_schema()`.",
+"block": "- **R-0909** **Migration safety:** safe forms, batched backfills, retire and purge, production mode, `revert`, `squash`, decisions, `lint`, `rehearse`, expand/contract, `check_schema()`."
 },
 {
 "id": "R-0910",
 "kind": "info",
 "step": "index",
-"line": 1791,
-"text": "7. **Hooks and outbox:** `Changes`, `Target`, all hooks, `validate`, `validate_changes`, `after_commit`, automatic transactions, `pg_outbox!`, `emit`, the worker and `morm-admin outbox`.",
-"block": "- **R-0910** **Hooks and outbox:** `Changes`, `Target`, all hooks, `validate`, `validate_changes`, `after_commit`, automatic transactions, `pg_outbox!`, `emit`, the worker and `morm-admin outbox`."
+"line": 1790,
+"text": "6. **Managed objects:** views, materialized views, functions, procedures, triggers, policies, grants, enums and domains, with dependency recreation.",
+"block": "- **R-0910** **Managed objects:** views, materialized views, functions, procedures, triggers, policies, grants, enums and domains, with dependency recreation."
 },
 {
 "id": "R-0911",
 "kind": "info",
 "step": "index",
-"line": 1792,
-"text": "8. **`morm-admin`:** `init`, `doctor`, `import`, `scratch`, `size`, `morm-mgr` packaging, Axum template.",
-"block": "- **R-0911** **`morm-admin`:** `init`, `doctor`, `import`, `scratch`, `size`, `morm-mgr` packaging, Axum template."
+"line": 1791,
+"text": "7. **Hooks and outbox:** `Changes`, `Target`, all hooks, `validate`, `validate_changes`, `after_commit`, automatic transactions, `pg_outbox!`, `emit`, the worker and `morm-admin outbox`.",
+"block": "- **R-0911** **Hooks and outbox:** `Changes`, `Target`, all hooks, `validate`, `validate_changes`, `after_commit`, automatic transactions, `pg_outbox!`, `emit`, the worker and `morm-admin outbox`."
 },
 {
 "id": "R-0912",
 "kind": "info",
 "step": "index",
-"line": 1793,
-"text": "9. **Query safety:** `sql!`, `check-sql`, upsert, UNNEST and COPY, `#[morm::test]`.",
-"block": "- **R-0912** **Query safety:** `sql!`, `check-sql`, upsert, UNNEST and COPY, `#[morm::test]`."
+"line": 1792,
+"text": "8. **`morm-admin`:** `init`, `doctor`, `import`, `scratch`, `size`, `morm-mgr` packaging, Axum template.",
+"block": "- **R-0912** **`morm-admin`:** `init`, `doctor`, `import`, `scratch`, `size`, `morm-mgr` packaging, Axum template."
 },
 {
 "id": "R-0913",
 "kind": "info",
 "step": "index",
-"line": 1794,
-"text": "10. **Remaining features:** UUIDv7, `tls`, schemas and `utoipa`, optimistic locking, tracing, `metrics`, `[telemetry]`, `.tag()`, typed FKs, settings, pipelined transactions.",
-"block": "- **R-0913** **Remaining features:** UUIDv7, `tls`, schemas and `utoipa`, optimistic locking, tracing, `metrics`, `[telemetry]`, `.tag()`, typed FKs, settings, pipelined transactions."
+"line": 1793,
+"text": "9. **Query safety:** `sql!`, `check-sql`, upsert, UNNEST and COPY, `#[morm::test]`.",
+"block": "- **R-0913** **Query safety:** `sql!`, `check-sql`, upsert, UNNEST and COPY, `#[morm::test]`."
 },
 {
 "id": "R-0914",
 "kind": "info",
 "step": "index",
-"line": 1795,
-"text": "11. **Benchmarks, lock-order detector, hardening, full README, 0.1.0 release.**",
-"block": "- **R-0914** **Benchmarks, lock-order detector, hardening, full README, 0.1.0 release.**"
+"line": 1794,
+"text": "10. **Remaining features:** UUIDv7, `tls`, schemas and `utoipa`, optimistic locking, tracing, `metrics`, `[telemetry]`, `.tag()`, typed FKs, settings, pipelined transactions.",
+"block": "- **R-0914** **Remaining features:** UUIDv7, `tls`, schemas and `utoipa`, optimistic locking, tracing, `metrics`, `[telemetry]`, `.tag()`, typed FKs, settings, pipelined transactions."
 },
 {
 "id": "R-0915",
 "kind": "info",
 "step": "index",
-"line": 1803,
-"text": "- **Managed objects:** functions, triggers and policies with exact inverses are the hardest engine work.",
-"block": "- **R-0915** **Managed objects:** functions, triggers and policies with exact inverses are the hardest engine work."
+"line": 1795,
+"text": "11. **Benchmarks, lock-order detector, hardening, full README, 0.1.0 release.**",
+"block": "- **R-0915** **Benchmarks, lock-order detector, hardening, full README, 0.1.0 release.**"
 },
 {
 "id": "R-0916",
 "kind": "info",
-"step": "proofs",
-"line": 1804,
-"text": "- **Needs proof early:** borrowed `ProductRef` decoding, the loop detector, macro feasibility for `#[view]` and `#[morm::base]`, macro-counted group mask sizes on stable Rust, `AsyncFn` closures for `.retry()`, hook signatures including the lazy `db`, `NestedConnection` detection for stream loops, including `join!` and streams moved between tasks, upsert conflict-target markers across macro expansions, `morm::Param` with `query_typed` on every supported type, and registration with `cfg(morm_mgr)` across crates.",
-"block": "- **R-0916** **Needs proof early:** borrowed `ProductRef` decoding, the loop detector, macro feasibility for `#[view]` and `#[morm::base]`, macro-counted group mask sizes on stable Rust, `AsyncFn` closures for `.retry()`, hook signatures including the lazy `db`, `NestedConnection` detection for stream loops, including `join!` and streams moved between tasks, upsert conflict-target markers across macro expansions, `morm::Param` with `query_typed` on every supported type, and registration with `cfg(morm_mgr)` across crates."
+"step": "index",
+"line": 1803,
+"text": "- **Managed objects:** functions, triggers and policies with exact inverses are the hardest engine work.",
+"block": "- **R-0916** **Managed objects:** functions, triggers and policies with exact inverses are the hardest engine work."
 },
 {
 "id": "R-0917",
+"kind": "info",
+"step": "proofs",
+"line": 1804,
+"text": "- **Needs proof early:** borrowed `ProductRef` decoding, the loop detector, macro feasibility for `#[view]` and `#[morm::base]`, macro-counted group mask sizes on stable Rust, `AsyncFn` closures for `.retry()`, hook signatures including the lazy `db`, `NestedConnection` detection for stream loops, including `join!` and streams moved between tasks, upsert conflict-target markers across macro expansions, `morm::Param` with `query_typed` on every supported type, and registration with `cfg(morm_mgr)` across crates.",
+"block": "- **R-0917** **Needs proof early:** borrowed `ProductRef` decoding, the loop detector, macro feasibility for `#[view]` and `#[morm::base]`, macro-counted group mask sizes on stable Rust, `AsyncFn` closures for `.retry()`, hook signatures including the lazy `db`, `NestedConnection` detection for stream loops, including `join!` and streams moved between tasks, upsert conflict-target markers across macro expansions, `morm::Param` with `query_typed` on every supported type, and registration with `cfg(morm_mgr)` across crates."
+},
+{
+"id": "R-0918",
 "kind": "code",
 "step": "schema-ir",
 "line": 1805,
 "text": "- **Scratch databases:** `makemigrations` needs a Postgres where it can `CREATE DATABASE`.",
-"block": "- **R-0917** **Scratch databases:** `makemigrations` needs a Postgres where it can `CREATE DATABASE`."
+"block": "- **R-0918** **Scratch databases:** `makemigrations` needs a Postgres where it can `CREATE DATABASE`."
 },
 {
-"id": "R-0918",
+"id": "R-0919",
 "kind": "info",
 "step": "index",
 "line": 1806,
 "text": "- **Scope:** migrations alone outweigh the runtime.",
-"block": "- **R-0918** **Scope:** migrations alone outweigh the runtime."
+"block": "- **R-0919** **Scope:** migrations alone outweigh the runtime."
 },
 {
-"id": "R-0919",
+"id": "R-0920",
 "kind": "code",
 "step": "readme-release",
 "line": 1810,
 "text": "- `morm`, `morm-macros`, `morm-migrate`, `morm-admin` and `morm-mgr` were free on crates.io on 2026-11-05. Reserve them at the first publish.",
-"block": "- **R-0919** `morm`, `morm-macros`, `morm-migrate`, `morm-admin` and `morm-mgr` were free on crates.io on 2026-11-05. Reserve them at the first publish."
-},
-{
-"id": "R-0920",
-"kind": "info",
-"step": "index",
-"line": 1814,
-"text": "Shared reads: a small opt-in lane that pipelines primary-key reads on a few connections, added only if a benchmark shows real gains with no worse p99 under mixed load. Also partitioning, a `dynamic` registry for by-name admin CRUD, sensitive-column prompts in `import`, exclusion constraints on models, and `morm-admin size --live`, which compares the estimate with `pg_stat_activity` and live pool figures to spot oversized pools.",
-"block": "**R-0920** Shared reads: a small opt-in lane that pipelines primary-key reads on a few connections, added only if a benchmark shows real gains with no worse p99 under mixed load. Also partitioning, a `dynamic` registry for by-name admin CRUD, sensitive-column prompts in `import`, exclusion constraints on models, and `morm-admin size --live`, which compares the estimate with `pg_stat_activity` and live pool figures to spot oversized pools."
+"block": "- **R-0920** `morm`, `morm-macros`, `morm-migrate`, `morm-admin` and `morm-mgr` were free on crates.io on 2026-11-05. Reserve them at the first publish."
 },
 {
 "id": "R-0921",
 "kind": "info",
 "step": "index",
-"line": 1818,
-"text": "Features we will build are in `later-defo-build.plan`: automatic read routing and online key type changes across foreign keys.",
-"block": "**R-0921** Features we will build are in `later-defo-build.plan`: automatic read routing and online key type changes across foreign keys."
+"line": 1814,
+"text": "Shared reads: a small opt-in lane that pipelines primary-key reads on a few connections, added only if a benchmark shows real gains with no worse p99 under mixed load. Also partitioning, a `dynamic` registry for by-name admin CRUD, sensitive-column prompts in `import`, exclusion constraints on models, and `morm-admin size --live`, which compares the estimate with `pg_stat_activity` and live pool figures to spot oversized pools.",
+"block": "**R-0921** Shared reads: a small opt-in lane that pipelines primary-key reads on a few connections, added only if a benchmark shows real gains with no worse p99 under mixed load. Also partitioning, a `dynamic` registry for by-name admin CRUD, sensitive-column prompts in `import`, exclusion constraints on models, and `morm-admin size --live`, which compares the estimate with `pg_stat_activity` and live pool figures to spot oversized pools."
 },
 {
 "id": "R-0922",
-"kind": "code",
-"step": "model-types",
-"line": 1822,
-"text": "Encrypted columns, including per-user keys and rotation, are not designed yet. Nothing in 0.1 is built for them. These choices, which 0.1 needs anyway, keep them possible without breaking changes:",
-"block": "**R-0922** Encrypted columns, including per-user keys and rotation, are not designed yet. Nothing in 0.1 is built for them. These choices, which 0.1 needs anyway, keep them possible without breaking changes:"
+"kind": "info",
+"step": "index",
+"line": 1818,
+"text": "Features we will build are in `later-defo-build.plan`: automatic read routing and online key type changes across foreign keys.",
+"block": "**R-0922** Features we will build are in `later-defo-build.plan`: automatic read routing and online key type changes across foreign keys."
 },
 {
 "id": "R-0923",
 "kind": "code",
 "step": "model-types",
-"line": 1824,
-"text": "- `F` columns carry capability markers checked by the query API, so a column can refuse `.by()` or `set_expr`.",
-"block": "- **R-0923** `F` columns carry capability markers checked by the query API, so a column can refuse `.by()` or `set_expr`."
+"line": 1822,
+"text": "Encrypted columns, including per-user keys and rotation, are not designed yet. Nothing in 0.1 is built for them. These choices, which 0.1 needs anyway, keep them possible without breaking changes:",
+"block": "**R-0923** Encrypted columns, including per-user keys and rotation, are not designed yet. Nothing in 0.1 is built for them. These choices, which 0.1 needs anyway, keep them possible without breaking changes:"
 },
 {
 "id": "R-0924",
 "kind": "code",
 "step": "model-types",
-"line": 1825,
-"text": "- Encode and decode go through one per-column conversion layer, so a column's Rust type can differ from its stored type. It exists only at compile time: generated code calls `ToSql` and `FromSql` directly through static dispatch, with no branch, pointer, allocation or per-row state. A benchmark against hand-written tokio-postgres decoding checks that it adds no cost.",
-"block": "- **R-0924** Encode and decode go through one per-column conversion layer, so a column's Rust type can differ from its stored type. It exists only at compile time: generated code calls `ToSql` and `FromSql` directly through static dispatch, with no branch, pointer, allocation or per-row state. A benchmark against hand-written tokio-postgres decoding checks that it adds no cost."
+"line": 1824,
+"text": "- `F` columns carry capability markers checked by the query API, so a column can refuse `.by()` or `set_expr`.",
+"block": "- **R-0924** `F` columns carry capability markers checked by the query API, so a column can refuse `.by()` or `set_expr`."
 },
 {
 "id": "R-0925",
-"kind": "info",
-"step": "index",
-"line": 1829,
-"text": "- **`save`:** replaced by explicit `insert` and `update`.",
-"block": "- **R-0925** **`save`:** replaced by explicit `insert` and `update`."
+"kind": "code",
+"step": "model-types",
+"line": 1825,
+"text": "- Encode and decode go through one per-column conversion layer, so a column's Rust type can differ from its stored type. It exists only at compile time: generated code calls `ToSql` and `FromSql` directly through static dispatch, with no branch, pointer, allocation or per-row state. A benchmark against hand-written tokio-postgres decoding checks that it adds no cost.",
+"block": "- **R-0925** Encode and decode go through one per-column conversion layer, so a column's Rust type can differ from its stored type. It exists only at compile time: generated code calls `ToSql` and `FromSql` directly through static dispatch, with no branch, pointer, allocation or per-row state. A benchmark against hand-written tokio-postgres decoding checks that it adds no cost."
 },
 {
 "id": "R-0926",
 "kind": "info",
 "step": "index",
-"line": 1830,
-"text": "- **`exclude_values_up/down`:** rarely useful, and it would make insert SQL vary per row. `Option` `None` already defers to the DB default, and `skip_json_if` covers output. It can come back if a real need appears.",
-"block": "- **R-0926** **`exclude_values_up/down`:** rarely useful, and it would make insert SQL vary per row. `Option` `None` already defers to the DB default, and `skip_json_if` covers output. It can come back if a real need appears."
+"line": 1829,
+"text": "- **`save`:** replaced by explicit `insert` and `update`.",
+"block": "- **R-0926** **`save`:** replaced by explicit `insert` and `update`."
 },
 {
 "id": "R-0927",
 "kind": "info",
 "step": "index",
-"line": 1831,
-"text": "- **`validator` and `modifier`:** replaced by the type system, native decoding, and declarative rules.",
-"block": "- **R-0927** **`validator` and `modifier`:** replaced by the type system, native decoding, and declarative rules."
+"line": 1830,
+"text": "- **`exclude_values_up/down`:** rarely useful, and it would make insert SQL vary per row. `Option` `None` already defers to the DB default, and `skip_json_if` covers output. It can come back if a real need appears.",
+"block": "- **R-0927** **`exclude_values_up/down`:** rarely useful, and it would make insert SQL vary per row. `Option` `None` already defers to the DB default, and `skip_json_if` covers output. It can come back if a real need appears."
 },
 {
 "id": "R-0928",
 "kind": "info",
 "step": "index",
-"line": 1832,
-"text": "- **`pre_save` and `post_save`:** removed with `save`.",
-"block": "- **R-0928** **`pre_save` and `post_save`:** removed with `save`."
+"line": 1831,
+"text": "- **`validator` and `modifier`:** replaced by the type system, native decoding, and declarative rules.",
+"block": "- **R-0928** **`validator` and `modifier`:** replaced by the type system, native decoding, and declarative rules."
 },
 {
 "id": "R-0929",
 "kind": "info",
 "step": "index",
-"line": 1838,
-"text": "After the final review, this plan is split into `plans/plan-approved/`:",
-"block": "**R-0929** After the final review, this plan is split into `plans/plan-approved/`:"
+"line": 1832,
+"text": "- **`pre_save` and `post_save`:** removed with `save`.",
+"block": "- **R-0929** **`pre_save` and `post_save`:** removed with `save`."
 },
 {
 "id": "R-0930",
 "kind": "info",
 "step": "index",
-"line": 1840,
-"text": "- `INDEX.md`: order, dependencies, what can run in parallel, and status.",
-"block": "- **R-0930** `INDEX.md`: order, dependencies, what can run in parallel, and status."
+"line": 1838,
+"text": "After the final review, this plan is split into `plans/plan-approved/`:",
+"block": "**R-0930** After the final review, this plan is split into `plans/plan-approved/`:"
 },
 {
 "id": "R-0931",
 "kind": "info",
 "step": "index",
-"line": 1841,
-"text": "- `rules.md`: how every step works and when it counts as done.",
-"block": "- **R-0931** `rules.md`: how every step works and when it counts as done."
+"line": 1840,
+"text": "- `INDEX.md`: order, dependencies, what can run in parallel, and status.",
+"block": "- **R-0931** `INDEX.md`: order, dependencies, what can run in parallel, and status."
 },
 {
 "id": "R-0932",
 "kind": "info",
 "step": "index",
-"line": 1842,
-"text": "- `contracts.md`: shared types and signatures that parallel steps rely on.",
-"block": "- **R-0932** `contracts.md`: shared types and signatures that parallel steps rely on."
+"line": 1841,
+"text": "- `rules.md`: how every step works and when it counts as done.",
+"block": "- **R-0932** `rules.md`: how every step works and when it counts as done."
 },
 {
 "id": "R-0933",
 "kind": "info",
 "step": "index",
-"line": 1843,
-"text": "- `coverage.md`: every requirement, by ID, mapped to its step and tests. A script fails if a requirement has no step or no test.",
-"block": "- **R-0933** `coverage.md`: every requirement, by ID, mapped to its step and tests. A script fails if a requirement has no step or no test."
+"line": 1842,
+"text": "- `contracts.md`: shared types and signatures that parallel steps rely on.",
+"block": "- **R-0933** `contracts.md`: shared types and signatures that parallel steps rely on."
 },
 {
 "id": "R-0934",
 "kind": "info",
 "step": "index",
-"line": 1844,
-"text": "- `steps/`: one self-contained file per step, about 26 in total, small enough for one fresh session.",
-"block": "- **R-0934** `steps/`: one self-contained file per step, about 26 in total, small enough for one fresh session."
+"line": 1843,
+"text": "- `coverage.md`: every requirement, by ID, mapped to its step and tests. A script fails if a requirement has no step or no test.",
+"block": "- **R-0934** `coverage.md`: every requirement, by ID, mapped to its step and tests. A script fails if a requirement has no step or no test."
 },
 {
 "id": "R-0935",
 "kind": "info",
 "step": "index",
-"line": 1846,
-"text": "The first splitting step assigns the requirement IDs, because this file has none.",
-"block": "**R-0935** The first splitting step assigns the requirement IDs, because this file has none."
+"line": 1844,
+"text": "- `steps/`: one self-contained file per step, about 26 in total, small enough for one fresh session.",
+"block": "- **R-0935** `steps/`: one self-contained file per step, about 26 in total, small enough for one fresh session."
 },
 {
 "id": "R-0936",
 "kind": "info",
 "step": "index",
-"line": 1848,
-"text": "**Decisions:**",
-"block": "**R-0936** **Decisions:**"
+"line": 1846,
+"text": "The first splitting step assigns the requirement IDs, because this file has none.",
+"block": "**R-0936** The first splitting step assigns the requirement IDs, because this file has none."
 },
 {
 "id": "R-0937",
 "kind": "info",
 "step": "index",
-"line": 1850,
-"text": "- `plan-approved/` becomes the working source of truth once it's built. This file is then frozen as the record, so two live copies can't drift apart.",
-"block": "- **R-0937** `plan-approved/` becomes the working source of truth once it's built. This file is then frozen as the record, so two live copies can't drift apart."
+"line": 1848,
+"text": "**Decisions:**",
+"block": "**R-0937** **Decisions:**"
 },
 {
 "id": "R-0938",
 "kind": "info",
 "step": "index",
-"line": 1851,
-"text": "- Steps and reviews run as subagents, each with fresh context, and each reads only `rules.md`, `contracts.md` and its own step file. A thin coordinating session tracks `INDEX.md`.",
-"block": "- **R-0938** Steps and reviews run as subagents, each with fresh context, and each reads only `rules.md`, `contracts.md` and its own step file. A thin coordinating session tracks `INDEX.md`."
+"line": 1850,
+"text": "- `plan-approved/` becomes the working source of truth once it's built. This file is then frozen as the record, so two live copies can't drift apart.",
+"block": "- **R-0938** `plan-approved/` becomes the working source of truth once it's built. This file is then frozen as the record, so two live copies can't drift apart."
 },
 {
 "id": "R-0939",
 "kind": "info",
 "step": "index",
-"line": 1852,
-"text": "- The owner approves the Foundation PRs. Later PRs merge once CI and an independent review both pass.",
-"block": "- **R-0939** The owner approves the Foundation PRs. Later PRs merge once CI and an independent review both pass."
+"line": 1851,
+"text": "- Steps and reviews run as subagents, each with fresh context, and each reads only `rules.md`, `contracts.md` and its own step file. A thin coordinating session tracks `INDEX.md`.",
+"block": "- **R-0939** Steps and reviews run as subagents, each with fresh context, and each reads only `rules.md`, `contracts.md` and its own step file. A thin coordinating session tracks `INDEX.md`."
 },
 {
 "id": "R-0940",
 "kind": "info",
 "step": "index",
-"line": 1854,
-"text": "**Rules for every step:**",
-"block": "**R-0940** **Rules for every step:**"
+"line": 1852,
+"text": "- The owner approves the Foundation PRs. Later PRs merge once CI and an independent review both pass.",
+"block": "- **R-0940** The owner approves the Foundation PRs. Later PRs merge once CI and an independent review both pass."
 },
 {
 "id": "R-0941",
 "kind": "info",
 "step": "index",
-"line": 1856,
-"text": "- The session that writes a step doesn't approve it. A separate one checks the work against the step file.",
-"block": "- **R-0941** The session that writes a step doesn't approve it. A separate one checks the work against the step file."
+"line": 1854,
+"text": "**Rules for every step:**",
+"block": "**R-0941** **Rules for every step:**"
 },
 {
 "id": "R-0942",
 "kind": "info",
 "step": "index",
-"line": 1857,
-"text": "- Done means every test passes on Postgres 15\u201318, with nothing deferred or stubbed.",
-"block": "- **R-0942** Done means every test passes on Postgres 15\u201318, with nothing deferred or stubbed."
+"line": 1856,
+"text": "- The session that writes a step doesn't approve it. A separate one checks the work against the step file.",
+"block": "- **R-0942** The session that writes a step doesn't approve it. A separate one checks the work against the step file."
 },
 {
 "id": "R-0943",
 "kind": "info",
 "step": "index",
-"line": 1858,
-"text": "- If a step finds the plan is wrong, it stops and asks, and it doesn't improvise.",
-"block": "- **R-0943** If a step finds the plan is wrong, it stops and asks, and it doesn't improvise."
+"line": 1857,
+"text": "- Done means every test passes on Postgres 15\u201318, with nothing deferred or stubbed.",
+"block": "- **R-0943** Done means every test passes on Postgres 15\u201318, with nothing deferred or stubbed."
 },
 {
 "id": "R-0944",
 "kind": "info",
 "step": "index",
-"line": 1859,
-"text": "- Parallel steps use separate worktrees and branches, and run in parallel only when `contracts.md` covers what they share.",
-"block": "- **R-0944** Parallel steps use separate worktrees and branches, and run in parallel only when `contracts.md` covers what they share."
+"line": 1858,
+"text": "- If a step finds the plan is wrong, it stops and asks, and it doesn't improvise.",
+"block": "- **R-0944** If a step finds the plan is wrong, it stops and asks, and it doesn't improvise."
 },
 {
 "id": "R-0945",
 "kind": "info",
 "step": "index",
-"line": 1860,
-"text": "- The early proofs step comes before anything depends on the risky parts in section 16.",
-"block": "- **R-0945** The early proofs step comes before anything depends on the risky parts in section 16."
+"line": 1859,
+"text": "- Parallel steps use separate worktrees and branches, and run in parallel only when `contracts.md` covers what they share.",
+"block": "- **R-0945** Parallel steps use separate worktrees and branches, and run in parallel only when `contracts.md` covers what they share."
 },
 {
 "id": "R-0946",
-"kind": "code",
-"step": "upsert",
-"line": 0,
-"text": "- `db.upsert_many(&mut rows, target)` is the batch form of `upsert`, taking the same conflict targets. It's the call the plan's \"batch upsert\" and \"`upsert` batches\" mean.",
-"block": "- **R-0946** `db.upsert_many(&mut rows, target)` is the batch form of `upsert`, taking the same conflict targets. It's the call the plan's \"batch upsert\" and \"`upsert` batches\" mean."
+"kind": "info",
+"step": "index",
+"line": 1860,
+"text": "- The early proofs step comes before anything depends on the risky parts in section 16.",
+"block": "- **R-0946** The early proofs step comes before anything depends on the risky parts in section 16."
 },
 {
 "id": "R-0947",
 "kind": "code",
 "step": "upsert",
 "line": 0,
-"text": "- Array columns work through `upsert` and `upsert_many` the same way as `insert_many`.",
-"block": "- **R-0947** Array columns work through `upsert` and `upsert_many` the same way as `insert_many`."
+"text": "- `db.upsert_many(&mut rows, target)` is the batch form of `upsert`, taking the same conflict targets. It's the call the plan's \"batch upsert\" and \"`upsert` batches\" mean.",
+"block": "- **R-0947** `db.upsert_many(&mut rows, target)` is the batch form of `upsert`, taking the same conflict targets. It's the call the plan's \"batch upsert\" and \"`upsert` batches\" mean."
 },
 {
 "id": "R-0948",
 "kind": "code",
-"step": "proof-files",
+"step": "upsert",
 "line": 0,
-"text": "- `makemigrations [--plan] [--json] [-n name] [--decide ID=OPT] [--decisions F] [--empty] [--fast]`, with `--empty` writing an empty migration for hand-written steps, and `rebase-chain` fixing a chain marked `diverged`.",
-"block": "- **R-0948** `makemigrations [--plan] [--json] [-n name] [--decide ID=OPT] [--decisions F] [--empty] [--fast]`, with `--empty` writing an empty migration for hand-written steps, and `rebase-chain` fixing a chain marked `diverged`."
+"text": "- Array columns work through `upsert` and `upsert_many` the same way as `insert_many`.",
+"block": "- **R-0948** Array columns work through `upsert` and `upsert_many` the same way as `insert_many`."
 },
 {
 "id": "R-0949",
 "kind": "code",
-"step": "execution",
+"step": "proof-files",
 "line": 0,
-"text": "- `migrate [--plan] [--json] [--yes] [--to ID] [--resume] [--phase expand|contract]`, where `--yes` skips the prompt and `--to ID` stops after that migration. `status [--json]`. `check`. `sql ID` prints a migration's SQL.",
-"block": "- **R-0949** `migrate [--plan] [--json] [--yes] [--to ID] [--resume] [--phase expand|contract]`, where `--yes` skips the prompt and `--to ID` stops after that migration. `status [--json]`. `check`. `sql ID` prints a migration's SQL."
+"text": "- `makemigrations [--plan] [--json] [-n name] [--decide ID=OPT] [--decisions F] [--empty] [--fast]`, with `--empty` writing an empty migration for hand-written steps, and `rebase-chain` fixing a chain marked `diverged`.",
+"block": "- **R-0949** `makemigrations [--plan] [--json] [-n name] [--decide ID=OPT] [--decisions F] [--empty] [--fast]`, with `--empty` writing an empty migration for hand-written steps, and `rebase-chain` fixing a chain marked `diverged`."
 },
 {
 "id": "R-0950",
 "kind": "code",
-"step": "recovery",
+"step": "execution",
 "line": 0,
-"text": "- `rollback [--last N | --to ID | --orphans | --failed] [--plan] [--yes] [--accept-data-loss] [--production --reason R]`. `verify [--json]`. `repair --reason R`. `refingerprint`.",
-"block": "- **R-0950** `rollback [--last N | --to ID | --orphans | --failed] [--plan] [--yes] [--accept-data-loss] [--production --reason R]`. `verify [--json]`. `repair --reason R`. `refingerprint`."
+"text": "- `migrate [--plan] [--json] [--yes] [--to ID] [--resume] [--phase expand|contract]`, where `--yes` skips the prompt and `--to ID` stops after that migration. `status [--json]`. `check`. `sql ID` prints a migration's SQL.",
+"block": "- **R-0950** `migrate [--plan] [--json] [--yes] [--to ID] [--resume] [--phase expand|contract]`, where `--yes` skips the prompt and `--to ID` stops after that migration. `status [--json]`. `check`. `sql ID` prints a migration's SQL."
 },
 {
 "id": "R-0951",
 "kind": "code",
-"step": "live-modes",
+"step": "recovery",
 "line": 0,
-"text": "- `revert ID [--plan] [--decide ID=OPT]`. `mode [development --confirm NAME | production]`. `squash --to ID`. `rehearse --url URL`.",
-"block": "- **R-0951** `revert ID [--plan] [--decide ID=OPT]`. `mode [development --confirm NAME | production]`. `squash --to ID`. `rehearse --url URL`."
+"text": "- `rollback [--last N | --to ID | --orphans | --failed] [--plan] [--yes] [--accept-data-loss] [--production --reason R]`. `verify [--json]`. `repair --reason R`. `refingerprint`.",
+"block": "- **R-0951** `rollback [--last N | --to ID | --orphans | --failed] [--plan] [--yes] [--accept-data-loss] [--production --reason R]`. `verify [--json]`. `repair --reason R`. `refingerprint`."
 },
 {
 "id": "R-0952",
 "kind": "code",
-"step": "retire",
+"step": "live-modes",
 "line": 0,
-"text": "- `purge --older-than D | --now ID`.",
-"block": "- **R-0952** `purge --older-than D | --now ID`."
+"text": "- `revert ID [--plan] [--decide ID=OPT]`. `mode [development --confirm NAME | production]`. `squash --to ID`. `rehearse --url URL`.",
+"block": "- **R-0952** `revert ID [--plan] [--decide ID=OPT]`. `mode [development --confirm NAME | production]`. `squash --to ID`. `rehearse --url URL`."
 },
 {
 "id": "R-0953",
 "kind": "code",
-"step": "admin-init",
+"step": "retire",
 "line": 0,
-"text": "- `baseline`.",
-"block": "- **R-0953** `baseline`."
+"text": "- `purge --older-than D | --now ID`.",
+"block": "- **R-0953** `purge --older-than D | --now ID`."
 },
 {
 "id": "R-0954",
 "kind": "code",
 "step": "admin-init",
 "line": 0,
-"text": "- `morm-admin init [path] [--axum]`, `morm-admin scratch` to check or create the scratch database, and `morm-admin outbox [list | retry ID]` to inspect failed events and deliver one again.",
-"block": "- **R-0954** `morm-admin init [path] [--axum]`, `morm-admin scratch` to check or create the scratch database, and `morm-admin outbox [list | retry ID]` to inspect failed events and deliver one again."
+"text": "- `baseline`.",
+"block": "- **R-0954** `baseline`."
 },
 {
 "id": "R-0955",
 "kind": "code",
-"step": "lint",
+"step": "admin-init",
 "line": 0,
-"text": "- `morm-admin mgr <command>` runs migration and schema work, and each `mgr` command lives in its own module.",
-"block": "- **R-0955** `morm-admin mgr <command>` runs migration and schema work, and each `mgr` command lives in its own module."
+"text": "- `morm-admin init [path] [--axum]`, `morm-admin scratch` to check or create the scratch database, and `morm-admin outbox [list | retry ID]` to inspect failed events and deliver one again.",
+"block": "- **R-0955** `morm-admin init [path] [--axum]`, `morm-admin scratch` to check or create the scratch database, and `morm-admin outbox [list | retry ID]` to inspect failed events and deliver one again."
 },
 {
 "id": "R-0956",
 "kind": "code",
+"step": "lint",
+"line": 0,
+"text": "- `morm-admin mgr <command>` runs migration and schema work, and each `mgr` command lives in its own module.",
+"block": "- **R-0956** `morm-admin mgr <command>` runs migration and schema work, and each `mgr` command lives in its own module."
+},
+{
+"id": "R-0957",
+"kind": "code",
+"step": "bootstrap",
+"line": 0,
+"text": "- **Workflows in a public repo.** Every workflow sets `permissions: contents: read` and raises it only per job where needed. Third-party actions are pinned to a full commit SHA. `pull_request_target` is never used, and PRs from forks get no secrets and run no release or publish job. `release.yml` runs only on a tag, in a protected environment holding the crates.io token.",
+"block": "- **R-0957** **Workflows in a public repo.** Every workflow sets `permissions: contents: read` and raises it only per job where needed. Third-party actions are pinned to a full commit SHA. `pull_request_target` is never used, and PRs from forks get no secrets and run no release or publish job. `release.yml` runs only on a tag, in a protected environment holding the crates.io token."
+},
+{
+"id": "R-0958",
+"kind": "code",
+"step": "bootstrap",
+"line": 0,
+"text": "- **Repo files for a public project.** `SECURITY.md` says how to report a vulnerability privately, and Dependabot config covers Cargo and Actions.",
+"block": "- **R-0958** **Repo files for a public project.** `SECURITY.md` says how to report a vulnerability privately, and Dependabot config covers Cargo and Actions."
+},
+{
+"id": "R-0959",
+"kind": "code",
 "step": "admin-init",
 "line": 0,
 "text": "- `morm::pg_outbox!()` declares the outbox table as a managed table, tracked by migrations.",
-"block": "- **R-0956** `morm::pg_outbox!()` declares the outbox table as a managed table, tracked by migrations."
+"block": "- **R-0959** `morm::pg_outbox!()` declares the outbox table as a managed table, tracked by migrations."
 }
 ],
 "tests": [
