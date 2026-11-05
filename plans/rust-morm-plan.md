@@ -31,19 +31,22 @@ Non-goals: other databases, a query language that replaces SQL, runtime reflecti
 | Long-running work | Jobs and crons use the pool normally. `db.hold()` is only for session state |
 | Statement cache | Bounded per-connection LRU, with `query_typed` for dynamic SQL and overflow |
 | Connection | Unix socket by default (`host=/var/run/postgresql`), the lowest latency and allows peer auth. TCP also supported |
-| TLS | Optional cargo feature `tls` (rustls). Not compiled in unless enabled |
+| TLS | Optional cargo feature `tls` (rustls). Not compiled in unless enabled. Compiling it in costs binary size and build time; RAM and CPU are only spent on connections that use TLS |
 | Default primary key | `bigserial` (`base = "common"`), the fastest and smallest |
 | Alternative primary key | UUIDv7 (`base = "common_uuid"`), generated in the app or by Postgres 18's `uuidv7()`. For ids in public URLs and offline clients |
 | Custom primary key | `base = "bare"`: no columns added; you define your own single, composite, or no PK |
+| Base models | Built-in `common`, `common_uuid`, `pk_only`, `pk_uuid_only`, `bare`, plus your own with `#[morm::base]` |
 | Change tracking | None. There is no `save`. Updates name their columns, and never load a row first |
 | Rows | Plain structs with public fields and zero per-row overhead |
-| Field access control | Views at compile time, groups at runtime. `sudo` is a group with a reserved name |
+| Field access control | Views at compile time, groups at runtime, on a field or a whole model. `sudo` is a group with a reserved name |
 | Validation | One mechanism: declarative rules and `clean`, generated inline, run only on write |
 | Hooks | Trait with zero-cost default methods. Update and delete hooks receive only what the statement contains |
 | JSON | Direct from a row, with no intermediate `Value` or map. Postgres-built JSON also available |
 | Migration source of truth | Models and chain replayed in scratch databases, compared through the Postgres catalog. No snapshots |
 | Admin | One tool, `morm-admin`, for everything administrative |
-| Rust edition / MSRV | 2024 edition; MSRV at least 1.85, final value decided at first release |
+| Rust edition / MSRV | 2024 edition; MSRV 1.99, the current stable. Moves up to the latest stable until the first release |
+| Decimal | `numeric` maps to `Decimal` where it fits exactly and to `morm::Numeric` otherwise. Values are never silently rounded |
+| Names | morm's `__UNQ_`, `__IDX_`, `__FK_` convention, shortened with a hash at Postgres's 63-byte limit |
 | License | BSD-3-Clause (same as python-morm) |
 
 ---
@@ -76,11 +79,11 @@ rust-morm/
 
 Cargo features of `morm`:
 
-- `tls`: rustls for TCP connections
+- `tls`: rustls for TCP connections. The connector and its certificates load only when `sslmode` needs them, so with it compiled in and unused, the cost is binary size and build time. Unix sockets never use TLS
 - `chrono` (default) / `time`: timestamp types
 - `uuid` (default): UUID columns and UUIDv7 generation
 - `json` (default): `jsonb` and JSON output
-- `decimal` (default): `numeric` via `rust_decimal`, which can't hold every `numeric` value (documented)
+- `decimal` (default): `Decimal` for `numeric` columns, through `rust_decimal` (section 8)
 - `tracing`: spans and slow-query logs, compiled out when off. SQL text only, never parameter values
 - `utoipa`: OpenAPI schemas
 
@@ -124,7 +127,9 @@ max_queries = 50000              # 0 = no limit
 max_lifetime = "off"
 hold_warn_after = "1h"
 
-[pools.jobs]                     # optional named pool
+[pools.jobs]                     # optional named profile
+user = "app_jobs"                # any [database] field can be set here
+password = "${MORM_JOBS_PASSWORD}"
 min = 1
 max = 4
 
@@ -174,7 +179,7 @@ Precedence: defaults, then `morm.toml`, then environment variables, then code. T
 
 **Credentials:** `MORM_DB_*` values override the matching parts of `DATABASE_URL`, so a URL can hold the address while the password comes from `MORM_DB_PASSWORD_FILE`. Setting both `MORM_DB_PASSWORD` and `MORM_DB_PASSWORD_FILE` is an error. `sslmode` values other than `disable` and `prefer` need the `tls` feature, and morm refuses to start without it, so it never silently connects unencrypted. Passwords are never logged, and they're masked in `Debug` output and error messages. `morm-admin doctor` checks that credentials work and warns if `morm.toml` contains a literal password.
 
-**Named pools** take any unset value from `[pool]`, except `min`, which defaults to 1. A separate process can open only its own profile, so job settings live in the same file:
+**Named pools** are full connection profiles. Any `[database]` field can be set in `[pools.<name>]`, so a job can log in as another role or reach another host. Unset connection fields come from `[database]`, and unset pool settings from `[pool]`, except `min`, which defaults to 1. A separate process can open only its own profile, so job settings live in the same file:
 
 ```rust
 let db = morm::Db::connect_as("jobs").await?;   // opens only [pools.jobs]
@@ -240,22 +245,46 @@ Defaults are the best choice for new tables. Anything else is declared explicitl
 |---|---|
 | `base = "common"` | `id bigserial` PK, `created_at`, `updated_at` |
 | `base = "common_uuid"` | `id uuid` PK (UUIDv7), `created_at`, `updated_at` |
+| `base = "pk_only"` | `id bigserial` PK only |
+| `base = "pk_uuid_only"` | `id uuid` PK (UUIDv7) only |
 | `base = "bare"` (or omitted) | Nothing. You define every column and your own PK: single, composite, or none |
+| `base = MyBase` | Your own base, below |
 
 PK-based helpers come through a `HasPk` trait, so a model without a PK simply doesn't have them: a compile error, not a runtime failure. To match an existing table, write for example `#[col(pk, sql = "serial")] id: i32`, with explicit index and constraint names.
+
+**Custom bases** are ordinary structs:
+
+```rust
+#[morm::base(base = "common_uuid")]             // a base can extend another base
+pub struct Tenanted {
+    #[col(fk = Tenant::id, index)]
+    pub tenant_id: Uuid,
+    #[col(groups = "staff")]
+    pub created_by: Option<Uuid>,
+}
+
+#[model(table = "invoices", base = Tenanted)]
+pub struct Invoice { pub total: Decimal }       // invoice.tenant_id is a plain field
+```
+
+- The fields become real fields of the model, with every `#[col]` option, so `invoice.id` works and there is no nested struct or runtime cost.
+- A macro can't read another struct's fields, so `#[morm::base]` generates a `macro_rules!` macro holding its fields, and `#[model]` calls it to get them. Bases work across crates, and they carry indexes and `ordering`.
+- A field defined in both the base and the model is a compile error.
+- The built-in bases use this same mechanism.
+- `flatten` remains for a nested reusable struct, as in `order.shipping.city`.
 
 ### Struct options (`#[model(...)]`)
 
 | Option | Meaning |
 |---|---|
 | `table` | table name (default: snake_case of the struct name) |
-| `base` | `"common"`, `"common_uuid"`, or `"bare"` |
+| `base` | `"common"`, `"common_uuid"`, `"pk_only"`, `"pk_uuid_only"`, `"bare"`, or a `#[morm::base]` type |
 | `ordering` | default sort, `-` prefix for descending |
 | `was` | previous table name (rename hint for migrations) |
 | `indexes(...)` | list of indexes (section 7) |
 | `extensions` | Postgres extensions the model needs |
 | `hooks` | the model has its own `impl Hooks`; `hooks(tx)` also runs its statements in a transaction |
-| `groups` | groups this model belongs to |
+| `groups`, `sudo` | groups for the whole model (section 5) |
 | `no_default` | don't generate `Default` |
 
 ### Field options (`#[col(...)]`)
@@ -266,7 +295,7 @@ PK-based helpers come through a `HasPk` trait, so a model without a PK simply do
 | `default` | SQL default expression |
 | `default_fn` | Rust function that supplies a default on insert |
 | `pk` | primary key (with `base = "bare"`; several fields make a composite PK) |
-| `unique`, `index`, `index(using = ..., ...)` | single-column shortcuts; `index = "hash,btree"` makes two |
+| `unique`, `index`, `index(using = ..., ...)` | single-column shortcuts; `index = "hash,btree"` makes two. Rules in section 7 |
 | `not_null` | `Option<T>` field that is still NOT NULL in the DB (filled by a default) |
 | `fk = Type::field`, `on_delete`, `on_update` | typed foreign key, checked at compile time; actions: `cascade`, `restrict`, `set null`, `set default`, `no action` |
 | `expr` | read-only computed column; excluded from writes and migrations |
@@ -284,7 +313,7 @@ PK-based helpers come through a `HasPk` trait, so a model without a PK simply do
 
 ### Type inference
 
-`i16` → smallint, `i32` → integer, `i64` → bigint, `f32` → real, `f64` → double precision, `bool` → boolean, `String` → text, `Vec<u8>` → bytea, `DateTime<Utc>` / `Timestamp` → timestamptz, `NaiveDateTime` → timestamp, `NaiveDate` → date, `NaiveTime` → time, `Uuid` → uuid, `serde_json::Value` → jsonb, `Decimal` → numeric, `Vec<T>` → `T[]`. `Option<T>` → nullable. `#[derive(PgEnum)]` maps a Rust enum to a Postgres enum; domains and composite types are also supported. Anything else requires an explicit `sql`.
+`i16` → smallint, `i32` → integer, `i64` → bigint, `f32` → real, `f64` → double precision, `bool` → boolean, `String` → text, `Vec<u8>` → bytea, `DateTime<Utc>` / `Timestamp` → timestamptz, `NaiveDateTime` → timestamp, `NaiveDate` → date, `NaiveTime` → time, `Uuid` → uuid, `serde_json::Value` → jsonb, `Vec<T>` → `T[]`. `Option<T>` → nullable. `#[derive(PgEnum)]` maps a Rust enum to a Postgres enum; domains and composite types are also supported. Anything else requires an explicit `sql`, including `Decimal` and `Numeric`, which need their precision stated (section 8).
 
 ### Plain structs, no `save`
 
@@ -308,7 +337,7 @@ db.insert(&mut p).await?;        // fills id and timestamps in place
 - an empty `impl Hooks` (unless `hooks` is set)
 - schema metadata, compiled only into `morm-mgr`, with no model list to maintain
 
-Compile-time checks: unknown columns in `ordering`, `indexes` and `include`; foreign keys whose types don't match; generic structs. Postgres checks `filter` and `expr` on scratch, because a macro can't parse SQL. Groups are `u64` masks, so a model with groups can have up to 64 fields. Other models have no field limit.
+Compile-time checks: unknown columns in `ordering`, `indexes` and `include`; foreign keys whose types don't match; generic structs. Postgres checks `filter` and `expr` on scratch, because a macro can't parse SQL. Groups are `u64` masks with one bit per group, so a model can have up to 64 groups, with no limit on fields.
 
 ---
 
@@ -351,7 +380,8 @@ pub(in crate::auth) struct UserAdmin { /* every column */ }
 - **Compile time:** `#[view(pub Mod, groups = "mod")]` builds a view from ungrouped fields plus that group.
 - **Runtime:** each group is a generated `u64` mask (`User::G.admin`). `db.groups(User::G.admin | User::G.mod)` or `db.sudo()` returns a scoped handle.
 - **Runtime enforcement is on write and on output.** An `update` setting fields outside the mask fails, and `to_json_for(mask)` omits them. It's a single bit operation.
-- `#[model(groups = "...")]` assigns a model to groups, and `Model::group_fields("mod")` lists its fields.
+- **On a whole model:** `#[model(groups = "staff")]` puts every field without its own `groups` into that group, so the rule covers the whole model in one place. `#[model(sudo)]` does the same with `sudo`. A field's own `groups` takes priority.
+- `Model::groups()` lists the model's groups, and `Model::group_fields("mod")` lists a group's fields.
 
 ---
 
@@ -406,10 +436,30 @@ indexes(
 
 Rules:
 
-- Plain `unique` becomes a UNIQUE constraint. A unique index with `filter` or `expr` stays an index, because constraints can't be partial or use expressions.
-- Deterministic names (`{table}_{cols}_{idx|key}`), with a short hash suffix when longer than 63 characters.
-- `morm-admin mgr lint` warns about foreign key columns without an index, and redundant indexes such as a hash and a btree on one column.
+- **`unique` gives both a constraint and an index.** Postgres backs a UNIQUE constraint with a unique index of the same name, so morm creates one object that serves as both. This applies to `#[col(unique)]` and to `index(cols = "a, b", unique)`, and `include` is kept on the constraint. A unique index with `filter` or `expr` stays an index only, because constraints can't be partial or use expressions.
+- **Duplicates are compile errors.** The macro sees every declaration, so it rejects a second btree index with the same columns in the same order, as `#[col(unique, index)]`, `#[col(unique)]` plus `index(cols = "email")`, a repeated `indexes(...)` entry, or an index matching the primary key. Inherited base fields are included. Indexes differing in `using`, `ops`, `filter`, `expr` or `include` are allowed, and `lint` reports the ones that look redundant.
+- `morm-admin mgr lint` warns about foreign key columns without an index, and redundant indexes such as a hash and a btree on one column, or an index on `a` when one on `a, b` exists.
 - On existing tables, migrations build indexes concurrently by default (section 10).
+
+### Names
+
+The convention is python-morm's, so models can match its databases without explicit names:
+
+| Object | Name |
+|---|---|
+| Unique on one column | `__UNQ_{table}_{column}__` |
+| Unique on several columns | `__UNQ_{table}_{name}__` |
+| Index on one column | `__IDX_{table}_{column}_{method}__` |
+| Index on several columns | `__IDX_{table}_{name}_{method}__` |
+| Foreign key | `__FK_{table}_{column}__` |
+| Check | `__CHK_{table}_{name}__` (new; python-morm has no convention for it) |
+
+`{name}` is the `name` you give, or the column names joined by `_`. A primary key keeps the Postgres name `{table}_pkey`.
+
+- **63-byte limit:** Postgres silently cuts longer names, so two long names could collide. morm counts bytes, not characters. A longer name is cut and ends in 8 hex characters of its full SHA-256, as `__IDX_{start of name}_{hash}__`, so it stays at 63 bytes, is stable across builds and still shows the table.
+- A generated name used twice in one model, for example two partial indexes on one column, is a compile error asking for an explicit `name`.
+- An explicit `name` is used as written. Over 63 bytes is a compile error.
+- `morm-admin import` keeps existing names, as explicit `name` values where they differ.
 
 ---
 
@@ -420,9 +470,12 @@ In the examples, `F` is short for the relevant model's `F`, such as `Product::F`
 ### Connecting
 
 ```rust
-let db = morm::Db::connect().await?;                       // reads morm.toml
+let db = morm::Db::connect().await?;                       // reads morm.toml: [database], [pool]
+let db = morm::Db::connect_as("jobs").await?;              // reads morm.toml: [pools.jobs]
 let db = morm::Db::connect_to(url).min(10).max(90).await?; // or set values in code
 ```
+
+`connect` honours `MORM_POOL`, so a process can switch profile without a code change. `connect_as` names the profile in code and fails if it doesn't exist. Both return a builder, so `.min()` and `.max()` work there too.
 
 ### Get
 
@@ -481,9 +534,21 @@ let rows = db.select::<Product>()
     .limit(50)
     .fetch_ref().await?;
 
+// only some columns; the row type comes from the columns
+let rows: Vec<(i64, String)> = db.select::<Product>()
+    .filter_cols((F.id, F.name))
+    .qc(F.vendor_id, "=", &vendor_id)
+    .limit(50)
+    .fetch().await?;
+
 let products: Vec<Product> = db.raw::<Product>("SELECT * FROM products WHERE attrs ? $1", &[&"color"])
     .limit(50).fetch().await?;
 ```
+
+- `.filter()` selects every down column: all the columns this model or view may read, without hidden, write-only or `deprecated` ones. It's the `.filter_cols(...)` default, since Rust has no default arguments.
+- `.filter_cols((F.a, F.b))` selects only those. `fetch()` returns tuples of the columns' Rust types and `fetch_ref()` returns borrowed tuples, so a wrong type is a compile error, and a partial row can't pass for a full `Product`. `fetch_json`, `stream_json` and `fetch_raw` work the same way.
+- Columns come from `F`, so a view can't select what it hides. On a `db.groups(mask)` handle, a column outside the mask is an error.
+- The column list is cached like other statements, so repeats allocate nothing.
 
 A list needs `.limit(n)`, `.all()` or `stream()`. Lists return one of:
 
@@ -497,6 +562,51 @@ A list needs `.limit(n)`, `.all()` or `stream()`. Lists return one of:
 | `stream()` | One row at a time | Row by row | Huge results |
 
 `fetch_one`, `fetch_opt`, `fetch_val`, `exists` and `count` cover the single-result cases.
+
+### Raw SQL, with no model
+
+`db.sql()` runs any statement. No model, hooks, validation or ordering are involved.
+
+```rust
+#[derive(morm::Row)]
+struct Sale { day: NaiveDate, total: Decimal }
+
+let q = sql!("SELECT day, sum(total) AS total FROM orders WHERE vendor_id = $1 GROUP BY day");
+
+let rows: Vec<Sale> = db.sql(q, &[&vendor_id]).limit(30).fetch().await?;     // named struct
+let rows: Vec<(NaiveDate, Decimal)> = db.sql(q, &[&vendor_id]).limit(30).fetch().await?;  // tuple
+let body = db.sql(q, &[&vendor_id]).limit(30).fetch_json().await?;           // JSON bytes
+let rows = db.sql(q, &[&vendor_id]).limit(30).fetch_raw().await?;            // rows as sent
+let n: i64 = db.sql("SELECT count(*) FROM orders", &[]).fetch_val().await?;  // one value
+let changed = db.sql("UPDATE orders SET seen = true WHERE id = $1", &[&id]).run().await?;  // row count
+```
+
+- Every list and single-result call works here, including `fetch_ref`, `stream` and `stream_json`.
+- `#[derive(morm::Row)]` decodes by column name, for any plain struct. Columns the struct lacks are ignored, and a missing column is an error.
+- The SQL must be `&'static str`, as with `.q()`, and `sql_unchecked(String)` is the visible escape hatch. `sql!` also registers it for `check-sql`.
+- **The list rule still applies.** `.limit(n)` appends `LIMIT n` to your statement, and `.all()` runs it as written. `run()`, `fetch_val()`, `fetch_one()` and `fetch_opt()` don't need either.
+- It uses the same bounded statement cache, and `db.raw::<T>()` remains for raw SQL decoding into a model or view.
+
+### Decimal
+
+Postgres `numeric` goes up to 131,072 digits before the point, and also holds `NaN` and `Infinity`. No fixed-size Rust type covers that. `rust_decimal::Decimal` is 16 bytes, needs no heap and is `Copy`, but holds only 28 digits or so. Two types cover both cases:
+
+| Rust type | Holds | Use for |
+|---|---|---|
+| `Decimal` (`rust_decimal`) | Up to 28 significant digits | Money, quantities, rates |
+| `morm::Numeric` | Every `numeric` value, `NaN` and `Infinity` included, with no arithmetic of its own | Larger values, and columns of unknown range |
+
+```rust
+#[col(sql = "numeric(12,2)")] pub price: Decimal,   // fits, so checked at compile time
+#[col(sql = "numeric(40,2)")] pub total: Numeric,   // Decimal here is a compile error
+```
+
+- **Never silently rounded on read.** `rust_decimal`'s own decoding rounds fractional digits it can't hold, and it allocates per value. morm decodes `Decimal` itself, with no heap use. A value that doesn't fit exactly returns `Error::Decimal`, as do `NaN` and `Infinity`.
+- **Never silently rounded on write.** Postgres rounds to a column's scale without complaint, so `1.005` into `numeric(12,2)` would change. With the scale known from `sql`, a value with too many decimal places returns a validation error. Use `clean` when rounding is what you want.
+- **Types are checked at compile time.** `Decimal` on `numeric(p,s)` with `p` or `s` above 28 is a compile error. `f32` or `f64` on `numeric` is a compile error, because floats can't hold decimal fractions exactly.
+- **Unbounded `numeric`** with `Decimal` compiles, because existing tables have it, but `lint` warns, and a value that doesn't fit fails at read time. `import` writes `Decimal` for bounded columns that fit, and `Decimal` with an explicit `sql = "numeric"` for unbounded ones.
+- **JSON:** always a string, such as `"34.50"`, because a JSON number would lose digits in JavaScript clients. `Numeric` follows the same rule.
+- **Speed:** `numeric` decoding is slower than integer decoding. When a column holds a fixed number of decimal places and speed matters most, `bigint` minor units (cents) are the fastest choice. The README says so.
 
 ### Query safety
 
@@ -525,6 +635,7 @@ Same API as `db`, with savepoints, retry on 40001 and 40P01, and per-transaction
 - **Input:** `Deserialize` on a view accepts only its writable fields, so `UserProfile` doubles as the safe request body. `insert` and `update` run `clean` and the rules. No separate input type.
 - **Schema:** `User::json_schema(Up | Down)` as generated static strings, plus optional `utoipa` for OpenAPI.
 - Formats are fixed and documented: `Decimal` as a string, timestamps as RFC 3339, `bytea` as base64, `None` as `null`, `jsonb` embedded as JSON.
+- **`fetch_json()` on a model or view follows the same formats.** Postgres would write `numeric` as a JSON number and `bytea` as hex, so generated SQL converts those columns. `db.sql(...).fetch_json()` has no model to go by, so Postgres's own formats apply there, and your SQL can cast.
 
 `fetch_json()` isn't automatically fastest: it moves the CPU work into Postgres, where it occupies a connection. Benchmarks compare it with `fetch_ref()`, and the docs state the result.
 
@@ -891,7 +1002,7 @@ db.release(held).await;      // or held.release().await
 
 - Release profile for benches and examples, recommended in the docs: `lto = "fat"`, `codegen-units = 1`, `strip = true`, `panic = "unwind"` (so a panicking handler doesn't kill the server). A library's profile doesn't reach its users.
 - Criterion benchmarks in CI against raw tokio-postgres, SQLx, SeaORM and Diesel.
-- Also: `morm::Pool` vs `deadpool-postgres`, pool sizes under mixed fast and slow queries, `fetch_ref` vs `fetch` vs `fetch_json`, binary size, and RSS on both app and Postgres.
+- Also: `morm::Pool` vs `deadpool-postgres`, pool sizes under mixed fast and slow queries, `fetch_ref` vs `fetch` vs `fetch_json`, morm's `Decimal` decoding vs `rust_decimal`'s, binary size and RSS with `tls` compiled in but unused, and RSS on both app and Postgres.
 
 ---
 
@@ -905,6 +1016,9 @@ db.release(held).await;      // or held.release().await
 | Building SQL from strings | Compile error (`q_unchecked` is the visible escape hatch) |
 | A list with no limit | Compile error: requires `.limit(n)`, `.all()` or `stream()` |
 | Reading a hidden field | Compile error |
+| A duplicate of a unique, primary key or plain index | Compile error |
+| `Decimal` on a `numeric` too large for it, or a float on `numeric` | Compile error |
+| A rounded `numeric` value | Error on read and on write |
 | Queries in a loop | Detector in debug builds and `#[morm::test]`: the same statement repeating in one task warns, and fails the test |
 | Filtering on an unindexed column | `morm-admin mgr check-sql` runs `EXPLAIN` on every registered query |
 
@@ -917,7 +1031,7 @@ The compiler can't see a query inside a loop, so that one is caught in tests and
 Tests are written with the code: **a milestone isn't done until its tests pass in CI.**
 
 - **Unit:** macro output, SQL generation, diff, naming.
-- **Compile-fail (`trybuild`):** every compile-time guarantee, including hidden view fields, `HasPk`, unfiltered update and delete, update with no `.set()`, list with no limit, `self` absent in update and delete hooks, non-static `q()`.
+- **Compile-fail (`trybuild`):** every compile-time guarantee, including hidden view fields, `HasPk`, unfiltered update and delete, update with no `.set()`, list with no limit, `self` absent in update and delete hooks, non-static `q()` and `sql()`, duplicate indexes, duplicate base fields, over-long and colliding names, `Decimal` and float on unsuitable `numeric` columns.
 - **Integration on real Postgres:** insert, every get, update and delete form, views, groups, hook inputs (`Changes`, `Target`), hooks order, the loop detector, `after_commit` on commit and skip on rollback, all list and JSON paths, pool growth and idle shrinking, `max_connections` adjustment, `db.hold()` release on every exit path, `ConnectionLost`, cancellation.
 - **Property tests:** random models and data round-trip through insert, read and JSON.
 - **Doc tests:** every README and doc example compiles and runs.
@@ -969,7 +1083,7 @@ One compact, complete file at the repo root. It must be enough to use morm effic
 
 4. **Performance rules:** never query in a loop, always limit lists, select through the narrowest view, keep transactions short with no network calls inside them, index what you filter on, release every `db.hold()`.
 5. Models: bases, every `#[model]` and `#[col]` option in tables.
-6. `get`, `insert`, `update`, `delete`, lists, transactions.
+6. `get`, `insert`, `update`, `delete`, lists, `filter_cols`, raw SQL with `db.sql()`, transactions, and which of `Decimal`, `Numeric` or `bigint` to use.
 7. Views, groups, validation.
 8. Hooks, with a table of what each receives and this line: "update and delete hooks never see a row unless you fetch it."
 9. JSON output and schemas.
@@ -982,8 +1096,8 @@ One compact, complete file at the repo root. It must be enough to use morm effic
 ## 15. Milestones
 
 0. **Repo bootstrap:** workspace in `biggaloy/rust-morm`, CI workflows, README skeleton.
-1. **Core models:** macro, bases, views, groups, declarative rules and `clean`, inference, `F`, compile-time checks.
-2. **Runtime:** `morm.toml` and environment variables, `morm::Pool` on the `deadpool` core (start with a quick proof-of-concept), dynamic size, named pools, `max_connections` adjustment, `db.hold()`, bounded statement cache, insert, `get`/`update`/`delete` forms, query builder, loop detector, typed errors, transactions, all list and JSON paths. → **First publish** (`0.1.0-alpha`).
+1. **Core models:** macro, bases including `#[morm::base]`, index and name rules, views, groups at field and model level, declarative rules and `clean`, inference, `F`, compile-time checks.
+2. **Runtime:** `morm.toml` and environment variables, `morm::Pool` on the `deadpool` core (start with a quick proof-of-concept), dynamic size, named pools, `max_connections` adjustment, `db.hold()`, bounded statement cache, insert, `get`/`update`/`delete` forms, query builder, `filter_cols`, `db.sql()` and `#[derive(morm::Row)]`, `Decimal` and `Numeric`, loop detector, typed errors, transactions, all list and JSON paths. → **First publish** (`0.1.0-alpha`).
 3. **Migration foundation:** `Schema` IR, catalog reader, diff, typed ops with inverses, scratch, proof pipeline.
 4. **Migration execution:** ledger, steps, fingerprint gates, advisory lock, timeouts, preflight, crash recovery, fault-injection suite.
 5. **Migration safety:** safe forms, batched backfills, retire and purge, decisions, `lint`, `rehearse`, expand/contract, `check_schema()`.
@@ -1001,13 +1115,12 @@ One compact, complete file at the repo root. It must be enough to use morm effic
 ### Risks
 
 - **Managed objects:** functions, triggers and policies with exact inverses are the hardest engine work.
-- **Needs proof early:** borrowed `ProductRef` decoding, the loop detector, macro feasibility for `#[view]`, and hook signatures.
+- **Needs proof early:** borrowed `ProductRef` decoding, the loop detector, macro feasibility for `#[view]` and `#[morm::base]`, and hook signatures.
 - **Scratch databases:** `makemigrations` needs a Postgres where it can `CREATE DATABASE`.
 - **Scope:** migrations alone outweigh the runtime.
 
 ### Open items
 
-- Decide the final MSRV (at least 1.85).
 - Check that `morm-migrate` and `morm-admin` are free on crates.io.
 
 ### Later
