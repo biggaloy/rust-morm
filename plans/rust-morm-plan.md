@@ -96,6 +96,7 @@ Cargo features of `morm`:
 ```
 morm-admin init [path] [--axum]       # create a project
 morm-admin doctor                     # check Postgres, roles, scratch, versions
+morm-admin size [options]             # settings to resources, or resources to settings (section 11)
 morm-admin import URL [--out DIR]     # generate models from a database
 morm-admin scratch                    # check or create the scratch database
 morm-admin outbox [list | retry ID]   # inspect failed events, deliver one again
@@ -126,8 +127,12 @@ search_path = "public"           # pinned, so another role can't shadow objects
 [database.migration]             # owner role, so the app can run with fewer privileges
 url = "${MORM_MIGRATION_URL}"
 
+[server]                         # optional: the database server, which SQL can't report
+ram = "8G"
+cores = 4
+
 [pool]
-min = "auto"                     # 2 x cores of this machine
+min = "auto"                     # 2 x [server] cores, or of this machine if unset
 max = "auto"                     # 10 x min
 processes = 1                    # app processes sharing this database
 idle_timeout = "5m"              # shrink to 1 after this
@@ -151,6 +156,10 @@ tx_warn_after = "1s"
 [pools.replica]                  # a read replica
 host = "db-replica.internal"
 read_only = true
+
+[pools.replica.server]           # a pool on a different server describes that server
+ram = "16G"
+cores = 8
 
 [pools.jobs]                     # optional named profile
 user = "app_jobs"                # any [database] field can be set here
@@ -196,6 +205,7 @@ Precedence: defaults, then `morm.toml`, then environment variables, then code. T
 | `MORM_MIGRATIONS_DIR` | Migrations directory |
 | `MORM_OUTBOX_BATCH`, `MORM_OUTBOX_POLL_INTERVAL` | `batch`, `poll_interval` |
 | `MORM_OUTBOX_LEASE`, `MORM_OUTBOX_MAX_ATTEMPTS`, `MORM_OUTBOX_RETENTION` | `lease`, `max_attempts`, `retention` |
+| `MORM_SERVER_RAM`, `MORM_SERVER_CORES` | `[server]` `ram`, `cores` |
 | `MORM_POOL` | Named pool this process opens, instead of `[pool]` |
 | `MORM_POOL_MIN`, `MORM_POOL_MAX` | `min`, `max` |
 | `MORM_POOL_PROCESSES` | `processes` |
@@ -1287,7 +1297,7 @@ Everything goes through `db`, so the pool can be replaced later without changing
 - **`min` is not a floor.** It only sets the warm start. Connections reopen on demand, and the first query after a full idle period pays the connection cost.
 - **Limits never interrupt work.** `max_queries` and `max_lifetime` are checked only when a connection returns to the pool.
 - **Custom rules:** `Db::connect().recycle_when(|c| c.queries > 50_000 || c.age > hours(6))`.
-- **Cores:** the default uses the machine running the app, because morm can't see a remote server's core count. If the database is elsewhere, set `min` by hand.
+- **Cores:** Postgres doesn't report its core count over SQL. The default uses `[server] cores`, or the machine running the app when that's unset. If the database is elsewhere, set `[server]`.
 - **Failover:** on a pool that isn't `read_only`, a connection that returns `25006` (read-only transaction, after a primary switch) or an admin shutdown error is discarded, not reused. With several hosts and `target_session_attrs = "read-write"`, replacements find the new primary.
 - **Queues:** a request that can't get a connection waits up to `wait_timeout`, then returns `PoolBusy`. Waits are never infinite.
 - **Separate processes:** a service job, cron or background worker running as its own process must not start a pool with `min` above 1. It should use `Db::connect_as("jobs")`, `MORM_POOL=jobs`, or `MORM_POOL_MIN=1`, because the default of 2 × cores would open connections it doesn't need. The pool still grows on demand.
@@ -1313,6 +1323,54 @@ morm: pool max 160 lowered to 92 (max_connections=100, reserved=3, margin=5)
 ```
 
 morm can't see other apps on the same server, which is what the margin is for, and `processes` is set by hand. When several separate processes share a server, Postgres is the real limit: on "too many clients", morm retries with a short backoff before returning the error.
+
+### Resource estimates: `morm-admin size`
+
+One command works in both directions, so nobody has to add up pool size, `work_mem` and caches by hand.
+
+**Settings to resources.** With no sizing flags, it reads every pool in `morm.toml`, then the live `max_connections`, `shared_buffers`, `work_mem`, `hash_mem_multiplier`, maintenance and parallel worker settings:
+
+```
+$ morm-admin size
+
+Pools                 max  x processes  connections
+  default              40         2          80
+  jobs                 10         1          10
+  Total                                      90 of 97 available
+
+Postgres memory       typical    worst case
+  shared_buffers        2.0G        2.0G
+  Connections           0.5G        0.9G
+  Queries (work_mem)    0.4G        5.6G   <- exceeds RAM
+  Maintenance           0.3G        0.8G
+  Total                 3.2G        9.3G   of 8G RAM
+
+warning: worst case exceeds RAM. Lower work_mem to 16MB, or max to 25.
+```
+
+(Figures show the format only.) Pools on the same host and port are added together, and each server is reported separately. It exits with `1` when connections or the typical total don't fit, so CI can catch a bad config. A worst case over RAM is a warning, and `doctor` prints the same result in one line.
+
+**Resources to settings.** It prints suggested `morm.toml` and `postgresql.conf` values, each with a one-line reason:
+
+```
+morm-admin size --here                                  # this machine
+morm-admin size --ram 8G --cores 4                      # a server you describe
+morm-admin size --here --qps 2000 --query-ms 5          # with a known workload
+morm-admin size --here --share 0.5                      # the server is shared with other apps
+morm-admin size --here --emit postgres                  # only one block: morm or postgres
+```
+
+- **`--here`** is for running on the machine that will host Postgres, including before Postgres is installed, since it needs no connection. It reads core count and RAM from the machine and takes the smaller of those and any cgroup limit, so a container or systemd slice gets a config for what it can really use. `--ram` and `--cores` override either value.
+- If `morm.toml` points at a remote host, `--here` warns that this machine isn't the database server. A Unix socket or `localhost` counts as local.
+- Suggestions cover `[server]`, `[pool]` `min`, `max` and `processes`, plus `max_connections`, `shared_buffers`, `effective_cache_size`, `work_mem` and `maintenance_work_mem`.
+- With no workload flags, it assumes the defaults from "Sizing guidance" and prints that assumption.
+- **It only prints.** It never changes Postgres or writes a file, and `--emit` makes the output easy to redirect.
+
+**What the numbers mean:**
+
+- **Estimates, shown as a range.** One query can use `work_mem` several times, once per sort or hash, multiplied by `hash_mem_multiplier` and parallel workers. Real use is usually near the typical figure, and the worst case shows only what's possible.
+- **Per-connection memory** depends on how many statements are cached and how complex they are. The built-in defaults are calibrated in milestone 2 and aren't measured for your app.
+- **`--measure`** replaces those defaults: it prepares your app's real statements on one connection and reads `pg_backend_memory_contexts`. It needs the models through `morm-mgr`, so run it in development or CI against a test database, not on a production host.
 
 ### Jobs and long-running work
 
@@ -1428,6 +1486,7 @@ db.release(held).await;      // or held.release().await
 | A duplicate of a unique, primary key or plain index | Compile error |
 | `Decimal` on a `numeric` too large for it, or a float on `numeric` | Compile error |
 | A rounded `numeric` value | Error on read and on write |
+| Pool settings that don't fit the server | `morm-admin size` exits with `1`, so CI can catch it; `doctor` reports it |
 | Queries in a loop | Detector in debug builds and `#[morm::test]`: the same statement repeating in one task warns, and fails the test |
 | Filtering on an unindexed column | `morm-admin mgr check-sql` runs `EXPLAIN` on every registered query |
 
@@ -1441,7 +1500,7 @@ Tests are written with the code: **a milestone isn't done until its tests pass i
 
 - **Unit:** macro output, SQL generation, diff, naming.
 - **Compile-fail (`trybuild`):** every compile-time guarantee, including hidden view fields, `HasPk`, unfiltered update and delete, update with no `.set()`, list with no limit, `self` absent in update and delete hooks, `Deserialize` on models and on views without `input` or `patch`, protected columns in `input` and `patch`, a derived `Serialize` or `Debug` on a model, non-static `q()` and `sql()`, uppercase names without `keep_case`, columns narrower than their Rust type, `usize` and `isize`, unknown group names, scoped groups on `#[model(groups)]`, a scoped mask on another model, duplicate indexes, duplicate base fields, over-long and colliding names, `Decimal` and float on unsuitable `numeric` columns.
-- **Integration on real Postgres:** insert, every get, update and delete form, views, groups, hook inputs (`Changes`, `Target`), hooks order, the loop detector, `after_commit` on commit and skip on rollback, all list and JSON paths, pool growth and idle shrinking, `max_connections` adjustment, `db.hold()` release on every exit path, `ConnectionLost`, cancellation, forced deadlocks in both kinds, swallowed errors never reporting a commit, `CommitUnknown`, savepoint behaviour after deadlocks, single-statement and transaction retry limits, every timeout, cancelled queries releasing their locks, `max_holds`, `.lock_ordered()` and bulk writes under concurrent load, advisory key stability, `skip_locked` with rival workers, `.in_batches` stopping and resuming, every `insert_many` path at a million rows, keyset pages under concurrent writes and with mixed sort directions, tampered cursors, `order_by_allowed`, `.custom_plan()`, connections discarded on `25006`, `load_related` with `.limit_each`, `secret` absent from every JSON path and `Debug`, unknown input fields rejected, `patch` missing, null and value states on nullable and NOT NULL columns, `EmptyPatch` and `.allow_empty()`, `.set()` winning over `.apply()`, `shape_cache` isolation under random and repeated shapes, every integer type at its limits through insert, read and JSON, range CHECKs rejecting direct SQL writes, `OutOfRange`, `InvalidText`, `json_string` on every path, `db.close()` finishing in-flight work, models in several schemas.
+- **Integration on real Postgres:** insert, every get, update and delete form, views, groups, hook inputs (`Changes`, `Target`), hooks order, the loop detector, `after_commit` on commit and skip on rollback, all list and JSON paths, pool growth and idle shrinking, `max_connections` adjustment, `db.hold()` release on every exit path, `ConnectionLost`, cancellation, forced deadlocks in both kinds, swallowed errors never reporting a commit, `CommitUnknown`, savepoint behaviour after deadlocks, single-statement and transaction retry limits, every timeout, cancelled queries releasing their locks, `max_holds`, `.lock_ordered()` and bulk writes under concurrent load, advisory key stability, `skip_locked` with rival workers, `.in_batches` stopping and resuming, every `insert_many` path at a million rows, keyset pages under concurrent writes and with mixed sort directions, tampered cursors, `order_by_allowed`, `.custom_plan()`, connections discarded on `25006`, `load_related` with `.limit_each`, `secret` absent from every JSON path and `Debug`, unknown input fields rejected, `patch` missing, null and value states on nullable and NOT NULL columns, `EmptyPatch` and `.allow_empty()`, `.set()` winning over `.apply()`, `shape_cache` isolation under random and repeated shapes, every integer type at its limits through insert, read and JSON, range CHECKs rejecting direct SQL writes, `OutOfRange`, `InvalidText`, `json_string` on every path, `db.close()` finishing in-flight work, models in several schemas, `morm-admin size` estimates checked against measured memory, `--here` with and without cgroup limits, `--measure`.
 - **Property tests:** random models and data round-trip through insert, read and JSON.
 - **Doc tests:** every README and doc example compiles and runs.
 - **`#[morm::test]`:** gives each test a database cloned from a migrated template, for this project and its users.
@@ -1516,6 +1575,10 @@ One compact, complete file at the repo root. It must be enough to use morm effic
 | `input = "..."` | A view takes a request body that creates a row |
 | `patch = "..."` | A view takes a partial update, such as a PATCH body |
 | `.allow_empty()` | An empty update is fine, and you will not handle `EmptyPatch` |
+| `morm-admin size` | You change pool or Postgres memory settings and want to check they fit the server |
+| `size --here` | You need a starting config for the machine you're on |
+| `size --measure` | You want estimates based on your app's real statements |
+| `[server]` | The database runs on another machine, so morm can't read its size |
 | `shape_cache` | Logs show churn in runtime-built queries, or your app has many builder query shapes |
 | `#[col(secret)]` | A column must never reach JSON or logs, such as a password hash |
 | `#[model(deserialize)]` | You load a full model from trusted data, such as a cache; never from a request |
@@ -1571,13 +1634,13 @@ One compact, complete file at the repo root. It must be enough to use morm effic
 
 0. **Repo bootstrap:** workspace in `biggaloy/rust-morm`, CI workflows, README skeleton.
 1. **Core models:** macro, `schema`, every integer type with range CHECKs, bases including `#[morm::base]`, index and name rules, views, global and model-scoped groups, declarative rules and `clean`, inference, `F`, compile-time checks.
-2. **Runtime:** `morm.toml` and environment variables, `morm::Pool` on the `deadpool` core (start with a quick proof-of-concept), dynamic size, named pools, `max_connections` adjustment, `db.hold()`, bounded `statement_cache` and `shape_cache`, insert, `get`/`update`/`delete` forms, `patch` views and `.apply()`, query builder, `filter_cols`, `db.sql()` and `#[derive(morm::Row)]`, `keyset`, `.in_batches`, `order_by_allowed`, `.custom_plan()`, `get_for_update`, failover handling, `Decimal` and `Numeric`, loop detector, typed errors, transactions, deadlock measures, all list and JSON paths. → **First publish** (`0.1.0-alpha`).
+2. **Runtime:** `morm.toml` and environment variables, `morm::Pool` on the `deadpool` core (start with a quick proof-of-concept), `[server]`, dynamic size, named pools, `max_connections` adjustment, `db.hold()`, bounded `statement_cache` and `shape_cache`, insert, `get`/`update`/`delete` forms, `patch` views and `.apply()`, query builder, `filter_cols`, `db.sql()` and `#[derive(morm::Row)]`, `keyset`, `.in_batches`, `order_by_allowed`, `.custom_plan()`, `get_for_update`, failover handling, `Decimal` and `Numeric`, loop detector, typed errors, transactions, deadlock measures, all list and JSON paths, calibrated per-connection memory figures for `size`. → **First publish** (`0.1.0-alpha`).
 3. **Migration foundation:** `Schema` IR, catalog reader, diff, typed ops with inverses, scratch, proof pipeline.
 4. **Migration execution:** ledger, steps, fingerprint gates, advisory lock, timeouts, preflight, crash recovery, fault-injection suite.
 5. **Migration safety:** safe forms, batched backfills, retire and purge, production mode, `revert`, `squash`, decisions, `lint`, `rehearse`, expand/contract, `check_schema()`.
 6. **Managed objects:** views, materialized views, functions, procedures, triggers, policies, grants, enums and domains, with dependency recreation.
 7. **Hooks and outbox:** `Changes`, `Target`, all hooks, `validate`, `validate_changes`, `after_commit`, automatic transactions, `pg_outbox!`, `emit`, the worker and `morm-admin outbox`.
-8. **`morm-admin`:** `init`, `doctor`, `import`, `scratch`, `morm-mgr` packaging, Axum template.
+8. **`morm-admin`:** `init`, `doctor`, `import`, `scratch`, `size`, `morm-mgr` packaging, Axum template.
 9. **Query safety:** `sql!`, `check-sql`, upsert, UNNEST and COPY, `#[morm::test]`.
 10. **Remaining features:** UUIDv7, `tls`, schemas and `utoipa`, optimistic locking, tracing, typed FKs, settings, pipelined transactions.
 11. **Benchmarks, lock-order detector, hardening, full README, 0.1.0 release.**
@@ -1599,7 +1662,7 @@ One compact, complete file at the repo root. It must be enough to use morm effic
 
 ### Later
 
-Shared reads: a small opt-in lane that pipelines primary-key reads on a few connections, added only if a benchmark shows real gains with no worse p99 under mixed load. Also partitioning, a `dynamic` registry for by-name admin CRUD, sensitive-column prompts in `import`.
+Shared reads: a small opt-in lane that pipelines primary-key reads on a few connections, added only if a benchmark shows real gains with no worse p99 under mixed load. Also partitioning, a `dynamic` registry for by-name admin CRUD, sensitive-column prompts in `import`, and `morm-admin size --live`, which compares the estimate with `pg_stat_activity` and live pool figures to spot oversized pools.
 
 ### Confirmed for after 0.1
 
