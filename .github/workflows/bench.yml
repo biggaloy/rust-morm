@@ -23,16 +23,18 @@ jobs:
         with:
           persist-credentials: false
       - uses: ./.github/actions/setup-rust
-      - run: cargo bench --locked --workspace --exclude morm-tests
+      - run: mkdir bench-results
+      - name: Run the benchmarks
+        shell: bash
+        run: cargo bench --locked --workspace --exclude morm-tests | tee bench-results/cargo-bench.txt
       - name: Measure binary size and RSS
         run: |
           sudo apt-get update
           sudo apt-get install -y time
           cargo build --locked --release -p morm-admin
-          size=$(stat -c %s target/release/morm-admin)
-          rss=$(/usr/bin/time -f %M target/release/morm-admin 2>&1)
-          mkdir bench-results
-          printf '{"morm-admin binary bytes": %s, "morm-admin peak RSS KiB": %s}\n' "$size" "$rss" > bench-results/metrics.json
+          /usr/bin/time -f %M -o bench-results/rss.txt target/release/morm-admin --version > /dev/null
+      - name: Collect the measurements
+        run: python3 .github/scripts/bench_metrics.py target/release/morm-admin bench-results/rss.txt bench-results/cargo-bench.txt bench-results/metrics.json
       - name: Fetch the last run's measurements
         env:
           GH_TOKEN: ${{ github.token }}
@@ -42,6 +44,7 @@ jobs:
             gh run download "$last" --name bench-results --dir previous
           fi
       - name: Compare with the last run
+        shell: bash
         run: python3 .github/scripts/bench_compare.py bench-results/metrics.json previous/metrics.json | tee -a "$GITHUB_STEP_SUMMARY"
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:

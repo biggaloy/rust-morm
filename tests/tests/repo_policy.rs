@@ -2,6 +2,7 @@
 
 use std::fs;
 use std::path::{Path, PathBuf};
+use std::process::{Command, Output};
 
 fn root() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -54,6 +55,73 @@ fn job_names(workflow: &str) -> Vec<String> {
         .filter(|line| !line.trim_start().starts_with('#'))
         .map(|line| line.trim().trim_end_matches(':').to_owned())
         .collect()
+}
+
+/// The permissions a job sets, as trimmed lines. Empty if it sets none.
+fn job_permissions(job: &[&str]) -> Vec<String> {
+    let Some(start) = job.iter().position(|l| l.starts_with("    permissions:")) else {
+        return Vec::new();
+    };
+    let deeper = |line: &&&str| line.starts_with("      ");
+    let scopes = job[start + 1..].iter().take_while(deeper);
+    std::iter::once(&job[start])
+        .chain(scopes)
+        .map(|line| line.trim().to_owned())
+        .collect()
+}
+
+/// Every workflow step, as its lines.
+fn steps(workflow: &str) -> Vec<Vec<&str>> {
+    let mut steps: Vec<Vec<&str>> = Vec::new();
+    let mut in_steps = false;
+    for line in workflow.lines() {
+        if line.starts_with("      - ") && in_steps {
+            steps.push(vec![line]);
+        } else if line == "    steps:" {
+            in_steps = true;
+        } else if line.starts_with("        ") && in_steps {
+            steps.last_mut().unwrap().push(line);
+        } else if !line.is_empty() {
+            in_steps = false;
+        }
+    }
+    steps
+}
+
+/// The one step in `workflow` holding `text`.
+fn step<'a>(workflow: &'a str, text: &str) -> Vec<&'a str> {
+    let mut found = steps(workflow);
+    found.retain(|lines| holds(lines, text));
+    assert_eq!(found.len(), 1, "expected one step with {text}");
+    found.remove(0)
+}
+
+/// Every `action.yml` under `.github/actions`.
+fn local_actions() -> Vec<PathBuf> {
+    fn walk(dir: &Path, found: &mut Vec<PathBuf>) {
+        for entry in fs::read_dir(dir).unwrap() {
+            let path = entry.unwrap().path();
+            if path.is_dir() {
+                walk(&path, found);
+            } else if matches!(
+                path.file_name().and_then(|name| name.to_str()),
+                Some("action.yml" | "action.yaml")
+            ) {
+                found.push(path);
+            }
+        }
+    }
+    let mut found = Vec::new();
+    walk(&root().join(".github/actions"), &mut found);
+    found
+}
+
+fn run_script(script: &str, args: &[&Path]) -> Output {
+    Command::new("python3")
+        .arg(root().join(".github/scripts").join(script))
+        .args(args)
+        .output()
+        .expect("python3 should run")
 }
 
 fn holds(lines: &[&str], text: &str) -> bool {
@@ -159,16 +227,114 @@ fn bench_runs_weekly_and_on_demand_and_compares_with_the_last_run() {
     let fields: Vec<&str> = cron.split('"').nth(1).unwrap().split(' ').collect();
     assert_eq!(fields[2..4], ["*", "*"], "not weekly");
     assert_ne!(fields[4], "*", "not weekly");
-    let job = job(&bench, "bench");
-    for text in [
-        "cargo bench",
-        "binary bytes",
-        "peak RSS",
-        "gh run download",
-        "bench_compare.py",
-    ] {
-        assert!(holds(&job, text), "bench doesn't do {text}");
+}
+
+// covers: R-0794
+#[test]
+fn bench_results_reach_the_comparison() {
+    let bench = read(".github/workflows/bench.yml");
+    let output = "bench-results/cargo-bench.txt";
+    let metrics = "bench-results/metrics.json";
+    assert!(holds(
+        &step(&bench, "cargo bench --locked"),
+        &format!("| tee {output}")
+    ));
+    let collect = step(&bench, "bench_metrics.py");
+    assert!(holds(&collect, output), "cargo bench's output isn't read");
+    assert!(holds(&collect, metrics), "the measurements aren't written");
+    assert!(holds(&step(&bench, "gh run download"), "bench-results"));
+    let compare = step(&bench, "bench_compare.py");
+    assert!(holds(&compare, &format!("{metrics} previous/metrics.json")));
+    assert!(holds(
+        &step(&bench, "actions/upload-artifact"),
+        "path: bench-results"
+    ));
+}
+
+// covers: R-0794
+#[test]
+fn bench_scripts_compare_benchmarks_with_the_last_run() {
+    let dir = Path::new(env!("CARGO_TARGET_TMPDIR")).join("bench-scripts");
+    fs::create_dir_all(&dir).unwrap();
+    let file = |name: &str, text: &str| {
+        let path = dir.join(name);
+        fs::write(&path, text).unwrap();
+        path
+    };
+    let binary = file("binary", "12345678");
+    let rss = file("rss.txt", "2048\n");
+    let output = file(
+        "output.txt",
+        "running 2 tests\n\
+         test decode_row ... bench:       1,250 ns/iter (+/- 80)\n\
+         encode_row              time:   [2.00 µs 2.50 µs 3.00 µs]\n\
+         a_group/with_a_very_long_name\n\
+         \x20                       time:   [1.0 ms 1.5 ms 2.0 ms]\n",
+    );
+    let metrics = dir.join("metrics.json");
+    let result = run_script("bench_metrics.py", &[&binary, &rss, &output, &metrics]);
+    assert!(result.status.success(), "{result:?}");
+    let written: serde_json::Value = serde_json::from_slice(&fs::read(&metrics).unwrap()).unwrap();
+    assert_eq!(
+        written,
+        serde_json::json!({
+            "morm-admin binary bytes": 8,
+            "morm-admin peak RSS KiB": 2048,
+            "bench decode_row ns": 1250.0,
+            "bench encode_row ns": 2500.0,
+            "bench a_group/with_a_very_long_name ns": 1500000.0,
+        })
+    );
+
+    let previous = file("previous.json", r#"{"bench decode_row ns": 1000.0}"#);
+    let result = run_script("bench_compare.py", &[&metrics, &previous]);
+    assert!(result.status.success(), "{result:?}");
+    let table = String::from_utf8(result.stdout).unwrap();
+    assert!(
+        table.contains("| bench decode_row ns | 1000.0 | 1250.0 | +25.0% |"),
+        "{table}"
+    );
+
+    let unreadable = file("bad.txt", "test decode_row ... bench: fast\n");
+    let result = run_script("bench_metrics.py", &[&binary, &rss, &unreadable, &metrics]);
+    assert!(!result.status.success(), "a lost result must fail the run");
+}
+
+// covers: R-0794
+#[test]
+fn rss_is_read_from_its_own_file_and_not_from_program_output() {
+    let bench = read(".github/workflows/bench.yml");
+    let measure = step(&bench, "/usr/bin/time");
+    assert!(holds(&measure, "-o bench-results/rss.txt"));
+    assert!(holds(&measure, "morm-admin --version"));
+    assert!(
+        !holds(&measure, "2>&1"),
+        "program output mixes with the RSS"
+    );
+    assert!(holds(
+        &step(&bench, "bench_metrics.py"),
+        "bench-results/rss.txt"
+    ));
+}
+
+// covers: R-0794, R-0957
+#[test]
+fn a_failure_on_the_left_of_a_pipe_fails_the_step() {
+    let mut piped = 0;
+    for path in workflow_files() {
+        let text = fs::read_to_string(&path).unwrap();
+        for step in steps(&text) {
+            if holds(&step, " | ") {
+                piped += 1;
+                assert!(
+                    holds(&step, "shell: bash"),
+                    "{}: without `shell: bash` there's no pipefail: {step:?}",
+                    path.display()
+                );
+            }
+        }
     }
+    assert!(piped > 0, "found no pipes: the check is broken");
 }
 
 // covers: R-0795
@@ -200,6 +366,16 @@ fn the_ci_job_fails_unless_every_other_job_passed() {
         "a skipped required check counts as passing"
     );
     assert!(holds(&gate, "[ \"$result\" = success ] || exit 1"));
+    let mut files = local_actions();
+    files.push(root().join(".github/workflows/ci.yml"));
+    for path in files {
+        let text = fs::read_to_string(&path).unwrap();
+        assert!(
+            !text.contains("continue-on-error"),
+            "{}: a job that's allowed to fail counts as passing",
+            path.display()
+        );
+    }
     let needs = gate
         .iter()
         .find_map(|line| line.trim().strip_prefix("needs: "))
@@ -240,8 +416,10 @@ fn the_full_matrix_runs_on_every_push_and_pr_on_standard_runners() {
 fn every_workflow_starts_with_read_only_permissions() {
     for path in workflow_files() {
         let text = fs::read_to_string(&path).unwrap();
+        let mut block = top_level_block(&text, "permissions");
+        block.retain(|line| !line.is_empty());
         assert_eq!(
-            top_level_block(&text, "permissions")[..2],
+            block,
             ["permissions:", "  contents: read"],
             "{}",
             path.display()
@@ -252,23 +430,32 @@ fn every_workflow_starts_with_read_only_permissions() {
 // covers: R-0957
 #[test]
 fn only_the_jobs_that_need_it_raise_permissions() {
-    let raised = |file: &str| {
-        let text = read(file);
-        let mut raised = job_names(&text);
-        raised.retain(|name| holds(&job(&text, name), "permissions:"));
-        raised
-    };
-    assert_eq!(raised(".github/workflows/ci.yml"), [""; 0]);
-    assert_eq!(raised(".github/workflows/nightly.yml"), [""; 0]);
-    assert_eq!(raised(".github/workflows/bench.yml"), ["bench"]);
-    assert_eq!(raised(".github/workflows/release.yml"), ["github-release"]);
+    let mut jobs_seen = 0;
+    for path in workflow_files() {
+        let text = fs::read_to_string(&path).unwrap();
+        let file = path.file_name().unwrap().to_str().unwrap();
+        for name in job_names(&text) {
+            jobs_seen += 1;
+            let expected: &[&str] = match (file, name.as_str()) {
+                ("bench.yml", "bench") => &["permissions:", "contents: read", "actions: read"],
+                ("release.yml", "github-release") => &["permissions:", "contents: write"],
+                _ => &[],
+            };
+            assert_eq!(
+                job_permissions(&job(&text, &name)),
+                expected,
+                "{file}: {name}"
+            );
+        }
+    }
+    assert!(jobs_seen > 0, "found no jobs: the check is broken");
 }
 
 // covers: R-0957
 #[test]
 fn every_action_is_pinned_to_a_full_commit() {
     let mut files = workflow_files();
-    files.push(root().join(".github/actions/setup-rust/action.yml"));
+    files.extend(local_actions());
     let mut seen = 0;
     for path in files {
         for action in used_actions(&fs::read_to_string(&path).unwrap()) {
@@ -337,5 +524,9 @@ fn dependabot_covers_cargo_and_actions() {
     let dependabot = read(".github/dependabot.yml");
     assert!(dependabot.contains("package-ecosystem: cargo"));
     assert!(dependabot.contains("package-ecosystem: github-actions"));
-    assert!(dependabot.contains("/.github/actions/setup-rust"));
+    for action in local_actions() {
+        let dir = action.parent().unwrap().strip_prefix(root()).unwrap();
+        let entry = format!("- /{}\n", dir.display());
+        assert!(dependabot.contains(&entry), "dependabot misses {entry}");
+    }
 }
