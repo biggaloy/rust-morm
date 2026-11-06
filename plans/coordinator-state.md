@@ -25,7 +25,7 @@ Nothing is kept in `/tmp`: it's memory-backed here, so a power cut wipes it. Age
 
 ## What comes next
 
-1. The fifth review, at `57b3253`, found 6 minors and no blockers: see `reviews/step-01-review-5.md`. The owner chose O1 option A, extending step 59. A fix round is running from that report. After the fixes, run a narrow review of what changed since `57b3253`, and repeat until clean. Findings go under `reviews/` and are pushed.
+1. The fifth review's fixes have landed at `09338c2`, with CI green. A narrow sixth check of what changed since `57b3253` is running. If it's clean, go to the next item. If not, fix and repeat. Findings go under `reviews/` and are pushed.
 2. Bring PR #1 to the owner. The owner approves it, and no agent merges it without that.
 3. Merge, mark step 01 `done`, and pull. Check `INDEX.md` on `main` has both its Decisions and the branch's rows and order.
 4. Start the next step as a fresh agent, then an independent review. The owner approves the PRs of steps 01, 02, 03, 50 and, once the plan edit lands, 55.
