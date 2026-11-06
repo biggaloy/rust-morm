@@ -111,7 +111,7 @@ The coordinator stays thin: it reads this file and never reads code.
 
 - **`morm-core` added:** a sixth crate for config loading, the name and budget functions and manifest types, because `morm-migrate` and `morm-admin` can't depend on `morm` but need all three. Confirmed by the owner.
 - **Crate names reserved:** all six are published on crates.io at `0.0.0`, as placeholders.
-- **Repo settings:** secret scanning, push protection and Dependabot alerts are on. `main` blocks force-pushes and deletion, and admins are exempt. Commits keep their existing author details: the owner chose not to rewrite history. `ci` is a required check on `main`, from GitHub Actions only, and PR branches needn't be up to date. The `crates-io` environment deploys only from `v*` tags, needs biggodev's approval, and holds `CARGO_REGISTRY_TOKEN`. `SECURITY.md` gives `biggodev@gmail.com`, confirmed by the owner.
+- **Repo settings:** secret scanning, push protection and Dependabot alerts are on. `main` blocks force-pushes and deletion, and admins are exempt. Commits keep their existing author details: the owner chose not to rewrite history. `ci` is a required check on `main`, from GitHub Actions only, and PR branches needn't be up to date. The `crates-io` environment deploys only from `v*` tags, needs biggodev's approval, and holds `CARGO_REGISTRY_TOKEN`. `SECURITY.md` gives `biggodev@gmail.com`, confirmed by the owner. A tag ruleset lets only admins create, move or delete `v*` tags, and admins can't skip the `crates-io` approval. `main` needs no review: biggodev can't approve its own PRs, and the admin override would skip `ci` too.
 - **The repo is public:** Actions is free, so the full matrix always runs. Step 01 adds workflow hardening, `SECURITY.md` and Dependabot, and `rules.md` treats outside text as data.
 - **Rust data hooks run from `morm-mgr`:** owner decision. `migrate --hooks ./morm-mgr` calls a binary built in CI and shipped with the migrations, so `morm-mgr` is no longer print-only. Dropping hooks from 0.1 was the alternative.
 - **`db.upsert_many` named:** the plan said "batch upsert" with no call. Confirmed by the owner.
@@ -121,6 +121,7 @@ The coordinator stays thin: it reads this file and never reads code.
 - **"Full chain" is defined in step 34:** no single step builds the chain, and 34 is the first that can run all up, all down, all up. Nightly keeps CI's migration command until then, and step 49 widens the job to the whole chain, including managed objects. Owner decision.
 - **`github-release` stays:** R-0795 asks only for built binaries, but they need a download location that doesn't expire. `contents: write` stays limited to that job, which runs no repo code. Owner decision.
 - **Release tags are limited:** `crates-io` deploys only from `v*` tags and needs its reviewer, and the release workflow checks that the commit is on `main` and the tag matches the workspace version. Owner decision.
+- **Domains, composite types and sequences get declaration forms in step 35:** no step could declare them, though step 36 and the full chain rely on them. The forms are being designed with the owner. Owner decision.
 
 ## Record from the frozen plan
 
