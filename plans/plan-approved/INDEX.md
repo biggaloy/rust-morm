@@ -117,6 +117,10 @@ The coordinator stays thin: it reads this file and never reads code.
 - **`db.upsert_many` named:** the plan said "batch upsert" with no call. Confirmed by the owner.
 - **`morm::pg_outbox!()` given its own requirement,** because the only text about it was an example.
 - **Doctor, `lint` and `import` rules gathered:** sentences about them moved from their topic into those tools' own steps, so no earlier step depends on a later tool.
+- **Empty CI suites get test obligations:** a job with nothing to run passes empty, and its tag already counts as covered. So each step that introduces a migration, property, full-chain or fuzz suite, or fault injection, carries a test obligation proving its CI job runs real tests. Owner decision.
+- **"Full chain" is defined later:** nightly keeps CI's migration command until the step that builds the migration chain defines it. Owner decision.
+- **`github-release` stays:** R-0795 asks only for built binaries, but they need a download location that doesn't expire. `contents: write` stays limited to that job, which runs no repo code. Owner decision.
+- **Release tags are limited:** `crates-io` deploys only from `v*` tags and needs its reviewer, and the release workflow checks that the commit is on `main` and the tag matches the workspace version. Owner decision.
 
 ## Record from the frozen plan
 
