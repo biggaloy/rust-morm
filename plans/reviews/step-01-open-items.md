@@ -52,3 +52,13 @@ Changed: R-0572, R-0593, R-0981, R-0983, R-1038, R-1040, R-1047, R-1049, R-1050,
 - **P. The narrowing test** uses `pg_cast`: the pair has a `castcontext` other than `i`.
 - **Q. Exit codes.** Decisions that default to refuse exit `2` until accepted, following R-1040 and T-0168, though R-0588 lists `3` for open decisions.
 - **R. Unproven.** In-comment `@plpgsql_check_options` may be able to hide an `error`, and it's a recording item in proof 18. T-0204 and T-0201 cover two more claims.
+
+## From the edit at `d586edf`, waiting on the owner
+
+- **S. Functions that don't name the column.** After `numeric(6,2)` to `numeric(20,4)`, a `numeric(6,2)` variable reading through another function, or through a query built at run time, fails with `numeric field overflow`, and nothing finds them. Options: repeat the search on the names of hit functions until nothing new appears; open a decision for managed functions using `EXECUTE`; or a written limit. R-1085 claims only functions that name the column until this is settled.
+- **T. T-0201 and T-0202** were edited, though "stays" was the instruction: `2` to `3`, and "open none" to "open no narrowing decision".
+- **U. R-1015 stays at `2`:** `refuse` is a recorded answer that `migrate` enforces on live rows.
+- **V. A run with both a refusal and an open decision:** no rule sets the exit code. T-0192 implies `2`.
+- **W. `migrate` has no `--decide`:** R-1040 and R-0572 exit `3` in preflight, and nothing says how to answer there.
+- **X. R-1040's `%TYPE` text** names only `integer out of range`. A length or precision change gives `numeric field overflow`.
+- **Decisions still to add on `main`:** R-0572, R-0593, R-0608, R-1015, R-1038, R-1040, R-1068, R-1076, R-1078 to R-1080, R-1085, R-1092 to R-1094, T-0168, T-0184, T-0198 to T-0202, T-0206, T-0207.
