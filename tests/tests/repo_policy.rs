@@ -349,11 +349,117 @@ fn release_tests_publishes_and_builds_binaries_on_a_tag() {
         &job(&release, "publish"),
         "cargo publish --locked --workspace"
     ));
-    assert!(holds(&job(&release, "publish"), "needs: [test, binaries]"));
+    assert!(holds(
+        &job(&release, "publish"),
+        "needs: [verify, test, binaries]"
+    ));
     assert!(holds(
         &job(&release, "binaries"),
         "cargo build --locked --release -p morm-admin"
     ));
+}
+
+// covers: R-0957
+#[test]
+fn release_runs_the_tag_check_with_full_history_before_publishing() {
+    let release = read(".github/workflows/release.yml");
+    let verify = job(&release, "verify");
+    assert!(holds(&verify, "check_release_tag.py \"$GITHUB_REF_NAME\""));
+    assert!(
+        holds(&verify, "fetch-depth: 0"),
+        "the check needs all history"
+    );
+    assert!(
+        !release.contains("continue-on-error"),
+        "a failed check would count as passing"
+    );
+
+    let publish = job(&release, "publish");
+    assert!(holds(&publish, "needs: [verify, test, binaries]"));
+    let github_release = job(&release, "github-release");
+    assert!(holds(&github_release, "needs: publish"));
+    for lines in [&publish, &github_release] {
+        for status_check in ["always()", "failure()", "cancelled()"] {
+            assert!(
+                !holds(lines, status_check),
+                "{status_check} would run the job after a failed check"
+            );
+        }
+    }
+}
+
+/// Runs the release check in `repo`, returning whether it passed and its stderr.
+fn check_tag(repo: &Path, tag: &str) -> (bool, String) {
+    let script = root().join(".github/scripts/check_release_tag.py");
+    let output = Command::new("python3")
+        .arg(script)
+        .arg(tag)
+        .current_dir(repo)
+        .output()
+        .expect("python3 should run");
+    let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
+    (output.status.success(), stderr)
+}
+
+fn git(repo: &Path, args: &[&str]) {
+    let config = ["-c", "user.name=t", "-c", "user.email=t@example.com"];
+    let output = Command::new("git")
+        .args(config)
+        .args(["-c", "commit.gpgsign=false"])
+        .args(args)
+        .current_dir(repo)
+        .output()
+        .expect("git should run");
+    assert!(output.status.success(), "git {args:?}: {output:?}");
+}
+
+// covers: R-0957
+#[test]
+fn the_tag_check_refuses_anything_but_a_matching_tag_on_main() {
+    let base = Path::new(env!("CARGO_TARGET_TMPDIR")).join("release-check");
+    let _ = fs::remove_dir_all(&base);
+    let repo = base.join("repo");
+    fs::create_dir_all(&repo).unwrap();
+    fs::write(
+        repo.join("Cargo.toml"),
+        "[workspace.package]\nversion = \"1.2.3\"\n",
+    )
+    .unwrap();
+    git(&repo, &["init", "-q", "-b", "main"]);
+    git(&repo, &["add", "Cargo.toml"]);
+    git(&repo, &["commit", "-q", "-m", "first"]);
+    git(&repo, &["commit", "-q", "--allow-empty", "-m", "second"]);
+
+    let (passed, stderr) = check_tag(&repo, "v1.2.3");
+    assert!(!passed, "origin/main is missing, so the check can't pass");
+    assert!(stderr.contains("missing"), "{stderr}");
+
+    git(&repo, &["update-ref", "refs/remotes/origin/main", "HEAD"]);
+    let (passed, stderr) = check_tag(&repo, "v1.2.3");
+    assert!(passed, "a matching tag on main must pass: {stderr}");
+
+    git(&repo, &["checkout", "-q", "HEAD~1"]);
+    let (passed, stderr) = check_tag(&repo, "v1.2.3");
+    assert!(passed, "an older commit on main must pass: {stderr}");
+
+    for tag in ["v1.2.4", "1.2.3", "v1.2.3-rc1"] {
+        let (passed, stderr) = check_tag(&repo, tag);
+        assert!(!passed, "{tag} doesn't match the version");
+        assert!(stderr.contains("doesn't match"), "{stderr}");
+    }
+
+    git(&repo, &["checkout", "-q", "--detach", "main"]);
+    git(&repo, &["commit", "-q", "--allow-empty", "-m", "off main"]);
+    let (passed, stderr) = check_tag(&repo, "v1.2.3");
+    assert!(!passed, "a commit off main must be refused");
+    assert!(stderr.contains("isn't on main"), "{stderr}");
+
+    git(&repo, &["checkout", "-q", "main"]);
+    let url = format!("file://{}", repo.display());
+    git(&base, &["clone", "-q", "--depth=1", &url, "shallow"]);
+    let (passed, stderr) = check_tag(&base.join("shallow"), "v1.2.3");
+    assert!(!passed, "a shallow checkout must be refused");
+    assert!(stderr.contains("shallow"), "{stderr}");
 }
 
 // covers: R-0796
