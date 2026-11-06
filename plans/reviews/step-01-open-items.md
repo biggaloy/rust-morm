@@ -22,3 +22,11 @@ From the edit at `cba5193`. Tested on Postgres 18.6 and 17.11.
 ## IDs to add to Decisions on `main`
 
 Changed: R-0572, R-0593, R-0981, R-0983, R-1038, R-1040, R-1047, R-1049, R-1050, R-1051, R-1052, R-1061, T-0122, T-0152, T-0168, T-0175, T-0187. New: R-1062 to R-1069, T-0188 to T-0193.
+
+## From the edit at `784f68a`, waiting on the owner
+
+- **C. Cutover against app transactions.** The decided order leaves two deadlock shapes: a transaction that touches the table then reads the view, and R-1049's two-table cutover against a reader joining in the opposite order. Under nonstop traffic an app transaction was killed on all 20 cutovers. A 50 ms lock timeout kills nothing, but the cutover can starve and give up. Question: does an app transaction take the `40P01`, or does the cutover give way?
+- **D. `BEGIN ATOMIC` callers.** A caller of a `BEGIN ATOMIC` function over a carried view fails with `XX000 could not open relation with OID` during a cutover, and a retry succeeds. Question: add it to R-0981 and R-0983, or narrow T-0187?
+- **E. Rules to approve.** R-1070: the same-meaning check compares stored query trees with `location`, `stmt_location`, `stmt_len`, `isNatural`, `alias` and `eref` removed. R-1071: a `USING` view binds columns by position, so an unmanaged column can return wrong rows, and preflight refuses that table.
+- **Decisions still to add on `main`:** R-1070, R-1071, T-0178, T-0184, T-0194, T-0195, the `contracts.md` scanner row, and step 52's crates line.
+- **Still to do after these:** the `plpgsql_check` edit.
