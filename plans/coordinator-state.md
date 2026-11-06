@@ -25,7 +25,7 @@ Nothing is kept in `/tmp`: it's memory-backed here, so a power cut wipes it. Age
 
 ## What comes next
 
-1. The fourth review, at `3d4cddc`, found 3 minor code findings and 2 blockers plus 5 minors in the plan: see `reviews/step-01-review-4-code.md` and `reviews/step-01-review-4-plan.md`. The owner chose: recreate composites for other shapes, keep the extra pins, accept the failure-hiding check. A fix round is running from those two reports plus `INDEX.md`. After it lands, run a narrow review of what changed since `3d4cddc`. Repeat until clean. Findings go under `reviews/` and are pushed.
+1. The fourth review's fixes have landed. A narrow fifth review of what changed since `3d4cddc` comes next, then repeat until clean. Findings go under `reviews/` and are pushed.
 2. Bring PR #1 to the owner. The owner approves it, and no agent merges it without that.
 3. Merge, mark step 01 `done`, and pull. Check `INDEX.md` on `main` has both its Decisions and the branch's rows and order.
 4. Start the next step as a fresh agent, then an independent review. The owner approves the PRs of steps 01, 02, 03, 50 and, once the plan edit lands, 55.
