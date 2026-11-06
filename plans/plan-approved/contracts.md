@@ -43,6 +43,7 @@ pub trait PkValue: Send + Sync + 'static {}   // one Param, or a tuple for a com
 pub struct Column<M, T, Cap> { /* name, marker data */ }
 
 // A parameter: ToSql plus its Postgres type, because query_typed needs the type
+// PgEnum returns Type::UNKNOWN, so no OID is ever sent and a type swap can't leave one stale
 pub trait Param: tokio_postgres::types::ToSql + Sync { fn pg_type(&self) -> tokio_postgres::types::Type; }
 
 // Product::UK.<name>, and columns that are unique keys
@@ -89,6 +90,8 @@ pub enum Error {
     PoolerMode, NotFound, EmptyPatch, Conflict, Forbidden, Validation,
     PoolBusy, ConnectionLost, ReadOnly, OutOfRange, InvalidText,
     InvalidOrder, InvalidCursor, Decimal,
+    SchemaChanged,                             // a stale statement or session inside a transaction, after a type swap
+    UnknownEnumValue,                          // a label this binary's enum doesn't have, with the type and label
     Config, Connect, ServerTooOld, Postgres,   // config, connecting, a server below 15, any other database error
     // payloads settled in step 03
 }

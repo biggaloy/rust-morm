@@ -14,7 +14,7 @@ Exact encoding and decoding for every supported type, with no silent rounding.
 
 ## Deliverables
 
-- `Decimal` decoding with no heap use, `morm::Numeric`, every integer path, `morm::Param` for every type, `Range<T>`, `IpAddr`, timestamps, `TextEnum`, `PgEnum`, domains and composite types
+- `Decimal` decoding with no heap use, `morm::Numeric`, every integer path, `morm::Param` for every type, `Range<T>`, `IpAddr`, timestamps, `TextEnum`, `PgEnum` with OID-free binding, `#[pg_type]`, variant labels, domains and composite types
 
 ## End-to-end check
 
@@ -38,7 +38,7 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 
 **R-0187** `#[derive(TextEnum)]` maps a Rust enum to `text` with a CHECK constraint, the recommended form, because adding or removing a value is an ordinary migration.
 
-**R-0188** `#[derive(PgEnum)]` maps to a Postgres enum, mainly to match existing tables, because removing a value from one is very hard.
+**R-0188** `#[derive(PgEnum)]` maps to a Postgres enum, and on its own it only binds to a type that already exists. `#[pg_enum(name = "...")]` turns on full management, in step 35: adding, renaming, removing and reordering values. `TextEnum` stays the preferred form, because removing or reordering a Postgres enum value means replacing the whole type.
 
 **R-0189** Domains and composite types are also supported.
 
@@ -74,6 +74,14 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 | R-0771 | `Decimal` on a `numeric` too large for it, or a float on `numeric` | Compile error |
 | R-0772 | A rounded `numeric` value | Error on read and on write |
 
+### Managed enums
+
+- **R-0976** **Type names.** A bare `#[derive(PgEnum)]`, `#[derive(PgDomain)]` or `#[derive(PgComposite)]` binds to the snake_case of the Rust name, so `OrderState` binds to `order_state`. `#[pg_type(name = "...")]` overrides that name, and it doesn't turn on management.
+- **R-0977** **Labels.** A variant's Postgres label is the snake_case of its name, so `AwaitingPayment` is `awaiting_payment`. `#[pg_enum(value = "...")]` on the variant overrides it. Attributes on a variant never turn on management: only `#[pg_enum(name = "...")]` on the type does.
+- **R-0978** **Enum binding needs no OID.** morm writes `ToSql` and `FromSql` for `PgEnum` itself and doesn't use `postgres-derive`, whose exact variant check fails on every connection opened after a value is added. `accepts` compares no variants. `Param::pg_type` returns `Type::UNKNOWN`, so Postgres infers the type and a query never carries an OID that a swap could make stale. Array parameters use text format, because a binary array carries its element's OID. Labels are matched as bytes at compile time, with no heap use.
+- **R-0979** **A label the binary doesn't know** returns `Error::UnknownEnumValue`, with the type and the label, for rows holding it and no others. `#[pg_enum(unknown)]` on one unit variant decodes any such label to that variant instead, and writing that variant returns `Error::Validation`.
+- **R-0980** **Renamed labels.** `#[pg_enum(was = "old")]` on a variant decodes both labels to it and writes the current one, so a new binary reads rows from either side of a rename.
+
 ## Test obligations
 
 | ID | Type | Obligation |
@@ -82,3 +90,6 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 | T-0075 | integration | `OutOfRange` |
 | T-0141 | integration | `#[derive(PgDomain)]` and `#[derive(PgComposite)]` round-tripping through columns and parameters on types created by hand |
 | T-0142 | integration | **Plain `String` on a domain:** test whether a `String` field or parameter binds to a column of a text domain, and don't assume it. State the result in the PR. If it doesn't bind, `PgDomain` is the only way to use such a column, and its docs say so. |
+| T-0148 | integration | **Enum binding survives type changes:** on an open connection and on one opened afterwards, `PgEnum` values and arrays bind and decode through `query_typed` and prepared statements after `ADD VALUE`, and through `query_typed` after a hand-run type swap. |
+| T-0149 | integration | **Names and labels:** a bare derive binds to the snake_case name, `#[pg_type(name = "...")]` and `#[pg_enum(value = "...")]` override it, an unknown label returns `Error::UnknownEnumValue`, `#[pg_enum(unknown)]` decodes it and refuses to write, and `was` decodes both labels. |
+| T-0150 | trybuild | a `PgEnum` with duplicate labels, an empty label, a label over 63 bytes, a variant that isn't a unit variant, or two `#[pg_enum(unknown)]` variants |

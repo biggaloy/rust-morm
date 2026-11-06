@@ -105,12 +105,18 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 | R-0857 | `morm::quote_ident` | You use a dynamic table or column name in `q_unchecked` or `sql_unchecked` |
 | R-0858 | `.custom_plan()` | A query is slow only for some values, because your data is skewed |
 | R-0859 | `nulls_not_distinct` | A unique column may hold only one NULL |
-| R-0860 | `#[derive(PgEnum)]` | You're matching an existing Postgres enum; use `TextEnum` otherwise |
+| R-0860 | `#[derive(PgEnum)]` | You're matching a Postgres enum that morm must never change; use `TextEnum` otherwise |
 | R-0969 | `#[derive(PgDomain)]` | A column uses a Postgres domain that already exists |
 | R-0970 | `#[derive(PgComposite)]` | A column uses a Postgres composite type that already exists |
 | R-0971 | `#[pg_domain(...)]` | You want migrations to create and track a domain, so one rule on a value lives in the database |
 | R-0972 | `#[pg_composite(...)]` | You want migrations to create and track a composite type, for fields stored together in one column |
-| R-0973 | `#[pg_enum(...)]` | You want migrations to create and track a Postgres enum; use `TextEnum` otherwise |
+| R-0973 | `#[pg_enum(...)]` | You need a real Postgres enum and want migrations to manage it, including adding, renaming, removing and reordering values; use `TextEnum` otherwise, because removing or reordering replaces the type |
+| R-1002 | `#[pg_type(name = "...")]` | A bare derive must bind to a type whose name isn't the snake_case of your Rust name |
+| R-1003 | `#[pg_enum(value = "...")]` | A variant's Postgres label isn't the snake_case of its name |
+| R-1004 | `#[pg_enum(was = "...")]` | You renamed a value, and the migration must rename it and not remove and add it |
+| R-1005 | `#[pg_enum(unknown)]` | Old binaries must keep reading rows during a rollout that adds a value |
+| R-1006 | `#[pg_enum(deprecated)]` | You're removing a value in a rolling deploy, and `contract` must wait until this release has shipped |
+| R-1007 | `max_rewrite_mb` | You want a different size limit on rewriting a table under a full lock |
 | R-0974 | `morm::pg_sequence!` | You need numbers from a sequence that no identity column owns, such as invoice numbers |
 | R-0861 | `storage = "fillfactor=90"` | A table gets many updates to columns with no index |
 | R-0862 | `.returning()` | You need the changed rows back |
@@ -155,6 +161,10 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 - **R-0901** Pool and `morm.toml`: every setting, sizing, and the rule for long-running work: "use `db` for everything, including jobs and crons, and use `db.hold()` only when you need session state." It states plainly that service jobs, crons and background workers running as their own process must not spawn a pool with `min` above 1, and shows `connect_as`, `MORM_POOL` and `MORM_POOL_MIN`. It includes the full environment variable table. It also shows the jobs table, the `db.hold()` lifecycle, and when a websocket needs a listener: "release when you're done, and rely on Drop as the safety net, never as the plan."
 - **R-0902** Migrations: workflow, every command in one table, safety rules, production being forward only with `revert`, running as a deploy step, triggers and functions.
 - **R-0903** Security: TLS settings, encrypting disks and backups (outside morm's job, but expected in production), and password hashing with `clean`.
+
+**R-1008** The README shows this notice loudly, beside the enum rows:
+
+> **Use `TextEnum` unless you have a reason not to.** Changing a `TextEnum` is an ordinary migration. Postgres can't remove or reorder an enum value, so morm has to replace the whole type, including everything that depends on it. On a big table that means a long online copy or a table rewrite under a full lock. Adding or renaming a value is cheap, but its down is not, and old binaries can't read values they don't know. morm does all of this safely, but `TextEnum` never needs it.
 
 ### Risks, open items and later work / Open items
 

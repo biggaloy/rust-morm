@@ -14,7 +14,7 @@ Declare every managed object in Rust, next to its model.
 
 ## Deliverables
 
-- `pg_function!`, `pg_trigger!`, `pg_policy!`, `pg_procedure!`, `pg_grant!`, `pg_sequence!`, `#[pg_view]` with `materialized`, `#[pg_domain]`, `#[pg_composite]`, `#[pg_enum]`, `file` paths, `on = Model` references, each object in the manifest
+- `pg_function!`, `pg_trigger!`, `pg_policy!`, `pg_procedure!`, `pg_grant!`, `pg_sequence!`, `#[pg_view]` with `materialized`, `#[pg_domain]`, `#[pg_composite]`, `#[pg_enum]` with its variant attributes, `file` paths, `on = Model` references, each object in the manifest
 
 ## End-to-end check
 
@@ -85,13 +85,30 @@ morm::pg_sequence!(invoice_no, "START 1000 CACHE 20");
 morm::pg_sequence!(order_no, file = "sql/order_no.sql");
 ```
 
-- **R-0963** `#[pg_domain]`, `#[pg_composite]` and `#[pg_enum]` make morm manage the type they sit on, and each registers it in the manifest like any other object. `name` is the Postgres type's name, and `#[pg_domain]` also takes the domain's `check`. A derive with no attribute registers nothing, so morm never creates or changes that type.
+- **R-0963** `#[pg_domain]`, `#[pg_composite]` and `#[pg_enum]` make morm manage the type they sit on, and each registers it in the manifest like any other object. `name` is the Postgres type's name, and `#[pg_domain]` also takes an optional `check`. A bare derive registers nothing, so morm never creates or changes that type: it binds to the snake_case of the Rust name, and `#[pg_type(name = "...")]` overrides that name without turning on management.
 - **R-0964** The Rust item gives the type's shape, so nothing is written twice: a domain's base type comes from its field, a composite's attributes from its fields in order, and an enum's values from its variants in order. Fields use normal type inference, and `#[col(sql = "...")]` overrides it. These three attributes take no `file`, because a `.sql` file would restate the base type, fields or values.
 - **R-0965** `morm::pg_sequence!(name, "options")` declares a standalone sequence, and `options` is the text after `CREATE SEQUENCE name`. With `file`, the file holds the complete `CREATE SEQUENCE` statement. `OWNED BY` isn't available: sequences apply before tables, so the table it names doesn't exist yet.
+
+### Managed enums
+
+**R-0990** **Enum changes are declared on the variants.** `was` names a label this variant used to have, and `value` sets its label when snake_case isn't it:
+
+```rust
+#[derive(PgEnum)]
+#[pg_enum(name = "order_state")]
+pub enum OrderState {
+    Pending,
+    #[pg_enum(was = "paid_up")] Paid,
+    #[pg_enum(value = "in-transit")] Shipping,
+}
+```
+
+The manifest carries the labels in variant order, with each `was`.
 
 ## Test obligations
 
 | ID | Type | Obligation |
 |---|---|---|
 | T-0143 | trybuild | a `#[pg_composite]` field with no SQL type: its Rust type infers none, and it has no `#[col(sql = "...")]` |
-| T-0144 | suite | **Bare derives:** `#[derive(PgDomain)]`, `#[derive(PgComposite)]` or `#[derive(PgEnum)]` with no attribute adds nothing to the manifest. |
+| T-0144 | suite | **Bare derives:** `#[derive(PgDomain)]`, `#[derive(PgComposite)]` or `#[derive(PgEnum)]` with no attribute, or with only `#[pg_type(name = "...")]` or variant-level `#[pg_enum(...)]` attributes, adds nothing to the manifest. |
+| T-0154 | trybuild | `#[pg_type]` on a type that also has `#[pg_enum(name = "...")]`, `#[pg_domain]` or `#[pg_composite]` |

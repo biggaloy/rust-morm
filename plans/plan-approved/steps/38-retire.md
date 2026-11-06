@@ -73,6 +73,10 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 
 - **R-0953** `purge --older-than D | --now ID`.
 
+### Managed enums
+
+- **R-0995** **Retired types.** A type can be retired along with the columns that still use it. It's renamed `_morm_retired_<migration>_<type>`, following the 63-byte rule, and the ledger records its original name. `verify` doesn't report it as drift, and `purge` drops the retired columns first and the type after them, without `CASCADE`, stopping with the list if anything else depends on it.
+
 ## Test obligations
 
 | ID | Type | Obligation |

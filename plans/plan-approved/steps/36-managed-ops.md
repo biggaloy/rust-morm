@@ -14,7 +14,7 @@ Read each object kind from the catalog, diff it, and apply it with an exact inve
 
 ## Deliverables
 
-- IR, catalog reading, diff and `Op` with inverse for each kind: functions, procedures, triggers, policies, grants, views, materialized views, enums, domains, composite types, sequences
+- IR, catalog reading, diff and `Op` with inverse for each kind: functions, procedures, triggers, policies, grants, views, materialized views, enums (create, drop and rename a value), domains, composite types, sequences
 - Running `.sql` definitions on scratch
 - Placeholder roles on scratch
 - Read-only view models, `db.call`, `db.refresh`
@@ -26,6 +26,7 @@ Each object kind goes from a declaration to a real database and back through the
 ## Out of scope
 
 - Dependency recreation (step 37)
+- Adding, removing and reordering enum values (step 51)
 
 ## Requirements
 
@@ -40,8 +41,15 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 - **R-0966** **Sequences:** a sequence's catalog comparison uses its definition only (type, start, increment, minimum, maximum, cache and cycle) and never `last_value`, so a sequence in use shows no drift. A sequence that belongs to an identity column stays out of this kind, because it comes with its column.
 - **R-0967** Dropping a sequence loses its position, because the inverse recreates it from its definition. That op's data effect is `lossy`, and its description says the position is lost.
 
+### Managed enums
+
+- **R-0991** **Enums in this step** are created with their labels in variant order, dropped, and have values renamed. `ALTER TYPE ... RENAME VALUE` is instant, takes no table lock, and its inverse renames back, with data effect `none`. Renames run before any other change to the type, so a new value can reuse an old label. Exchanging two labels goes through a temporary label in one transaction.
+- **R-0992** **Rename or not.** A label that's gone and a label that's new on the same type are a rename decision, unless `was` answers it. It's never guessed. Rust variants alone can't show which it was.
+- **R-0993** Any other change to an enum's values is refused by the diff with exit code `2`. Step 51 replaces this refusal.
+
 ## Test obligations
 
 | ID | Type | Obligation |
 |---|---|---|
 | T-0145 | integration | **Sequences:** a sequence shows no drift after `nextval` calls, an identity column's sequence isn't read as an object of this kind, and dropping a sequence reports `lossy`. |
+| T-0155 | integration | **Enum renames:** `was` and a decision each rename a value with rows holding it, the inverse restores it, two labels exchange, an open decision exits with code `3`, and adding a value exits with code `2`. |

@@ -14,11 +14,11 @@ The two bounded caches, shape tracking, `query_typed` fallback, fragment renumbe
 
 ## Deliverables
 
-- `statement_cache`, `shape_cache`, prepare on second use, built-SQL map, 0A000 handling, `$n` renumbering, `.tag()` text, typed error mapping
+- `statement_cache`, `shape_cache`, prepare on second use, built-SQL map, 0A000 and stale type handling, `$n` renumbering, `.tag()` text, typed error mapping
 
 ## End-to-end check
 
-A load test with random and repeated shapes shows fixed statements staying cached, and a change to a table's result type recovers outside a transaction.
+A load test with random and repeated shapes shows fixed statements staying cached, and a change to a table's result type or an enum type swap recovers outside a transaction.
 
 ## Out of scope
 
@@ -60,7 +60,7 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 - **R-0714** `pg_stat_statements` ignores comments, so those two calls merge into one entry showing the first tag seen. Use logs for tags, and `pg_stat_statements` for totals per query.
 - **R-0715** Built SQL text is kept in a small bounded map keyed by model and column bitmask, so a repeated shape doesn't rebuild the string.
 - **R-0716** Other dynamic SQL and overflow go through `query_typed`, which needs no prepare round trips. It needs each parameter's Postgres type, and `ToSql` doesn't give that, so parameters are `&dyn morm::Param`, a trait that adds the type. Builder code knows the type from `F`.
-- **R-0718** `cached plan must not change result type` (0A000): evict and re-prepare once outside a transaction.
+- **R-0718** A cached statement can go stale when a migration changes something under it, and it then fails every time until it's re-prepared. On `cached plan must not change result type` (0A000), evict, re-prepare and retry once, outside a transaction. Do the same on `42883` or `42804` from a cached statement with a parameter of a non-built-in type, which is what an enum parameter returns when a swap keeps the old type: that statement parsed once, so this is a schema change and not a typo.
 
 ### Performance and memory / Query path
 
@@ -75,7 +75,13 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 |---|---|---|
 | R-0755 | A per-request id in SQL, which would defeat every statement cache | `.tag()` takes only `&'static str`, and no trace comments are added |
 | R-0757 | Client-chosen fields evicting hot statements | Runtime-built SQL has its own cache, and one-off shapes are never prepared |
-| R-0764 | A stale cached statement after a migration | Re-prepared automatically outside a transaction |
+| R-0764 | A stale cached statement after a migration or an enum swap | Re-prepared or replaced automatically outside a transaction, and `Error::SchemaChanged` inside one |
+
+### Managed enums
+
+- **R-0981** **Stale server state.** `XX000` with the message `cache lookup failed for type`, from any statement, means the session holds a dropped type, such as in a compiled plpgsql function. Evicting a statement can't clear that, so morm discards the connection, retries once on another outside a transaction, and raises the pool's connection generation.
+- **R-0982** **Telling the rest of the pool.** Any stale statement raises a statement generation, held in the same atomic word as the pool's connection generation. A connection that checks out behind it clears both statement caches first, so connections don't each fail once per cached statement. The cost is the one atomic read a checkout already does.
+- **R-0983** **Retrying is safe.** Postgres rolls back a failed statement outside a transaction, so a retry can't apply a write twice. A statement that isn't in a cache is never retried this way, and a retry that fails again returns its error.
 
 ## Test obligations
 
@@ -85,3 +91,6 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 | T-0072 | integration | `shape_cache` isolation under random and repeated shapes |
 | T-0076 | integration | `InvalidText` |
 | T-0084 | integration | fragment renumbering |
+| T-0151 | integration | **Stale statements on Postgres 15–18:** after a hand-run enum swap, with the old type dropped and with it kept, a select, a filter, an insert, an update and an `= ANY` on a cached statement all succeed with no error reaching the caller, and the same SQL runs clean a second time. The codes match what proof 14 recorded. If they differ from this design on any version, stop and ask the owner with the evidence and options. |
+| T-0152 | integration | **Stale sessions:** a plpgsql trigger compiled before a hand-run swap fails with `XX000`, morm replaces the connection and the write succeeds once, other connections in the pool are replaced at checkout, and `pool_stats()` shows it. |
+| T-0153 | integration | **No false recovery:** a `42883` from SQL that was never cached isn't retried, a retried write applies once, and a cached statement that fails again returns its error. |

@@ -1,7 +1,7 @@
 # Step 40: Production mode, revert and squash
 
 - **Phase:** Migrations
-- **Depends on:** 39
+- **Depends on:** 52, 54
 - **Can run beside:** 08, 09, 12, 19, 20, 21, 22, 23, 24, 25, 26, 27, 43, 44, 45, 46, 47, 48
 - **Crates:** `morm-migrate`, `morm-admin`
 - **PR approval:** CI and an independent review
@@ -66,9 +66,14 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 |---|---|---|
 | R-0762 | Rolling back a production database | Refused, exit code `2`, unless marked `development`; `revert` is the forward path |
 
+### Managed enums
+
+- **R-0996** **Reverting an enum change.** `revert` plans its forward migration like any other change, so reverting an add removes the value through the online swap by default, and needs the same decisions. Retired values come back with their rows. `rollback` uses `down.sql`, which is always the one-transaction form.
+
 ## Test obligations
 
 | ID | Type | Obligation |
 |---|---|---|
 | T-0125 | suite | **Forward only:** `rollback` and `rehearse` refused on production mode, the default on a new database, and `revert` restoring retired data. |
 | T-0126 | suite | **Squash:** a squashed chain gives the same schema as the full chain, and a database partway through is refused. |
+| T-0157 | suite | **Enum revert:** `revert` of an add runs the online swap and stops on rows holding the value unless a map is decided, `revert` of a remove restores retired rows, and `rollback` on a production database is refused. |

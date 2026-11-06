@@ -40,8 +40,16 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 
 **R-0613** SQL steps first, including `batch` steps, covered by checksums. Custom Rust data hooks are registered by migration id and use raw SQL only, since model types change. A hook needs a matching down hook, or the migration is declared irreversible.
 
+### Managed enums
+
+- **R-0997** **Enums in `check_schema`.** The per-model list also holds each enum's labels. Every variant's label must exist, or its `was` label, and a `deprecated` variant may be missing. Extra labels in the database are fine, because a binary only fails on a row that holds one, and `Error::UnknownEnumValue` names it.
+- **R-0998** **Enum phases.** Adds, renames and the online swap's steps before its cutover are `expand`. A cutover that removes a label is `contract`, because binaries that still write it would fail. A cutover that only reorders stays in `expand`. In one migration that adds and removes, the add goes in `expand`, so a value and its replacement exist together through the rollout.
+- **R-0999** **Removing a value in a rolling deploy.** `#[pg_enum(deprecated)]` on a variant says that value is on its way out. `contract` refuses a swap that removes a label until a release with that variant marked `deprecated` has shipped, the same gate `#[col(deprecated)]` uses.
+- **R-1000** **Renaming a value in a rolling deploy.** A rename runs instantly by default, so old binaries fail on that value during the rollout: reads of rows holding it return `Error::UnknownEnumValue`, and writes of the old label return `22P02`. The rename decision also offers expand/contract: add the new label in `expand`, copy rows across in batches, and remove the old label by swap in `contract`. With `was`, a new binary reads both labels through either path.
+
 ## Test obligations
 
 | ID | Type | Obligation |
 |---|---|---|
 | T-0103 | integration | `check_schema` during expand phases and after a dropped default |
+| T-0158 | integration | **Enums in a rolling deploy:** `check_schema` passes during an add and reports a missing label, an old binary reads rows on a plain add and gets `Error::UnknownEnumValue` only on rows holding the new value, `contract` refuses a removal until the `deprecated` variant has shipped, an add and a remove in one migration split across phases, and the expand/contract rename ends with the right labels and rows. |

@@ -55,7 +55,7 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 
 ### Migrations / Decisions
 
-**R-0587** Every rename, retire, purge, lossy change and missing backfill is a decision with an id, evidence (type match, name similarity, row presence, dependents, size) and options. They're answered interactively, by `--decide ID=OPT`, or by file. `--json` suits CI and agents. `was` is a pre-answered rename, ignored once the old name is gone.
+**R-0587** Every rename, retire, purge, lossy change and missing backfill is a decision with an id, evidence (type match, name similarity, row presence, dependents, size) and options. They're answered interactively, by `--decide ID=OPT`, or by file. `--json` suits CI and agents. `was` is a pre-answered rename, ignored once the old name is gone. An op can declare decisions of its own through this same flow, so later steps add kinds such as enum value changes.
 
 **R-0588** Exit codes: `0` ok, `1` error or drift, `2` refused by a guard, `3` open decisions.
 
@@ -66,7 +66,7 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 - **R-0590** `up` reaches the models exactly.
 - **R-0591** `down` returns to the previous schema exactly.
 - **R-0592** `up` again gives the same fingerprint.
-- **R-0593** **With data:** synthetic rows per column type (NULLs, boundaries, empties) go in first, and preserved-column checksums must match after up → down. Rows are also inserted and updated after `up`, so a broken trigger fails here and not in production.
+- **R-0593** **With data:** synthetic rows per column type (NULLs, boundaries, empties) go in first, and preserved-column checksums must match after up → down. Rows are also inserted and updated after `up`, so a broken trigger fails here and not in production. Rows come from a table keyed by column type, so a later step can add a type, and an op can say which values must or must not appear.
 - **R-0594** `lint` passes, or each finding is explicitly accepted.
 
 ### Migrations / Files and ledger
@@ -91,6 +91,10 @@ morm-migrations/
 ### Migrations / Commands
 
 - **R-0949** `makemigrations [--plan] [--json] [-n name] [--decide ID=OPT] [--decisions F] [--empty] [--fast]`, with `--empty` writing an empty migration for hand-written steps, and `rebase-chain` fixing a chain marked `diverged`.
+
+### Managed enums
+
+- **R-0989** **Op data in `meta.json`.** An op can store its own data in `meta.json`, under `op_data`, covered by the checksum, so what `makemigrations` learned on scratch reaches `migrate`. Step 53 stores the dependents it expects there.
 
 ## Test obligations
 

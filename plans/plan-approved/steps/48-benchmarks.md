@@ -2,7 +2,7 @@
 
 - **Phase:** Finish
 - **Depends on:** 26, 27, 47, 45
-- **Can run beside:** 39, 40, 41, 43, 44, 46, 49
+- **Can run beside:** 39, 40, 41, 43, 44, 46, 49, 51, 52, 53, 54
 - **Crates:** `benches/`
 - **PR approval:** CI and an independent review
 

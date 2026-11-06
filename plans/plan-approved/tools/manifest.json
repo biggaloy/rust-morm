@@ -302,8 +302,8 @@
 "kind": "code",
 "step": "bootstrap",
 "line": 61,
-"text": "```\nrust-morm/\n\u251c\u2500\u2500 crates/\n\u2502   \u251c\u2500\u2500 morm/            # runtime: pool, queries, hooks, JSON\n\u2502   \u251c\u2500\u2500 morm-macros/     # #[model], #[view], pg_* macros\n\u2502   \u251c\u2500\u2500 morm-migrate/    # migration engine\n\u2502   \u2514\u2500\u2500 morm-admin/      # the admin binary\n\u251c\u2500\u2500 examples/\n\u2502   \u2514\u2500\u2500 app/             # Axum + morm example\n\u251c\u2500\u2500 tests/               # integration tests against real Postgres\n\u251c\u2500\u2500 .github/workflows/\n\u2514\u2500\u2500 README.md\n```",
-"block": "**R-0038**\n\n```\nrust-morm/\n\u251c\u2500\u2500 crates/\n\u2502   \u251c\u2500\u2500 morm/            # runtime: pool, queries, hooks, JSON\n\u2502   \u251c\u2500\u2500 morm-macros/     # #[model], #[view], pg_* macros\n\u2502   \u251c\u2500\u2500 morm-migrate/    # migration engine\n\u2502   \u2514\u2500\u2500 morm-admin/      # the admin binary\n\u251c\u2500\u2500 examples/\n\u2502   \u2514\u2500\u2500 app/             # Axum + morm example\n\u251c\u2500\u2500 tests/               # integration tests against real Postgres\n\u251c\u2500\u2500 .github/workflows/\n\u2514\u2500\u2500 README.md\n```"
+"text": "```\nrust-morm/\n├── crates/\n│   ├── morm/            # runtime: pool, queries, hooks, JSON\n│   ├── morm-macros/     # #[model], #[view], pg_* macros\n│   ├── morm-migrate/    # migration engine\n│   └── morm-admin/      # the admin binary\n├── examples/\n│   └── app/             # Axum + morm example\n├── tests/               # integration tests against real Postgres\n├── .github/workflows/\n└── README.md\n```",
+"block": "**R-0038**\n\n```\nrust-morm/\n├── crates/\n│   ├── morm/            # runtime: pool, queries, hooks, JSON\n│   ├── morm-macros/     # #[model], #[view], pg_* macros\n│   ├── morm-migrate/    # migration engine\n│   └── morm-admin/      # the admin binary\n├── examples/\n│   └── app/             # Axum + morm example\n├── tests/               # integration tests against real Postgres\n├── .github/workflows/\n└── README.md\n```"
 },
 {
 "id": "R-0039",
@@ -1486,8 +1486,8 @@
 "kind": "code",
 "step": "model-types",
 "line": 417,
-"text": "`i16` \u2192 smallint, `i32` \u2192 integer, `i64` \u2192 bigint, `f32` \u2192 real, `f64` \u2192 double precision, `bool` \u2192 boolean, `String` \u2192 text, `Vec<u8>` \u2192 bytea, `DateTime<Utc>` / `Timestamp` \u2192 timestamptz, `NaiveDateTime` \u2192 timestamp, `NaiveDate` \u2192 date, `NaiveTime` \u2192 time, `Uuid` \u2192 uuid, `serde_json::Value` \u2192 jsonb, `Vec<T>` \u2192 `T[]`, `IpAddr` \u2192 inet, `morm::Range<T>` \u2192 the matching range type, such as `tstzrange` or `int8range`. `Option<T>` \u2192 nullable. Anything else requires an explicit `sql`, including `Decimal` and `Numeric`, which need their precision stated (section 8).",
-"block": "**R-0186** `i16` \u2192 smallint, `i32` \u2192 integer, `i64` \u2192 bigint, `f32` \u2192 real, `f64` \u2192 double precision, `bool` \u2192 boolean, `String` \u2192 text, `Vec<u8>` \u2192 bytea, `DateTime<Utc>` / `Timestamp` \u2192 timestamptz, `NaiveDateTime` \u2192 timestamp, `NaiveDate` \u2192 date, `NaiveTime` \u2192 time, `Uuid` \u2192 uuid, `serde_json::Value` \u2192 jsonb, `Vec<T>` \u2192 `T[]`, `IpAddr` \u2192 inet, `morm::Range<T>` \u2192 the matching range type, such as `tstzrange` or `int8range`. `Option<T>` \u2192 nullable. Anything else requires an explicit `sql`, including `Decimal` and `Numeric`, which need their precision stated (section 8)."
+"text": "`i16` → smallint, `i32` → integer, `i64` → bigint, `f32` → real, `f64` → double precision, `bool` → boolean, `String` → text, `Vec<u8>` → bytea, `DateTime<Utc>` / `Timestamp` → timestamptz, `NaiveDateTime` → timestamp, `NaiveDate` → date, `NaiveTime` → time, `Uuid` → uuid, `serde_json::Value` → jsonb, `Vec<T>` → `T[]`, `IpAddr` → inet, `morm::Range<T>` → the matching range type, such as `tstzrange` or `int8range`. `Option<T>` → nullable. Anything else requires an explicit `sql`, including `Decimal` and `Numeric`, which need their precision stated (section 8).",
+"block": "**R-0186** `i16` → smallint, `i32` → integer, `i64` → bigint, `f32` → real, `f64` → double precision, `bool` → boolean, `String` → text, `Vec<u8>` → bytea, `DateTime<Utc>` / `Timestamp` → timestamptz, `NaiveDateTime` → timestamp, `NaiveDate` → date, `NaiveTime` → time, `Uuid` → uuid, `serde_json::Value` → jsonb, `Vec<T>` → `T[]`, `IpAddr` → inet, `morm::Range<T>` → the matching range type, such as `tstzrange` or `int8range`. `Option<T>` → nullable. Anything else requires an explicit `sql`, including `Decimal` and `Numeric`, which need their precision stated (section 8)."
 },
 {
 "id": "R-0187",
@@ -1502,8 +1502,8 @@
 "kind": "code",
 "step": "types",
 "line": 417,
-"text": "`#[derive(PgEnum)]` maps to a Postgres enum, mainly to match existing tables, because removing a value from one is very hard.",
-"block": "**R-0188** `#[derive(PgEnum)]` maps to a Postgres enum, mainly to match existing tables, because removing a value from one is very hard."
+"text": "`#[derive(PgEnum)]` maps to a Postgres enum, and on its own it only binds to a type that already exists. `#[pg_enum(name = \"...\")]` turns on full management, in step 35: adding, renaming, removing and reordering values. `TextEnum` stays the preferred form, because removing or reordering a Postgres enum value means replacing the whole type.",
+"block": "**R-0188** `#[derive(PgEnum)]` maps to a Postgres enum, and on its own it only binds to a type that already exists. `#[pg_enum(name = \"...\")]` turns on full management, in step 35: adding, renaming, removing and reordering values. `TextEnum` stays the preferred form, because removing or reordering a Postgres enum value means replacing the whole type."
 },
 {
 "id": "R-0189",
@@ -2406,8 +2406,8 @@
 "kind": "code",
 "step": "hooks",
 "line": 642,
-"text": "- **`blocking`** runs a slow `clean`, such as password hashing, through `spawn_blocking`, because 50\u2013100ms of CPU on an async thread stalls other requests. Inside `db.transaction` the connection is already held, so hash before opening the transaction.",
-"block": "- **R-0301** **`blocking`** runs a slow `clean`, such as password hashing, through `spawn_blocking`, because 50\u2013100ms of CPU on an async thread stalls other requests. Inside `db.transaction` the connection is already held, so hash before opening the transaction."
+"text": "- **`blocking`** runs a slow `clean`, such as password hashing, through `spawn_blocking`, because 50–100ms of CPU on an async thread stalls other requests. Inside `db.transaction` the connection is already held, so hash before opening the transaction.",
+"block": "- **R-0301** **`blocking`** runs a slow `clean`, such as password hashing, through `spawn_blocking`, because 50–100ms of CPU on an async thread stalls other requests. Inside `db.transaction` the connection is already held, so hash before opening the transaction."
 },
 {
 "id": "R-0302",
@@ -2958,8 +2958,8 @@
 "kind": "code",
 "step": "upsert",
 "line": 781,
-"text": "- Afterwards morm knows what happened, through `RETURNING old.ctid IS NULL` on Postgres 18 and later, and `RETURNING (xmax = 0)` before it. `ctid` works for every model, because a user column can't be trusted here: a model may have no primary key, and under `NULLS NOT DISTINCT` a NULL key column can conflict, which would report an update as an insert. That second form is undocumented but long established, and CI proves it on 15\u201317. `upsert` returns `Inserted`, `Updated` or `Unchanged`.",
-"block": "- **R-0370** Afterwards morm knows what happened, through `RETURNING old.ctid IS NULL` on Postgres 18 and later, and `RETURNING (xmax = 0)` before it. `ctid` works for every model, because a user column can't be trusted here: a model may have no primary key, and under `NULLS NOT DISTINCT` a NULL key column can conflict, which would report an update as an insert. That second form is undocumented but long established, and CI proves it on 15\u201317. `upsert` returns `Inserted`, `Updated` or `Unchanged`."
+"text": "- Afterwards morm knows what happened, through `RETURNING old.ctid IS NULL` on Postgres 18 and later, and `RETURNING (xmax = 0)` before it. `ctid` works for every model, because a user column can't be trusted here: a model may have no primary key, and under `NULLS NOT DISTINCT` a NULL key column can conflict, which would report an update as an insert. That second form is undocumented but long established, and CI proves it on 15–17. `upsert` returns `Inserted`, `Updated` or `Unchanged`.",
+"block": "- **R-0370** Afterwards morm knows what happened, through `RETURNING old.ctid IS NULL` on Postgres 18 and later, and `RETURNING (xmax = 0)` before it. `ctid` works for every model, because a user column can't be trusted here: a model may have no primary key, and under `NULLS NOT DISTINCT` a NULL key column can conflict, which would report an update as an insert. That second form is undocumented but long established, and CI proves it on 15–17. `upsert` returns `Inserted`, `Updated` or `Unchanged`."
 },
 {
 "id": "R-0371",
@@ -3190,8 +3190,8 @@
 "kind": "code",
 "step": "reads",
 "line": 845,
-"text": "| `fetch()` | Owned `Product` | Row \u2192 struct | You keep or pass the data along |",
-"block": "| R-0399 | `fetch()` | Owned `Product` | Row \u2192 struct | You keep or pass the data along |"
+"text": "| `fetch()` | Owned `Product` | Row → struct | You keep or pass the data along |",
+"block": "| R-0399 | `fetch()` | Owned `Product` | Row → struct | You keep or pass the data along |"
 },
 {
 "id": "R-0400",
@@ -3806,8 +3806,8 @@
 "kind": "code",
 "step": "hardening",
 "line": 1020,
-"text": "**Lock-order detector:** debug builds and `#[morm::test]` record the order each transaction touches tables, including foreign key locks that can conflict, such as cascades. If one path goes `accounts \u2192 orders` and another `orders \u2192 accounts`, it reports the cycle, even if no deadlock happened. Unregistered raw SQL is invisible to it, and table-level tracking can give false alarms, so it warns by default.",
-"block": "**R-0476** **Lock-order detector:** debug builds and `#[morm::test]` record the order each transaction touches tables, including foreign key locks that can conflict, such as cascades. If one path goes `accounts \u2192 orders` and another `orders \u2192 accounts`, it reports the cycle, even if no deadlock happened. Unregistered raw SQL is invisible to it, and table-level tracking can give false alarms, so it warns by default."
+"text": "**Lock-order detector:** debug builds and `#[morm::test]` record the order each transaction touches tables, including foreign key locks that can conflict, such as cascades. If one path goes `accounts → orders` and another `orders → accounts`, it reports the cycle, even if no deadlock happened. Unregistered raw SQL is invisible to it, and table-level tracking can give false alarms, so it warns by default.",
+"block": "**R-0476** **Lock-order detector:** debug builds and `#[morm::test]` record the order each transaction touches tables, including foreign key locks that can conflict, such as cascades. If one path goes `accounts → orders` and another `orders → accounts`, it reports the cycle, even if no deadlock happened. Unregistered raw SQL is invisible to it, and table-level tracking can give false alarms, so it warns by default."
 },
 {
 "id": "R-0477",
@@ -3942,32 +3942,32 @@
 "kind": "code",
 "step": "hooks",
 "line": 1081,
-"text": "| `insert` | `clean` and rules \u2192 `pre_insert` \u2192 `validate` \u2192 **INSERT** \u2192 `post_insert` \u2192 *(commit)* \u2192 `after_commit` |",
-"block": "| R-0493 | `insert` | `clean` and rules \u2192 `pre_insert` \u2192 `validate` \u2192 **INSERT** \u2192 `post_insert` \u2192 *(commit)* \u2192 `after_commit` |"
+"text": "| `insert` | `clean` and rules → `pre_insert` → `validate` → **INSERT** → `post_insert` → *(commit)* → `after_commit` |",
+"block": "| R-0493 | `insert` | `clean` and rules → `pre_insert` → `validate` → **INSERT** → `post_insert` → *(commit)* → `after_commit` |"
 },
 {
 "id": "R-0494",
 "kind": "code",
 "step": "hooks",
 "line": 1082,
-"text": "| `update` | `clean` and rules \u2192 `pre_update` \u2192 `validate_changes` \u2192 **UPDATE** \u2192 `post_update` \u2192 *(commit)* \u2192 `after_commit` |",
-"block": "| R-0494 | `update` | `clean` and rules \u2192 `pre_update` \u2192 `validate_changes` \u2192 **UPDATE** \u2192 `post_update` \u2192 *(commit)* \u2192 `after_commit` |"
+"text": "| `update` | `clean` and rules → `pre_update` → `validate_changes` → **UPDATE** → `post_update` → *(commit)* → `after_commit` |",
+"block": "| R-0494 | `update` | `clean` and rules → `pre_update` → `validate_changes` → **UPDATE** → `post_update` → *(commit)* → `after_commit` |"
 },
 {
 "id": "R-0495",
 "kind": "code",
 "step": "hooks-more",
 "line": 1083,
-"text": "| `upsert` | `clean` and rules \u2192 `pre_insert` \u2192 `validate` \u2192 **UPSERT** \u2192 `post_insert` or `post_update`, or neither if unchanged \u2192 *(commit)* \u2192 `after_commit` |",
-"block": "| R-0495 | `upsert` | `clean` and rules \u2192 `pre_insert` \u2192 `validate` \u2192 **UPSERT** \u2192 `post_insert` or `post_update`, or neither if unchanged \u2192 *(commit)* \u2192 `after_commit` |"
+"text": "| `upsert` | `clean` and rules → `pre_insert` → `validate` → **UPSERT** → `post_insert` or `post_update`, or neither if unchanged → *(commit)* → `after_commit` |",
+"block": "| R-0495 | `upsert` | `clean` and rules → `pre_insert` → `validate` → **UPSERT** → `post_insert` or `post_update`, or neither if unchanged → *(commit)* → `after_commit` |"
 },
 {
 "id": "R-0496",
 "kind": "code",
 "step": "hooks",
 "line": 1084,
-"text": "| `delete` | `pre_delete` \u2192 **DELETE** \u2192 `post_delete` \u2192 *(commit)* \u2192 `after_commit` |",
-"block": "| R-0496 | `delete` | `pre_delete` \u2192 **DELETE** \u2192 `post_delete` \u2192 *(commit)* \u2192 `after_commit` |"
+"text": "| `delete` | `pre_delete` → **DELETE** → `post_delete` → *(commit)* → `after_commit` |",
+"block": "| R-0496 | `delete` | `pre_delete` → **DELETE** → `post_delete` → *(commit)* → `after_commit` |"
 },
 {
 "id": "R-0497",
@@ -4246,8 +4246,8 @@
 "kind": "code",
 "step": "managed-decl",
 "line": 1153,
-"text": "```\nsrc/users/\n\u251c\u2500\u2500 mod.rs                  # models, plus the object declarations\n\u2514\u2500\u2500 sql/\n    \u251c\u2500\u2500 touch_updated_at.sql\n    \u2514\u2500\u2500 active_users.sql\n```",
-"block": "**R-0531**\n\n```\nsrc/users/\n\u251c\u2500\u2500 mod.rs                  # models, plus the object declarations\n\u2514\u2500\u2500 sql/\n    \u251c\u2500\u2500 touch_updated_at.sql\n    \u2514\u2500\u2500 active_users.sql\n```"
+"text": "```\nsrc/users/\n├── mod.rs                  # models, plus the object declarations\n└── sql/\n    ├── touch_updated_at.sql\n    └── active_users.sql\n```",
+"block": "**R-0531**\n\n```\nsrc/users/\n├── mod.rs                  # models, plus the object declarations\n└── sql/\n    ├── touch_updated_at.sql\n    └── active_users.sql\n```"
 },
 {
 "id": "R-0532",
@@ -4694,8 +4694,8 @@
 "kind": "code",
 "step": "proof-files",
 "line": 1257,
-"text": "Every rename, retire, purge, lossy change and missing backfill is a decision with an id, evidence (type match, name similarity, row presence, dependents, size) and options. They're answered interactively, by `--decide ID=OPT`, or by file. `--json` suits CI and agents. `was` is a pre-answered rename, ignored once the old name is gone.",
-"block": "**R-0587** Every rename, retire, purge, lossy change and missing backfill is a decision with an id, evidence (type match, name similarity, row presence, dependents, size) and options. They're answered interactively, by `--decide ID=OPT`, or by file. `--json` suits CI and agents. `was` is a pre-answered rename, ignored once the old name is gone."
+"text": "Every rename, retire, purge, lossy change and missing backfill is a decision with an id, evidence (type match, name similarity, row presence, dependents, size) and options. They're answered interactively, by `--decide ID=OPT`, or by file. `--json` suits CI and agents. `was` is a pre-answered rename, ignored once the old name is gone. An op can declare decisions of its own through this same flow, so later steps add kinds such as enum value changes.",
+"block": "**R-0587** Every rename, retire, purge, lossy change and missing backfill is a decision with an id, evidence (type match, name similarity, row presence, dependents, size) and options. They're answered interactively, by `--decide ID=OPT`, or by file. `--json` suits CI and agents. `was` is a pre-answered rename, ignored once the old name is gone. An op can declare decisions of its own through this same flow, so later steps add kinds such as enum value changes."
 },
 {
 "id": "R-0588",
@@ -4742,8 +4742,8 @@
 "kind": "code",
 "step": "proof-files",
 "line": 1268,
-"text": "4. **With data:** synthetic rows per column type (NULLs, boundaries, empties) go in first, and preserved-column checksums must match after up \u2192 down. Rows are also inserted and updated after `up`, so a broken trigger fails here and not in production.",
-"block": "- **R-0593** **With data:** synthetic rows per column type (NULLs, boundaries, empties) go in first, and preserved-column checksums must match after up \u2192 down. Rows are also inserted and updated after `up`, so a broken trigger fails here and not in production."
+"text": "4. **With data:** synthetic rows per column type (NULLs, boundaries, empties) go in first, and preserved-column checksums must match after up → down. Rows are also inserted and updated after `up`, so a broken trigger fails here and not in production. Rows come from a table keyed by column type, so a later step can add a type, and an op can say which values must or must not appear.",
+"block": "- **R-0593** **With data:** synthetic rows per column type (NULLs, boundaries, empties) go in first, and preserved-column checksums must match after up → down. Rows are also inserted and updated after `up`, so a broken trigger fails here and not in production. Rows come from a table keyed by column type, so a later step can add a type, and an op can say which values must or must not appear."
 },
 {
 "id": "R-0594",
@@ -4758,8 +4758,8 @@
 "kind": "code",
 "step": "proof-files",
 "line": 1273,
-"text": "```\nmorm-migrations/\n\u2514\u2500\u2500 0007_add_products/\n    \u251c\u2500\u2500 up.sql      # steps split by: -- morm:step tx | no-tx | batch size=5000\n    \u251c\u2500\u2500 down.sql\n    \u2514\u2500\u2500 meta.json   # format, id, parent, phase, pg_major, schema_before, schema_after,\n                    # checksum, decisions, data_effect\n```",
-"block": "**R-0595**\n\n```\nmorm-migrations/\n\u2514\u2500\u2500 0007_add_products/\n    \u251c\u2500\u2500 up.sql      # steps split by: -- morm:step tx | no-tx | batch size=5000\n    \u251c\u2500\u2500 down.sql\n    \u2514\u2500\u2500 meta.json   # format, id, parent, phase, pg_major, schema_before, schema_after,\n                    # checksum, decisions, data_effect\n```"
+"text": "```\nmorm-migrations/\n└── 0007_add_products/\n    ├── up.sql      # steps split by: -- morm:step tx | no-tx | batch size=5000\n    ├── down.sql\n    └── meta.json   # format, id, parent, phase, pg_major, schema_before, schema_after,\n                    # checksum, decisions, data_effect\n```",
+"block": "**R-0595**\n\n```\nmorm-migrations/\n└── 0007_add_products/\n    ├── up.sql      # steps split by: -- morm:step tx | no-tx | batch size=5000\n    ├── down.sql\n    └── meta.json   # format, id, parent, phase, pg_major, schema_before, schema_after,\n                    # checksum, decisions, data_effect\n```"
 },
 {
 "id": "R-0596",
@@ -4862,8 +4862,8 @@
 "kind": "code",
 "step": "execution",
 "line": 1295,
-"text": "- **Preflight:** privileges, long-running transactions, invalid indexes, checksums, table sizes.",
-"block": "- **R-0608** **Preflight:** privileges, long-running transactions, invalid indexes, checksums, table sizes."
+"text": "- **Preflight:** privileges, long-running transactions, invalid indexes, checksums, table sizes. An op can add preflight checks of its own, which run with these and can refuse the run with exit code `2`.",
+"block": "- **R-0608** **Preflight:** privileges, long-running transactions, invalid indexes, checksums, table sizes. An op can add preflight checks of its own, which run with these and can refuse the run with exit code `2`."
 },
 {
 "id": "R-0609",
@@ -4942,8 +4942,8 @@
 "kind": "code",
 "step": "live-modes",
 "line": 1324,
-"text": "- `rehearse`: pending up \u2192 down \u2192 up on a clone or restored backup, with **real data**. The recommended last gate.",
-"block": "- **R-0618** `rehearse`: pending up \u2192 down \u2192 up on a clone or restored backup, with **real data**. The recommended last gate."
+"text": "- `rehearse`: pending up → down → up on a clone or restored backup, with **real data**. The recommended last gate.",
+"block": "- **R-0618** `rehearse`: pending up → down → up on a clone or restored backup, with **real data**. The recommended last gate."
 },
 {
 "id": "R-0619",
@@ -5054,16 +5054,16 @@
 "kind": "code",
 "step": "pool",
 "line": 1353,
-"text": "| `min` | 2 \u00d7 cores | Connections opened at startup |",
-"block": "| R-0632 | `min` | 2 \u00d7 cores | Connections opened at startup |"
+"text": "| `min` | 2 × cores | Connections opened at startup |",
+"block": "| R-0632 | `min` | 2 × cores | Connections opened at startup |"
 },
 {
 "id": "R-0633",
 "kind": "code",
 "step": "pool",
 "line": 1354,
-"text": "| `max` | 10 \u00d7 `min` | The ceiling |",
-"block": "| R-0633 | `max` | 10 \u00d7 `min` | The ceiling |"
+"text": "| `max` | 10 × `min` | The ceiling |",
+"block": "| R-0633 | `max` | 10 × `min` | The ceiling |"
 },
 {
 "id": "R-0634",
@@ -5150,16 +5150,16 @@
 "kind": "code",
 "step": "pool",
 "line": 1366,
-"text": "- **Separate processes:** a service job, cron or background worker running as its own process must not start a pool with `min` above 1. It should use `Db::connect_as(\"jobs\")`, `MORM_POOL=jobs`, or `MORM_POOL_MIN=1`, because the default of 2 \u00d7 cores would open connections it doesn't need. The pool still grows on demand.",
-"block": "- **R-0644** **Separate processes:** a service job, cron or background worker running as its own process must not start a pool with `min` above 1. It should use `Db::connect_as(\"jobs\")`, `MORM_POOL=jobs`, or `MORM_POOL_MIN=1`, because the default of 2 \u00d7 cores would open connections it doesn't need. The pool still grows on demand."
+"text": "- **Separate processes:** a service job, cron or background worker running as its own process must not start a pool with `min` above 1. It should use `Db::connect_as(\"jobs\")`, `MORM_POOL=jobs`, or `MORM_POOL_MIN=1`, because the default of 2 × cores would open connections it doesn't need. The pool still grows on demand.",
+"block": "- **R-0644** **Separate processes:** a service job, cron or background worker running as its own process must not start a pool with `min` above 1. It should use `Db::connect_as(\"jobs\")`, `MORM_POOL=jobs`, or `MORM_POOL_MIN=1`, because the default of 2 × cores would open connections it doesn't need. The pool still grows on demand."
 },
 {
 "id": "R-0645",
 "kind": "code",
 "step": "pool",
 "line": 1370,
-"text": "- Connections needed \u2248 queries per second \u00d7 seconds each query holds a connection. For example, 2,000 queries/s \u00d7 5ms needs about 10.",
-"block": "- **R-0645** Connections needed \u2248 queries per second \u00d7 seconds each query holds a connection. For example, 2,000 queries/s \u00d7 5ms needs about 10."
+"text": "- Connections needed ≈ queries per second × seconds each query holds a connection. For example, 2,000 queries/s × 5ms needs about 10.",
+"block": "- **R-0645** Connections needed ≈ queries per second × seconds each query holds a connection. For example, 2,000 queries/s × 5ms needs about 10."
 },
 {
 "id": "R-0646",
@@ -5742,8 +5742,8 @@
 "kind": "code",
 "step": "statements",
 "line": 1519,
-"text": "- `cached plan must not change result type` (0A000): evict and re-prepare once outside a transaction.",
-"block": "- **R-0718** `cached plan must not change result type` (0A000): evict and re-prepare once outside a transaction."
+"text": "- A cached statement can go stale when a migration changes something under it, and it then fails every time until it's re-prepared. On `cached plan must not change result type` (0A000), evict, re-prepare and retry once, outside a transaction. Do the same on `42883` or `42804` from a cached statement with a parameter of a non-built-in type, which is what an enum parameter returns when a swap keeps the old type: that statement parsed once, so this is a schema change and not a typo.",
+"block": "- **R-0718** A cached statement can go stale when a migration changes something under it, and it then fails every time until it's re-prepared. On `cached plan must not change result type` (0A000), evict, re-prepare and retry once, outside a transaction. Do the same on `42883` or `42804` from a cached statement with a parameter of a non-built-in type, which is what an enum parameter returns when a swap keeps the old type: that statement parsed once, so this is a schema change and not a typo."
 },
 {
 "id": "R-0719",
@@ -6110,8 +6110,8 @@
 "kind": "code",
 "step": "statements",
 "line": 1589,
-"text": "| A stale cached statement after a migration | Re-prepared automatically outside a transaction |",
-"block": "| R-0764 | A stale cached statement after a migration | Re-prepared automatically outside a transaction |"
+"text": "| A stale cached statement after a migration or an enum swap | Re-prepared or replaced automatically outside a transaction, and `Error::SchemaChanged` inside one |",
+"block": "| R-0764 | A stale cached statement after a migration or an enum swap | Re-prepared or replaced automatically outside a transaction, and `Error::SchemaChanged` inside one |"
 },
 {
 "id": "R-0765",
@@ -6334,8 +6334,8 @@
 "kind": "code",
 "step": "bootstrap",
 "line": 1653,
-"text": "| `ci.yml` | Every push and PR | `fmt`, `clippy -D warnings`, unit, `trybuild`, doc tests, integration on Postgres 15\u201318 (TCP and Unix socket), `pooler` tests against a PgBouncer service, MSRV build, feature combinations, migration suite including fault injection |",
-"block": "| R-0792 | `ci.yml` | Every push and PR | `fmt`, `clippy -D warnings`, unit, `trybuild`, doc tests, integration on Postgres 15\u201318 (TCP and Unix socket), `pooler` tests against a PgBouncer service, MSRV build, feature combinations, migration suite including fault injection |"
+"text": "| `ci.yml` | Every push and PR | `fmt`, `clippy -D warnings`, unit, `trybuild`, doc tests, integration on Postgres 15–18 (TCP and Unix socket), `pooler` tests against a PgBouncer service, MSRV build, feature combinations, migration suite including fault injection |",
+"block": "| R-0792 | `ci.yml` | Every push and PR | `fmt`, `clippy -D warnings`, unit, `trybuild`, doc tests, integration on Postgres 15–18 (TCP and Unix socket), `pooler` tests against a PgBouncer service, MSRV build, feature combinations, migration suite including fault injection |"
 },
 {
 "id": "R-0793",
@@ -6878,8 +6878,8 @@
 "kind": "doc",
 "step": "readme-release",
 "line": 1734,
-"text": "| `#[derive(PgEnum)]` | You're matching an existing Postgres enum; use `TextEnum` otherwise |",
-"block": "| R-0860 | `#[derive(PgEnum)]` | You're matching an existing Postgres enum; use `TextEnum` otherwise |"
+"text": "| `#[derive(PgEnum)]` | You're matching a Postgres enum that morm must never change; use `TextEnum` otherwise |",
+"block": "| R-0860 | `#[derive(PgEnum)]` | You're matching a Postgres enum that morm must never change; use `TextEnum` otherwise |"
 },
 {
 "id": "R-0861",
@@ -7246,8 +7246,8 @@
 "kind": "info",
 "step": "index",
 "line": 1786,
-"text": "2. **Runtime:** `morm.toml` and environment variables, `morm::Pool` on the `deadpool` core (start with a quick proof-of-concept), `[server]`, dynamic size, named pools, `max_connections` adjustment, `db.hold()`, bounded `statement_cache` and `shape_cache`, insert, `get`/`update`/`delete` forms, `patch` views and `.apply()`, query builder, `filter_cols`, `db.sql()` and `#[derive(morm::Row)]`, `keyset`, `.in_batches`, `order_by_allowed`, `.custom_plan()`, `get_for_update`, failover handling, `Decimal` and `Numeric`, loop detector, typed errors, transactions, deadlock measures, all list and JSON paths, calibrated per-connection memory figures for `size`. \u2192 **First publish** (`0.1.0-alpha`).",
-"block": "- **R-0906** **Runtime:** `morm.toml` and environment variables, `morm::Pool` on the `deadpool` core (start with a quick proof-of-concept), `[server]`, dynamic size, named pools, `max_connections` adjustment, `db.hold()`, bounded `statement_cache` and `shape_cache`, insert, `get`/`update`/`delete` forms, `patch` views and `.apply()`, query builder, `filter_cols`, `db.sql()` and `#[derive(morm::Row)]`, `keyset`, `.in_batches`, `order_by_allowed`, `.custom_plan()`, `get_for_update`, failover handling, `Decimal` and `Numeric`, loop detector, typed errors, transactions, deadlock measures, all list and JSON paths, calibrated per-connection memory figures for `size`. \u2192 **First publish** (`0.1.0-alpha`)."
+"text": "2. **Runtime:** `morm.toml` and environment variables, `morm::Pool` on the `deadpool` core (start with a quick proof-of-concept), `[server]`, dynamic size, named pools, `max_connections` adjustment, `db.hold()`, bounded `statement_cache` and `shape_cache`, insert, `get`/`update`/`delete` forms, `patch` views and `.apply()`, query builder, `filter_cols`, `db.sql()` and `#[derive(morm::Row)]`, `keyset`, `.in_batches`, `order_by_allowed`, `.custom_plan()`, `get_for_update`, failover handling, `Decimal` and `Numeric`, loop detector, typed errors, transactions, deadlock measures, all list and JSON paths, calibrated per-connection memory figures for `size`. → **First publish** (`0.1.0-alpha`).",
+"block": "- **R-0906** **Runtime:** `morm.toml` and environment variables, `morm::Pool` on the `deadpool` core (start with a quick proof-of-concept), `[server]`, dynamic size, named pools, `max_connections` adjustment, `db.hold()`, bounded `statement_cache` and `shape_cache`, insert, `get`/`update`/`delete` forms, `patch` views and `.apply()`, query builder, `filter_cols`, `db.sql()` and `#[derive(morm::Row)]`, `keyset`, `.in_batches`, `order_by_allowed`, `.custom_plan()`, `get_for_update`, failover handling, `Decimal` and `Numeric`, loop detector, typed errors, transactions, deadlock measures, all list and JSON paths, calibrated per-connection memory figures for `size`. → **First publish** (`0.1.0-alpha`)."
 },
 {
 "id": "R-0907",
@@ -7542,8 +7542,8 @@
 "kind": "info",
 "step": "index",
 "line": 1857,
-"text": "- Done means every test passes on Postgres 15\u201318, with nothing deferred or stubbed.",
-"block": "- **R-0943** Done means every test passes on Postgres 15\u201318, with nothing deferred or stubbed."
+"text": "- Done means every test passes on Postgres 15–18, with nothing deferred or stubbed.",
+"block": "- **R-0943** Done means every test passes on Postgres 15–18, with nothing deferred or stubbed."
 },
 {
 "id": "R-0944",
@@ -7678,8 +7678,8 @@
 "kind": "code",
 "step": "recovery",
 "line": 0,
-"text": "- **`full-chain` job.** This step sets what `nightly.yml`'s `full-chain` job runs and changes the job to run it: all up, all down, all up, across the migrations this step can run, on Postgres 15\u201318. Until now the job ran the same command as CI's migration suite, so the result must go beyond that suite: a job that runs only what that suite runs doesn't satisfy this. Step 49 widens it to the whole chain later. Gate the test with a Cargo feature on `morm-tests` and `required-features`, as `pooler` is. If the migration suite's command uses `--all-features` on `morm-tests`, change it so this feature stays off. Tag the test the job runs and the job itself, update the line in `tests/tests/repo_policy.rs` that pins the old command, and link the job's log from a `workflow_dispatch` run in the PR.",
-"block": "- **R-0960** **`full-chain` job.** This step sets what `nightly.yml`'s `full-chain` job runs and changes the job to run it: all up, all down, all up, across the migrations this step can run, on Postgres 15\u201318. Until now the job ran the same command as CI's migration suite, so the result must go beyond that suite: a job that runs only what that suite runs doesn't satisfy this. Step 49 widens it to the whole chain later. Gate the test with a Cargo feature on `morm-tests` and `required-features`, as `pooler` is. If the migration suite's command uses `--all-features` on `morm-tests`, change it so this feature stays off. Tag the test the job runs and the job itself, update the line in `tests/tests/repo_policy.rs` that pins the old command, and link the job's log from a `workflow_dispatch` run in the PR."
+"text": "- **`full-chain` job.** This step sets what `nightly.yml`'s `full-chain` job runs and changes the job to run it: all up, all down, all up, across the migrations this step can run, on Postgres 15–18. Until now the job ran the same command as CI's migration suite, so the result must go beyond that suite: a job that runs only what that suite runs doesn't satisfy this. Step 49 widens it to the whole chain later. Gate the test with a Cargo feature on `morm-tests` and `required-features`, as `pooler` is. If the migration suite's command uses `--all-features` on `morm-tests`, change it so this feature stays off. Tag the test the job runs and the job itself, update the line in `tests/tests/repo_policy.rs` that pins the old command, and link the job's log from a `workflow_dispatch` run in the PR.",
+"block": "- **R-0960** **`full-chain` job.** This step sets what `nightly.yml`'s `full-chain` job runs and changes the job to run it: all up, all down, all up, across the migrations this step can run, on Postgres 15–18. Until now the job ran the same command as CI's migration suite, so the result must go beyond that suite: a job that runs only what that suite runs doesn't satisfy this. Step 49 widens it to the whole chain later. Gate the test with a Cargo feature on `morm-tests` and `required-features`, as `pooler` is. If the migration suite's command uses `--all-features` on `morm-tests`, change it so this feature stays off. Tag the test the job runs and the job itself, update the line in `tests/tests/repo_policy.rs` that pins the old command, and link the job's log from a `workflow_dispatch` run in the PR."
 },
 {
 "id": "R-0961",
@@ -7702,8 +7702,8 @@
 "kind": "code",
 "step": "managed-decl",
 "line": 0,
-"text": "- `#[pg_domain]`, `#[pg_composite]` and `#[pg_enum]` make morm manage the type they sit on, and each registers it in the manifest like any other object. `name` is the Postgres type's name, and `#[pg_domain]` also takes the domain's `check`. A derive with no attribute registers nothing, so morm never creates or changes that type.",
-"block": "- **R-0963** `#[pg_domain]`, `#[pg_composite]` and `#[pg_enum]` make morm manage the type they sit on, and each registers it in the manifest like any other object. `name` is the Postgres type's name, and `#[pg_domain]` also takes the domain's `check`. A derive with no attribute registers nothing, so morm never creates or changes that type."
+"text": "- `#[pg_domain]`, `#[pg_composite]` and `#[pg_enum]` make morm manage the type they sit on, and each registers it in the manifest like any other object. `name` is the Postgres type's name, and `#[pg_domain]` also takes an optional `check`. A bare derive registers nothing, so morm never creates or changes that type: it binds to the snake_case of the Rust name, and `#[pg_type(name = \"...\")]` overrides that name without turning on management.",
+"block": "- **R-0963** `#[pg_domain]`, `#[pg_composite]` and `#[pg_enum]` make morm manage the type they sit on, and each registers it in the manifest like any other object. `name` is the Postgres type's name, and `#[pg_domain]` also takes an optional `check`. A bare derive registers nothing, so morm never creates or changes that type: it binds to the snake_case of the Rust name, and `#[pg_type(name = \"...\")]` overrides that name without turning on management."
 },
 {
 "id": "R-0964",
@@ -7782,8 +7782,8 @@
 "kind": "doc",
 "step": "readme-release",
 "line": 0,
-"text": "| `#[pg_enum(...)]` | You want migrations to create and track a Postgres enum; use `TextEnum` otherwise |",
-"block": "| R-0973 | `#[pg_enum(...)]` | You want migrations to create and track a Postgres enum; use `TextEnum` otherwise |"
+"text": "| `#[pg_enum(...)]` | You need a real Postgres enum and want migrations to manage it, including adding, renaming, removing and reordering values; use `TextEnum` otherwise, because removing or reordering replaces the type |",
+"block": "| R-0973 | `#[pg_enum(...)]` | You need a real Postgres enum and want migrations to manage it, including adding, renaming, removing and reordering values; use `TextEnum` otherwise, because removing or reordering replaces the type |"
 },
 {
 "id": "R-0974",
@@ -7792,6 +7792,646 @@
 "line": 0,
 "text": "| `morm::pg_sequence!` | You need numbers from a sequence that no identity column owns, such as invoice numbers |",
 "block": "| R-0974 | `morm::pg_sequence!` | You need numbers from a sequence that no identity column owns, such as invoice numbers |"
+},
+{
+"id": "R-0975",
+"kind": "code",
+"step": "pool",
+"line": 0,
+"text": "- **Stale generation.** The pool holds a generation counter for connections, in one atomic word, and each connection remembers the value it started with. A checkout compares them with one atomic read and no lock, and replaces a connection that's behind. Step 14 raises the counter when a connection reports stale server state, so after an enum swap the other connections don't each have to fail first. `pool_stats()` counts these replacements.",
+"block": "- **R-0975** **Stale generation.** The pool holds a generation counter for connections, in one atomic word, and each connection remembers the value it started with. A checkout compares them with one atomic read and no lock, and replaces a connection that's behind. Step 14 raises the counter when a connection reports stale server state, so after an enum swap the other connections don't each have to fail first. `pool_stats()` counts these replacements."
+},
+{
+"id": "R-0976",
+"kind": "code",
+"step": "types",
+"line": 0,
+"text": "- **Type names.** A bare `#[derive(PgEnum)]`, `#[derive(PgDomain)]` or `#[derive(PgComposite)]` binds to the snake_case of the Rust name, so `OrderState` binds to `order_state`. `#[pg_type(name = \"...\")]` overrides that name, and it doesn't turn on management.",
+"block": "- **R-0976** **Type names.** A bare `#[derive(PgEnum)]`, `#[derive(PgDomain)]` or `#[derive(PgComposite)]` binds to the snake_case of the Rust name, so `OrderState` binds to `order_state`. `#[pg_type(name = \"...\")]` overrides that name, and it doesn't turn on management."
+},
+{
+"id": "R-0977",
+"kind": "code",
+"step": "types",
+"line": 0,
+"text": "- **Labels.** A variant's Postgres label is the snake_case of its name, so `AwaitingPayment` is `awaiting_payment`. `#[pg_enum(value = \"...\")]` on the variant overrides it. Attributes on a variant never turn on management: only `#[pg_enum(name = \"...\")]` on the type does.",
+"block": "- **R-0977** **Labels.** A variant's Postgres label is the snake_case of its name, so `AwaitingPayment` is `awaiting_payment`. `#[pg_enum(value = \"...\")]` on the variant overrides it. Attributes on a variant never turn on management: only `#[pg_enum(name = \"...\")]` on the type does."
+},
+{
+"id": "R-0978",
+"kind": "code",
+"step": "types",
+"line": 0,
+"text": "- **Enum binding needs no OID.** morm writes `ToSql` and `FromSql` for `PgEnum` itself and doesn't use `postgres-derive`, whose exact variant check fails on every connection opened after a value is added. `accepts` compares no variants. `Param::pg_type` returns `Type::UNKNOWN`, so Postgres infers the type and a query never carries an OID that a swap could make stale. Array parameters use text format, because a binary array carries its element's OID. Labels are matched as bytes at compile time, with no heap use.",
+"block": "- **R-0978** **Enum binding needs no OID.** morm writes `ToSql` and `FromSql` for `PgEnum` itself and doesn't use `postgres-derive`, whose exact variant check fails on every connection opened after a value is added. `accepts` compares no variants. `Param::pg_type` returns `Type::UNKNOWN`, so Postgres infers the type and a query never carries an OID that a swap could make stale. Array parameters use text format, because a binary array carries its element's OID. Labels are matched as bytes at compile time, with no heap use."
+},
+{
+"id": "R-0979",
+"kind": "code",
+"step": "types",
+"line": 0,
+"text": "- **A label the binary doesn't know** returns `Error::UnknownEnumValue`, with the type and the label, for rows holding it and no others. `#[pg_enum(unknown)]` on one unit variant decodes any such label to that variant instead, and writing that variant returns `Error::Validation`.",
+"block": "- **R-0979** **A label the binary doesn't know** returns `Error::UnknownEnumValue`, with the type and the label, for rows holding it and no others. `#[pg_enum(unknown)]` on one unit variant decodes any such label to that variant instead, and writing that variant returns `Error::Validation`."
+},
+{
+"id": "R-0980",
+"kind": "code",
+"step": "types",
+"line": 0,
+"text": "- **Renamed labels.** `#[pg_enum(was = \"old\")]` on a variant decodes both labels to it and writes the current one, so a new binary reads rows from either side of a rename.",
+"block": "- **R-0980** **Renamed labels.** `#[pg_enum(was = \"old\")]` on a variant decodes both labels to it and writes the current one, so a new binary reads rows from either side of a rename."
+},
+{
+"id": "R-0981",
+"kind": "code",
+"step": "statements",
+"line": 0,
+"text": "- **Stale server state.** `XX000` with the message `cache lookup failed for type`, from any statement, means the session holds a dropped type, such as in a compiled plpgsql function. Evicting a statement can't clear that, so morm discards the connection, retries once on another outside a transaction, and raises the pool's connection generation.",
+"block": "- **R-0981** **Stale server state.** `XX000` with the message `cache lookup failed for type`, from any statement, means the session holds a dropped type, such as in a compiled plpgsql function. Evicting a statement can't clear that, so morm discards the connection, retries once on another outside a transaction, and raises the pool's connection generation."
+},
+{
+"id": "R-0982",
+"kind": "code",
+"step": "statements",
+"line": 0,
+"text": "- **Telling the rest of the pool.** Any stale statement raises a statement generation, held in the same atomic word as the pool's connection generation. A connection that checks out behind it clears both statement caches first, so connections don't each fail once per cached statement. The cost is the one atomic read a checkout already does.",
+"block": "- **R-0982** **Telling the rest of the pool.** Any stale statement raises a statement generation, held in the same atomic word as the pool's connection generation. A connection that checks out behind it clears both statement caches first, so connections don't each fail once per cached statement. The cost is the one atomic read a checkout already does."
+},
+{
+"id": "R-0983",
+"kind": "code",
+"step": "statements",
+"line": 0,
+"text": "- **Retrying is safe.** Postgres rolls back a failed statement outside a transaction, so a retry can't apply a write twice. A statement that isn't in a cache is never retried this way, and a retry that fails again returns its error.",
+"block": "- **R-0983** **Retrying is safe.** Postgres rolls back a failed statement outside a transaction, so a retry can't apply a write twice. A statement that isn't in a cache is never retried this way, and a retry that fails again returns its error."
+},
+{
+"id": "R-0984",
+"kind": "code",
+"step": "transactions",
+"line": 0,
+"text": "- **Stale statements inside a transaction.** The stale errors that step 14 retries can't be retried inside a transaction, because Postgres has already failed it. morm returns `Error::SchemaChanged`, marks the transaction failed, and clears the statement or replaces the connection as step 14 does.",
+"block": "- **R-0984** **Stale statements inside a transaction.** The stale errors that step 14 retries can't be retried inside a transaction, because Postgres has already failed it. morm returns `Error::SchemaChanged`, marks the transaction failed, and clears the statement or replaces the connection as step 14 does."
+},
+{
+"id": "R-0985",
+"kind": "code",
+"step": "transactions",
+"line": 0,
+"text": "- `.retry(n)` also retries `Error::SchemaChanged`, because the next attempt runs on fresh statements.",
+"block": "- **R-0985** `.retry(n)` also retries `Error::SchemaChanged`, because the next attempt runs on fresh statements."
+},
+{
+"id": "R-0986",
+"kind": "code",
+"step": "schema-ir",
+"line": 0,
+"text": "- **Enum catalog reads.** Labels come from `pg_enum` directly, ordered by `enumsortorder`. The reader never calls `enum_range` or casts a label to its type, because both fail inside a transaction after `ADD VALUE`, and the fingerprint is read there. The fingerprint holds labels in order, and never an OID or a sort position, so a swap to the same labels shows no drift.",
+"block": "- **R-0986** **Enum catalog reads.** Labels come from `pg_enum` directly, ordered by `enumsortorder`. The reader never calls `enum_range` or casts a label to its type, because both fail inside a transaction after `ADD VALUE`, and the fingerprint is read there. The fingerprint holds labels in order, and never an OID or a sort position, so a swap to the same labels shows no drift."
+},
+{
+"id": "R-0987",
+"kind": "code",
+"step": "schema-diff",
+"line": 0,
+"text": "- **Step boundaries.** An op can declare that its step ends after it, so the planner puts whatever follows in a new transaction. Step 51 needs this for `ALTER TYPE ... ADD VALUE`, because nothing can use a new value until the transaction that added it commits.",
+"block": "- **R-0987** **Step boundaries.** An op can declare that its step ends after it, so the planner puts whatever follows in a new transaction. Step 51 needs this for `ALTER TYPE ... ADD VALUE`, because nothing can use a new value until the transaction that added it commits."
+},
+{
+"id": "R-0988",
+"kind": "code",
+"step": "lint",
+"line": 0,
+"text": "- An op can declare `lint` findings of its own, and `--url` filters them by table size like any other finding, so later op kinds add rules with no change here.",
+"block": "- **R-0988** An op can declare `lint` findings of its own, and `--url` filters them by table size like any other finding, so later op kinds add rules with no change here."
+},
+{
+"id": "R-0989",
+"kind": "code",
+"step": "proof-files",
+"line": 0,
+"text": "- **Op data in `meta.json`.** An op can store its own data in `meta.json`, under `op_data`, covered by the checksum, so what `makemigrations` learned on scratch reaches `migrate`. Step 53 stores the dependents it expects there.",
+"block": "- **R-0989** **Op data in `meta.json`.** An op can store its own data in `meta.json`, under `op_data`, covered by the checksum, so what `makemigrations` learned on scratch reaches `migrate`. Step 53 stores the dependents it expects there."
+},
+{
+"id": "R-0990",
+"kind": "code",
+"step": "managed-decl",
+"line": 0,
+"text": "**Enum changes are declared on the variants.** `was` names a label this variant used to have, and `value` sets its label when snake_case isn't it:\n\n```rust\n#[derive(PgEnum)]\n#[pg_enum(name = \"order_state\")]\npub enum OrderState {\n    Pending,\n    #[pg_enum(was = \"paid_up\")] Paid,\n    #[pg_enum(value = \"in-transit\")] Shipping,\n}\n```\n\nThe manifest carries the labels in variant order, with each `was`.",
+"block": "**R-0990** **Enum changes are declared on the variants.** `was` names a label this variant used to have, and `value` sets its label when snake_case isn't it:\n\n```rust\n#[derive(PgEnum)]\n#[pg_enum(name = \"order_state\")]\npub enum OrderState {\n    Pending,\n    #[pg_enum(was = \"paid_up\")] Paid,\n    #[pg_enum(value = \"in-transit\")] Shipping,\n}\n```\n\nThe manifest carries the labels in variant order, with each `was`."
+},
+{
+"id": "R-0991",
+"kind": "code",
+"step": "managed-ops",
+"line": 0,
+"text": "- **Enums in this step** are created with their labels in variant order, dropped, and have values renamed. `ALTER TYPE ... RENAME VALUE` is instant, takes no table lock, and its inverse renames back, with data effect `none`. Renames run before any other change to the type, so a new value can reuse an old label. Exchanging two labels goes through a temporary label in one transaction.",
+"block": "- **R-0991** **Enums in this step** are created with their labels in variant order, dropped, and have values renamed. `ALTER TYPE ... RENAME VALUE` is instant, takes no table lock, and its inverse renames back, with data effect `none`. Renames run before any other change to the type, so a new value can reuse an old label. Exchanging two labels goes through a temporary label in one transaction."
+},
+{
+"id": "R-0992",
+"kind": "code",
+"step": "managed-ops",
+"line": 0,
+"text": "- **Rename or not.** A label that's gone and a label that's new on the same type are a rename decision, unless `was` answers it. It's never guessed. Rust variants alone can't show which it was.",
+"block": "- **R-0992** **Rename or not.** A label that's gone and a label that's new on the same type are a rename decision, unless `was` answers it. It's never guessed. Rust variants alone can't show which it was."
+},
+{
+"id": "R-0993",
+"kind": "code",
+"step": "managed-ops",
+"line": 0,
+"text": "- Any other change to an enum's values is refused by the diff with exit code `2`. Step 51 replaces this refusal.",
+"block": "- **R-0993** Any other change to an enum's values is refused by the diff with exit code `2`. Step 51 replaces this refusal."
+},
+{
+"id": "R-0994",
+"kind": "code",
+"step": "managed-deps",
+"line": 0,
+"text": "- **Refreshing functions.** A session keeps its compiled copy of a plpgsql function, and when a type is replaced under it, that copy fails on every call. Nothing in the catalog shows this, and `DISCARD PLANS` doesn't clear it. The planner can re-run a managed function's `CREATE OR REPLACE` with its definition unchanged, in the same transaction, which makes every session recompile it. Step 53 decides which functions need it.",
+"block": "- **R-0994** **Refreshing functions.** A session keeps its compiled copy of a plpgsql function, and when a type is replaced under it, that copy fails on every call. Nothing in the catalog shows this, and `DISCARD PLANS` doesn't clear it. The planner can re-run a managed function's `CREATE OR REPLACE` with its definition unchanged, in the same transaction, which makes every session recompile it. Step 53 decides which functions need it."
+},
+{
+"id": "R-0995",
+"kind": "code",
+"step": "retire",
+"line": 0,
+"text": "- **Retired types.** A type can be retired along with the columns that still use it. It's renamed `_morm_retired_<migration>_<type>`, following the 63-byte rule, and the ledger records its original name. `verify` doesn't report it as drift, and `purge` drops the retired columns first and the type after them, without `CASCADE`, stopping with the list if anything else depends on it.",
+"block": "- **R-0995** **Retired types.** A type can be retired along with the columns that still use it. It's renamed `_morm_retired_<migration>_<type>`, following the 63-byte rule, and the ledger records its original name. `verify` doesn't report it as drift, and `purge` drops the retired columns first and the type after them, without `CASCADE`, stopping with the list if anything else depends on it."
+},
+{
+"id": "R-0996",
+"kind": "code",
+"step": "live-modes",
+"line": 0,
+"text": "- **Reverting an enum change.** `revert` plans its forward migration like any other change, so reverting an add removes the value through the online swap by default, and needs the same decisions. Retired values come back with their rows. `rollback` uses `down.sql`, which is always the one-transaction form.",
+"block": "- **R-0996** **Reverting an enum change.** `revert` plans its forward migration like any other change, so reverting an add removes the value through the online swap by default, and needs the same decisions. Retired values come back with their rows. `rollback` uses `down.sql`, which is always the one-transaction form."
+},
+{
+"id": "R-0997",
+"kind": "code",
+"step": "rolling",
+"line": 0,
+"text": "- **Enums in `check_schema`.** The per-model list also holds each enum's labels. Every variant's label must exist, or its `was` label, and a `deprecated` variant may be missing. Extra labels in the database are fine, because a binary only fails on a row that holds one, and `Error::UnknownEnumValue` names it.",
+"block": "- **R-0997** **Enums in `check_schema`.** The per-model list also holds each enum's labels. Every variant's label must exist, or its `was` label, and a `deprecated` variant may be missing. Extra labels in the database are fine, because a binary only fails on a row that holds one, and `Error::UnknownEnumValue` names it."
+},
+{
+"id": "R-0998",
+"kind": "code",
+"step": "rolling",
+"line": 0,
+"text": "- **Enum phases.** Adds, renames and the online swap's steps before its cutover are `expand`. A cutover that removes a label is `contract`, because binaries that still write it would fail. A cutover that only reorders stays in `expand`. In one migration that adds and removes, the add goes in `expand`, so a value and its replacement exist together through the rollout.",
+"block": "- **R-0998** **Enum phases.** Adds, renames and the online swap's steps before its cutover are `expand`. A cutover that removes a label is `contract`, because binaries that still write it would fail. A cutover that only reorders stays in `expand`. In one migration that adds and removes, the add goes in `expand`, so a value and its replacement exist together through the rollout."
+},
+{
+"id": "R-0999",
+"kind": "code",
+"step": "rolling",
+"line": 0,
+"text": "- **Removing a value in a rolling deploy.** `#[pg_enum(deprecated)]` on a variant says that value is on its way out. `contract` refuses a swap that removes a label until a release with that variant marked `deprecated` has shipped, the same gate `#[col(deprecated)]` uses.",
+"block": "- **R-0999** **Removing a value in a rolling deploy.** `#[pg_enum(deprecated)]` on a variant says that value is on its way out. `contract` refuses a swap that removes a label until a release with that variant marked `deprecated` has shipped, the same gate `#[col(deprecated)]` uses."
+},
+{
+"id": "R-1000",
+"kind": "code",
+"step": "rolling",
+"line": 0,
+"text": "- **Renaming a value in a rolling deploy.** A rename runs instantly by default, so old binaries fail on that value during the rollout: reads of rows holding it return `Error::UnknownEnumValue`, and writes of the old label return `22P02`. The rename decision also offers expand/contract: add the new label in `expand`, copy rows across in batches, and remove the old label by swap in `contract`. With `was`, a new binary reads both labels through either path.",
+"block": "- **R-1000** **Renaming a value in a rolling deploy.** A rename runs instantly by default, so old binaries fail on that value during the rollout: reads of rows holding it return `Error::UnknownEnumValue`, and writes of the old label return `22P02`. The rename decision also offers expand/contract: add the new label in `expand`, copy rows across in batches, and remove the old label by swap in `contract`. With `was`, a new binary reads both labels through either path."
+},
+{
+"id": "R-1001",
+"kind": "code",
+"step": "import",
+"line": 0,
+"text": "- `import` writes bare `#[derive(PgEnum)]`, `#[derive(PgDomain)]` and `#[derive(PgComposite)]`, and never `#[pg_enum(name = \"...\")]`, `#[pg_domain]` or `#[pg_composite]`, so nothing becomes managed by accident. It adds `#[pg_type(name = \"...\")]` and `#[pg_enum(value = \"...\")]` where snake_case wouldn't give the existing name.",
+"block": "- **R-1001** `import` writes bare `#[derive(PgEnum)]`, `#[derive(PgDomain)]` and `#[derive(PgComposite)]`, and never `#[pg_enum(name = \"...\")]`, `#[pg_domain]` or `#[pg_composite]`, so nothing becomes managed by accident. It adds `#[pg_type(name = \"...\")]` and `#[pg_enum(value = \"...\")]` where snake_case wouldn't give the existing name."
+},
+{
+"id": "R-1002",
+"kind": "doc",
+"step": "readme-release",
+"line": 0,
+"text": "| `#[pg_type(name = \"...\")]` | A bare derive must bind to a type whose name isn't the snake_case of your Rust name |",
+"block": "| R-1002 | `#[pg_type(name = \"...\")]` | A bare derive must bind to a type whose name isn't the snake_case of your Rust name |"
+},
+{
+"id": "R-1003",
+"kind": "doc",
+"step": "readme-release",
+"line": 0,
+"text": "| `#[pg_enum(value = \"...\")]` | A variant's Postgres label isn't the snake_case of its name |",
+"block": "| R-1003 | `#[pg_enum(value = \"...\")]` | A variant's Postgres label isn't the snake_case of its name |"
+},
+{
+"id": "R-1004",
+"kind": "doc",
+"step": "readme-release",
+"line": 0,
+"text": "| `#[pg_enum(was = \"...\")]` | You renamed a value, and the migration must rename it and not remove and add it |",
+"block": "| R-1004 | `#[pg_enum(was = \"...\")]` | You renamed a value, and the migration must rename it and not remove and add it |"
+},
+{
+"id": "R-1005",
+"kind": "doc",
+"step": "readme-release",
+"line": 0,
+"text": "| `#[pg_enum(unknown)]` | Old binaries must keep reading rows during a rollout that adds a value |",
+"block": "| R-1005 | `#[pg_enum(unknown)]` | Old binaries must keep reading rows during a rollout that adds a value |"
+},
+{
+"id": "R-1006",
+"kind": "doc",
+"step": "readme-release",
+"line": 0,
+"text": "| `#[pg_enum(deprecated)]` | You're removing a value in a rolling deploy, and `contract` must wait until this release has shipped |",
+"block": "| R-1006 | `#[pg_enum(deprecated)]` | You're removing a value in a rolling deploy, and `contract` must wait until this release has shipped |"
+},
+{
+"id": "R-1007",
+"kind": "doc",
+"step": "readme-release",
+"line": 0,
+"text": "| `max_rewrite_mb` | You want a different size limit on rewriting a table under a full lock |",
+"block": "| R-1007 | `max_rewrite_mb` | You want a different size limit on rewriting a table under a full lock |"
+},
+{
+"id": "R-1008",
+"kind": "doc",
+"step": "readme-release",
+"line": 0,
+"text": "The README shows this notice loudly, beside the enum rows:\n\n> **Use `TextEnum` unless you have a reason not to.** Changing a `TextEnum` is an ordinary migration. Postgres can't remove or reorder an enum value, so morm has to replace the whole type, including everything that depends on it. On a big table that means a long online copy or a table rewrite under a full lock. Adding or renaming a value is cheap, but its down is not, and old binaries can't read values they don't know. morm does all of this safely, but `TextEnum` never needs it.",
+"block": "**R-1008** The README shows this notice loudly, beside the enum rows:\n\n> **Use `TextEnum` unless you have a reason not to.** Changing a `TextEnum` is an ordinary migration. Postgres can't remove or reorder an enum value, so morm has to replace the whole type, including everything that depends on it. On a big table that means a long online copy or a table rewrite under a full lock. Adding or renaming a value is cheap, but its down is not, and old binaries can't read values they don't know. morm does all of this safely, but `TextEnum` never needs it."
+},
+{
+"id": "R-1009",
+"kind": "code",
+"step": "enum-swap",
+"line": 0,
+"text": "- **Reading the change.** The diff compares the chain's labels with the declared labels, in order, after renames. If nothing is removed and the labels that stay keep their relative order, the change is one or more adds. Anything else needs a swap. The rename decision gains the answer `remove and add`.",
+"block": "- **R-1009** **Reading the change.** The diff compares the chain's labels with the declared labels, in order, after renames. If nothing is removed and the labels that stay keep their relative order, the change is one or more adds. Anything else needs a swap. The rename decision gains the answer `remove and add`."
+},
+{
+"id": "R-1010",
+"kind": "code",
+"step": "enum-swap",
+"line": 0,
+"text": "- **Adding a value.** Each new label becomes `ALTER TYPE ... ADD VALUE` with `BEFORE` or `AFTER` its neighbour in the declared order, in a transaction, after any renames, with data effect `none`. The op ends its step, because Postgres refuses any use of the value until that transaction commits: an `UPDATE`, `SET DEFAULT`, a partial index, a view, even `enum_range`. A plpgsql body naming it isn't checked, so the boundary is unconditional. Several adds can share a step. `ADD VALUE` needs no table lock and rewrites nothing.",
+"block": "- **R-1010** **Adding a value.** Each new label becomes `ALTER TYPE ... ADD VALUE` with `BEFORE` or `AFTER` its neighbour in the declared order, in a transaction, after any renames, with data effect `none`. The op ends its step, because Postgres refuses any use of the value until that transaction commits: an `UPDATE`, `SET DEFAULT`, a partial index, a view, even `enum_range`. A plpgsql body naming it isn't checked, so the boundary is unconditional. Several adds can share a step. `ADD VALUE` needs no table lock and rewrites nothing."
+},
+{
+"id": "R-1011",
+"kind": "code",
+"step": "enum-swap",
+"line": 0,
+"text": "- **Adds and renames run before a swap,** so a swap never introduces a label, and a label rows are mapped to can be added earlier in the same migration.",
+"block": "- **R-1011** **Adds and renames run before a swap,** so a swap never introduces a label, and a label rows are mapped to can be added earlier in the same migration."
+},
+{
+"id": "R-1012",
+"kind": "code",
+"step": "enum-swap",
+"line": 0,
+"text": "- **The swap.** Postgres stores an enum value as an internal ID, so moving to a new type always rewrites the data. The one-transaction form is one `tx` step:\n\n1. Set `lock_timeout` and lock every affected table in sorted order, so a busy table fails before anything has changed.\n2. Drop column defaults on the affected columns, and anything step 53 drops.\n3. For a map that keeps old values, add the retired column and fill it.\n4. Rename the old type and create the new one under the real name, with the declared labels.\n5. Change each column with `ALTER COLUMN ... TYPE ... USING`, applying any map, with one `ALTER TABLE` per table so each is rewritten once. The cast fails if a row holds a removed label with no map, which rolls everything back.\n6. Copy the owner, comment and grants from the old type, then drop it.\n7. Restore defaults and anything step 53 dropped, and check the fingerprint before commit.\n\n`ANALYZE` of each affected table then runs as its own step, because the rewrite removes the column's statistics.",
+"block": "- **R-1012** **The swap.** Postgres stores an enum value as an internal ID, so moving to a new type always rewrites the data. The one-transaction form is one `tx` step:\n\n1. Set `lock_timeout` and lock every affected table in sorted order, so a busy table fails before anything has changed.\n2. Drop column defaults on the affected columns, and anything step 53 drops.\n3. For a map that keeps old values, add the retired column and fill it.\n4. Rename the old type and create the new one under the real name, with the declared labels.\n5. Change each column with `ALTER COLUMN ... TYPE ... USING`, applying any map, with one `ALTER TABLE` per table so each is rewritten once. The cast fails if a row holds a removed label with no map, which rolls everything back.\n6. Copy the owner, comment and grants from the old type, then drop it.\n7. Restore defaults and anything step 53 dropped, and check the fingerprint before commit.\n\n`ANALYZE` of each affected table then runs as its own step, because the rewrite removes the column's statistics."
+},
+{
+"id": "R-1013",
+"kind": "code",
+"step": "enum-swap",
+"line": 0,
+"text": "- **Array columns** change in the same way, and a map applies to each element with `array_replace` on a `text[]` cast.",
+"block": "- **R-1013** **Array columns** change in the same way, and a map applies to each element with `array_replace` on a `text[]` cast."
+},
+{
+"id": "R-1014",
+"kind": "code",
+"step": "enum-swap",
+"line": 0,
+"text": "- **What the old type carried.** `COMMENT`, the owner and grants belong to the type's OID, so a plain swap loses them. A `DO` block in the swap reads them from the catalog and applies them to the new type, including `WITH GRANT OPTION`, so the step's SQL stays fixed and live values are kept.",
+"block": "- **R-1014** **What the old type carried.** `COMMENT`, the owner and grants belong to the type's OID, so a plain swap loses them. A `DO` block in the swap reads them from the catalog and applies them to the new type, including `WITH GRANT OPTION`, so the step's SQL stays fixed and live values are kept."
+},
+{
+"id": "R-1015",
+"kind": "code",
+"step": "enum-swap",
+"line": 0,
+"text": "- **Rows holding a removed value.** `makemigrations` can't see live data, so removing a value is a decision, and `migrate` enforces its answer. The options are `refuse`, the default answer, which stops with exit code `2` and row counts per table while any row holds the value; `map` to another label, keeping the old values; and `map` with `drop now`, which keeps nothing.",
+"block": "- **R-1015** **Rows holding a removed value.** `makemigrations` can't see live data, so removing a value is a decision, and `migrate` enforces its answer. The options are `refuse`, the default answer, which stops with exit code `2` and row counts per table while any row holds the value; `map` to another label, keeping the old values; and `map` with `drop now`, which keeps nothing."
+},
+{
+"id": "R-1016",
+"kind": "code",
+"step": "enum-swap",
+"line": 0,
+"text": "- **Keeping old values.** A `map` that keeps old values adds a `text` column named as a retired column, filled only for rows it changes, and step 38's retired state tracks it until `purge`.",
+"block": "- **R-1016** **Keeping old values.** A `map` that keeps old values adds a `text` column named as a retired column, filled only for rows it changes, and step 38's retired state tracks it until `purge`."
+},
+{
+"id": "R-1017",
+"kind": "code",
+"step": "enum-swap",
+"line": 0,
+"text": "- **Reordering is a decision.** Sorting variants alphabetically must not quietly rewrite production tables. The evidence names the tables that would be rewritten, and with no answer `makemigrations` exits with code `3`.",
+"block": "- **R-1017** **Reordering is a decision.** Sorting variants alphabetically must not quietly rewrite production tables. The evidence names the tables that would be rewritten, and with no answer `makemigrations` exits with code `3`."
+},
+{
+"id": "R-1018",
+"kind": "code",
+"step": "enum-swap",
+"line": 0,
+"text": "| Add | `none` | Remove by swap. It refuses while rows hold the value, unless a `down_map` is decided |",
+"block": "| R-1018 | Add | `none` | Remove by swap. It refuses while rows hold the value, unless a `down_map` is decided |"
+},
+{
+"id": "R-1019",
+"kind": "code",
+"step": "enum-swap",
+"line": 0,
+"text": "| Reorder | `none` | Reorder back by swap |",
+"block": "| R-1019 | Reorder | `none` | Reorder back by swap |"
+},
+{
+"id": "R-1020",
+"kind": "code",
+"step": "enum-swap",
+"line": 0,
+"text": "| Remove, no rows | `none` | `ADD VALUE` at the old position |",
+"block": "| R-1020 | Remove, no rows | `none` | `ADD VALUE` at the old position |"
+},
+{
+"id": "R-1021",
+"kind": "code",
+"step": "enum-swap",
+"line": 0,
+"text": "| Remove, map, keep old values | `retires` | `ADD VALUE`, then in a later step restore the rows below |",
+"block": "| R-1021 | Remove, map, keep old values | `retires` | `ADD VALUE`, then in a later step restore the rows below |"
+},
+{
+"id": "R-1022",
+"kind": "code",
+"step": "enum-swap",
+"line": 0,
+"text": "| Remove, map, `drop now` | `lossy` | `ADD VALUE`. The label returns and the rows don't |",
+"block": "| R-1022 | Remove, map, `drop now` | `lossy` | `ADD VALUE`. The label returns and the rows don't |"
+},
+{
+"id": "R-1023",
+"kind": "code",
+"step": "enum-swap",
+"line": 0,
+"text": "- **Restoring rows.** Down restores an old value only where the row still holds the value it was mapped to. A row the app changed since `up`, or a row inserted since, keeps what it has. `purge` makes that down irreversible.",
+"block": "- **R-1023** **Restoring rows.** Down restores an old value only where the row still holds the value it was mapped to. A row the app changed since `up`, or a row inserted since, keeps what it has. `purge` makes that down irreversible."
+},
+{
+"id": "R-1024",
+"kind": "code",
+"step": "enum-swap",
+"line": 0,
+"text": "- **Crash recovery.** The swap is all or nothing, so a killed run leaves the old type, and `--resume` reruns it. `ADD VALUE` has a precondition that the label is absent. `ANALYZE` can always rerun.",
+"block": "- **R-1024** **Crash recovery.** The swap is all or nothing, so a killed run leaves the old type, and `--resume` reruns it. `ADD VALUE` has a precondition that the label is absent. `ANALYZE` can always rerun."
+},
+{
+"id": "R-1025",
+"kind": "code",
+"step": "enum-swap",
+"line": 0,
+"text": "- **`max_rewrite_mb`.** `[migrations] max_rewrite_mb`, default 1024, limits a table rewrite under `ACCESS EXCLUSIVE`. Preflight refuses a one-transaction swap with exit code `2` when an affected table is bigger, for `migrate` and `rollback`, naming the table and its size. Raise the setting to go past it.",
+"block": "- **R-1025** **`max_rewrite_mb`.** `[migrations] max_rewrite_mb`, default 1024, limits a table rewrite under `ACCESS EXCLUSIVE`. Preflight refuses a one-transaction swap with exit code `2` when an affected table is bigger, for `migrate` and `rollback`, naming the table and its size. Raise the setting to go past it."
+},
+{
+"id": "R-1026",
+"kind": "code",
+"step": "enum-swap",
+"line": 0,
+"text": "- **`lint`** reports every swap, with the tables it rewrites, an add on an enum that's a list partition key with no default partition, because a row with the new value then has nowhere to go, and any table in a publication, because the subscriber must migrate first.",
+"block": "- **R-1026** **`lint`** reports every swap, with the tables it rewrites, an add on an enum that's a list partition key with no default partition, because a row with the new value then has nowhere to go, and any table in a publication, because the subscriber must migrate first."
+},
+{
+"id": "R-1027",
+"kind": "code",
+"step": "enum-swap",
+"line": 0,
+"text": "- **With-data proof.** Enum columns get a row per label. A map also puts rows on the removed label, and `refuse` keeps rows off it. A column kept by a retired copy must match its checksum after up and down, and with `drop now` it's left out.",
+"block": "- **R-1027** **With-data proof.** Enum columns get a row per label. A map also puts rows on the removed label, and `refuse` keeps rows off it. A column kept by a retired copy must match its checksum after up and down, and with `drop now` it's left out."
+},
+{
+"id": "R-1028",
+"kind": "code",
+"step": "enum-swap",
+"line": 0,
+"text": "- **morm never edits `pg_enum`.** It needs superuser, and it would leave indexes referring to values that no longer exist, or in the wrong order.",
+"block": "- **R-1028** **morm never edits `pg_enum`.** It needs superuser, and it would leave indexes referring to values that no longer exist, or in the wrong order."
+},
+{
+"id": "R-1029",
+"kind": "code",
+"step": "enum-deps",
+"line": 0,
+"text": "- **The walk.** Start at the enum and follow `pg_depend` through every type built on it: its array, domains, composite types, range types and table row types. From each of those, collect what depends on the type and on columns of it, and repeat until nothing new turns up. It covers every schema, and partitions, and it includes the array type.",
+"block": "- **R-1029** **The walk.** Start at the enum and follow `pg_depend` through every type built on it: its array, domains, composite types, range types and table row types. From each of those, collect what depends on the type and on columns of it, and repeat until nothing new turns up. It covers every schema, and partitions, and it includes the array type."
+},
+{
+"id": "R-1030",
+"kind": "code",
+"step": "enum-deps",
+"line": 0,
+"text": "- **Compared on the live database.** `makemigrations` stores the walk's result from scratch in `op_data`. `migrate` preflight repeats the walk and refuses with exit code `2`, listing every object that isn't on the stored list, because scratch can't see what no model declares.",
+"block": "- **R-1030** **Compared on the live database.** `makemigrations` stores the walk's result from scratch in `op_data`. `migrate` preflight repeats the walk and refuses with exit code `2`, listing every object that isn't on the stored list, because scratch can't see what no model declares."
+},
+{
+"id": "R-1031",
+"kind": "code",
+"step": "enum-deps",
+"line": 0,
+"text": "- **Rebuilt by Postgres, so left alone:** plain, unique and multi-column indexes, unique and exclusion constraints, extended statistics, inheritance and partition children when the enum isn't the key, CHECK constraints with no enum literal, and triggers that don't name the column.",
+"block": "- **R-1031** **Rebuilt by Postgres, so left alone:** plain, unique and multi-column indexes, unique and exclusion constraints, extended statistics, inheritance and partition children when the enum isn't the key, CHECK constraints with no enum literal, and triggers that don't name the column."
+},
+{
+"id": "R-1032",
+"kind": "code",
+"step": "enum-deps",
+"line": 0,
+"text": "- **Dropped and recreated, if managed:** partial and expression indexes and CHECK constraints that hold a literal, whose rebuilt text would still name the old type; views and materialized views, with a refresh; `BEGIN ATOMIC` functions; triggers with `WHEN` or `OF`; and policies, including those on other tables that read the column. Each is dropped before the type is renamed and recreated after the rewrite, in the fixed kind order, with an exact inverse.",
+"block": "- **R-1032** **Dropped and recreated, if managed:** partial and expression indexes and CHECK constraints that hold a literal, whose rebuilt text would still name the old type; views and materialized views, with a refresh; `BEGIN ATOMIC` functions; triggers with `WHEN` or `OF`; and policies, including those on other tables that read the column. Each is dropped before the type is renamed and recreated after the rewrite, in the fixed kind order, with an exact inverse."
+},
+{
+"id": "R-1033",
+"kind": "code",
+"step": "enum-deps",
+"line": 0,
+"text": "- **Foreign keys between enum columns** are dropped, both columns change, and the key is added back in the same transaction. Postgres refuses to change either side alone.",
+"block": "- **R-1033** **Foreign keys between enum columns** are dropped, both columns change, and the key is added back in the same transaction. Postgres refuses to change either side alone."
+},
+{
+"id": "R-1034",
+"kind": "code",
+"step": "enum-deps",
+"line": 0,
+"text": "- **Stored generated columns** that read the column, or are of the enum type, are dropped and added back after the rewrite, because Postgres refuses `ALTER COLUMN TYPE` on them.",
+"block": "- **R-1034** **Stored generated columns** that read the column, or are of the enum type, are dropped and added back after the rewrite, because Postgres refuses `ALTER COLUMN TYPE` on them."
+},
+{
+"id": "R-1035",
+"kind": "code",
+"step": "enum-deps",
+"line": 0,
+"text": "- **A function or procedure with the enum in its signature** is dropped and created, because `CREATE OR REPLACE` can't change a signature, and its managed grants are applied again.",
+"block": "- **R-1035** **A function or procedure with the enum in its signature** is dropped and created, because `CREATE OR REPLACE` can't change a signature, and its managed grants are applied again."
+},
+{
+"id": "R-1036",
+"kind": "code",
+"step": "enum-deps",
+"line": 0,
+"text": "- **Always refused for a remove or reorder,** listing the object: the enum as a partition key, because Postgres can't change one, though adds and renames still work; a range type over the enum, and a rule, which morm doesn't manage; a table's row type used as a column elsewhere; and a foreign table column, because only the local definition would change.",
+"block": "- **R-1036** **Always refused for a remove or reorder,** listing the object: the enum as a partition key, because Postgres can't change one, though adds and renames still work; a range type over the enum, and a rule, which morm doesn't manage; a table's row type used as a column elsewhere; and a foreign table column, because only the local definition would change."
+},
+{
+"id": "R-1037",
+"kind": "code",
+"step": "enum-deps",
+"line": 0,
+"text": "- **Unmanaged dependents are refused,** whatever their kind, including a column in another schema. Scratch can't see them, so the SQL for them would be unproven, and morm never changes unmanaged objects. The message says to declare the object, or to change it in a hand-written `--empty` migration.",
+"block": "- **R-1037** **Unmanaged dependents are refused,** whatever their kind, including a column in another schema. Scratch can't see them, so the SQL for them would be unproven, and morm never changes unmanaged objects. The message says to declare the object, or to change it in a hand-written `--empty` migration."
+},
+{
+"id": "R-1038",
+"kind": "code",
+"step": "enum-deps",
+"line": 0,
+"text": "- **Code Postgres doesn't track.** Before a swap, a rename or a removal, step 38's source search also runs for the type's name, for each label that changes, and for each affected table and column. A hit on a managed function is a decision, and `makemigrations` proposes the rewritten function. A `plpgsql` body can name a removed label, and a `s::text = 'old'` comparison never fails, it just stops matching.",
+"block": "- **R-1038** **Code Postgres doesn't track.** Before a swap, a rename or a removal, step 38's source search also runs for the type's name, for each label that changes, and for each affected table and column. A hit on a managed function is a decision, and `makemigrations` proposes the rewritten function. A `plpgsql` body can name a removed label, and a `s::text = 'old'` comparison never fails, it just stops matching."
+},
+{
+"id": "R-1039",
+"kind": "code",
+"step": "enum-deps",
+"line": 0,
+"text": "- **Refreshing managed functions.** Every managed plpgsql function that search finds, and every one an affected table's triggers call, is refreshed in the swap's transaction. A trigger function needs this even when it never names the type: on Postgres 18 a trigger comparing `NEW.s` failed on every call in every open session until it was refreshed.",
+"block": "- **R-1039** **Refreshing managed functions.** Every managed plpgsql function that search finds, and every one an affected table's triggers call, is refreshed in the swap's transaction. A trigger function needs this even when it never names the type: on Postgres 18 a trigger comparing `NEW.s` failed on every call in every open session until it was refreshed."
+},
+{
+"id": "R-1040",
+"kind": "code",
+"step": "enum-deps",
+"line": 0,
+"text": "- **Unmanaged functions** that would go stale are a decision, repeated in preflight on the live database. The default refuses. Accepting says other services must reconnect, because morm doesn't change unmanaged functions. morm apps recover by themselves.",
+"block": "- **R-1040** **Unmanaged functions** that would go stale are a decision, repeated in preflight on the live database. The default refuses. Accepting says other services must reconnect, because morm doesn't change unmanaged functions. morm apps recover by themselves."
+},
+{
+"id": "R-1041",
+"kind": "code",
+"step": "enum-wrappers",
+"line": 0,
+"text": "- **A managed domain over the enum gets a new type too.** Postgres has no command to change a domain's base type. In the swap's transaction the domain is renamed, created again over the new enum from its declaration, with its `check`, and its columns change to it. It's dropped before the old enum.",
+"block": "- **R-1041** **A managed domain over the enum gets a new type too.** Postgres has no command to change a domain's base type. In the swap's transaction the domain is renamed, created again over the new enum from its declaration, with its `check`, and its columns change to it. It's dropped before the old enum."
+},
+{
+"id": "R-1042",
+"kind": "code",
+"step": "enum-wrappers",
+"line": 0,
+"text": "- **A managed composite type holding the enum** changes with `ALTER ATTRIBUTE` when no column uses it. Otherwise it's renamed and created again like a domain, and its columns change to it through a text cast, which preserves every attribute.",
+"block": "- **R-1042** **A managed composite type holding the enum** changes with `ALTER ATTRIBUTE` when no column uses it. Otherwise it's renamed and created again like a domain, and its columns change to it through a text cast, which preserves every attribute."
+},
+{
+"id": "R-1043",
+"kind": "code",
+"step": "enum-wrappers",
+"line": 0,
+"text": "- **Order.** New types are created from the enum outward, and old types are dropped from the outside in. This holds at any depth, such as a domain over a domain, or a composite holding an array of the enum.",
+"block": "- **R-1043** **Order.** New types are created from the enum outward, and old types are dropped from the outside in. This holds at any depth, such as a domain over a domain, or a composite holding an array of the enum."
+},
+{
+"id": "R-1044",
+"kind": "code",
+"step": "enum-wrappers",
+"line": 0,
+"text": "- **Maps pass through.** A map applies inside a domain value, a composite attribute and each array element, leaving every other attribute unchanged, and the retired copy of a mapped column holds the whole old value as text.",
+"block": "- **R-1044** **Maps pass through.** A map applies inside a domain value, a composite attribute and each array element, leaving every other attribute unchanged, and the retired copy of a mapped column holds the whole old value as text."
+},
+{
+"id": "R-1045",
+"kind": "code",
+"step": "enum-wrappers",
+"line": 0,
+"text": "- These types keep their owner, comment and grants the way the enum does, and their inverses and data effects are the enum op's own.",
+"block": "- **R-1045** These types keep their owner, comment and grants the way the enum does, and their inverses and data effects are the enum op's own."
+},
+{
+"id": "R-1046",
+"kind": "code",
+"step": "enum-online",
+"line": 0,
+"text": "- **Online by default.** On an existing table a swap uses this form, and `--fast` uses the one-transaction form. `max_rewrite_mb` doesn't apply here, because nothing is rewritten under a full lock.",
+"block": "- **R-1046** **Online by default.** On an existing table a swap uses this form, and `--fast` uses the one-transaction form. `max_rewrite_mb` doesn't apply here, because nothing is rewritten under a full lock."
+},
+{
+"id": "R-1047",
+"kind": "code",
+"step": "enum-online",
+"line": 0,
+"text": "- **The steps,** each with its own boundary:\n\n1. `tx`: create the new type under a temporary name.\n2. `tx` per table: add the shadow column and a sync trigger on every insert and update, applying the map.\n3. `batch` per table: copy by key, with a resumable cursor.\n4. `no-tx`: build each index on the shadow column with `CREATE INDEX CONCURRENTLY`.\n5. `tx`, then a separate `tx`: add `CHECK (shadow IS NOT NULL) NOT VALID`, then `VALIDATE`. A CHECK with a literal goes the same way.\n6. `ANALYZE`, because statistics follow the column through a rename.\n7. `tx`: the cutover, below.",
+"block": "- **R-1047** **The steps,** each with its own boundary:\n\n1. `tx`: create the new type under a temporary name.\n2. `tx` per table: add the shadow column and a sync trigger on every insert and update, applying the map.\n3. `batch` per table: copy by key, with a resumable cursor.\n4. `no-tx`: build each index on the shadow column with `CREATE INDEX CONCURRENTLY`.\n5. `tx`, then a separate `tx`: add `CHECK (shadow IS NOT NULL) NOT VALID`, then `VALIDATE`. A CHECK with a literal goes the same way.\n6. `ANALYZE`, because statistics follow the column through a rename.\n7. `tx`: the cutover, below."
+},
+{
+"id": "R-1048",
+"kind": "code",
+"step": "enum-online",
+"line": 0,
+"text": "- **The copy walks by key until nothing is left,** and reads each batch after the sync trigger has committed. A range worked out up front misses rows inserted just before the trigger attached. `VALIDATE` is the safety net: it fails if any row was missed.",
+"block": "- **R-1048** **The copy walks by key until nothing is left,** and reads each batch after the sync trigger has committed. A range worked out up front misses rows inserted just before the trigger attached. `VALIDATE` is the safety net: it fails if any row was missed."
+},
+{
+"id": "R-1049",
+"kind": "code",
+"step": "enum-online",
+"line": 0,
+"text": "- **The cutover** is one short transaction across all affected tables, locked in sorted order with `lock_timeout`, retried with backoff, because a waiting lock holds up new readers behind it. It drops the sync trigger, the old indexes and step 53's dependents, renames the old column to a retired column with `NOT NULL` and its default removed, and renames the shadow column to the real name. It sets `NOT NULL` from the validated check, renames the indexes, retires the old type, gives the new type the real name and restores defaults. Then it recreates the dependents, copies the owner, comment and grants, and refreshes functions.",
+"block": "- **R-1049** **The cutover** is one short transaction across all affected tables, locked in sorted order with `lock_timeout`, retried with backoff, because a waiting lock holds up new readers behind it. It drops the sync trigger, the old indexes and step 53's dependents, renames the old column to a retired column with `NOT NULL` and its default removed, and renames the shadow column to the real name. It sets `NOT NULL` from the validated check, renames the indexes, retires the old type, gives the new type the real name and restores defaults. Then it recreates the dependents, copies the owner, comment and grants, and refreshes functions."
+},
+{
+"id": "R-1050",
+"kind": "code",
+"step": "enum-online",
+"line": 0,
+"text": "- **Old values stay.** The retired column holds every old value and keeps the retired type alive until `purge`, which drops the column and then the type. So a map's data effect here is `retires`, and down restores a value only where the row still holds what it was mapped to.",
+"block": "- **R-1050** **Old values stay.** The retired column holds every old value and keeps the retired type alive until `purge`, which drops the column and then the type. So a map's data effect here is `retires`, and down restores a value only where the row still holds what it was mapped to."
+},
+{
+"id": "R-1051",
+"kind": "code",
+"step": "enum-online",
+"line": 0,
+"text": "- **Text on the shadow column.** morm has no SQL parser, so a partial index filter or CHECK that names the column is rewritten by replacing the column's name outside quoted strings and comments, with step 14's scanner. The scratch proof confirms the result: after cutover, each definition must match the one built from the models.",
+"block": "- **R-1051** **Text on the shadow column.** morm has no SQL parser, so a partial index filter or CHECK that names the column is rewritten by replacing the column's name outside quoted strings and comments, with step 14's scanner. The scratch proof confirms the result: after cutover, each definition must match the one built from the models."
+},
+{
+"id": "R-1052",
+"kind": "code",
+"step": "enum-online",
+"line": 0,
+"text": "- **Refused in this form, allowed with `--fast`,** naming the cause: partitioned tables, because concurrent indexes don't work on the parent; enum columns in a primary key or foreign key, as for key type changes; stored generated columns that read the column, because recreating them rewrites under lock; and columns of a domain or composite type.",
+"block": "- **R-1052** **Refused in this form, allowed with `--fast`,** naming the cause: partitioned tables, because concurrent indexes don't work on the parent; enum columns in a primary key or foreign key, as for key type changes; stored generated columns that read the column, because recreating them rewrites under lock; and columns of a domain or composite type."
+},
+{
+"id": "R-1053",
+"kind": "code",
+"step": "enum-online",
+"line": 0,
+"text": "- **Recovery.** Each step has a precondition, so `--resume` continues, the copy resumes from its cursor, and failed concurrent indexes are rebuilt. `rollback --failed` drops the shadow objects and leaves the old column and type in place.",
+"block": "- **R-1053** **Recovery.** Each step has a precondition, so `--resume` continues, the copy resumes from its cursor, and failed concurrent indexes are rebuilt. `rollback --failed` drops the shadow objects and leaves the old column and type in place."
+},
+{
+"id": "R-1054",
+"kind": "code",
+"step": "enum-online",
+"line": 0,
+"text": "- **Column position.** The real column moves to the end of the table. Position isn't compared, and morm's own queries name columns, but a raw `SELECT *` read by position changes, so `--plan` says so.",
+"block": "- **R-1054** **Column position.** The real column moves to the end of the table. Position isn't compared, and morm's own queries name columns, but a raw `SELECT *` read by position changes, so `--plan` says so."
 }
 ],
 "tests": [
@@ -8619,7 +9259,7 @@
 "step": "hardening",
 "kind": "suite",
 "line": 1632,
-"text": "**Property tests:** random schema A \u2192 B with data, including views, functions and triggers: up reaches B, down returns to A, preserved rows are intact."
+"text": "**Property tests:** random schema A → B with data, including views, functions and triggers: up reaches B, down returns to A, preserved rows are intact."
 },
 {
 "id": "T-0119",
@@ -8682,7 +9322,7 @@
 "step": "hardening",
 "kind": "suite",
 "line": 1640,
-"text": "**Full chain:** all up \u2192 all down \u2192 all up on Postgres 15\u201318."
+"text": "**Full chain:** all up → all down → all up on Postgres 15–18."
 },
 {
 "id": "T-0128",
@@ -8759,7 +9399,7 @@
 "step": "hardening",
 "kind": "suite",
 "line": 0,
-"text": "**Full chain runs in CI:** `nightly.yml`'s `full-chain` job runs the T-0127 test on Postgres 15\u201318, and the PR links each version's log from a `workflow_dispatch` run showing it pass. A run of zero tests doesn't count. At step 01 it ran `cargo test --locked -p morm-migrate --all-features`, which doesn't reach `tests/` (package `morm-tests`). If its command doesn't reach this test, change it and update the line in `tests/tests/repo_policy.rs` that pins it."
+"text": "**Full chain runs in CI:** `nightly.yml`'s `full-chain` job runs the T-0127 test on Postgres 15–18, and the PR links each version's log from a `workflow_dispatch` run showing it pass. A run of zero tests doesn't count. At step 01 it ran `cargo test --locked -p morm-migrate --all-features`, which doesn't reach `tests/` (package `morm-tests`). If its command doesn't reach this test, change it and update the line in `tests/tests/repo_policy.rs` that pins it."
 },
 {
 "id": "T-0139",
@@ -8773,7 +9413,7 @@
 "step": "hardening",
 "kind": "suite",
 "line": 0,
-"text": "**Full chain covers the whole chain:** the migrations in `nightly.yml`'s `full-chain` job grow to cover tables and every managed object kind: functions, procedures, triggers, policies, grants, views, materialized views, enums, domains, composite types and sequences. Step 34 set this job up before managed objects existed, so a T-0127 run that covers only what step 34 could run doesn't count. The PR lists each kind the run covered."
+"text": "**Full chain covers the whole chain:** the migrations in `nightly.yml`'s `full-chain` job grow to cover tables and every managed object kind: functions, procedures, triggers, policies, grants, views, materialized views, enums, domains, composite types and sequences. Step 34 set this job up before managed objects existed, so a T-0127 run that covers only what step 34 could run doesn't count. For enums the chain includes an add, a rename, a remove with a map and a reorder, through both the online and one-transaction forms, and an enum under a domain and a composite type. The PR lists each kind the run covered."
 },
 {
 "id": "T-0141",
@@ -8801,7 +9441,7 @@
 "step": "managed-decl",
 "kind": "suite",
 "line": 0,
-"text": "**Bare derives:** `#[derive(PgDomain)]`, `#[derive(PgComposite)]` or `#[derive(PgEnum)]` with no attribute adds nothing to the manifest."
+"text": "**Bare derives:** `#[derive(PgDomain)]`, `#[derive(PgComposite)]` or `#[derive(PgEnum)]` with no attribute, or with only `#[pg_type(name = \"...\")]` or variant-level `#[pg_enum(...)]` attributes, adds nothing to the manifest."
 },
 {
 "id": "T-0145",
@@ -8816,6 +9456,237 @@
 "kind": "integration",
 "line": 0,
 "text": "a column default calling `nextval` on a managed sequence applies, and a sequence declared with `OWNED BY` fails on scratch with an error naming the sequence"
+},
+{
+"id": "T-0147",
+"step": "pool",
+"kind": "integration",
+"line": 0,
+"text": "**Stale generation:** raising the counter replaces every older connection at its next checkout, once each, and a checkout with no change does no extra round trip."
+},
+{
+"id": "T-0148",
+"step": "types",
+"kind": "integration",
+"line": 0,
+"text": "**Enum binding survives type changes:** on an open connection and on one opened afterwards, `PgEnum` values and arrays bind and decode through `query_typed` and prepared statements after `ADD VALUE`, and through `query_typed` after a hand-run type swap."
+},
+{
+"id": "T-0149",
+"step": "types",
+"kind": "integration",
+"line": 0,
+"text": "**Names and labels:** a bare derive binds to the snake_case name, `#[pg_type(name = \"...\")]` and `#[pg_enum(value = \"...\")]` override it, an unknown label returns `Error::UnknownEnumValue`, `#[pg_enum(unknown)]` decodes it and refuses to write, and `was` decodes both labels."
+},
+{
+"id": "T-0150",
+"step": "types",
+"kind": "trybuild",
+"line": 0,
+"text": "a `PgEnum` with duplicate labels, an empty label, a label over 63 bytes, a variant that isn't a unit variant, or two `#[pg_enum(unknown)]` variants"
+},
+{
+"id": "T-0151",
+"step": "statements",
+"kind": "integration",
+"line": 0,
+"text": "**Stale statements on Postgres 15–18:** after a hand-run enum swap, with the old type dropped and with it kept, a select, a filter, an insert, an update and an `= ANY` on a cached statement all succeed with no error reaching the caller, and the same SQL runs clean a second time. The codes match what proof 14 recorded. If they differ from this design on any version, stop and ask the owner with the evidence and options."
+},
+{
+"id": "T-0152",
+"step": "statements",
+"kind": "integration",
+"line": 0,
+"text": "**Stale sessions:** a plpgsql trigger compiled before a hand-run swap fails with `XX000`, morm replaces the connection and the write succeeds once, other connections in the pool are replaced at checkout, and `pool_stats()` shows it."
+},
+{
+"id": "T-0153",
+"step": "statements",
+"kind": "integration",
+"line": 0,
+"text": "**No false recovery:** a `42883` from SQL that was never cached isn't retried, a retried write applies once, and a cached statement that fails again returns its error."
+},
+{
+"id": "T-0154",
+"step": "managed-decl",
+"kind": "trybuild",
+"line": 0,
+"text": "`#[pg_type]` on a type that also has `#[pg_enum(name = \"...\")]`, `#[pg_domain]` or `#[pg_composite]`"
+},
+{
+"id": "T-0155",
+"step": "managed-ops",
+"kind": "integration",
+"line": 0,
+"text": "**Enum renames:** `was` and a decision each rename a value with rows holding it, the inverse restores it, two labels exchange, an open decision exits with code `3`, and adding a value exits with code `2`."
+},
+{
+"id": "T-0156",
+"step": "managed-deps",
+"kind": "integration",
+"line": 0,
+"text": "**Refresh:** a function compiled in an open session before a hand-run type swap fails, and works in that same session after a refresh op, with its definition unchanged."
+},
+{
+"id": "T-0157",
+"step": "live-modes",
+"kind": "suite",
+"line": 0,
+"text": "**Enum revert:** `revert` of an add runs the online swap and stops on rows holding the value unless a map is decided, `revert` of a remove restores retired rows, and `rollback` on a production database is refused."
+},
+{
+"id": "T-0158",
+"step": "rolling",
+"kind": "integration",
+"line": 0,
+"text": "**Enums in a rolling deploy:** `check_schema` passes during an add and reports a missing label, an old binary reads rows on a plain add and gets `Error::UnknownEnumValue` only on rows holding the new value, `contract` refuses a removal until the `deprecated` variant has shipped, an add and a remove in one migration split across phases, and the expand/contract rename ends with the right labels and rows."
+},
+{
+"id": "T-0159",
+"step": "enum-swap",
+"kind": "suite",
+"line": 0,
+"text": "**Enum ops:** every op in the inverse table, with and without data, up, down and up, on Postgres 15–18, ending on the exact labels, order and rows, with no drift."
+},
+{
+"id": "T-0160",
+"step": "enum-swap",
+"kind": "suite",
+"line": 0,
+"text": "**Removed values:** `refuse` stops with row counts and changes nothing, `map` keeps old values and restores them on down, a row changed or inserted after `up` keeps its value, `drop now` reports `lossy`, a column array maps per element, and a row written between preflight and the swap fails the cast and rolls back."
+},
+{
+"id": "T-0161",
+"step": "enum-swap",
+"kind": "suite",
+"line": 0,
+"text": "**Decisions:** a reorder with no answer exits with code `3`, a remove and add with no `was` exits with code `3`, and an add in one migration with a use of the new value puts that use in a later step."
+},
+{
+"id": "T-0162",
+"step": "enum-swap",
+"kind": "suite",
+"line": 0,
+"text": "**Fault injection:** kill the process at every step boundary and during a table rewrite. `--resume` and `rollback` both reach the right state, and a kill during the rewrite leaves the old type, its name, the dropped default and the table untouched. These tests run in CI's `Migration suite` step, and the PR links that step's log."
+},
+{
+"id": "T-0163",
+"step": "enum-swap",
+"kind": "integration",
+"line": 0,
+"text": "**Proof, a non-superuser swap on Postgres 15–18:** add, remove and reorder as a role that owns the type and its tables but isn't superuser, and again with the type owned by another role it's a member of. The owner, comment and every grant, including `WITH GRANT OPTION`, survive, and a role lacking a privilege is refused by preflight. This was tested only as a superuser. If a result contradicts this design, stop and ask the owner with the evidence and options."
+},
+{
+"id": "T-0164",
+"step": "enum-swap",
+"kind": "integration",
+"line": 0,
+"text": "**Proof, logical replication on Postgres 15–18:** with a subscription on the same server, run an add and a swap in both orders of primary and subscriber. Record what breaks, and confirm that migrating the subscriber first works, as the `lint` finding says. If a result contradicts this design, stop and ask the owner with the evidence and options."
+},
+{
+"id": "T-0165",
+"step": "enum-swap",
+"kind": "integration",
+"line": 0,
+"text": "**`max_rewrite_mb`:** a swap over the limit is refused with exit code `2` naming the table, and raising the setting lets it run."
+},
+{
+"id": "T-0166",
+"step": "enum-deps",
+"kind": "suite",
+"line": 0,
+"text": "**Every dependent kind:** one test per kind in the rebuilt, recreated, foreign key, generated, signature and refused lists above, with data, up, down and up, on Postgres 15–18. Refused cases change nothing and name the object."
+},
+{
+"id": "T-0167",
+"step": "enum-deps",
+"kind": "integration",
+"line": 0,
+"text": "**Proof, the dependency list on Postgres 15–18:** the walk on one schema holding every kind returns the expected list on each version. Postgres 18 records NOT NULL in `pg_constraint` and has virtual generated columns, which can't use an enum, so version differences are named in the test. Add publications and rules to the schema, which the test on 18 didn't run. If a result contradicts this design, stop and ask the owner with the evidence and options."
+},
+{
+"id": "T-0168",
+"step": "enum-deps",
+"kind": "integration",
+"line": 0,
+"text": "**Stale plpgsql on Postgres 15–18:** a session that compiled `DECLARE v the_enum`, `SELECT ... INTO`, `%ROWTYPE` and a trigger function before a swap gets what proof 15 recorded with no refresh, and all four work with one. If a result contradicts this design, stop and ask the owner with the evidence and options."
+},
+{
+"id": "T-0169",
+"step": "enum-deps",
+"kind": "suite",
+"line": 0,
+"text": "**Live refusals:** an unmanaged column in another schema, an unmanaged view, a function that only names the type in its body, and a new dependent created after `makemigrations` each stop `migrate` with exit code `2` and the list, changing nothing. Accepting the unmanaged function decision lets it run."
+},
+{
+"id": "T-0170",
+"step": "enum-deps",
+"kind": "suite",
+"line": 0,
+"text": "**Fault injection:** kill the process during a swap with recreated dependents, and every dropped object is still there. These tests run in CI's `Migration suite` step, and the PR links that step's log."
+},
+{
+"id": "T-0171",
+"step": "enum-deps",
+"kind": "integration",
+"line": 0,
+"text": "**Proof, PgBouncer:** in a `pooler` test, in transaction mode, an app recovers from a swap the way proof 16 recorded, with managed functions refreshed. If replacing the client connection can't clear stale server state and no refresh covers it, stop and ask the owner with the evidence and options."
+},
+{
+"id": "T-0172",
+"step": "enum-deps",
+"kind": "integration",
+"line": 0,
+"text": "**Proof, hot standby:** a `read_only` pool on a standby recovers from a swap on the primary the way proof 17 recorded. If a result contradicts this design, stop and ask the owner with the evidence and options."
+},
+{
+"id": "T-0173",
+"step": "enum-wrappers",
+"kind": "suite",
+"line": 0,
+"text": "**Domains and composites:** with rows, on Postgres 15–18: a domain, a composite with and without a using column, arrays of each, and a nested chain, each with no map, with a map and through down. A map inside a composite wasn't run in the design's tests. If a result contradicts this design, stop and ask the owner with the evidence and options."
+},
+{
+"id": "T-0174",
+"step": "enum-wrappers",
+"kind": "suite",
+"line": 0,
+"text": "**Fault injection:** kill the process during a swap through a domain and a composite, and every type and column is as it was. These tests run in CI's `Migration suite` step, and the PR links that step's log."
+},
+{
+"id": "T-0175",
+"step": "enum-online",
+"kind": "suite",
+"line": 0,
+"text": "**Live traffic:** with writers on an old binary, including writes of the removed value until cutover and inserts during the copy, no write is lost and every row holds its mapped value. The table isn't rewritten, the stale statements recover, indexes are used after cutover, and `purge` drops the retired column and type."
+},
+{
+"id": "T-0176",
+"step": "enum-online",
+"kind": "suite",
+"line": 0,
+"text": "**Proof, killed mid-run:** kill the process at every step boundary, and during the copy and a concurrent index build, then prove `--resume` and `rollback --failed` both reach the right state with no write lost. The design's tests never killed this form. If a result contradicts this design, stop and ask the owner with the evidence and options. These tests run in CI's `Migration suite` step, and the PR links that step's log."
+},
+{
+"id": "T-0177",
+"step": "enum-online",
+"kind": "suite",
+"line": 0,
+"text": "**Proof, foreign keys and domains:** each refused layout is refused before anything changes, with `--fast` handling the same change. A foreign key on a different column of the table, and a domain on a different column, run online with no lost write. The design's online test had neither. If a result contradicts this design, stop and ask the owner with the evidence and options."
+},
+{
+"id": "T-0178",
+"step": "enum-online",
+"kind": "suite",
+"line": 0,
+"text": "**Proof, name replacement:** on Postgres 15–18, the column's name inside a string literal, a comment, a label, a quoted or mixed-case identifier, and as part of a longer name is handled right, and final definitions match the models. A wrong replacement fails the proof and writes no file. If a result contradicts this design, stop and ask the owner with the evidence and options."
+},
+{
+"id": "T-0179",
+"step": "enum-online",
+"kind": "suite",
+"line": 0,
+"text": "**Copy edges:** rows inserted just before the trigger attached are copied, a missed row fails `VALIDATE`, and a run on a table with a composite key resumes from its cursor."
 }
 ],
 "frame": {
@@ -8935,6 +9806,7 @@
 "|---|---|---|"
 ],
 "pool": [
+"### Managed enums",
 "### Migrations / Runtime guarantees",
 "### Performance and memory / Dynamic size",
 "### Performance and memory / Sizing guidance",
@@ -8958,6 +9830,7 @@
 "types": [
 "### Crates and tools",
 "### Hard to misuse",
+"### Managed enums",
 "### Models / Type inference",
 "### Reading and writing / Decimal",
 "Copied word for word from the approved plan. Every ID must end with a test tagged with it, as `rules.md` describes. Section references such as \"section 8\" mean the frozen `plans/rust-morm-plan.md`; everything a step needs is copied here or in `contracts.md`.",
@@ -8968,6 +9841,7 @@
 ],
 "statements": [
 "### Hard to misuse",
+"### Managed enums",
 "### Models / Type inference",
 "### Performance and memory / Query path",
 "### Performance and memory / Statements",
@@ -9047,6 +9921,7 @@
 ],
 "transactions": [
 "### Hard to misuse",
+"### Managed enums",
 "### Performance and memory / Statements",
 "### Performance and memory / `morm::Pool`",
 "### Reading and writing / Get",
@@ -9135,12 +10010,14 @@
 "Copied word for word from the approved plan. Every ID must end with a test tagged with it, as `rules.md` describes. Section references such as \"section 8\" mean the frozen `plans/rust-morm-plan.md`; everything a step needs is copied here or in `contracts.md`."
 ],
 "schema-ir": [
+"### Managed enums",
 "### Migrations / Source of truth",
 "### Migrations / What's managed",
 "### Risks, open items and later work / Risks",
 "Copied word for word from the approved plan. Every ID must end with a test tagged with it, as `rules.md` describes. Section references such as \"section 8\" mean the frozen `plans/rust-morm-plan.md`; everything a step needs is copied here or in `contracts.md`."
 ],
 "schema-diff": [
+"### Managed enums",
 "### Migrations / Principles",
 "### Migrations / Source of truth",
 "### Migrations / Typed operations",
@@ -9151,12 +10028,14 @@
 "lint": [
 "### Crates and tools / Configuration: `morm.toml`",
 "### Indexes",
+"### Managed enums",
 "### Migrations / Commands",
 "### Reading and writing / Decimal",
 "### Views and groups / Public input and output",
 "Copied word for word from the approved plan. Every ID must end with a test tagged with it, as `rules.md` describes. Section references such as \"section 8\" mean the frozen `plans/rust-morm-plan.md`; everything a step needs is copied here or in `contracts.md`."
 ],
 "proof-files": [
+"### Managed enums",
 "### Migrations / Commands",
 "### Migrations / Decisions",
 "### Migrations / Files and ledger",
@@ -9179,19 +10058,23 @@
 "Copied word for word from the approved plan. Every ID must end with a test tagged with it, as `rules.md` describes. Section references such as \"section 8\" mean the frozen `plans/rust-morm-plan.md`; everything a step needs is copied here or in `contracts.md`."
 ],
 "managed-decl": [
+"### Managed enums",
 "### Migrations / Triggers, functions and other objects",
 "Copied word for word from the approved plan. Every ID must end with a test tagged with it, as `rules.md` describes. Section references such as \"section 8\" mean the frozen `plans/rust-morm-plan.md`; everything a step needs is copied here or in `contracts.md`."
 ],
 "managed-ops": [
+"### Managed enums",
 "### Migrations / Triggers, functions and other objects",
 "Copied word for word from the approved plan. Every ID must end with a test tagged with it, as `rules.md` describes. Section references such as \"section 8\" mean the frozen `plans/rust-morm-plan.md`; everything a step needs is copied here or in `contracts.md`."
 ],
 "managed-deps": [
+"### Managed enums",
 "### Migrations / Triggers, functions and other objects",
 "Copied word for word from the approved plan. Every ID must end with a test tagged with it, as `rules.md` describes. Section references such as \"section 8\" mean the frozen `plans/rust-morm-plan.md`; everything a step needs is copied here or in `contracts.md`."
 ],
 "retire": [
 "### Hard to misuse",
+"### Managed enums",
 "### Migrations / Commands",
 "### Migrations / Down that can restore data",
 "### Migrations / Production is forward only",
@@ -9209,6 +10092,7 @@
 ],
 "live-modes": [
 "### Hard to misuse",
+"### Managed enums",
 "### Migrations / Commands",
 "### Migrations / Production is forward only",
 "Copied word for word from the approved plan. Every ID must end with a test tagged with it, as `rules.md` describes. Section references such as \"section 8\" mean the frozen `plans/rust-morm-plan.md`; everything a step needs is copied here or in `contracts.md`.",
@@ -9217,6 +10101,7 @@
 ],
 "rolling": [
 "### Crates and tools",
+"### Managed enums",
 "### Migrations / Data migrations",
 "### Migrations / Rolling deploys",
 "Copied word for word from the approved plan. Every ID must end with a test tagged with it, as `rules.md` describes. Section references such as \"section 8\" mean the frozen `plans/rust-morm-plan.md`; everything a step needs is copied here or in `contracts.md`."
@@ -9247,6 +10132,7 @@
 "import": [
 "### Crates and tools / Configuration: `morm.toml`",
 "### Indexes / Names",
+"### Managed enums",
 "### Models / Table and column names",
 "### Reading and writing / Decimal",
 "### Views and groups / Public input and output",
@@ -9300,6 +10186,26 @@
 "| ID | You want to | Use | Not |",
 "|---|---|---|",
 "|---|---|---|---|"
+],
+"enum-swap": [
+"### Migrations / Managed enums",
+"### Migrations / Managed enums / After the swap",
+"### Migrations / Managed enums / Inverses",
+"Copied word for word from the approved plan. Every ID must end with a test tagged with it, as `rules.md` describes. Section references such as \"section 8\" mean the frozen `plans/rust-morm-plan.md`; everything a step needs is copied here or in `contracts.md`.",
+"| ID | Op | Data effect | Inverse |",
+"|---|---|---|---|"
+],
+"enum-wrappers": [
+"### Migrations / Managed enums / Domains and composite types",
+"Copied word for word from the approved plan. Every ID must end with a test tagged with it, as `rules.md` describes. Section references such as \"section 8\" mean the frozen `plans/rust-morm-plan.md`; everything a step needs is copied here or in `contracts.md`."
+],
+"enum-deps": [
+"### Migrations / Managed enums / Dependents",
+"Copied word for word from the approved plan. Every ID must end with a test tagged with it, as `rules.md` describes. Section references such as \"section 8\" mean the frozen `plans/rust-morm-plan.md`; everything a step needs is copied here or in `contracts.md`."
+],
+"enum-online": [
+"### Migrations / Managed enums / Online swap",
+"Copied word for word from the approved plan. Every ID must end with a test tagged with it, as `rules.md` describes. Section references such as \"section 8\" mean the frozen `plans/rust-morm-plan.md`; everything a step needs is copied here or in `contracts.md`."
 ]
 }
 }

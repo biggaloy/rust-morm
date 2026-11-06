@@ -58,6 +58,10 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 
 **R-0558** The planner topologically sorts ops (foreign key cycles are resolved by adding constraints last), takes table locks in a consistent order to avoid deadlocks, and groups ops into **steps**, each with its own transaction boundary.
 
+### Managed enums
+
+- **R-0987** **Step boundaries.** An op can declare that its step ends after it, so the planner puts whatever follows in a new transaction. Step 51 needs this for `ALTER TYPE ... ADD VALUE`, because nothing can use a new value until the transaction that added it commits.
+
 ## Test obligations
 
 | ID | Type | Obligation |

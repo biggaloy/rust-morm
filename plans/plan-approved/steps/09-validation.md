@@ -2,7 +2,7 @@
 
 - **Phase:** Models
 - **Depends on:** 04
-- **Can run beside:** 10, 11, 12, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 29, 30, 31, 32, 33, 34, 37, 38, 39, 40
+- **Can run beside:** 10, 11, 12, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 29, 30, 31, 32, 33, 34, 37, 38, 39, 40, 51, 52, 53, 54
 - **Crates:** `morm-macros`, `morm`
 - **PR approval:** CI and an independent review
 

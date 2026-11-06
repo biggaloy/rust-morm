@@ -50,6 +50,10 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 - **R-0619** `lint`: statement risk, in the style of `squawk`, plus index advice. With `--url` it reads real table sizes and reports risky operations only on tables big enough to matter.
 - **R-0956** `morm-admin mgr <command>` runs migration and schema work, and each `mgr` command lives in its own module.
 
+### Managed enums
+
+- **R-0988** An op can declare `lint` findings of its own, and `--url` filters them by table size like any other finding, so later op kinds add rules with no change here.
+
 ## Test obligations
 
 None beyond one tagged test per requirement.
