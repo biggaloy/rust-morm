@@ -25,7 +25,7 @@ Nothing is kept in `/tmp`: it's memory-backed here, so a power cut wipes it. Age
 
 ## What comes next
 
-1. Apply `reviews/step-01-review-6.md` G1 and G2 with its exact text, O1 option A, and close the gap at the end of its section 5: the search also runs for views carried by `ALTER TYPE` or a column type change (R-0542). Then run a short check of that edit, the checker and CI. That's the last round, by owner decision. The owner doesn't accept open gaps: bring any gap to the owner, don't record it as accepted.
+1. G1, G2 and the carried-view gap landed at `3d270a3`. A last edit is running from the owner's decisions in `INDEX.md`: the general stale plpgsql rule and views carried by the online column swap. Add any new IDs to Decisions. Then run a short check of the changes since `09338c2`, the checker and CI. That's the last round, by owner decision. The owner doesn't accept open gaps: bring any gap to the owner, don't record it as accepted.
 2. Bring PR #1 to the owner. The owner approves it, and no agent merges it without that.
 3. Merge, mark step 01 `done`, and pull. Check `INDEX.md` on `main` has both its Decisions and the branch's rows and order.
 4. Start the next step as a fresh agent, then an independent review. The owner approves the PRs of steps 01, 02, 03, 50 and, once the plan edit lands, 55.
