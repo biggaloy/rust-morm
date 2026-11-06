@@ -29,7 +29,7 @@ This session has an in-memory wake-up every 30 minutes that resumes stopped agen
 
 ## What comes next
 
-1. Head `784f68a` has every decision except the three below, with CI green. A last edit is running for: the cutover giving way (C), the `BEGIN ATOMIC` retry (D), and `plpgsql_check`, all in `INDEX.md`. It must prove `plpgsql_check` first, and stop for the owner if that fails. Then run a short check of the changes since `09338c2`, the checker and CI. The owner doesn't accept open gaps: bring any gap to the owner, don't record it as accepted.
+1. Head `8f4c7b5` has the cutover and `BEGIN ATOMIC` edits, with CI green. `plpgsql_check` is proven but its rule isn't written: `reviews/step-01-open-items.md` items F to L are waiting on the owner. Then write it in, add the IDs to Decisions, and run a short check of the changes since `09338c2`, the checker and CI. The owner doesn't accept open gaps: bring any gap to the owner, don't record it as accepted.
 2. Bring PR #1 to the owner. The owner approves it, and no agent merges it without that.
 3. Merge, mark step 01 `done`, and pull. Check `INDEX.md` on `main` has both its Decisions and the branch's rows and order.
 4. Start the next step as a fresh agent, then an independent review. The owner approves the PRs of steps 01, 02, 03, 50 and, once the plan edit lands, 55.

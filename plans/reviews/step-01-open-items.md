@@ -30,3 +30,16 @@ Changed: R-0572, R-0593, R-0981, R-0983, R-1038, R-1040, R-1047, R-1049, R-1050,
 - **E. Rules to approve.** R-1070: the same-meaning check compares stored query trees with `location`, `stmt_location`, `stmt_len`, `isNatural`, `alias` and `eref` removed. R-1071: a `USING` view binds columns by position, so an unmanaged column can return wrong rows, and preflight refuses that table.
 - **Decisions still to add on `main`:** R-1070, R-1071, T-0178, T-0184, T-0194, T-0195, the `contracts.md` scanner row, and step 52's crates line.
 - **Still to do after these:** the `plpgsql_check` edit.
+
+## From the edit at `8f4c7b5`, waiting on the owner
+
+`plpgsql_check` v2.10.16 catches dropped columns and changed types in unreached branches on Postgres 15 to 18, needs no preload and runs nothing, but needs a superuser. PGDG packages it for 15 to 18. It hasn't run on GitHub's runners yet.
+
+- **F. Findings on healthy functions.** Six shapes give false errors: temp tables, tables created in the body or by the caller, records from `EXECUTE`, a record with different fields by branch, `set_config` of `search_path`, and a constant `1/0`. A `PERFORM 'PRAGMA:...'` line in the body fixes them and also runs without the extension. Comparing before and after isn't safe alone.
+- **G. R-1067 contradiction.** With a superuser-installed extension, a non-superuser scratch user can't revoke `EXECUTE`, so `_morm_proof` keeps it and R-1067 stops `makemigrations`. Options: a superuser scratch, an exemption, or a separate database for the check.
+- **H. Narrowing casts.** An `int` variable reading a column now `bigint` isn't an error, only a `performance` warning with `all_warnings`.
+- **I. `EXECUTE` detection.** The tool gives no marker, so finding `EXECUTE` needs a word search that can over-ask.
+- **J. `SET plpgsql_check.mode TO 'disabled'`** silently gives no findings.
+- **K. To confirm.** `--terminate-blockers` on `migrate` and `rollback` ends what `pg_blocking_pids` names. Defaults: 50 ms timeout, 250 ms pause, 600 attempts, about 3 minutes. With overlapping 200 ms transactions no attempt got in without the flag. The `BEGIN ATOMIC` error is retried on the same connection and replaces nothing.
+- **L. To flag to the owner.** The check blocked `ftp.postgresql.org`, and the agent built Postgres 15 and 16 from the GitHub mirror instead. Some loops ran from scripts after refusals asked for plain separate commands. Scratch holds 1.4 GB in that agent's worktree.
+- **Decisions still to add on `main`:** R-1072 to R-1075, T-0196, T-0197.
