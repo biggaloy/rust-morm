@@ -7926,8 +7926,8 @@
 "kind": "code",
 "step": "managed-types",
 "line": 0,
-"text": "- **Enums in this step** are created with their labels in variant order, dropped, and have values renamed. `ALTER TYPE ... RENAME VALUE` is instant, takes no table lock, and its inverse renames back, with data effect `none`. Renames run before any other change to the type, so a new value can reuse an old label. Exchanging two labels goes through a temporary label in one transaction.",
-"block": "- **R-0991** **Enums in this step** are created with their labels in variant order, dropped, and have values renamed. `ALTER TYPE ... RENAME VALUE` is instant, takes no table lock, and its inverse renames back, with data effect `none`. Renames run before any other change to the type, so a new value can reuse an old label. Exchanging two labels goes through a temporary label in one transaction."
+"text": "- **Enums in this step** are created with their labels in variant order, dropped, and have values renamed. `ALTER TYPE ... RENAME VALUE` is instant, takes no table lock, and its inverse renames back, with data effect `none`. Renames run before any other change to the type, so a new value can reuse an old label. Exchanging two labels goes through a temporary label in one transaction. The with-data proof gives an enum column a row per label, and a composite column one row built from its attributes' rows.",
+"block": "- **R-0991** **Enums in this step** are created with their labels in variant order, dropped, and have values renamed. `ALTER TYPE ... RENAME VALUE` is instant, takes no table lock, and its inverse renames back, with data effect `none`. Renames run before any other change to the type, so a new value can reuse an old label. Exchanging two labels goes through a temporary label in one transaction. The with-data proof gives an enum column a row per label, and a composite column one row built from its attributes' rows."
 },
 {
 "id": "R-0992",
@@ -8214,8 +8214,8 @@
 "kind": "code",
 "step": "enum-remove",
 "line": 0,
-"text": "- **With-data proof.** Enum columns get a row per label. A map also puts rows on the removed label, and `refuse` keeps rows off it. A column kept by a retired copy must match its checksum after up and down, and with `drop now` it's left out.",
-"block": "- **R-1027** **With-data proof.** Enum columns get a row per label. A map also puts rows on the removed label, and `refuse` keeps rows off it. A column kept by a retired copy must match its checksum after up and down, and with `drop now` it's left out."
+"text": "- **With-data proof.** A map also puts rows on the removed label, and `refuse` keeps rows off it. A column kept by a retired copy must match its checksum after up and down, and with `drop now` it's left out.",
+"block": "- **R-1027** **With-data proof.** A map also puts rows on the removed label, and `refuse` keeps rows off it. A column kept by a retired copy must match its checksum after up and down, and with `drop now` it's left out."
 },
 {
 "id": "R-1028",
@@ -8438,8 +8438,8 @@
 "kind": "code",
 "step": "enum-types",
 "line": 0,
-"text": "- **`TextEnum` labels.** `#[derive(TextEnum)]` stores each variant's Rust spelling, so `Pending` is stored as `Pending`, and the CHECK constraint lists that same spelling. This differs from `PgEnum`, whose labels are snake_case. `#[model]` emits the CHECK in metadata like a range CHECK, named `__CHK_{table}_{column}_enum__`, reading labels through a trait constant on the type.",
-"block": "- **R-1055** **`TextEnum` labels.** `#[derive(TextEnum)]` stores each variant's Rust spelling, so `Pending` is stored as `Pending`, and the CHECK constraint lists that same spelling. This differs from `PgEnum`, whose labels are snake_case. `#[model]` emits the CHECK in metadata like a range CHECK, named `__CHK_{table}_{column}_enum__`, reading labels through a trait constant on the type."
+"text": "- **`TextEnum` labels.** `#[derive(TextEnum)]` stores each variant's Rust spelling, so `Pending` is stored as `Pending`, and the CHECK constraint lists that same spelling. This differs from `PgEnum`, whose labels are snake_case. `#[model]` emits the CHECK in metadata like a range CHECK, named `__CHK_{table}_{column}_enum__`, reading labels through a trait constant on the type. `ModelMeta` and the manifest also carry these labels on the column, so step 32's with-data proof can read them.",
+"block": "- **R-1055** **`TextEnum` labels.** `#[derive(TextEnum)]` stores each variant's Rust spelling, so `Pending` is stored as `Pending`, and the CHECK constraint lists that same spelling. This differs from `PgEnum`, whose labels are snake_case. `#[model]` emits the CHECK in metadata like a range CHECK, named `__CHK_{table}_{column}_enum__`, reading labels through a trait constant on the type. `ModelMeta` and the manifest also carry these labels on the column, so step 32's with-data proof can read them."
 },
 {
 "id": "R-1056",
@@ -8470,8 +8470,16 @@
 "kind": "code",
 "step": "managed-types",
 "line": 0,
-"text": "- **Changing a domain or composite type.** A changed domain `check` drops and adds the constraint `NOT VALID`, then runs `VALIDATE`. A composite attribute is added or dropped with `ALTER TYPE` when no column uses the type. A changed base type, or a change to a composite a column uses, is refused with exit code `2`. The with-data proof leaves out domain columns whose `check` its rows fail.",
-"block": "- **R-1059** **Changing a domain or composite type.** A changed domain `check` drops and adds the constraint `NOT VALID`, then runs `VALIDATE`. A composite attribute is added or dropped with `ALTER TYPE` when no column uses the type. A changed base type, or a change to a composite a column uses, is refused with exit code `2`. The with-data proof leaves out domain columns whose `check` its rows fail."
+"text": "- **Changing a domain or composite type.** A changed domain `check` drops and adds the constraint `NOT VALID`, then runs `VALIDATE` in a separate step. When no column uses a composite type, directly or through an array, a domain or another composite, adding an attribute at the end, dropping the last attribute and changing an attribute's type use `ALTER TYPE`. Any other shape, such as a middle attribute, a new order or a rename, drops and recreates the type in one transaction, keeping its owner, comment and grants. Each of these has an exact inverse. A changed base type, or a change to a composite a column uses, is refused with exit code `2` and changes nothing. Postgres doesn't enforce this: it runs `ADD ATTRIBUTE` and `DROP ATTRIBUTE` on a composite a column uses, and the dropped data is lost. A change that needs a dependent dropped is also refused with exit code `2` and changes nothing: a recreate when anything depends on the type, or `ALTER TYPE` on an attribute a function or view depends on. Step 37 replaces that refusal for managed dependents. `migrate` preflight repeats these checks on the live database, because scratch can't see what no model declares. The with-data proof leaves out domain columns whose `check` its rows fail.",
+"block": "- **R-1059** **Changing a domain or composite type.** A changed domain `check` drops and adds the constraint `NOT VALID`, then runs `VALIDATE` in a separate step. When no column uses a composite type, directly or through an array, a domain or another composite, adding an attribute at the end, dropping the last attribute and changing an attribute's type use `ALTER TYPE`. Any other shape, such as a middle attribute, a new order or a rename, drops and recreates the type in one transaction, keeping its owner, comment and grants. Each of these has an exact inverse. A changed base type, or a change to a composite a column uses, is refused with exit code `2` and changes nothing. Postgres doesn't enforce this: it runs `ADD ATTRIBUTE` and `DROP ATTRIBUTE` on a composite a column uses, and the dropped data is lost. A change that needs a dependent dropped is also refused with exit code `2` and changes nothing: a recreate when anything depends on the type, or `ALTER TYPE` on an attribute a function or view depends on. Step 37 replaces that refusal for managed dependents. `migrate` preflight repeats these checks on the live database, because scratch can't see what no model declares. The with-data proof leaves out domain columns whose `check` its rows fail."
+},
+{
+"id": "R-1060",
+"kind": "code",
+"step": "managed-deps",
+"line": 0,
+"text": "**Composite types with dependents.** Step 57 refuses a composite type change that needs a dependent dropped, and the planner replaces that refusal for managed dependents. It walks `pg_depend` from the type, its array type and its attributes, and on through whatever depends on those, and carries functions, procedures, domains, other composite types, and the views, materialized views, triggers and policies above them. In one transaction they're dropped from the outside in, the type is recreated or altered, and they're recreated in the fixed kind order with their grants applied again, with an exact inverse. Any other dependent, including one no model declares, stays refused with exit code `2` and changes nothing.",
+"block": "**R-1060** **Composite types with dependents.** Step 57 refuses a composite type change that needs a dependent dropped, and the planner replaces that refusal for managed dependents. It walks `pg_depend` from the type, its array type and its attributes, and on through whatever depends on those, and carries functions, procedures, domains, other composite types, and the views, materialized views, triggers and policies above them. In one transaction they're dropped from the outside in, the type is recreated or altered, and they're recreated in the fixed kind order with their grants applied again, with an exact inverse. Any other dependent, including one no model declares, stays refused with exit code `2` and changes nothing."
 }
 ],
 "tests": [
@@ -9768,7 +9776,14 @@
 "step": "managed-types",
 "kind": "integration",
 "line": 0,
-"text": "**Domain and composite changes:** with rows, a changed domain `check` replaces the constraint and validates it, a row that fails it stops at `VALIDATE`, and a composite attribute is added and dropped when no column uses the type, each with its inverse. A changed base type and a change to a composite a column uses each exit with code `2` and change nothing, and the with-data proof leaves out a domain column whose `check` its rows fail."
+"text": "**Domain and composite changes:** with rows, a changed domain `check` replaces the constraint `NOT VALID` and validates it in a separate step, and a row that fails it stops at `VALIDATE`. On a composite no column uses, adding an attribute at the end, dropping the last attribute and changing an attribute's type each run `ALTER TYPE`, and a middle attribute, a new order and a rename each recreate the type in one transaction with its owner, comment and grants. Each ends on the exact attribute order, up and down. A changed base type exits with code `2` and changes nothing. So does every shape of change to a composite a column uses, with its rows unchanged, directly, through an array, through a domain, through another composite and on a materialized view. Postgres would run the add and the drop, so this proves morm's own check refuses them, and `migrate` preflight refuses the same change for a column no model declares. A recreate with a function or another type depending on it, and `ALTER TYPE` on an attribute a `BEGIN ATOMIC` function names, exit with code `2` and change nothing until step 37, which rewrites these cases. The with-data proof leaves out a domain column whose `check` its rows fail."
+},
+{
+"id": "T-0186",
+"step": "managed-deps",
+"kind": "integration",
+"line": 0,
+"text": "**Composite dependents:** on a composite no column uses, a middle attribute, a new order and a rename each carry a function with the type in its signature, one with its array, a `BEGIN ATOMIC` function, a procedure, a domain, another composite, and a view, a materialized view, a trigger and a policy over those, in one transaction, up, down and up, ending on the exact catalog with no drift and every function's grants intact. Dropping or retyping an attribute that a `BEGIN ATOMIC` function and a view name carries them the same way. A column default calling a carried function, and a dependent no model declares, each exit with code `2`, change nothing and name the object."
 }
 ],
 "frame": {

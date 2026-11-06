@@ -28,6 +28,8 @@ Owned elsewhere, and quoted so this step needs no other file. Nothing here needs
 >
 > `op_data` in `meta.json` and op preflight checks come from steps 32 and 33.
 >
+> Update the earlier tests this changes.
+>
 
 ## Out of scope
 

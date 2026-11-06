@@ -24,9 +24,9 @@ On Postgres 15–18, a managed enum on a populated table goes through an add, a 
 
 Owned elsewhere, and quoted so this step needs no other file. Nothing here needs a test in this step.
 
-> Step 51 reads the value diff, adds values, and swaps a type in one transaction, in these steps: lock the affected tables; drop defaults; for a map that keeps old values, add the retired column and fill it; rename the old type and create the new one; change each column with `ALTER COLUMN ... TYPE ... USING`, applying any map; copy the owner, comment and grants, then drop the old type; restore defaults and check the fingerprint. Array columns change in the same way, and a map applies to each element with `array_replace` on a `text[]` cast. This step builds the two map parts, and until now a swap has only reordered.
+> Step 51 reads the value diff, adds values, and swaps a type in one transaction, in these steps: lock the affected tables; drop defaults; for a map that keeps old values, add the retired column and fill it; rename the old type and create the new one; change each column with `ALTER COLUMN ... TYPE ... USING`, applying any map; copy the owner, comment and grants, then drop the old type; restore defaults and check the fingerprint. Array columns change in the same way, and a map applies to each element with `array_replace` on a `text[]` cast. This step builds the two map parts, and until now a swap has only reordered or undone an add.
 >
-> Step 51 also refuses to roll back an add, and step 57 refuses to remove a value, each with exit code `2`. This step replaces both refusals.
+> Step 51's inverse of an add is a swap with no map, where a row holding the value fails the cast, and step 57 refuses to remove a value with exit code `2`. This step adds the row-count refusal and `down_map` to the first and replaces the second.
 >
 > Steps 31, 32 and 33 let an op add `lint` findings, decisions, proof rows, `op_data` and preflight checks.
 >
@@ -64,7 +64,7 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 
 - **R-1023** **Restoring rows.** Down restores an old value only where the row still holds the value it was mapped to. A row the app changed since `up`, or a row inserted since, keeps what it has. `purge` makes that down irreversible.
 
-- **R-1027** **With-data proof.** Enum columns get a row per label. A map also puts rows on the removed label, and `refuse` keeps rows off it. A column kept by a retired copy must match its checksum after up and down, and with `drop now` it's left out.
+- **R-1027** **With-data proof.** A map also puts rows on the removed label, and `refuse` keeps rows off it. A column kept by a retired copy must match its checksum after up and down, and with `drop now` it's left out.
 
 ## Test obligations
 

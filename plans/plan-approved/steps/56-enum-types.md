@@ -3,7 +3,7 @@
 - **Phase:** Runtime
 - **Depends on:** 13
 - **Can run beside:** 10, 11, 12, 29
-- **Crates:** `morm`, `morm-macros`
+- **Crates:** `morm`, `morm-macros`, `morm-core`
 - **PR approval:** CI and an independent review
 
 Read `../rules.md`, `../contracts.md` and, once it exists, `../proofs.md` first. Everything needed for this step is in those files and this one.
@@ -53,7 +53,7 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 
 - **R-0976** **Type names.** A bare `#[derive(PgEnum)]`, `#[derive(PgDomain)]` or `#[derive(PgComposite)]` binds to the snake_case of the Rust name, so `OrderState` binds to `order_state`. `#[pg_type(name = "...")]` overrides that name, and it doesn't turn on management.
 - **R-0977** **Labels.** A variant's Postgres label is the snake_case of its name, so `AwaitingPayment` is `awaiting_payment`. `#[pg_enum(value = "...")]` on the variant overrides it. Attributes on a variant never turn on management: only `#[pg_enum(name = "...")]` on the type does.
-- **R-1055** **`TextEnum` labels.** `#[derive(TextEnum)]` stores each variant's Rust spelling, so `Pending` is stored as `Pending`, and the CHECK constraint lists that same spelling. This differs from `PgEnum`, whose labels are snake_case. `#[model]` emits the CHECK in metadata like a range CHECK, named `__CHK_{table}_{column}_enum__`, reading labels through a trait constant on the type.
+- **R-1055** **`TextEnum` labels.** `#[derive(TextEnum)]` stores each variant's Rust spelling, so `Pending` is stored as `Pending`, and the CHECK constraint lists that same spelling. This differs from `PgEnum`, whose labels are snake_case. `#[model]` emits the CHECK in metadata like a range CHECK, named `__CHK_{table}_{column}_enum__`, reading labels through a trait constant on the type. `ModelMeta` and the manifest also carry these labels on the column, so step 32's with-data proof can read them.
 - **R-0978** **Enum binding needs no OID.** morm writes `ToSql` and `FromSql` for `PgEnum` itself and doesn't use `postgres-derive`, whose exact variant check fails on every connection opened after a value is added. `accepts` compares no variants. `Param::pg_type` returns `Type::UNKNOWN`, so Postgres infers the type and a query never carries an OID that a swap could make stale. Array parameters use text format, because a binary array carries its element's OID. Labels are matched as bytes at compile time, with no heap use.
 - **R-0979** **A label the binary doesn't know** returns `Error::UnknownEnumValue`, with the type and the label, for rows holding it and no others. `#[pg_enum(unknown)]` on one unit variant decodes any such label to that variant instead, and writing that variant returns `Error::Validation`. This variant has no label: it isn't in the CHECK list, the managed type or `check_schema`, and it can't take `value`, `was` or `deprecated`.
 - **R-1056** **`TextEnum` fallback.** `#[text_enum(unknown)]` on one unit variant works like `#[pg_enum(unknown)]`: any stored value the binary doesn't know decodes to that variant, as one branch on read, instead of returning `Error::UnknownEnumValue`, and writing that variant returns `Error::Validation`. It's opt-in. Without it, an unknown stored value returns `Error::UnknownEnumValue`, with the Rust type's name and the value. This variant has no label: it isn't in the CHECK list, the managed type or `check_schema`, and it can't take `value`, `was` or `deprecated`.

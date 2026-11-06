@@ -14,7 +14,7 @@ Change a managed enum's values with exact inverses, including the changes Postgr
 
 ## Deliverables
 
-- The enum value diff, `ADD VALUE` ops, the reorder decision and its inverse, the type swap in one transaction, owner, grant and comment copies, `ANALYZE`, `max_rewrite_mb`, `lint` findings, and the `ci.yml` job for logical replication
+- The enum value diff, `ADD VALUE` ops, the reorder decision and its inverse, a plain swap as an add's inverse, the type swap in one transaction, owner, grant and comment copies, `ANALYZE`, `max_rewrite_mb`, `lint` findings, and the `ci.yml` job for logical replication
 
 ## End-to-end check
 
@@ -37,8 +37,8 @@ Owned elsewhere, and quoted so this step needs no other file. Nothing here needs
 
 ## Out of scope
 
-- Removing values and maps (step 58). Until it exists, the diff still refuses a removal with exit code `2`, so this step's swap only reorders. Step 58 adds step 3 of the swap, the map in its step 5, and the per-element map on arrays
-- The inverse of an add (step 58). Until it exists, rolling back an add is refused with exit code `2`
+- Removing values and maps (step 58). Until it exists, the diff still refuses a removal with exit code `2`, so this step's swap only reorders or undoes an add. Step 58 adds step 3 of the swap, the map in its step 5, and the per-element map on arrays
+- `down_map` and the row-count refusal on an add's inverse (step 58). Until it exists, an add's inverse is a swap with no map back to the old labels, the op keeps the proof's rows off the added label, and a row holding it fails the cast and rolls back
 - Dependents that Postgres won't rebuild by itself, and refusals (step 53)
 - Domains and composite types built on the enum (step 54)
 - The online form (step 52). Until it exists, every swap uses the one-transaction form this step builds

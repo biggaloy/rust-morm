@@ -125,7 +125,7 @@ These are shared by steps that can run side by side, so each is written and froz
 
 ## Between `morm-mgr` and `morm-admin`
 
-`morm-mgr` prints one JSON manifest: `format`, then models (table, schema, columns, types, nullability, defaults, flags, indexes, constraints, `was` hints, comments), managed objects, extensions, and registered `sql!` queries. Step 28 defines it, in `morm-core`. Everything else reads it, and it's versioned by `format`.
+`morm-mgr` prints one JSON manifest: `format`, then models (table, schema, columns, types, nullability, defaults, flags, indexes, constraints, enum labels, `was` hints, comments), managed objects, extensions, and registered `sql!` queries. Step 28 defines it, in `morm-core`. Everything else reads it, and it's versioned by `format`.
 
 ## `morm-admin` layout
 

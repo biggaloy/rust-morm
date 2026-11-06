@@ -34,6 +34,8 @@ Owned elsewhere, and quoted so this step needs no other file. Nothing here needs
 > repair --reason R     refingerprint           sql ID
 > ```
 >
+> Update the earlier tests this changes: a test that runs `rollback` or `rehearse` marks its database with `mode development --confirm NAME` first, including the `full-chain` test `nightly.yml` runs, which CI doesn't.
+>
 
 ## Out of scope
 

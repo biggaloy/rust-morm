@@ -4,7 +4,7 @@ Generated from the frozen plan. Each requirement and test obligation lives in ex
 
 Kinds: `code` needs a tagged test, `doc` is checked in the README step, `info` is context with nothing to build.
 
-Totals: 1059 requirements, 185 test obligations.
+Totals: 1060 requirements, 186 test obligations.
 
 ## Requirements
 
@@ -1036,7 +1036,7 @@ Totals: 1059 requirements, 185 test obligations.
 | R-1024 | code | 51 | 0 | - **Crash recovery.** The swap is all or nothing, so a killed run leaves the old type, and… |
 | R-1025 | code | 51 | 0 | - **`max_rewrite_mb`.** `[migrations] max_rewrite_mb`, default 1024, limits a table rewrit… |
 | R-1026 | code | 51 | 0 | - **`lint`** reports every swap, with the tables it rewrites, an add on an enum that's a l… |
-| R-1027 | code | 58 | 0 | - **With-data proof.** Enum columns get a row per label. A map also puts rows on the remov… |
+| R-1027 | code | 58 | 0 | - **With-data proof.** A map also puts rows on the removed label, and `refuse` keeps rows … |
 | R-1028 | code | 51 | 0 | - **morm never edits `pg_enum`.** It needs superuser, and it would leave indexes referring… |
 | R-1029 | code | 53 | 0 | - **The walk.** Start at the enum and follow `pg_depend` through every type built on it: i… |
 | R-1030 | code | 53 | 0 | - **Compared on the live database.** `makemigrations` stores the walk's result from scratc… |
@@ -1069,6 +1069,7 @@ Totals: 1059 requirements, 185 test obligations.
 | R-1057 | doc | 50 | 0 | \| `#[text_enum(unknown)]` \| Old binaries must keep reading a `TextEnum` column during a … |
 | R-1058 | doc | 50 | 0 | \| `#[derive(TextEnum)]` \| A column holds one of a fixed set of values; prefer this to a … |
 | R-1059 | code | 57 | 0 | - **Changing a domain or composite type.** A changed domain `check` drops and adds the con… |
+| R-1060 | code | 37 | 0 | **Composite types with dependents.** Step 57 refuses a composite type change that needs a … |
 
 ## Test obligations
 
@@ -1259,3 +1260,4 @@ Totals: 1059 requirements, 185 test obligations.
 | T-0183 | integration | 30 | **`TextEnum` CHECK:** the migration creates the named CHECK, adding or removing a variant … |
 | T-0184 | suite | 59 | **Unmanaged functions:** a function that only names the type in its body stops `migrate` w… |
 | T-0185 | integration | 57 | **Domain and composite changes:** with rows, a changed domain `check` replaces the constra… |
+| T-0186 | integration | 37 | **Composite dependents:** on a composite no column uses, a middle attribute, a new order a… |

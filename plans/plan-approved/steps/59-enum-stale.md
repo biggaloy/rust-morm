@@ -32,6 +32,8 @@ Owned elsewhere, and quoted so this step needs no other file. Nothing here needs
 >
 > Step 12 builds `pooler = "transaction"` and the `pooler` tests.
 >
+> Update the earlier tests this changes.
+>
 
 ## Out of scope
 
