@@ -50,12 +50,17 @@ jobs:
       - run: |
           if [ ! -d fuzz ]; then
             echo "No fuzz targets yet."
-            exit 0
+          else
+            cargo install --locked cargo-fuzz --version 0.13.2
+            targets=$(cargo fuzz list)
+            if [ -z "$targets" ]; then
+              echo "::error::cargo fuzz list found no targets."
+              exit 1
+            fi
+            for target in $targets; do
+              cargo fuzz run "$target" -- -max_total_time=300
+            done
           fi
-          cargo install --locked cargo-fuzz --version 0.13.2
-          for target in $(cargo fuzz list); do
-            cargo fuzz run "$target" -- -max_total_time=300
-          done
 
   full-chain:
     name: full chain (pg ${{ matrix.pg }})

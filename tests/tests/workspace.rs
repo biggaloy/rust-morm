@@ -6,9 +6,9 @@ use std::process::Command;
 
 use serde_json::Value;
 
-/// The direct dependencies each published crate may have, from `contracts.md`
-/// and the crate's own step. A new crate needs a reason in its PR: add it here
-/// in that PR.
+/// The direct dependencies each published crate may have, build dependencies
+/// included, from `contracts.md` and the crate's own step. A new crate needs a
+/// reason in its PR: add it here in that PR.
 const ALLOWED_DEPS: &[(&str, &[&str])] = &[
     (
         "morm",
@@ -92,12 +92,14 @@ fn target_kinds(package: &Value) -> BTreeSet<&str> {
         .collect()
 }
 
-fn normal_deps(package: &Value) -> Vec<&Value> {
+/// Normal and build dependencies, which are all that a dependent builds. Only
+/// dev-dependencies are left out.
+fn built_deps(package: &Value) -> Vec<&Value> {
     package["dependencies"]
         .as_array()
         .unwrap()
         .iter()
-        .filter(|d| d["kind"].is_null())
+        .filter(|d| d["kind"] != "dev")
         .collect()
 }
 
@@ -214,7 +216,7 @@ fn morm_admin_is_an_installable_binary() {
 fn published_crates_add_no_unlisted_dependency() {
     let meta = metadata();
     for (name, allowed) in ALLOWED_DEPS {
-        for dep in normal_deps(package(&meta, name)) {
+        for dep in built_deps(package(&meta, name)) {
             let dep = dep["name"].as_str().unwrap();
             assert!(
                 allowed.contains(&dep),
@@ -229,7 +231,7 @@ fn published_crates_add_no_unlisted_dependency() {
 fn outside_crates_are_taken_without_their_default_features() {
     let meta = metadata();
     for (name, _) in ALLOWED_DEPS {
-        for dep in normal_deps(package(&meta, name)) {
+        for dep in built_deps(package(&meta, name)) {
             let dep_name = dep["name"].as_str().unwrap();
             assert!(
                 dep_name.starts_with("morm") || dep["uses_default_features"] == false,

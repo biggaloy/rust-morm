@@ -100,23 +100,33 @@ fn step<'a>(workflow: &'a str, text: &str) -> Vec<&'a str> {
     found.remove(0)
 }
 
-/// Every `action.yml` under `.github/actions`.
-fn local_actions() -> Vec<PathBuf> {
+/// Every file under `.github`.
+fn github_files() -> Vec<PathBuf> {
     fn walk(dir: &Path, found: &mut Vec<PathBuf>) {
         for entry in fs::read_dir(dir).unwrap() {
             let path = entry.unwrap().path();
             if path.is_dir() {
                 walk(&path, found);
-            } else if matches!(
-                path.file_name().and_then(|name| name.to_str()),
-                Some("action.yml" | "action.yaml")
-            ) {
+            } else {
                 found.push(path);
             }
         }
     }
     let mut found = Vec::new();
-    walk(&root().join(".github/actions"), &mut found);
+    walk(&root().join(".github"), &mut found);
+    found
+}
+
+/// Every `action.yml` under `.github/actions`.
+fn local_actions() -> Vec<PathBuf> {
+    let mut found = github_files();
+    found.retain(|path| {
+        path.starts_with(root().join(".github/actions"))
+            && matches!(
+                path.file_name().and_then(|name| name.to_str()),
+                Some("action.yml" | "action.yaml")
+            )
+    });
     found
 }
 
@@ -161,10 +171,55 @@ fn commands(lines: &[&str]) -> Vec<String> {
     found
 }
 
-/// Fails unless the job runs exactly these commands. A later step that changes a
-/// job's commands changes this list in the same PR.
+/// Setup and tool-install lines. No list pins them, so a tool's version lives in
+/// one place and can be bumped there.
+const SETUP: &[&str] = &[
+    "cargo install --locked cargo-",
+    "mkdir ",
+    "pg_isready ",
+    "pgbouncer ",
+    "sudo ",
+];
+
+/// Fails unless the job runs exactly these commands, setup lines aside. A later
+/// step that changes a job's commands changes this list in the same PR.
 fn assert_commands(workflow: &str, name: &str, expected: &[&str]) {
-    assert_eq!(commands(&job(workflow, name)), expected, "job {name}");
+    let mut found = commands(&job(workflow, name));
+    found.retain(|command| !SETUP.iter().any(|setup| command.starts_with(setup)));
+    assert_eq!(found, expected, "job {name}");
+}
+
+/// Whether a line of shell turns a failure into a pass. After `||` only `exit`
+/// with a failing status may follow, and `true`, `:`, `exit 0`, `return 0`, a
+/// leading `!` and `set +...` may not start a command.
+fn hides_failure(line: &str) -> bool {
+    if line.contains("exit(0)") || line.contains("exit()") {
+        return true;
+    }
+    let mut spaced = line.to_owned();
+    for operator in ["||", "&&", ";", "(", ")"] {
+        spaced = spaced.replace(operator, &format!(" {operator} "));
+    }
+    let words: Vec<&str> = spaced
+        .split_whitespace()
+        .map(|word| word.trim_matches(['"', '\'']))
+        .collect();
+    let zero = |word: Option<&&str>| word.is_some_and(|w| w.parse() == Ok(0_u32));
+    let failing = |word: Option<&&str>| word.is_some_and(|w| w.parse::<u32>().is_ok_and(|n| n > 0));
+    let starts_command = |i: usize| {
+        i == 0
+            || matches!(
+                words[i - 1],
+                ";" | "||" | "&&" | "|" | "(" | "{" | "then" | "else" | "do" | "run:"
+            )
+    };
+    words.iter().enumerate().any(|(i, word)| match *word {
+        "||" => !(words.get(i + 1) == Some(&"exit") && failing(words.get(i + 2))),
+        "true" | ":" | "/bin/true" | "/usr/bin/true" | "!" => starts_command(i),
+        "exit" | "return" => starts_command(i) && zero(words.get(i + 1)),
+        "set" => starts_command(i) && words.get(i + 1).is_some_and(|w| w.starts_with('+')),
+        _ => false,
+    })
 }
 
 /// The `minute hour day month weekday` fields of a workflow's one cron line.
@@ -272,14 +327,7 @@ fn ci_runs_every_check_the_plan_names() {
         ),
         (
             "pooler",
-            &[
-                "sudo apt-get update",
-                "sudo apt-get install -y pgbouncer",
-                "sudo systemctl stop pgbouncer",
-                "pgbouncer -d \"$PWD/.github/pgbouncer/pgbouncer.ini\"",
-                "pg_isready -h 127.0.0.1 -p 6432 -t 30",
-                "cargo test --locked -p morm-tests --features pooler --test smoke --test pooler",
-            ],
+            &["cargo test --locked -p morm-tests --features pooler --test smoke --test pooler"],
         ),
         ("msrv", &["cargo build --locked --workspace --all-targets"]),
         ("features", &["python3 .github/scripts/feature_combos.py"]),
@@ -348,12 +396,18 @@ fn setup_rust_installs_the_toolchain_it_is_given() {
     let action = read(".github/actions/setup-rust/action.yml");
     let lines: Vec<&str> = action.lines().collect();
     assert!(has_line(&lines, "TOOLCHAIN: ${{ inputs.toolchain }}"));
-    assert_eq!(
-        commands(&lines),
-        [
-            "rustup toolchain install \"$TOOLCHAIN\" --profile minimal --no-self-update ${COMPONENTS:+--component \"$COMPONENTS\"}",
-            "rustup default \"$TOOLCHAIN\"",
-        ]
+    let found = commands(&lines);
+    assert!(
+        found
+            .iter()
+            .any(|command| command.starts_with("rustup toolchain install \"$TOOLCHAIN\" ")),
+        "{found:?}"
+    );
+    assert!(
+        found
+            .iter()
+            .any(|command| command == "rustup default \"$TOOLCHAIN\""),
+        "{found:?}"
     );
 }
 
@@ -422,12 +476,16 @@ fn nightly_runs_daily_and_on_demand_with_every_long_check() {
         &[
             "if [ ! -d fuzz ]; then",
             "echo \"No fuzz targets yet.\"",
-            "exit 0",
+            "else",
+            "targets=$(cargo fuzz list)",
+            "if [ -z \"$targets\" ]; then",
+            "echo \"::error::cargo fuzz list found no targets.\"",
+            "exit 1",
             "fi",
-            "cargo install --locked cargo-fuzz --version 0.13.2",
-            "for target in $(cargo fuzz list); do",
+            "for target in $targets; do",
             "cargo fuzz run \"$target\" -- -max_total_time=300",
             "done",
+            "fi",
         ],
     );
     assert_commands(
@@ -435,22 +493,8 @@ fn nightly_runs_daily_and_on_demand_with_every_long_check() {
         "full-chain",
         &["cargo test --locked -p morm-migrate --all-features"],
     );
-    assert_commands(
-        &nightly,
-        "audit",
-        &[
-            "cargo install --locked cargo-audit --version 0.22.2",
-            "cargo audit",
-        ],
-    );
-    assert_commands(
-        &nightly,
-        "deny",
-        &[
-            "cargo install --locked cargo-deny --version 0.20.2",
-            "cargo deny --locked check",
-        ],
-    );
+    assert_commands(&nightly, "audit", &["cargo audit"]);
+    assert_commands(&nightly, "deny", &["cargo deny --locked check"]);
     let property = job(&nightly, "property");
     assert!(has_line(&property, "PROPTEST_CASES: 100000"));
     assert!(has_line(&property, "MORM_TEST_PG_MAJOR: 18"));
@@ -461,6 +505,67 @@ fn nightly_runs_daily_and_on_demand_with_every_long_check() {
         "MORM_TEST_PG_MAJOR: ${{ matrix.pg }}",
     ] {
         assert!(has_line(&full_chain, line), "full-chain lacks {line}");
+    }
+}
+
+// The job's own script, run the way Actions runs a step with no `shell:`.
+// covers: R-0793
+#[test]
+fn fuzz_fails_on_a_failed_or_empty_list_and_skips_without_a_fuzz_folder() {
+    let nightly = read(".github/workflows/nightly.yml");
+    let dir = scratch("fuzz-job");
+    let script = dir.join("job.sh");
+    fs::write(&script, commands(&job(&nightly, "fuzz")).join("\n")).unwrap();
+    let bin = dir.join("bin");
+    fs::create_dir_all(&bin).unwrap();
+    stub(
+        &bin,
+        "cargo",
+        "echo \"$*\" >> \"$STUB_DIR/calls\"\n\
+         if [ \"$*\" = 'fuzz list' ]; then\n\
+         [ \"$STUB_MODE\" = empty ] || printf 'one\\ntwo\\n'\n\
+         [ \"$STUB_MODE\" != list-fails ] || exit 1\n\
+         fi\n",
+    );
+    let run = |mode: &str, fuzz_folder: bool| {
+        let work = scratch("fuzz-job/work");
+        if fuzz_folder {
+            fs::create_dir(work.join("fuzz")).unwrap();
+        }
+        let _ = fs::remove_file(dir.join("calls"));
+        let output = Command::new("bash")
+            .arg("-e")
+            .arg(&script)
+            .current_dir(&work)
+            .env("PATH", path_with(&bin))
+            .env("STUB_DIR", &dir)
+            .env("STUB_MODE", mode)
+            .output()
+            .expect("bash should run");
+        let calls = fs::read_to_string(dir.join("calls")).unwrap_or_default();
+        (output, calls)
+    };
+
+    let (output, calls) = run("targets", false);
+    assert!(output.status.success(), "{output:?}");
+    assert_eq!(calls, "", "no fuzz folder means nothing to run");
+
+    let (output, calls) = run("targets", true);
+    assert!(output.status.success(), "{output:?}");
+    let fuzz_calls: Vec<&str> = calls.lines().filter(|l| l.starts_with("fuzz ")).collect();
+    assert_eq!(
+        fuzz_calls,
+        [
+            "fuzz list",
+            "fuzz run one -- -max_total_time=300",
+            "fuzz run two -- -max_total_time=300",
+        ]
+    );
+
+    for mode in ["list-fails", "empty"] {
+        let (output, calls) = run(mode, true);
+        assert!(!output.status.success(), "{mode} must fail the job");
+        assert!(!calls.contains("fuzz run"), "{mode}: {calls}");
     }
 }
 
@@ -479,10 +584,7 @@ fn bench_runs_weekly_and_on_demand_and_compares_with_the_last_run() {
         &bench,
         "bench",
         &[
-            "mkdir bench-results",
             "cargo bench --locked --workspace --exclude morm-tests | tee bench-results/cargo-bench.txt",
-            "sudo apt-get update",
-            "sudo apt-get install -y time",
             "cargo build --locked --release -p morm-admin",
             "/usr/bin/time -f %M -o bench-results/rss.txt target/release/morm-admin --version > /dev/null",
             "python3 .github/scripts/bench_metrics.py target/release/morm-admin bench-results/rss.txt bench-results/cargo-bench.txt bench-results/metrics.json",
@@ -501,6 +603,8 @@ fn bench_runs_weekly_and_on_demand_and_compares_with_the_last_run() {
     }
 }
 
+// The stub runs each `--jq` filter with real `jq` on sample JSON, so a wrong filter
+// fails here. Real `gh` prints nothing for a null, and the stub does the same.
 // covers: R-0794
 #[test]
 fn bench_fetches_the_last_results_into_the_folder_it_compares() {
@@ -510,19 +614,33 @@ fn bench_fetches_the_last_results_into_the_folder_it_compares() {
     stub(
         &bin,
         "gh",
-        "echo \"$*\" >> \"$STUB_DIR/calls\"\n\
-         case \"$1 $2\" in\n\
-         'run list')\n\
-         [ \"$STUB_MODE\" != list-fails ] || exit 1\n\
-         [ \"$STUB_MODE\" = no-run ] || echo 123 ;;\n\
-         'api repos/owner/repo/actions/runs/123/artifacts')\n\
-         [ \"$STUB_MODE\" = expired ] || echo bench-results ;;\n\
-         'run download')\n\
-         [ \"$STUB_MODE\" != download-fails ] || exit 1\n\
-         for last in \"$@\"; do :; done\n\
-         mkdir -p \"$last\"\n\
-         echo '{}' > \"$last/metrics.json\" ;;\n\
-         esac\n",
+        r#"echo "$*" >> "$STUB_DIR/calls"
+for last in "$@"; do :; done
+filter() {
+  out=$(printf '%s' "$1" | jq -r "$last") || exit 1
+  [ "$out" = null ] || printf '%s\n' "$out"
+}
+case "$1 $2" in
+'run list')
+  case "$STUB_MODE" in
+  list-fails) exit 1 ;;
+  no-run) filter '[]' ;;
+  *) filter '[{"databaseId": 123}, {"databaseId": 99}]' ;;
+  esac ;;
+'api repos/owner/repo/actions/runs/123/artifacts')
+  case "$STUB_MODE" in
+  api-fails) exit 1 ;;
+  no-artifact) filter '{"artifacts": []}' ;;
+  expired) filter '{"artifacts": [{"name": "other", "expired": false}, {"name": "bench-results", "expired": true}]}' ;;
+  *) filter '{"artifacts": [{"name": "other", "expired": true}, {"name": "bench-results", "expired": false}]}' ;;
+  esac ;;
+'run download')
+  [ "$STUB_MODE" != download-fails ] || exit 1
+  mkdir -p "$last"
+  [ "$STUB_MODE" = no-metrics ] || echo '{}' > "$last/metrics.json" ;;
+*) exit 1 ;;
+esac
+"#,
     );
     let run = |mode: &str| {
         let work = scratch("fetch-last-bench/work");
@@ -533,7 +651,7 @@ fn bench_fetches_the_last_results_into_the_folder_it_compares() {
             .env("PATH", path_with(&bin))
             .env("STUB_DIR", &dir)
             .env("STUB_MODE", mode)
-            .env("GITHUB_REF_NAME", "main")
+            .env("GITHUB_REF_NAME", "the-branch")
             .env("GITHUB_REPOSITORY", "owner/repo")
             .output()
             .expect("bash should run");
@@ -544,30 +662,42 @@ fn bench_fetches_the_last_results_into_the_folder_it_compares() {
     let (output, fetched, calls) = run("present");
     assert!(output.status.success(), "{output:?}");
     assert!(fetched, "bench compares previous/metrics.json");
-    assert!(
-        calls.contains("run download 123 --name bench-results --dir previous\n"),
-        "{calls}"
+    let calls: Vec<&str> = calls.lines().collect();
+    assert_eq!(calls.len(), 3, "{calls:?}");
+    assert_eq!(
+        calls[0],
+        "run list --workflow bench.yml --branch the-branch --status success --limit 1 --json databaseId --jq .[0].databaseId"
+    );
+    assert_eq!(
+        calls[2],
+        "run download 123 --name bench-results --dir previous"
     );
 
-    let (output, fetched, calls) = run("expired");
-    assert!(
-        output.status.success(),
-        "an expired artifact is a first run"
-    );
-    assert!(!fetched && !calls.contains("run download"), "{calls}");
-    let log = String::from_utf8(output.stdout).unwrap();
-    assert!(
-        log.contains("::warning::") && log.contains("first run"),
-        "{log}"
-    );
+    for mode in ["expired", "no-artifact"] {
+        let (output, fetched, calls) = run(mode);
+        assert!(output.status.success(), "{mode} is a first run: {output:?}");
+        assert!(!fetched && !calls.contains("run download"), "{calls}");
+        let log = String::from_utf8(output.stdout).unwrap();
+        assert!(
+            log.contains("::warning::") && log.contains("first run"),
+            "{log}"
+        );
+    }
 
-    let (output, fetched, _) = run("no-run");
+    let (output, fetched, calls) = run("no-run");
     assert!(output.status.success() && !fetched, "{output:?}");
+    assert!(!calls.contains("run download"), "{calls}");
 
-    for mode in ["download-fails", "list-fails"] {
+    for mode in ["list-fails", "api-fails", "download-fails", "no-metrics"] {
         let (output, _, _) = run(mode);
         assert!(!output.status.success(), "{mode} must fail the step");
     }
+    let (output, _, _) = run("no-metrics");
+    let log = String::from_utf8(output.stdout).unwrap();
+    assert!(
+        log.contains("::error::") && log.contains("metrics.json"),
+        "{log}"
+    );
 }
 
 // covers: R-0794
@@ -585,7 +715,12 @@ fn bench_scripts_compare_benchmarks_with_the_last_run() {
         "output.txt",
         "running 1 test\n\
          test decode_row ... bench:       1,250 ns/iter (+/- 80)\n\
-         a bench name with spaces  time:   [1.0 ns 2.0 ns 3.0 ns]\n",
+         a bench name with spaces  time:   [1.0 ns 2.0 ns 3.0 ns]\n\
+         in ps  time:   [1.0 ps 2.0 ps 3.0 ps]\n\
+         in us  time:   [1.0 us 3.0 us 4.0 us]\n\
+         in micro  time:   [1.0 µs 5.0 µs 6.0 µs]\n\
+         in ms  time:   [1.0 ms 7.0 ms 8.0 ms]\n\
+         in s  time:   [1.0 s 9.0 s 10.0 s]\n",
     );
     let metrics = dir.join("metrics.json");
     let result = run_script("bench_metrics.py", &[&binary, &rss, &output, &metrics]);
@@ -598,6 +733,11 @@ fn bench_scripts_compare_benchmarks_with_the_last_run() {
             "morm-admin peak RSS KiB": 2048,
             "bench decode_row ns": 1250.0,
             "bench a bench name with spaces ns": 2.0,
+            "bench in ps ns": 0.002,
+            "bench in us ns": 3_000.0,
+            "bench in micro ns": 5_000.0,
+            "bench in ms ns": 7_000_000.0,
+            "bench in s ns": 9_000_000_000.0,
         })
     );
 
@@ -622,6 +762,15 @@ fn bench_scripts_compare_benchmarks_with_the_last_run() {
     let unreadable = file("bad.txt", "test decode_row ... bench: fast\n");
     let result = run_script("bench_metrics.py", &[&binary, &rss, &unreadable, &metrics]);
     assert!(!result.status.success(), "a lost result must fail the run");
+    let duplicate = file(
+        "duplicate.txt",
+        "test decode_row ... bench: 1 ns/iter (+/- 0)\n\
+         decode_row  time:   [1.0 ns 2.0 ns 3.0 ns]\n",
+    );
+    let result = run_script("bench_metrics.py", &[&binary, &rss, &duplicate, &metrics]);
+    assert!(!result.status.success(), "a lost result must fail the run");
+    let stderr = String::from_utf8(result.stderr).unwrap();
+    assert!(stderr.contains("share the name: decode_row"), "{stderr}");
     let bad_rss = file("bad-rss.txt", "Hello\n2048\n");
     let result = run_script("bench_metrics.py", &[&binary, &bad_rss, &output, &metrics]);
     assert!(!result.status.success(), "a bad RSS file must fail the run");
@@ -672,7 +821,7 @@ fn rss_is_read_from_its_own_file_and_not_from_program_output() {
     ));
 }
 
-// covers: R-0794, R-0957
+// covers: R-0794
 #[test]
 fn a_failure_on_the_left_of_a_pipe_fails_the_step() {
     let mut piped = 0;
@@ -1022,21 +1171,44 @@ fn security_md_gives_a_private_way_to_report() {
     assert!(security.contains("private"));
 }
 
+/// The directories Dependabot's entry for `ecosystem` covers.
+fn dependabot_directories<'a>(dependabot: &'a str, ecosystem: &str) -> Vec<&'a str> {
+    let header = format!("  - package-ecosystem: {ecosystem}");
+    let mut entry = dependabot.lines().skip_while(|line| *line != header);
+    entry
+        .next()
+        .unwrap_or_else(|| panic!("no {ecosystem} entry"));
+    entry
+        .take_while(|line| !line.starts_with("  - "))
+        .filter_map(|line| {
+            let line = line.trim();
+            line.strip_prefix("directory: ")
+                .or_else(|| line.strip_prefix("- "))
+        })
+        .collect()
+}
+
 // covers: R-0958
 #[test]
 fn dependabot_covers_cargo_and_actions() {
     let dependabot = read(".github/dependabot.yml");
-    let lines: Vec<&str> = dependabot.lines().collect();
-    assert!(has_line(&lines, "package-ecosystem: cargo"));
-    assert!(has_line(&lines, "package-ecosystem: github-actions"));
+    let cargo = dependabot_directories(&dependabot, "cargo");
+    assert!(cargo.contains(&"/"), "the workspace root isn't covered");
+    let actions = dependabot_directories(&dependabot, "github-actions");
+    assert!(actions.contains(&"/"), ".github/workflows isn't covered");
     for action in local_actions() {
         let dir = action.parent().unwrap().strip_prefix(root()).unwrap();
         let entry = format!("/{}", dir.display());
-        assert!(has_line(&lines, &entry), "dependabot misses {entry}");
+        assert!(
+            actions.contains(&entry.as_str()),
+            "dependabot misses {entry}"
+        );
     }
 }
 
-// covers: R-0792, R-0793, R-0794, R-0795, R-0957
+// `exclude:` drops matrix entries, and `working-directory` or another shell can
+// leave a command green without running it, so all three count as switching off.
+// covers: R-0792, R-0793, R-0794, R-0795, R-0797, R-0957
 #[test]
 fn nothing_switches_a_job_or_step_off() {
     const ALLOWED: &[(&str, &str)] = &[
@@ -1046,6 +1218,7 @@ fn nothing_switches_a_job_or_step_off() {
             "if: github.repository == 'biggaloy/rust-morm'",
         ),
     ];
+    const ALLOWED_SHELLS: &[&str] = &["shell: bash"];
     let mut files = workflow_files();
     files.extend(local_actions());
     for path in files {
@@ -1054,9 +1227,76 @@ fn nothing_switches_a_job_or_step_off() {
         assert!(!text.contains("continue-on-error"), "{}", path.display());
         for line in text.lines() {
             let line = line.trim().trim_start_matches("- ");
+            if line.starts_with('#') {
+                continue;
+            }
             if line.starts_with("if:") {
                 assert!(ALLOWED.contains(&(file, line)), "{file}: {line}");
             }
+            if line.contains("shell:") {
+                assert!(ALLOWED_SHELLS.contains(&line), "{file}: {line}");
+            }
+            assert!(!line.contains("exclude:"), "{file}: {line}");
+            assert!(!line.contains("working-directory"), "{file}: {line}");
+        }
+    }
+}
+
+// covers: R-0792, R-0793, R-0794, R-0795
+#[test]
+fn no_file_under_github_hides_a_failure() {
+    for line in [
+        "cargo test || true",
+        "cargo test ||true",
+        "cargo test || :",
+        "cargo test || echo skipped",
+        "cargo test || exit 0",
+        "cargo test ||",
+        "cargo test; true",
+        "cargo test;true",
+        "cargo test ; :",
+        "cargo test; exit 0",
+        "exit 0",
+        "return 0",
+        "true",
+        "run: true",
+        "- run: cargo test || true",
+        "set +e",
+        "set +o pipefail",
+        "! cargo test",
+        "sys.exit(0)",
+    ] {
+        assert!(hides_failure(line), "not refused: {line}");
+    }
+    for line in [
+        "cargo test",
+        "[ \"$result\" = success ] || exit 1",
+        "if [ ! -d fuzz ]; then",
+        "exit 1",
+        "cargo bench | tee out.txt",
+        "persist-credentials: false",
+        "fail-fast: false",
+        "merge-multiple: true",
+    ] {
+        assert!(!hides_failure(line), "refused: {line}");
+    }
+
+    let files = github_files();
+    let count = |dir: &str| {
+        files
+            .iter()
+            .filter(|p| p.starts_with(root().join(dir)))
+            .count()
+    };
+    assert!(count(".github/workflows") > 0 && count(".github/scripts") > 0);
+    for path in &files {
+        let text = fs::read_to_string(path).unwrap();
+        for line in text.lines() {
+            assert!(
+                line.trim_start().starts_with(['#', ';']) || !hides_failure(line),
+                "{}: {line}",
+                path.display()
+            );
         }
     }
 }

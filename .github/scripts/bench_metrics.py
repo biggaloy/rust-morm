@@ -5,8 +5,9 @@
 
 BINARY is morm-admin, RSS_FILE holds GNU time's %M figure, and BENCH_OUTPUT is
 what `cargo bench` printed. It reads libtest and Criterion result lines, and
-fails on a result line it can't read. Criterion's percentage `time:` lines, under
-`change:`, compare with its own last run, so they're skipped.
+fails on a result line it can't read or on two results with the same name.
+Criterion's percentage `time:` lines, under `change:`, compare with its own last
+run, so they're skipped.
 """
 import json
 import re
@@ -39,5 +40,8 @@ for line in Path(bench_output).read_text(encoding="utf-8").splitlines():
         if line.strip():
             previous_line = line
         continue
-    metrics[f"bench {name} ns"] = value
+    key = f"bench {name} ns"
+    if key in metrics:
+        sys.exit(f"two benchmark results share the name: {name}")
+    metrics[key] = value
 Path(metrics_file).write_text(json.dumps(metrics, indent=2) + "\n")
