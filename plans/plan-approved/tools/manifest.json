@@ -8432,6 +8432,30 @@
 "line": 0,
 "text": "- **Column position.** The real column moves to the end of the table. Position isn't compared, and morm's own queries name columns, but a raw `SELECT *` read by position changes, so `--plan` says so.",
 "block": "- **R-1054** **Column position.** The real column moves to the end of the table. Position isn't compared, and morm's own queries name columns, but a raw `SELECT *` read by position changes, so `--plan` says so."
+},
+{
+"id": "R-1055",
+"kind": "code",
+"step": "types",
+"line": 0,
+"text": "- **`TextEnum` labels.** `#[derive(TextEnum)]` stores each variant's Rust spelling, so `Pending` is stored as `Pending`, and the CHECK constraint lists that same spelling. This differs from `PgEnum`, whose labels are snake_case.",
+"block": "- **R-1055** **`TextEnum` labels.** `#[derive(TextEnum)]` stores each variant's Rust spelling, so `Pending` is stored as `Pending`, and the CHECK constraint lists that same spelling. This differs from `PgEnum`, whose labels are snake_case."
+},
+{
+"id": "R-1056",
+"kind": "code",
+"step": "types",
+"line": 0,
+"text": "- **`TextEnum` fallback.** `#[text_enum(unknown)]` on one unit variant works like `#[pg_enum(unknown)]`: any stored value the binary doesn't know decodes to that variant, as one branch on read, instead of returning `Error::UnknownEnumValue`, and writing that variant returns `Error::Validation`. It's opt-in.",
+"block": "- **R-1056** **`TextEnum` fallback.** `#[text_enum(unknown)]` on one unit variant works like `#[pg_enum(unknown)]`: any stored value the binary doesn't know decodes to that variant, as one branch on read, instead of returning `Error::UnknownEnumValue`, and writing that variant returns `Error::Validation`. It's opt-in."
+},
+{
+"id": "R-1057",
+"kind": "doc",
+"step": "readme-release",
+"line": 0,
+"text": "| `#[text_enum(unknown)]` | Old binaries must keep reading a `TextEnum` column during a rollout that adds a value |",
+"block": "| R-1057 | `#[text_enum(unknown)]` | Old binaries must keep reading a `TextEnum` column during a rollout that adds a value |"
 }
 ],
 "tests": [
@@ -9687,6 +9711,20 @@
 "kind": "suite",
 "line": 0,
 "text": "**Copy edges:** rows inserted just before the trigger attached are copied, a missed row fails `VALIDATE`, and a run on a table with a composite key resumes from its cursor."
+},
+{
+"id": "T-0180",
+"step": "types",
+"kind": "integration",
+"line": 0,
+"text": "**`TextEnum` labels:** variants such as `Pending` and `AwaitingPayment` are stored as those exact spellings, not snake_case, and the CHECK constraint lists the same spellings."
+},
+{
+"id": "T-0181",
+"step": "types",
+"kind": "integration",
+"line": 0,
+"text": "**`TextEnum` fallback:** `#[text_enum(unknown)]` decodes a stored value the binary doesn't know to that variant, known values still decode to their own variants, writing that variant returns `Error::Validation`, and without the attribute the same value returns `Error::UnknownEnumValue`."
 }
 ],
 "frame": {

@@ -4,7 +4,7 @@ Generated from the frozen plan. Each requirement and test obligation lives in ex
 
 Kinds: `code` needs a tagged test, `doc` is checked in the README step, `info` is context with nothing to build.
 
-Totals: 1054 requirements, 179 test obligations.
+Totals: 1057 requirements, 181 test obligations.
 
 ## Requirements
 
@@ -1064,6 +1064,9 @@ Totals: 1054 requirements, 179 test obligations.
 | R-1052 | code | 52 | 0 | - **Refused in this form, allowed with `--fast`,** naming the cause: partitioned tables, b… |
 | R-1053 | code | 52 | 0 | - **Recovery.** Each step has a precondition, so `--resume` continues, the copy resumes fr… |
 | R-1054 | code | 52 | 0 | - **Column position.** The real column moves to the end of the table. Position isn't compa… |
+| R-1055 | code | 13 | 0 | - **`TextEnum` labels.** `#[derive(TextEnum)]` stores each variant's Rust spelling, so `Pe… |
+| R-1056 | code | 13 | 0 | - **`TextEnum` fallback.** `#[text_enum(unknown)]` on one unit variant works like `#[pg_en… |
+| R-1057 | doc | 50 | 0 | \| `#[text_enum(unknown)]` \| Old binaries must keep reading a `TextEnum` column during a … |
 
 ## Test obligations
 
@@ -1248,3 +1251,5 @@ Totals: 1054 requirements, 179 test obligations.
 | T-0177 | suite | 52 | **Proof, foreign keys and domains:** each refused layout is refused before anything change… |
 | T-0178 | suite | 52 | **Proof, name replacement:** on Postgres 15–18, the column's name inside a string literal,… |
 | T-0179 | suite | 52 | **Copy edges:** rows inserted just before the trigger attached are copied, a missed row fa… |
+| T-0180 | integration | 13 | **`TextEnum` labels:** variants such as `Pending` and `AwaitingPayment` are stored as thos… |
+| T-0181 | integration | 13 | **`TextEnum` fallback:** `#[text_enum(unknown)]` decodes a stored value the binary doesn't… |

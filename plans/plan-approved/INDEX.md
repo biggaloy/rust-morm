@@ -55,7 +55,7 @@ The frozen plan was split word for word into requirements (`R-nnnn`) and test ob
 | 37 | [Managed objects: dependencies](steps/37-managed-deps.md) | Migrations | 36 | todo |
 | 38 | [Retire, purge and down with data](steps/38-retire.md) | Migrations | 37 | todo |
 | 39 | [Safe forms](steps/39-safe-forms.md) | Migrations | 38 | todo |
-| 40 | [Production mode, revert and squash](steps/40-live-modes.md) | Migrations | 39 | todo |
+| 40 | [Production mode, revert and squash](steps/40-live-modes.md) | Migrations | 52, 54 | todo |
 | 41 | [Rolling deploys](steps/41-rolling.md) | Migrations | 40, 15 | todo |
 | 42 | [`morm-admin init` and project setup](steps/42-admin-init.md) | Tools | 38, 27, 17, 16 | todo |
 | 43 | [`morm-admin doctor`](steps/43-doctor.md) | Tools | 42 | todo |
@@ -93,11 +93,13 @@ Each wave below needs only earlier waves. Each step file's "Can run beside" line
 14. 24, 36
 15. 25, 37
 16. 26, 27, 38, 47
-17. 39, 42
-18. 40, 43, 44, 45
-19. 41, 46, 48
-20. 49
-21. 50
+17. 39, 42, 51
+18. 43, 44, 45, 53
+19. 46, 48, 52, 54
+20. 40
+21. 41
+22. 49
+23. 50
 
 Steps run in parallel only when `contracts.md` covers what they share. Each gets its own worktree and branch. When a parallel step needs something shared that isn't in `contracts.md`, it stops, and the contract is updated first.
 
