@@ -119,7 +119,7 @@ These are shared by steps that can run side by side, so each is written and froz
 | The internal warning sink: stderr now, `tracing` when enabled | `morm-core` | Every step that warns |
 | Expansion layout: `#[model]` calls one module per feature, so model steps add a module and don't edit one shared function | `morm-macros` | Model steps, `manifest`, `rolling` |
 | The config structs | `morm-core` | `morm`, `morm-migrate`, `morm-admin` |
-| The SQL text scanner | `morm-core` | Statements, online swap |
+| The SQL text scanner | `morm-core` | Statements |
 
 `Op`, the typed migration operation, is defined in step 30. Migration steps run one at a time, so it needs no earlier freeze.
 

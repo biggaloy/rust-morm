@@ -4,7 +4,7 @@ Generated from the frozen plan. Each requirement and test obligation lives in ex
 
 Kinds: `code` needs a tagged test, `doc` is checked in the README step, `info` is context with nothing to build.
 
-Totals: 1069 requirements, 193 test obligations.
+Totals: 1071 requirements, 195 test obligations.
 
 ## Requirements
 
@@ -1060,7 +1060,7 @@ Totals: 1069 requirements, 193 test obligations.
 | R-1048 | code | 52 | 0 | - **The copy walks by key until nothing is left,** and reads each batch after the sync tri… |
 | R-1049 | code | 52 | 0 | - **The cutover** is one short transaction across all affected tables, with `lock_timeout`… |
 | R-1050 | code | 52 | 0 | - **Old values stay.** The retired column holds every old value and keeps the retired type… |
-| R-1051 | code | 52 | 0 | - **Text on the shadow column.** A partial index filter, a CHECK or a materialized view's … |
+| R-1051 | code | 52 | 0 | - **Text on the shadow column.** A partial index, an expression index, a CHECK or a materi… |
 | R-1052 | code | 52 | 0 | - **Refused in this form, allowed with `--fast`,** naming the cause: partitioned tables, b… |
 | R-1053 | code | 52 | 0 | - **Recovery.** Each step has a precondition, so `--resume` continues, the copy resumes fr… |
 | R-1054 | code | 52 | 0 | - **Column position.** The real column moves to the end of the table. Position isn't compa… |
@@ -1073,12 +1073,14 @@ Totals: 1069 requirements, 193 test obligations.
 | R-1061 | code | 39 | 0 | **A view above an online column swap.** R-0566's swap carries a managed view above the col… |
 | R-1062 | code | 38 | 0 | - **Retired materialized views.** An online column swap (step 39) retires the old copy of … |
 | R-1063 | code | 39 | 0 | **A materialized view above an online column swap.** Recreating one would run its query un… |
-| R-1064 | code | 39 | 0 | **Text on the shadow column.** morm has no SQL parser, so R-1063's query is rewritten by r… |
+| R-1064 | code | 39 | 0 | **Text on the shadow column.** morm has no SQL parser and replaces no names in text, so R-… |
 | R-1065 | code | 35 | 0 | - **`proof`.** `pg_function!` and `pg_procedure!` take an optional `proof`, one SQL statem… |
 | R-1066 | code | 59 | 0 | - **Managed functions are proven by a real call.** Every managed function or procedure R-1… |
 | R-1067 | code | 59 | 0 | - **What a call may touch.** A rollback undoes what a call does in the database, including… |
 | R-1068 | doc | 50 | 0 | \| `proof = "..."` \| A managed function or procedure takes arguments, or a migration can … |
 | R-1069 | doc | 50 | 0 | The README says this plainly, beside the managed function rows. A migration can stop and a… |
+| R-1070 | code | 39 | 0 | **Same meaning when the text differs.** Postgres keeps an alias once it has one, so after … |
+| R-1071 | code | 39 | 0 | **Column positions.** A `USING` view's text holds a column list, such as `t t(id, _morm_re… |
 
 ## Test obligations
 
@@ -1261,7 +1263,7 @@ Totals: 1069 requirements, 193 test obligations.
 | T-0175 | suite | 52 | **Live traffic:** with writers on an old binary, including writes of the removed value unt… |
 | T-0176 | suite | 52 | **Proof, killed mid-run:** kill the process at every step boundary, and during the copy an… |
 | T-0177 | suite | 52 | **Proof, foreign keys and domains:** each refused layout is refused before anything change… |
-| T-0178 | suite | 52 | **Proof, name replacement:** on Postgres 15–18, the column's name inside a string literal,… |
+| T-0178 | suite | 52 | **Proof, definitions from scratch:** on Postgres 15–18, a partial index, a unique partial … |
 | T-0179 | suite | 52 | **Copy edges:** rows inserted just before the trigger attached are copied, a missed row fa… |
 | T-0180 | integration | 56 | **`TextEnum` labels:** variants such as `Pending` and `AwaitingPayment` are stored as thos… |
 | T-0181 | integration | 56 | **`TextEnum` fallback:** `#[text_enum(unknown)]` decodes a stored value the binary doesn't… |
@@ -1271,9 +1273,11 @@ Totals: 1069 requirements, 193 test obligations.
 | T-0185 | integration | 57 | **Domain and composite changes:** with rows, a changed domain `check` replaces the constra… |
 | T-0186 | integration | 37 | **Composite dependents:** on a composite no column uses, a middle attribute, a new order a… |
 | T-0187 | suite | 39 | **View above an online column swap:** on Postgres 15–18, with readers on the view and writ… |
-| T-0188 | suite | 38 | **Retired materialized view:** after an online swap the old copy sits in `_morm_retired` w… |
+| T-0188 | suite | 38 | **Retired materialized view:** on Postgres 15–18, after an online swap the old copy sits i… |
 | T-0189 | suite | 39 | **Materialized view above an online column swap:** on Postgres 15–18, with readers on it, … |
 | T-0190 | suite | 39 | **Proof, rewritten query:** on Postgres 15–18, an output column keeps its name, as a bare … |
 | T-0191 | suite | 35 | **`proof`:** on `pg_function!` and `pg_procedure!`, with `file` or inline, it reaches the … |
 | T-0192 | suite | 59 | **Proof by a real call, on Postgres 15–18:** after a column type change, a plpgsql `RETURN… |
-| T-0193 | suite | 59 | **What a call may touch:** an automatic call that reaches `dblink` directly, through anoth… |
+| T-0193 | suite | 59 | **What a call may touch:** on Postgres 15–18, an automatic call that reaches `dblink` dire… |
+| T-0194 | suite | 39 | **Same meaning:** on Postgres 15–18, every `USING` and `NATURAL JOIN` shape in T-0190, as … |
+| T-0195 | suite | 39 | **Column positions:** on Postgres 15–18, with a `USING` materialized view above the column… |
