@@ -4,7 +4,7 @@ Generated from the frozen plan. Each requirement and test obligation lives in ex
 
 Kinds: `code` needs a tagged test, `doc` is checked in the README step, `info` is context with nothing to build.
 
-Totals: 1074 requirements, 197 test obligations.
+Totals: 1075 requirements, 197 test obligations.
 
 ## Requirements
 
@@ -1084,6 +1084,7 @@ Totals: 1074 requirements, 197 test obligations.
 | R-1072 | code | 39 | 0 | **A cutover gives way.** A cutover can deadlock with an app transaction: one that touche… |
 | R-1073 | doc | 50 | 0 | \| `--terminate-blockers` \| A cutover keeps giving way, and you'd rather end the transact… |
 | R-1074 | doc | 50 | 0 | \| `cutover_lock_timeout`, `cutover_attempts`, `cutover_pause` \| A cutover gives up on a… |
+| R-1075 | doc | 50 | 0 | The README says this plainly, beside the online swap. During a cutover, a client that is… |
 
 ## Test obligations
 

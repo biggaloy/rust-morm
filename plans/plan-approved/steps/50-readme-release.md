@@ -173,6 +173,8 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 
 **R-1069** The README says this plainly, beside the managed function rows. A migration can stop and ask you to add a `proof` line to a managed function or procedure before it goes through, because a change under a function can break it in ways Postgres only shows when it's called, and morm won't ship one it can't call. morm really runs that call, on a scratch database, in a transaction it rolls back, with a 30-second timeout, so the call has to be safe to run, and it must not reach outside Postgres. With no `proof`, morm's own call runs as a role that can't use extension functions or other languages, so a function that uses `dblink`, an HTTP extension or `COPY ... PROGRAM` stops and asks for a `proof`. With a `proof`, morm runs what you wrote with your scratch user's rights and can't check it, so write a call that takes no outside action. Unmanaged functions can't be proven, because scratch can't see them, so they become a migration decision that names each one and says it may fail until it's rewritten.
 
+**R-1075** The README says this plainly, beside the online swap. During a cutover, a client that isn't morm can see one `XX000` `could not open relation with OID` when it calls a `BEGIN ATOMIC` function the cutover replaces, or one over a view it replaces. morm apps retry it themselves. Other clients should do the same, because calling again works.
+
 ### Risks, open items and later work / Open items
 
 - **R-0920** All six names (`morm`, `morm-core`, `morm-macros`, `morm-migrate`, `morm-admin`, `morm-mgr`) are reserved on crates.io at `0.0.0`. The release publishes over them.

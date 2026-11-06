@@ -7846,8 +7846,8 @@
 "kind": "code",
 "step": "statements",
 "line": 0,
-"text": "- **Stale server state.** Two errors, from any statement, mean a session holds compiled code a re-prepare can't reach: `XX000` with the message `cache lookup failed for type`, from a dropped type, and `42804` with the message `type of parameter ... does not match that when preparing the plan`, from a plpgsql function compiled before a column or row type changed. Each repeats on every call, and a new connection clears it. Evicting a statement can't, so morm discards the connection, retries once on another outside a transaction, and raises the pool's connection generation. On a `db.hold()` connection nothing moves: morm returns `Error::SchemaChanged`, and the connection is replaced on release.",
-"block": "- **R-0981** **Stale server state.** Two errors, from any statement, mean a session holds compiled code a re-prepare can't reach: `XX000` with the message `cache lookup failed for type`, from a dropped type, and `42804` with the message `type of parameter ... does not match that when preparing the plan`, from a plpgsql function compiled before a column or row type changed. Each repeats on every call, and a new connection clears it. Evicting a statement can't, so morm discards the connection, retries once on another outside a transaction, and raises the pool's connection generation. On a `db.hold()` connection nothing moves: morm returns `Error::SchemaChanged`, and the connection is replaced on release."
+"text": "- **Stale server state.** Two errors, from any statement, mean a session holds compiled code a re-prepare can't reach: `XX000` with the message `cache lookup failed for type`, from a dropped type, and `42804` with the message `type of parameter ... does not match that when preparing the plan`, from a plpgsql function compiled before a column or row type changed. Each repeats on every call, and a new connection clears it. Evicting a statement can't, so morm discards the connection, retries once on another outside a transaction, and raises the pool's connection generation. On a `db.hold()` connection nothing moves: morm returns `Error::SchemaChanged`, and the connection is replaced on release. A third error is transient: `XX000` with the message `could not open relation with OID`, from a caller of a `BEGIN ATOMIC` function while a cutover replaces that function or a view under it. It doesn't repeat, and a new statement on the same connection works, so the connection isn't at fault: outside a transaction morm retries once on that connection, held or not, replaces nothing and raises no generation. Tested on Postgres 15 to 18: all 3,566 such errors, with plain and cached plans, cleared on the first retry on the same connection.",
+"block": "- **R-0981** **Stale server state.** Two errors, from any statement, mean a session holds compiled code a re-prepare can't reach: `XX000` with the message `cache lookup failed for type`, from a dropped type, and `42804` with the message `type of parameter ... does not match that when preparing the plan`, from a plpgsql function compiled before a column or row type changed. Each repeats on every call, and a new connection clears it. Evicting a statement can't, so morm discards the connection, retries once on another outside a transaction, and raises the pool's connection generation. On a `db.hold()` connection nothing moves: morm returns `Error::SchemaChanged`, and the connection is replaced on release. A third error is transient: `XX000` with the message `could not open relation with OID`, from a caller of a `BEGIN ATOMIC` function while a cutover replaces that function or a view under it. It doesn't repeat, and a new statement on the same connection works, so the connection isn't at fault: outside a transaction morm retries once on that connection, held or not, replaces nothing and raises no generation. Tested on Postgres 15 to 18: all 3,566 such errors, with plain and cached plans, cleared on the first retry on the same connection."
 },
 {
 "id": "R-0982",
@@ -7862,8 +7862,8 @@
 "kind": "code",
 "step": "statements",
 "line": 0,
-"text": "- **Retrying is safe.** Postgres rolls back a failed statement outside a transaction, so a retry can't apply a write twice. A `42883`, or a `42804` with any other message, from a statement that isn't in a cache is never retried, the two errors in R-0981 are retried from any statement, nothing is retried once a row has reached the caller, and a retry that fails again returns its error.",
-"block": "- **R-0983** **Retrying is safe.** Postgres rolls back a failed statement outside a transaction, so a retry can't apply a write twice. A `42883`, or a `42804` with any other message, from a statement that isn't in a cache is never retried, the two errors in R-0981 are retried from any statement, nothing is retried once a row has reached the caller, and a retry that fails again returns its error."
+"text": "- **Retrying is safe.** Postgres rolls back a failed statement outside a transaction, so a retry can't apply a write twice. A `42883`, or a `42804` with any other message, from a statement that isn't in a cache is never retried, the three errors in R-0981 are retried from any statement, nothing is retried once a row has reached the caller, and a retry that fails again returns its error.",
+"block": "- **R-0983** **Retrying is safe.** Postgres rolls back a failed statement outside a transaction, so a retry can't apply a write twice. A `42883`, or a `42804` with any other message, from a statement that isn't in a cache is never retried, the three errors in R-0981 are retried from any statement, nothing is retried once a row has reached the caller, and a retry that fails again returns its error."
 },
 {
 "id": "R-0984",
@@ -8592,6 +8592,14 @@
 "line": 0,
 "text": "| `cutover_lock_timeout`, `cutover_attempts`, `cutover_pause` | A cutover gives up on a busy table, or its retries stall your traffic too much |",
 "block": "| R-1074 | `cutover_lock_timeout`, `cutover_attempts`, `cutover_pause` | A cutover gives up on a busy table, or its retries stall your traffic too much |"
+},
+{
+"id": "R-1075",
+"kind": "doc",
+"step": "readme-release",
+"line": 0,
+"text": "The README says this plainly, beside the online swap. During a cutover, a client that isn't morm can see one `XX000` `could not open relation with OID` when it calls a `BEGIN ATOMIC` function the cutover replaces, or one over a view it replaces. morm apps retry it themselves. Other clients should do the same, because calling again works.",
+"block": "**R-1075** The README says this plainly, beside the online swap. During a cutover, a client that isn't morm can see one `XX000` `could not open relation with OID` when it calls a `BEGIN ATOMIC` function the cutover replaces, or one over a view it replaces. morm apps retry it themselves. Other clients should do the same, because calling again works."
 }
 ],
 "tests": [
@@ -9657,7 +9665,7 @@
 "step": "statements",
 "kind": "integration",
 "line": 0,
-"text": "**Stale sessions:** a plpgsql trigger compiled before a hand-run swap fails with `XX000`, morm replaces the connection and the write succeeds once, other connections in the pool are replaced at checkout, and `pool_stats()` shows it. The same holds for a plpgsql function with a `%ROWTYPE` variable compiled before a hand-run column type change, which fails with `42804` and `type of parameter ... does not match that when preparing the plan`. On a `db.hold()` connection the same failures return `Error::SchemaChanged`, nothing moves, and the connection is replaced on release."
+"text": "**Stale sessions:** a plpgsql trigger compiled before a hand-run swap fails with `XX000`, morm replaces the connection and the write succeeds once, other connections in the pool are replaced at checkout, and `pool_stats()` shows it. The same holds for a plpgsql function with a `%ROWTYPE` variable compiled before a hand-run column type change, which fails with `42804` and `type of parameter ... does not match that when preparing the plan`. On a `db.hold()` connection the same failures return `Error::SchemaChanged`, nothing moves, and the connection is replaced on release. With a `BEGIN ATOMIC` function and a view under it dropped and recreated by hand in a loop, a caller that gets `XX000` with `could not open relation with OID` is retried once on the same connection and succeeds, on a pool and on a `db.hold()` connection, with nothing replaced and no generation raised. Inside a transaction it returns `Error::SchemaChanged`, and a retry that fails again returns its error."
 },
 {
 "id": "T-0153",
