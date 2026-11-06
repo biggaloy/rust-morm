@@ -121,7 +121,7 @@ The coordinator stays thin: it reads this file and never reads code.
 - **"Full chain" is defined in step 34:** no single step builds the chain, and 34 is the first that can run all up, all down, all up. Nightly keeps CI's migration command until then, and step 49 widens the job to the whole chain, including managed objects. Owner decision.
 - **`github-release` stays:** R-0795 asks only for built binaries, but they need a download location that doesn't expire. `contents: write` stays limited to that job, which runs no repo code. Owner decision.
 - **Release tags are limited:** `crates-io` deploys only from `v*` tags and needs its reviewer, and the release workflow checks that the commit is on `main` and the tag matches the workspace version. Owner decision.
-- **Domains, composite types and sequences get declaration forms in step 35:** no step could declare them, though step 36 and the full chain rely on them. The forms are being designed with the owner. Owner decision.
+- **Managed type declarations:** no step could declare domains, composite types or sequences, and enums never reached the manifest, though step 36 and the full chain rely on all four. `#[pg_domain]`, `#[pg_composite]` and `#[pg_enum]` sit on the Rust type, and without one the derive only binds to an existing type. `morm::pg_sequence!` covers sequences, which apply with types, before tables, so there's no `OWNED BY`. Owner decision.
 
 ## Record from the frozen plan
 
