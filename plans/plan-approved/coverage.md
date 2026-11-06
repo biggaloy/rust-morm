@@ -4,7 +4,7 @@ Generated from the frozen plan. Each requirement and test obligation lives in ex
 
 Kinds: `code` needs a tagged test, `doc` is checked in the README step, `info` is context with nothing to build.
 
-Totals: 959 requirements, 133 test obligations.
+Totals: 959 requirements, 139 test obligations.
 
 ## Requirements
 
@@ -1107,3 +1107,9 @@ Totals: 959 requirements, 133 test obligations.
 | T-0131 | suite | 27 | **Failures:** backoff, `max_attempts`, `failed` events kept, and cleanup after `retention` |
 | T-0132 | suite | 42 | `morm-admin outbox retry ID` on a failed event |
 | T-0133 | trybuild | 49 | every compile-time guarantee has a `trybuild` case |
+| T-0134 | suite | 27 | **Fault injection runs in CI:** `ci.yml`'s `integration` job runs the T-0129 tests, and th… |
+| T-0135 | suite | 30 | **Migration suite runs in CI:** the `Migration suite` step of `ci.yml`'s `integration` job… |
+| T-0136 | suite | 34 | **Fault injection runs in CI:** the `Migration suite` step of `ci.yml`'s `integration` job… |
+| T-0137 | suite | 49 | **Property tests run in CI:** `nightly.yml`'s `property` job runs the T-0114 and T-0118 te… |
+| T-0138 | suite | 49 | **Full chain runs in CI:** `nightly.yml`'s `full-chain` job runs the T-0127 test on Postgr… |
+| T-0139 | suite | 49 | **Fuzzing runs in CI:** `nightly.yml`'s `fuzz` job runs the T-0128 targets, and the PR lin… |

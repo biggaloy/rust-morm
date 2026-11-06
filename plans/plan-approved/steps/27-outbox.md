@@ -152,3 +152,4 @@ morm::outbox::worker(&db)                              // in the app, or its own
 | T-0129 | suite | **Fault injection:** kill the process and the worker at every point: before commit (no event), after commit (delivered), and after send before recording (delivered twice, same `e.id`). |
 | T-0130 | suite | **Concurrency:** rival workers never hold one event at once while a lease is valid, expired leases return, and keyed events stay in order. |
 | T-0131 | suite | **Failures:** backoff, `max_attempts`, `failed` events kept, and cleanup after `retention` |
+| T-0134 | suite | **Fault injection runs in CI:** `ci.yml`'s `integration` job runs the T-0129 tests, and the PR links that job's log showing them pass. A run of zero tests doesn't count. These tests need Postgres, so they live in `tests/` (package `morm-tests`). The job runs that package with `cargo test --locked -p morm-tests`, which doesn't turn on `morm`'s `outbox` feature, so turn it on for that package. |

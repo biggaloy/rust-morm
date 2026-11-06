@@ -8605,6 +8605,48 @@
 "kind": "trybuild",
 "line": 0,
 "text": "every compile-time guarantee has a `trybuild` case"
+},
+{
+"id": "T-0134",
+"step": "outbox",
+"kind": "suite",
+"line": 0,
+"text": "**Fault injection runs in CI:** `ci.yml`'s `integration` job runs the T-0129 tests, and the PR links that job's log showing them pass. A run of zero tests doesn't count. These tests need Postgres, so they live in `tests/` (package `morm-tests`). The job runs that package with `cargo test --locked -p morm-tests`, which doesn't turn on `morm`'s `outbox` feature, so turn it on for that package."
+},
+{
+"id": "T-0135",
+"step": "schema-diff",
+"kind": "suite",
+"line": 0,
+"text": "**Migration suite runs in CI:** the `Migration suite` step of `ci.yml`'s `integration` job runs the T-0119 tests, and the PR links that step's log showing them pass. A run of zero tests doesn't count. At step 01 it ran `cargo test --locked -p morm-migrate --all-features`, which doesn't reach `tests/` (package `morm-tests`). If its command doesn't reach these tests, change it and update the line in `tests/tests/repo_policy.rs` that pins it."
+},
+{
+"id": "T-0136",
+"step": "recovery",
+"kind": "suite",
+"line": 0,
+"text": "**Fault injection runs in CI:** the `Migration suite` step of `ci.yml`'s `integration` job runs the T-0117 tests, and the PR links that step's log showing them pass. A run of zero tests doesn't count. At step 01 it ran `cargo test --locked -p morm-migrate --all-features`, which doesn't reach `tests/` (package `morm-tests`). If its command doesn't reach these tests, change it and update the line in `tests/tests/repo_policy.rs` that pins it."
+},
+{
+"id": "T-0137",
+"step": "hardening",
+"kind": "suite",
+"line": 0,
+"text": "**Property tests run in CI:** `nightly.yml`'s `property` job runs the T-0114 and T-0118 tests, and the PR links that job's log from a `workflow_dispatch` run showing them pass. The job runs `cargo test --locked --workspace`, which also passes on other tests alone, so a run without these tests doesn't count."
+},
+{
+"id": "T-0138",
+"step": "hardening",
+"kind": "suite",
+"line": 0,
+"text": "**Full chain runs in CI:** `nightly.yml`'s `full-chain` job runs the T-0127 test on Postgres 15\u201318, and the PR links each version's log from a `workflow_dispatch` run showing it pass. A run of zero tests doesn't count. At step 01 it ran `cargo test --locked -p morm-migrate --all-features`, which doesn't reach `tests/` (package `morm-tests`). If its command doesn't reach this test, change it and update the line in `tests/tests/repo_policy.rs` that pins it."
+},
+{
+"id": "T-0139",
+"step": "hardening",
+"kind": "suite",
+"line": 0,
+"text": "**Fuzzing runs in CI:** `nightly.yml`'s `fuzz` job runs the T-0128 targets, and the PR links that job's log from a `workflow_dispatch` run showing `cargo fuzz run` on the step parser and on `meta.json`. A run with no targets doesn't count. The job exits 0 when `fuzz/` is missing, and its loop passes when `cargo fuzz list` is empty, so remove that exit and make an empty list fail."
 }
 ],
 "frame": {

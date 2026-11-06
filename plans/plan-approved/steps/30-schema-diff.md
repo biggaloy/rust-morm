@@ -65,3 +65,4 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 | T-0003 | suite | Unit: diff |
 | T-0074 | integration | range CHECKs rejecting direct SQL writes |
 | T-0119 | suite | **Op tests:** every op's inverse, with and without data |
+| T-0135 | suite | **Migration suite runs in CI:** the `Migration suite` step of `ci.yml`'s `integration` job runs the T-0119 tests, and the PR links that step's log showing them pass. A run of zero tests doesn't count. At step 01 it ran `cargo test --locked -p morm-migrate --all-features`, which doesn't reach `tests/` (package `morm-tests`). If its command doesn't reach these tests, change it and update the line in `tests/tests/repo_policy.rs` that pins it. |
