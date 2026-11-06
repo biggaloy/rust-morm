@@ -25,7 +25,7 @@ Nothing is kept in `/tmp`: it's memory-backed here, so a power cut wipes it. Age
 
 ## What comes next
 
-1. Head `cba5193` has the materialized view, recovery, search and `proof` edits, with CI green. `reviews/step-01-open-items.md` lists what's waiting on the owner. Once answered, apply them, add the IDs to Decisions, then run a short check of the changes since `09338c2`, the checker and CI. The owner doesn't accept open gaps: bring any gap to the owner, don't record it as accepted.
+1. Head `cba5193` has the materialized view, recovery, search and `proof` edits, with CI green. `reviews/step-01-open-items.md` lists the items. The owner took every recommendation for A, B and 6 and 7 (recorded in `INDEX.md`), and a last edit is running for them. Item 5, how far to prove function paths, is still being discussed with the owner. Once that's settled and written in, run a short check of the changes since `09338c2`, the checker and CI. The owner doesn't accept open gaps: bring any gap to the owner, don't record it as accepted.
 2. Bring PR #1 to the owner. The owner approves it, and no agent merges it without that.
 3. Merge, mark step 01 `done`, and pull. Check `INDEX.md` on `main` has both its Decisions and the branch's rows and order.
 4. Start the next step as a fresh agent, then an independent review. The owner approves the PRs of steps 01, 02, 03, 50 and, once the plan edit lands, 55.
