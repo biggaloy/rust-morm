@@ -36,9 +36,7 @@ Nothing is kept in `/tmp`: it's memory-backed here, so a power cut wipes it. Age
 
 ## Not proven yet
 
-- `actionlint` has never run. The permission system refused it for agents, so the owner would have to run it.
-- `verify`, `publish` and `github-release` haven't run on a real tag, and `CARGO_REGISTRY_TOKEN` hasn't been tested.
-- A genuinely expired bench artifact hasn't been seen.
+Moved to "Repo tooling" in `later-defo-build.plan`, by owner decision.
 
 ## Housekeeping
 

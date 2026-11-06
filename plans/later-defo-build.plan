@@ -58,3 +58,15 @@ Writes and transactions always go to the primary.
 - Fault injection at every step boundary, with live writes on all tables.
 
 **What 0.1 must keep possible:** steps per table in one migration, sync triggers as managed objects, and batch cursors per table.
+
+## Repo tooling
+
+CI and release checks, not part of morm itself. 0.1 doesn't wait for them.
+
+**Stronger check for hidden failures.** `no_file_under_github_hides_a_failure` in `tests/tests/repo_policy.rs` scans lines, so it misses forms such as `cmd |true`, `trap 'exit 0' ERR`, or an unchecked `subprocess.run` in a Python script, and it wrongly refuses some legitimate forms, such as `cmd || { echo ...; exit 1; }`. No current file is affected, and pinned jobs are also protected by their exact lists. Replace it with a real rule for `.github/scripts/`: for example, shell scripts run with `set -euo pipefail`, and Python scripts use `check=True` on every subprocess.
+
+**Prove what hasn't run yet.**
+
+- Run `actionlint` on every workflow, and add it to CI. Agents couldn't run it, because the permission system refused the downloaded binary.
+- Watch the first real `v*` tag run `verify`, `publish` and `github-release` end to end, including `CARGO_REGISTRY_TOKEN`, and fix whatever it finds.
+- Run bench and nightly for real on `main`, including the rewritten `fetch_last_bench.sh` and `fuzz` step, and see a genuinely expired artifact take the first-run path. So far a deleted artifact stood in for one.
