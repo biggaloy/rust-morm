@@ -8,6 +8,10 @@ Read this first when resuming. It's what the coordinating session needs that isn
 
 Nothing is kept in `/tmp`: it's memory-backed here, so a power cut wipes it. Agents and the coordinator keep working files in the repo's `.claude/scratch/` or their own worktree, with `TMPDIR` set there for commands that create temp files. That folder is on this disk but not on GitHub, so anything needed to resume is also pushed under `plans/`. Put this in every agent's prompt until the `rules.md` line lands.
 
+## Wake-up
+
+This session has an in-memory wake-up every 30 minutes that resumes stopped agents after a usage limit. It's lost when the session ends, so a new or resumed session must set it again with `CronCreate`, and delete it when the job is done.
+
 ## How to resume
 
 1. Read `plan-approved/INDEX.md` and follow "The coordinating session". Stay thin: don't read code or the frozen plan.
