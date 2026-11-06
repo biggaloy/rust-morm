@@ -4,7 +4,7 @@ Generated from the frozen plan. Each requirement and test obligation lives in ex
 
 Kinds: `code` needs a tagged test, `doc` is checked in the README step, `info` is context with nothing to build.
 
-Totals: 1083 requirements, 205 test obligations.
+Totals: 1091 requirements, 205 test obligations.
 
 ## Requirements
 
@@ -1093,6 +1093,14 @@ Totals: 1083 requirements, 205 test obligations.
 | R-1081 | code | 59 | 0 | - **`EXECUTE` needs a `proof`.** The check can't read a query built at run time, and it gi… |
 | R-1082 | code | 59 | 0 | - **morm won't run a disabled check.** With `plpgsql_check.mode` set to `disabled`, the ch… |
 | R-1083 | code | 59 | 0 | **The extension in CI.** Every job whose tests run `makemigrations` over a managed plpgsql… |
+| R-1084 | doc | 50 | 0 | The README shows this notice loudly, beside the managed function rows: > **Silencing a che… |
+| R-1085 | doc | 50 | 0 | The README says this plainly, beside that notice. A call proves only the path it takes, so… |
+| R-1086 | doc | 50 | 0 | \| `PERFORM 'PRAGMA:TABLE: ...'`, `PERFORM 'PRAGMA:TYPE: ...'` \| `plpgsql_check` reports … |
+| R-1087 | doc | 50 | 0 | \| `PERFORM 'PRAGMA:DISABLE:CHECK'` \| A false error can't be described with `TABLE` or `T… |
+| R-1088 | doc | 50 | 0 | \| Accepting a `plpgsql_check` finding \| A finding is false on this one migration and you… |
+| R-1089 | doc | 50 | 0 | \| Accepting a narrowing \| A variable is narrower than what it reads, and you know the va… |
+| R-1090 | doc | 50 | 0 | \| Accepting a missing `plpgsql_check` \| Your scratch server can't have the extension, an… |
+| R-1091 | doc | 50 | 0 | \| `morm_plpgsql_check` template \| Your scratch user isn't a superuser, so a superuser ma… |
 
 ## Test obligations
 

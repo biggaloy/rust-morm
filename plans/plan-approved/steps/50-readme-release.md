@@ -120,7 +120,13 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 | R-1006 | `#[pg_enum(deprecated)]` | You're removing a value in a rolling deploy, and `contract` must wait until this release has shipped |
 | R-1007 | `max_rewrite_mb` | You want a different size limit on rewriting a table under a full lock |
 | R-0974 | `morm::pg_sequence!` | You need numbers from a sequence that no identity column owns, such as invoice numbers |
-| R-1068 | `proof = "..."` | A managed function or procedure takes arguments, or a migration can only prove it through a call you choose |
+| R-1068 | `proof = "..."` | A managed function or procedure takes arguments, or a migration can only prove it through a call you choose; repeat it for each path that matters, and a body using `EXECUTE` must have one |
+| R-1086 | `PERFORM 'PRAGMA:TABLE: ...'`, `PERFORM 'PRAGMA:TYPE: ...'` | `plpgsql_check` reports a false error because it can't see a table or a record's fields, such as a temp table the function creates; every other line is still checked, and the notice below says what this can hide |
+| R-1087 | `PERFORM 'PRAGMA:DISABLE:CHECK'` | A false error can't be described with `TABLE` or `TYPE`, such as a constant `1/0`; it hides real breaks until its block ends, so read the notice below first |
+| R-1088 | Accepting a `plpgsql_check` finding | A finding is false on this one migration and you won't change the function; the next migration that reaches the function checks it again, and the notice below says what this can hide |
+| R-1089 | Accepting a narrowing | A variable is narrower than what it reads, and you know the values will always fit |
+| R-1090 | Accepting a missing `plpgsql_check` | Your scratch server can't have the extension, and the function's `proof` lines cover the paths you care about; every other path is unproven |
+| R-1091 | `morm_plpgsql_check` template | Your scratch user isn't a superuser, so a superuser makes this template once, and morm clones it |
 | R-0861 | `storage = "fillfactor=90"` | A table gets many updates to columns with no index |
 | R-0862 | `.returning()` | You need the changed rows back |
 | R-0863 | `.all()` | You want every row, and you know the result is small |
@@ -172,6 +178,34 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 > **Use `TextEnum` unless you have a reason not to.** Changing a `TextEnum` is an ordinary migration. Postgres can't remove or reorder an enum value, so morm has to replace the whole type, including everything that depends on it. On a big table that means a long online copy or a table rewrite under a full lock. Adding a value is cheap, but its down is not. morm does all of this safely, but `TextEnum` never needs it.
 
 **R-1069** The README says this plainly, beside the managed function rows. A migration can stop and ask you to add a `proof` line to a managed function or procedure before it goes through, because a change under a function can break it in ways Postgres only shows when it's called, and morm won't ship one it can't call. morm really runs that call, on a scratch database, in a transaction it rolls back, with a 30-second timeout, so the call has to be safe to run, and it must not reach outside Postgres. With no `proof`, morm's own call runs as a role that can't use extension functions or other languages, so a function that uses `dblink`, an HTTP extension or `COPY ... PROGRAM` stops and asks for a `proof`. With a `proof`, morm runs what you wrote with your scratch user's rights and can't check it, so write a call that takes no outside action. Unmanaged functions can't be proven, because scratch can't see them, so they become a migration decision that names each one and says it may fail until it's rewritten.
+
+**R-1084** The README shows this notice loudly, beside the managed function rows:
+
+> **Silencing a check can hide a real break.** When a migration changes something a managed plpgsql function names, morm runs `plpgsql_check` on that function, and any `error` stops the migration. There are two ways past an error, and neither one fixes anything. If the finding was real, the function ships broken and fails in production the first time that line runs.
+>
+> **What each one does.** A `PERFORM 'PRAGMA:...'` line goes in the function. It changes what `plpgsql_check` looks at, on this migration and every later one, and when the function runs it's only a string, so it does nothing. A decision leaves the function alone and lets that one finding through on that one migration. It's recorded in the migration's `meta.json`, and the next migration that reaches the function checks it again.
+>
+> ```sql
+> -- Tell the checker what it can't see. It still checks every other line.
+> PERFORM 'PRAGMA:TABLE: report_rows (id bigint, total numeric)';
+> PERFORM 'PRAGMA:TYPE: r (id bigint, total numeric)';
+>
+> -- Stop checking until this block ends. Keep the block as small as you can.
+> BEGIN
+>   PERFORM 'PRAGMA:DISABLE:CHECK';
+>   PERFORM 1 / 0;
+> END;
+> ```
+>
+> ```
+> makemigrations --decide ID=OPT     # morm prints the ID and the options
+> ```
+>
+> **When it's right.** Only when you've read the finding and can say why it's false, such as a temp table the function creates, or a record it fills with `EXECUTE`. Prefer `PRAGMA:TABLE` and `PRAGMA:TYPE`, because the checker keeps reading every other line. Use `PRAGMA:DISABLE:CHECK` only when those can't describe the problem. Use a decision when you won't change the function.
+>
+> **What you give up.** No line under `PRAGMA:DISABLE:CHECK` is checked, on this migration or any later one, so a column dropped from one of them passes. The checker believes a `TABLE` or `TYPE` line over the database, so one that no longer matches hides a break too. An accepted finding stays unfixed, and morm won't stop that migration for it again. After that, only a `proof` that runs that line can catch a real break, and a call proves only the path it takes.
+
+**R-1085** The README says this plainly, beside that notice. A call proves only the path it takes, so a passing `proof` says nothing about a branch it didn't reach, and a function can have several `proof` lines to cover the paths that matter. `plpgsql_check` reads every branch without running it, but it can only read what's in the source. A query built at run time with `EXECUTE` isn't checked, so a function using `EXECUTE` must have a `proof`. morm finds it with a word search, so the word in a comment or a string asks for a `proof` too. That `proof` proves only the query its one call builds, and any other query the body can build stays unproven until production runs it. A trigger function with no trigger on it has no table to check against, so its `proof` is all it gets. A length or precision limit on a variable isn't seen, so `varchar(3)` reading a longer `text` column, or `numeric(6,2)` reading a wider `numeric`, passes unless a `proof` reaches the limit. If you accept a decision because `plpgsql_check` isn't installed, your `proof` lines are all that's proven. Neither check shows that a body still means what it did, such as a `s::text = 'old'` comparison that stops matching.
 
 **R-1075** The README says this plainly, beside the online swap. During a cutover, a client that isn't morm can see one `XX000` `could not open relation with OID` when it calls a `BEGIN ATOMIC` function the cutover replaces, or one over a view it replaces. morm apps retry it themselves. Other clients should do the same, because calling again works.
 
