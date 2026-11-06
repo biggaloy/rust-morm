@@ -1,7 +1,7 @@
 # Step 56: Enums, domains and composite types in Rust
 
 - **Phase:** Runtime
-- **Depends on:** 13
+- **Depends on:** 13, 28
 - **Can run beside:** 10, 11, 12, 29
 - **Crates:** `morm`, `morm-macros`, `morm-core`
 - **PR approval:** CI and an independent review
