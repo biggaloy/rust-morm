@@ -4,7 +4,7 @@ Generated from the frozen plan. Each requirement and test obligation lives in ex
 
 Kinds: `code` needs a tagged test, `doc` is checked in the README step, `info` is context with nothing to build.
 
-Totals: 1060 requirements, 186 test obligations.
+Totals: 1061 requirements, 187 test obligations.
 
 ## Requirements
 
@@ -1047,9 +1047,9 @@ Totals: 1060 requirements, 186 test obligations.
 | R-1035 | code | 53 | 0 | - **A function or procedure with the enum in its signature** is dropped and created, becau… |
 | R-1036 | code | 53 | 0 | - **Always refused for a remove or reorder,** listing the object: the enum as a partition … |
 | R-1037 | code | 53 | 0 | - **Unmanaged dependents are refused,** whatever their kind, including a column in another… |
-| R-1038 | code | 59 | 0 | - **Code Postgres doesn't track.** Before a swap, a rename, a removal or a composite type … |
-| R-1039 | code | 59 | 0 | - **Refreshing managed functions.** Every managed plpgsql function that search finds, and … |
-| R-1040 | code | 59 | 0 | - **Unmanaged functions** that would go stale are a decision, repeated in preflight on the… |
+| R-1038 | code | 59 | 0 | - **Code Postgres doesn't track.** Before any op, or its inverse, that changes a column's … |
+| R-1039 | code | 59 | 0 | - **Refreshing managed functions.** Every managed plpgsql function R-1038 finds, which inc… |
+| R-1040 | code | 59 | 0 | - **Unmanaged functions** R-1038 finds are a decision, repeated in preflight on the live d… |
 | R-1041 | code | 54 | 0 | - **A managed domain over the enum gets a new type too.** Postgres has no command to chang… |
 | R-1042 | code | 54 | 0 | - **A managed composite type holding the enum** changes with `ALTER ATTRIBUTE` when no col… |
 | R-1043 | code | 54 | 0 | - **Order.** New types are created from the enum outward, and old types are dropped from t… |
@@ -1070,6 +1070,7 @@ Totals: 1060 requirements, 186 test obligations.
 | R-1058 | doc | 50 | 0 | \| `#[derive(TextEnum)]` \| A column holds one of a fixed set of values; prefer this to a … |
 | R-1059 | code | 57 | 0 | - **Changing a domain or composite type.** A changed domain `check` drops and adds the con… |
 | R-1060 | code | 37 | 0 | **Composite types with dependents.** Step 57 refuses a composite type change that needs a … |
+| R-1061 | code | 39 | 0 | **A view above an online column swap.** R-0566's swap carries a managed view above the col… |
 
 ## Test obligations
 
@@ -1261,3 +1262,4 @@ Totals: 1060 requirements, 186 test obligations.
 | T-0184 | suite | 59 | **Unmanaged functions:** a function that only names the type in its body stops `migrate` w… |
 | T-0185 | integration | 57 | **Domain and composite changes:** with rows, a changed domain `check` replaces the constra… |
 | T-0186 | integration | 37 | **Composite dependents:** on a composite no column uses, a middle attribute, a new order a… |
+| T-0187 | suite | 39 | **View above an online column swap:** on Postgres 15–18, with readers on the view and writ… |

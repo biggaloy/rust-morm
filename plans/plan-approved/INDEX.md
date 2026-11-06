@@ -74,7 +74,7 @@ The frozen plan was split word for word into requirements (`R-nnnn`) and test ob
 | 56 | [Enums, domains and composite types in Rust](steps/56-enum-types.md) | Runtime | 13, 28 | todo |
 | 57 | [Managed objects: enums, domains, composite types and sequences](steps/57-managed-types.md) | Migrations | 36 | todo |
 | 58 | [Managed enums: removing values and inverses](steps/58-enum-remove.md) | Migrations | 51 | todo |
-| 59 | [Managed enums: stale functions and standbys](steps/59-enum-stale.md) | Migrations | 53, 12 | todo |
+| 59 | [Managed enums: stale functions and standbys](steps/59-enum-stale.md) | Migrations | 53, 12, 39 | todo |
 
 Status is one of `todo`, `in progress`, `in review` or `done`. Only the coordinator changes it.
 
