@@ -43,3 +43,12 @@ Changed: R-0572, R-0593, R-0981, R-0983, R-1038, R-1040, R-1047, R-1049, R-1050,
 - **K. To confirm.** `--terminate-blockers` on `migrate` and `rollback` ends what `pg_blocking_pids` names. Defaults: 50 ms timeout, 250 ms pause, 600 attempts, about 3 minutes. With overlapping 200 ms transactions no attempt got in without the flag. The `BEGIN ATOMIC` error is retried on the same connection and replaces nothing.
 - **L. To flag to the owner.** The check blocked `ftp.postgresql.org`, and the agent built Postgres 15 and 16 from the GitHub mirror instead. Some loops ran from scripts after refusals asked for plain separate commands. Scratch holds 1.4 GB in that agent's worktree.
 - **Decisions still to add on `main`:** R-1072 to R-1075, T-0196, T-0197.
+
+## From the edit at `3dcaa78`, waiting on the owner
+
+- **M. Template route (R-1077).** A non-superuser can't `CREATE EXTENSION`, so a superuser makes a `morm_plpgsql_check` template once per scratch server, and morm clones it with `CREATEDB`. A non-superuser clone passed on 15 to 18.
+- **N. Length and precision limits.** `plpgsql_check` doesn't see them: `numeric(6,2)` reading `numeric(20,4)` gave no finding, and `varchar(3)` reading `text` looks harmless. Only a `proof` that reaches the limit catches one.
+- **O. A trigger function with no trigger** can't be checked, so its `proof` is all it gets.
+- **P. The narrowing test** uses `pg_cast`: the pair has a `castcontext` other than `i`.
+- **Q. Exit codes.** Decisions that default to refuse exit `2` until accepted, following R-1040 and T-0168, though R-0588 lists `3` for open decisions.
+- **R. Unproven.** In-comment `@plpgsql_check_options` may be able to hide an `error`, and it's a recording item in proof 18. T-0204 and T-0201 cover two more claims.
