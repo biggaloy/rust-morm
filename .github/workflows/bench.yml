@@ -38,11 +38,7 @@ jobs:
       - name: Fetch the last run's measurements
         env:
           GH_TOKEN: ${{ github.token }}
-        run: |
-          last=$(gh run list --workflow bench.yml --branch "$GITHUB_REF_NAME" --status success --limit 1 --json databaseId --jq '.[0].databaseId')
-          if [ -n "$last" ]; then
-            gh run download "$last" --name bench-results --dir previous
-          fi
+        run: bash .github/scripts/fetch_last_bench.sh
       - name: Compare with the last run
         shell: bash
         run: python3 .github/scripts/bench_compare.py bench-results/metrics.json previous/metrics.json | tee -a "$GITHUB_STEP_SUMMARY"

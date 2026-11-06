@@ -5,7 +5,8 @@
 
 BINARY is morm-admin, RSS_FILE holds GNU time's %M figure, and BENCH_OUTPUT is
 what `cargo bench` printed. It reads libtest and Criterion result lines, and
-fails on a result line it can't read, so a benchmark can't drop out unnoticed.
+fails on a result line it can't read. Criterion's percentage `time:` lines, under
+`change:`, compare with its own last run, so they're skipped.
 """
 import json
 import re
@@ -13,7 +14,8 @@ import sys
 from pathlib import Path
 
 LIBTEST = re.compile(r"^test (\S+)\s+\.\.\. bench:\s+([\d,.]+) ns/iter")
-CRITERION = re.compile(r"^\s*(\S*)\s*time:\s+\[[\d.]+ \S+ ([\d.]+) (\S+) [\d.]+ \S+\]")
+CRITERION = re.compile(r"^\s*(.*?)\s*time:\s+\[[\d.]+ \S+ ([\d.]+) (\S+) [\d.]+ \S+\]")
+CRITERION_CHANGE = re.compile(r"^\s*time:\s+\[\S+% ")
 RESULT_LINE = re.compile(r"\.\.\. bench:|\btime:\s+\[")
 NANOSECONDS = {"ps": 0.001, "ns": 1, "us": 1_000, "µs": 1_000, "ms": 1_000_000, "s": 1_000_000_000}
 
@@ -23,7 +25,9 @@ metrics = {
     "morm-admin peak RSS KiB": int(Path(rss_file).read_text()),
 }
 previous_line = ""
-for line in Path(bench_output).read_text().splitlines():
+for line in Path(bench_output).read_text(encoding="utf-8").splitlines():
+    if CRITERION_CHANGE.match(line):
+        continue
     if libtest := LIBTEST.match(line):
         name, value = libtest[1], float(libtest[2].replace(",", ""))
     elif criterion := CRITERION.match(line):
