@@ -7672,6 +7672,14 @@
 "line": 0,
 "text": "- `morm::pg_outbox!()` declares the outbox table as a managed table, tracked by migrations.",
 "block": "- **R-0959** `morm::pg_outbox!()` declares the outbox table as a managed table, tracked by migrations."
+},
+{
+"id": "R-0960",
+"kind": "code",
+"step": "recovery",
+"line": 0,
+"text": "- **`full-chain` job.** This step sets what `nightly.yml`'s `full-chain` job runs and changes the job to run it: all up, all down, all up, across the migrations this step can run, on Postgres 15\u201318. Until now the job ran the same command as CI's migration suite, so the result must go beyond that suite: a job that runs only what that suite runs doesn't satisfy this. Step 49 widens it to the whole chain later. Tag the test the job runs and the job itself, update the line in `tests/tests/repo_policy.rs` that pins the old command, and link the job's log from a `workflow_dispatch` run in the PR.",
+"block": "- **R-0960** **`full-chain` job.** This step sets what `nightly.yml`'s `full-chain` job runs and changes the job to run it: all up, all down, all up, across the migrations this step can run, on Postgres 15\u201318. Until now the job ran the same command as CI's migration suite, so the result must go beyond that suite: a job that runs only what that suite runs doesn't satisfy this. Step 49 widens it to the whole chain later. Tag the test the job runs and the job itself, update the line in `tests/tests/repo_policy.rs` that pins the old command, and link the job's log from a `workflow_dispatch` run in the PR."
 }
 ],
 "tests": [
@@ -8647,6 +8655,13 @@
 "kind": "suite",
 "line": 0,
 "text": "**Fuzzing runs in CI:** `nightly.yml`'s `fuzz` job runs the T-0128 targets, and the PR links that job's log from a `workflow_dispatch` run showing `cargo fuzz run` on the step parser and on `meta.json`. A run with no targets doesn't count. The job exits 0 when `fuzz/` is missing, and its loop passes when `cargo fuzz list` is empty, so remove that exit and make an empty list fail."
+},
+{
+"id": "T-0140",
+"step": "hardening",
+"kind": "suite",
+"line": 0,
+"text": "**Full chain covers the whole chain:** the migrations in `nightly.yml`'s `full-chain` job grow to cover tables and every managed object kind: functions, procedures, triggers, policies, grants, views, materialized views, enums, domains, composite types and sequences. Step 34 set this job up before managed objects existed, so a T-0127 run that covers only what step 34 could run doesn't count. The PR lists each kind the run covered."
 }
 ],
 "frame": {

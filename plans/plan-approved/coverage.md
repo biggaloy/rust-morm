@@ -4,7 +4,7 @@ Generated from the frozen plan. Each requirement and test obligation lives in ex
 
 Kinds: `code` needs a tagged test, `doc` is checked in the README step, `info` is context with nothing to build.
 
-Totals: 959 requirements, 139 test obligations.
+Totals: 960 requirements, 140 test obligations.
 
 ## Requirements
 
@@ -969,6 +969,7 @@ Totals: 959 requirements, 139 test obligations.
 | R-0957 | code | 01 | 0 | - **Workflows in a public repo.** Every workflow sets `permissions: contents: read` and ra… |
 | R-0958 | code | 01 | 0 | - **Repo files for a public project.** `SECURITY.md` says how to report a vulnerability pr… |
 | R-0959 | code | 42 | 0 | - `morm::pg_outbox!()` declares the outbox table as a managed table, tracked by migrations… |
+| R-0960 | code | 34 | 0 | - **`full-chain` job.** This step sets what `nightly.yml`'s `full-chain` job runs and chan… |
 
 ## Test obligations
 
@@ -1113,3 +1114,4 @@ Totals: 959 requirements, 139 test obligations.
 | T-0137 | suite | 49 | **Property tests run in CI:** `nightly.yml`'s `property` job runs the T-0114 and T-0118 te… |
 | T-0138 | suite | 49 | **Full chain runs in CI:** `nightly.yml`'s `full-chain` job runs the T-0127 test on Postgr… |
 | T-0139 | suite | 49 | **Fuzzing runs in CI:** `nightly.yml`'s `fuzz` job runs the T-0128 targets, and the PR lin… |
+| T-0140 | suite | 49 | **Full chain covers the whole chain:** the migrations in `nightly.yml`'s `full-chain` job … |
