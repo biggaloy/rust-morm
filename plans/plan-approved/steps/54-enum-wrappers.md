@@ -24,7 +24,7 @@ On Postgres 15–18, a swap with a map on an enum under a domain, a composite ty
 
 Owned elsewhere, and quoted so this step needs no other file. Nothing here needs a test in this step.
 
-> Step 51 swaps the enum, keeps old values and copies the owner, comment and grants. Step 53 walks dependents and refuses anything unmanaged, including every unmanaged domain or composite type.
+> Step 51 swaps the enum and copies the owner, comment and grants, and step 58 keeps old values. Step 53 walks dependents and refuses anything unmanaged, including every unmanaged domain or composite type.
 >
 > On a composite type no column uses, `ALTER TYPE ... ALTER ATTRIBUTE ... TYPE` works. If a column uses it, Postgres refuses, and `CASCADE` doesn't help.
 >

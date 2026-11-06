@@ -2,8 +2,8 @@
 
 - **Phase:** Migrations
 - **Depends on:** 38
-- **Can run beside:** 08, 09, 12, 19, 20, 21, 22, 23, 24, 25, 26, 27, 42, 43, 44, 45, 46, 47, 48
-- **Crates:** `morm-migrate`, `morm-core`
+- **Can run beside:** 08, 09, 19, 20, 21, 22, 23, 24, 25, 26, 27, 42, 43, 44, 45, 46, 47, 48
+- **Crates:** `morm-migrate`, `morm-core`, `.github`
 - **PR approval:** CI and an independent review
 
 Read `../rules.md`, `../contracts.md` and, once it exists, `../proofs.md` first. Everything needed for this step is in those files and this one.
@@ -14,17 +14,17 @@ Change a managed enum's values with exact inverses, including the changes Postgr
 
 ## Deliverables
 
-- The enum value diff, `ADD VALUE` ops, the type swap in one transaction, removed-value decisions, `down_map`, inverses, owner, grant and comment copies, `ANALYZE`, `max_rewrite_mb`, `lint` findings and with-data proof rows
+- The enum value diff, `ADD VALUE` ops, the reorder decision and its inverse, the type swap in one transaction, owner, grant and comment copies, `ANALYZE`, `max_rewrite_mb`, `lint` findings, and the `ci.yml` job for logical replication
 
 ## End-to-end check
 
-On Postgres 15–18, a managed enum on a populated table goes through an add, a remove with a map, a reorder and all the way back with `rollback`, with the exact labels and rows at each point, and with the process killed at every step boundary.
+On Postgres 15–18, a managed enum on a populated table goes through an add and a reorder, and the reorder goes back with `rollback`, with the exact labels and rows at each point, and with the process killed at every step boundary.
 
 ## Context from other steps
 
 Owned elsewhere, and quoted so this step needs no other file. Nothing here needs a test in this step.
 
-> Step 36 creates and drops enums, renames values, and refuses every other value change with exit code `2`. This step replaces that refusal.
+> Step 57 creates and drops enums, renames values, and refuses every other value change with exit code `2`. This step replaces that refusal for adds and reorders.
 >
 > Step 30 lets an op end its step. Steps 31, 32 and 33 let an op add `lint` findings, decisions, proof rows, `op_data` and preflight checks.
 >
@@ -32,9 +32,13 @@ Owned elsewhere, and quoted so this step needs no other file. Nothing here needs
 >
 > Retired columns are named `_morm_retired_<migration>_<col>`.
 >
+> Update the earlier tests this changes.
+>
 
 ## Out of scope
 
+- Removing values and maps (step 58). Until it exists, the diff still refuses a removal with exit code `2`, so this step's swap only reorders. Step 58 adds step 3 of the swap, the map in its step 5, and the per-element map on arrays
+- The inverse of an add (step 58). Until it exists, rolling back an add is refused with exit code `2`
 - Dependents that Postgres won't rebuild by itself, and refusals (step 53)
 - Domains and composite types built on the enum (step 54)
 - The online form (step 52). Until it exists, every swap uses the one-transaction form this step builds
@@ -67,25 +71,15 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 
 - **R-1014** **What the old type carried.** `COMMENT`, the owner and grants belong to the type's OID, so a plain swap loses them. A `DO` block in the swap reads them from the catalog and applies them to the new type, including `WITH GRANT OPTION`, so the step's SQL stays fixed and live values are kept.
 
-- **R-1015** **Rows holding a removed value.** `makemigrations` can't see live data, so removing a value is a decision, and `migrate` enforces its answer. The options are `refuse`, the default answer, which stops with exit code `2` and row counts per table while any row holds the value; `map` to another label, keeping the old values; and `map` with `drop now`, which keeps nothing.
-
-- **R-1016** **Keeping old values.** A `map` that keeps old values adds a `text` column named as a retired column, filled only for rows it changes, and step 38's retired state tracks it until `purge`.
-
 - **R-1017** **Reordering is a decision.** Sorting variants alphabetically must not quietly rewrite production tables. The evidence names the tables that would be rewritten, and with no answer `makemigrations` exits with code `3`.
 
 ### Migrations / Managed enums / Inverses
 
 | ID | Op | Data effect | Inverse |
 |---|---|---|---|
-| R-1018 | Add | `none` | Remove by swap. It refuses while rows hold the value, unless a `down_map` is decided |
 | R-1019 | Reorder | `none` | Reorder back by swap |
-| R-1020 | Remove, no rows | `none` | `ADD VALUE` at the old position |
-| R-1021 | Remove, map, keep old values | `retires` | `ADD VALUE`, then in a later step restore the rows below |
-| R-1022 | Remove, map, `drop now` | `lossy` | `ADD VALUE`. The label returns and the rows don't |
 
 ### Migrations / Managed enums / After the swap
-
-- **R-1023** **Restoring rows.** Down restores an old value only where the row still holds the value it was mapped to. A row the app changed since `up`, or a row inserted since, keeps what it has. `purge` makes that down irreversible.
 
 - **R-1024** **Crash recovery.** The swap is all or nothing, so a killed run leaves the old type, and `--resume` reruns it. `ADD VALUE` has a precondition that the label is absent. `ANALYZE` can always rerun.
 
@@ -93,18 +87,14 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 
 - **R-1026** **`lint`** reports every swap, with the tables it rewrites, an add on an enum that's a list partition key with no default partition, because a row with the new value then has nowhere to go, and any table in a publication, because the subscriber must migrate first.
 
-- **R-1027** **With-data proof.** Enum columns get a row per label. A map also puts rows on the removed label, and `refuse` keeps rows off it. A column kept by a retired copy must match its checksum after up and down, and with `drop now` it's left out.
-
 - **R-1028** **morm never edits `pg_enum`.** It needs superuser, and it would leave indexes referring to values that no longer exist, or in the wrong order.
 
 ## Test obligations
 
 | ID | Type | Obligation |
 |---|---|---|
-| T-0159 | suite | **Enum ops:** every op in the inverse table, with and without data, up, down and up, on Postgres 15–18, ending on the exact labels, order and rows, with no drift. |
-| T-0160 | suite | **Removed values:** `refuse` stops with row counts and changes nothing, `map` keeps old values and restores them on down, a row changed or inserted after `up` keeps its value, `drop now` reports `lossy`, a column array maps per element, and a row written between preflight and the swap fails the cast and rolls back. |
 | T-0161 | suite | **Decisions:** a reorder with no answer exits with code `3`, a remove and add with no `was` exits with code `3`, and an add in one migration with a use of the new value puts that use in a later step. |
 | T-0162 | suite | **Fault injection:** kill the process at every step boundary and during a table rewrite. `--resume` and `rollback` both reach the right state, and a kill during the rewrite leaves the old type, its name, the dropped default and the table untouched. These tests run in CI's `Migration suite` step, and the PR links that step's log. |
-| T-0163 | integration | **Proof, a non-superuser swap on Postgres 15–18:** add, remove and reorder as a role that owns the type and its tables but isn't superuser, and again with the type owned by another role it's a member of. The owner, comment and every grant, including `WITH GRANT OPTION`, survive, and a role lacking a privilege is refused by preflight. This was tested only as a superuser. If a result contradicts this design, stop and ask the owner with the evidence and options. |
-| T-0164 | integration | **Proof, logical replication on Postgres 15–18:** with a subscription on the same server, run an add and a swap in both orders of primary and subscriber. Record what breaks, and confirm that migrating the subscriber first works, as the `lint` finding says. If a result contradicts this design, stop and ask the owner with the evidence and options. |
+| T-0163 | integration | **Proof, a non-superuser swap on Postgres 15–18:** add and reorder as a role that owns the type and its tables but isn't superuser, and again with the type owned by another role it's a member of. The owner, comment and every grant, including `WITH GRANT OPTION`, survive, and a role lacking a privilege is refused by preflight. This was tested only as a superuser. If a result contradicts this design, stop and ask the owner with the evidence and options. |
+| T-0164 | integration | **Proof, logical replication on Postgres 15–18:** with a subscription on the same server, run an add and a swap in both orders of primary and subscriber. Record what breaks, and confirm that migrating the subscriber first works, as the `lint` finding says. If a result contradicts this design, stop and ask the owner with the evidence and options. Add a `ci.yml` job for this on Postgres 15–18 that starts Postgres with `wal_level=logical`. The test has its own Cargo feature with `required-features`, as `pooler` does. |
 | T-0165 | integration | **`max_rewrite_mb`:** a swap over the limit is refused with exit code `2` naming the table, and raising the setting lets it run. |

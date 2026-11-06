@@ -1492,7 +1492,7 @@
 {
 "id": "R-0187",
 "kind": "code",
-"step": "types",
+"step": "enum-types",
 "line": 417,
 "text": "`#[derive(TextEnum)]` maps a Rust enum to `text` with a CHECK constraint, the recommended form, because adding or removing a value is an ordinary migration.",
 "block": "**R-0187** `#[derive(TextEnum)]` maps a Rust enum to `text` with a CHECK constraint, the recommended form, because adding or removing a value is an ordinary migration."
@@ -1500,7 +1500,7 @@
 {
 "id": "R-0188",
 "kind": "code",
-"step": "types",
+"step": "enum-types",
 "line": 417,
 "text": "`#[derive(PgEnum)]` maps to a Postgres enum, and on its own it only binds to a type that already exists. `#[pg_enum(name = \"...\")]` turns on full management, in step 35: adding, renaming, removing and reordering values. `TextEnum` stays the preferred form, because removing or reordering a Postgres enum value means replacing the whole type.",
 "block": "**R-0188** `#[derive(PgEnum)]` maps to a Postgres enum, and on its own it only binds to a type that already exists. `#[pg_enum(name = \"...\")]` turns on full management, in step 35: adding, renaming, removing and reordering values. `TextEnum` stays the preferred form, because removing or reordering a Postgres enum value means replacing the whole type."
@@ -1508,7 +1508,7 @@
 {
 "id": "R-0189",
 "kind": "code",
-"step": "types",
+"step": "enum-types",
 "line": 417,
 "text": "Domains and composite types are also supported.",
 "block": "**R-0189** Domains and composite types are also supported."
@@ -3462,8 +3462,8 @@
 "kind": "code",
 "step": "statements",
 "line": 935,
-"text": "- **`$n` in a fragment is local.** `comp`, `set_expr` and `.q()` fragments each count from `$1`, and morm renumbers them. The scan skips quoted strings and comments, so `'$1'` stays text.",
-"block": "- **R-0433** **`$n` in a fragment is local.** `comp`, `set_expr` and `.q()` fragments each count from `$1`, and morm renumbers them. The scan skips quoted strings and comments, so `'$1'` stays text."
+"text": "- **`$n` in a fragment is local.** `comp`, `set_expr` and `.q()` fragments each count from `$1`, and morm renumbers them. The scan skips quoted strings and comments, so `'$1'` stays text. The scanner lives in `morm-core`.",
+"block": "- **R-0433** **`$n` in a fragment is local.** `comp`, `set_expr` and `.q()` fragments each count from `$1`, and morm renumbers them. The scan skips quoted strings and comments, so `'$1'` stays text. The scanner lives in `morm-core`."
 },
 {
 "id": "R-0434",
@@ -4742,8 +4742,8 @@
 "kind": "code",
 "step": "proof-files",
 "line": 1268,
-"text": "4. **With data:** synthetic rows per column type (NULLs, boundaries, empties) go in first, and preserved-column checksums must match after up → down. Rows are also inserted and updated after `up`, so a broken trigger fails here and not in production. Rows come from a table keyed by column type, so a later step can add a type, and an op can say which values must or must not appear.",
-"block": "- **R-0593** **With data:** synthetic rows per column type (NULLs, boundaries, empties) go in first, and preserved-column checksums must match after up → down. Rows are also inserted and updated after `up`, so a broken trigger fails here and not in production. Rows come from a table keyed by column type, so a later step can add a type, and an op can say which values must or must not appear."
+"text": "4. **With data:** synthetic rows per column type (NULLs, boundaries, empties) go in first, and preserved-column checksums must match after up → down. Rows are also inserted and updated after `up`, so a broken trigger fails here and not in production. Rows come from a table keyed by column type, so a later step can add a type, and an op can say which values must or must not appear. A `TextEnum` column's rows use its labels.",
+"block": "- **R-0593** **With data:** synthetic rows per column type (NULLs, boundaries, empties) go in first, and preserved-column checksums must match after up → down. Rows are also inserted and updated after `up`, so a broken trigger fails here and not in production. Rows come from a table keyed by column type, so a later step can add a type, and an op can say which values must or must not appear. A `TextEnum` column's rows use its labels."
 },
 {
 "id": "R-0594",
@@ -5926,8 +5926,8 @@
 "kind": "code",
 "step": "telemetry",
 "line": 1555,
-"text": "- morm adds `db.morm.*` metrics for deadlocks, retries, lock timeouts and `shape_cache` churn.",
-"block": "- **R-0741** morm adds `db.morm.*` metrics for deadlocks, retries, lock timeouts and `shape_cache` churn."
+"text": "- morm adds `db.morm.*` metrics for deadlocks, retries, lock timeouts, `shape_cache` churn and connections replaced for a stale generation.",
+"block": "- **R-0741** morm adds `db.morm.*` metrics for deadlocks, retries, lock timeouts, `shape_cache` churn and connections replaced for a stale generation."
 },
 {
 "id": "R-0742",
@@ -6110,8 +6110,8 @@
 "kind": "code",
 "step": "statements",
 "line": 1589,
-"text": "| A stale cached statement after a migration or an enum swap | Re-prepared or replaced automatically outside a transaction, and `Error::SchemaChanged` inside one |",
-"block": "| R-0764 | A stale cached statement after a migration or an enum swap | Re-prepared or replaced automatically outside a transaction, and `Error::SchemaChanged` inside one |"
+"text": "| A stale cached statement after a migration or an enum swap | Re-prepared or replaced automatically outside a transaction. Inside one, step 20 returns `Error::SchemaChanged`. |",
+"block": "| R-0764 | A stale cached statement after a migration or an enum swap | Re-prepared or replaced automatically outside a transaction. Inside one, step 20 returns `Error::SchemaChanged`. |"
 },
 {
 "id": "R-0765",
@@ -7684,10 +7684,10 @@
 {
 "id": "R-0961",
 "kind": "code",
-"step": "types",
+"step": "enum-types",
 "line": 0,
-"text": "- **Domains and composite types in Rust.** `#[derive(PgDomain)]` goes on a one-field struct, such as `pub struct Email(pub String);`, and `#[derive(PgComposite)]` on a struct with named fields, one field per attribute, in order. Each gives encoding, decoding and `morm::Param`, and a model column uses the Rust type directly, as it does a `PgEnum`. On its own, `PgDomain`, `PgComposite` or `PgEnum` only binds to a type that already exists: morm doesn't create or change that type. Step 35 adds the attributes that make morm manage one.",
-"block": "- **R-0961** **Domains and composite types in Rust.** `#[derive(PgDomain)]` goes on a one-field struct, such as `pub struct Email(pub String);`, and `#[derive(PgComposite)]` on a struct with named fields, one field per attribute, in order. Each gives encoding, decoding and `morm::Param`, and a model column uses the Rust type directly, as it does a `PgEnum`. On its own, `PgDomain`, `PgComposite` or `PgEnum` only binds to a type that already exists: morm doesn't create or change that type. Step 35 adds the attributes that make morm manage one."
+"text": "- **Domains and composite types in Rust.** `#[derive(PgDomain)]` goes on a one-field struct, such as `pub struct Email(pub String);`, and `#[derive(PgComposite)]` on a struct with named fields, one field per attribute, in order. Each gives encoding, decoding and `morm::Param`, and a model column uses the Rust type directly, as it does a `PgEnum`. `pg_type` returns `Type::UNKNOWN`, and composite parameters use text format. On its own, `PgDomain`, `PgComposite` or `PgEnum` only binds to a type that already exists: morm doesn't create or change that type. Step 35 adds the attributes that make morm manage one.",
+"block": "- **R-0961** **Domains and composite types in Rust.** `#[derive(PgDomain)]` goes on a one-field struct, such as `pub struct Email(pub String);`, and `#[derive(PgComposite)]` on a struct with named fields, one field per attribute, in order. Each gives encoding, decoding and `morm::Param`, and a model column uses the Rust type directly, as it does a `PgEnum`. `pg_type` returns `Type::UNKNOWN`, and composite parameters use text format. On its own, `PgDomain`, `PgComposite` or `PgEnum` only binds to a type that already exists: morm doesn't create or change that type. Step 35 adds the attributes that make morm manage one."
 },
 {
 "id": "R-0962",
@@ -7710,8 +7710,8 @@
 "kind": "code",
 "step": "managed-decl",
 "line": 0,
-"text": "- The Rust item gives the type's shape, so nothing is written twice: a domain's base type comes from its field, a composite's attributes from its fields in order, and an enum's values from its variants in order. Fields use normal type inference, and `#[col(sql = \"...\")]` overrides it. These three attributes take no `file`, because a `.sql` file would restate the base type, fields or values.",
-"block": "- **R-0964** The Rust item gives the type's shape, so nothing is written twice: a domain's base type comes from its field, a composite's attributes from its fields in order, and an enum's values from its variants in order. Fields use normal type inference, and `#[col(sql = \"...\")]` overrides it. These three attributes take no `file`, because a `.sql` file would restate the base type, fields or values."
+"text": "- The Rust item gives the type's shape, so nothing is written twice: a domain's base type comes from its field, a composite's attributes from its fields in order, and an enum's values from its variants in order, except an `unknown` variant. Fields use normal type inference, and `#[col(sql = \"...\")]` overrides it. These three attributes take no `file`, because a `.sql` file would restate the base type, fields or values.",
+"block": "- **R-0964** The Rust item gives the type's shape, so nothing is written twice: a domain's base type comes from its field, a composite's attributes from its fields in order, and an enum's values from its variants in order, except an `unknown` variant. Fields use normal type inference, and `#[col(sql = \"...\")]` overrides it. These three attributes take no `file`, because a `.sql` file would restate the base type, fields or values."
 },
 {
 "id": "R-0965",
@@ -7724,7 +7724,7 @@
 {
 "id": "R-0966",
 "kind": "code",
-"step": "managed-ops",
+"step": "managed-types",
 "line": 0,
 "text": "- **Sequences:** a sequence's catalog comparison uses its definition only (type, start, increment, minimum, maximum, cache and cycle) and never `last_value`, so a sequence in use shows no drift. A sequence that belongs to an identity column stays out of this kind, because it comes with its column.",
 "block": "- **R-0966** **Sequences:** a sequence's catalog comparison uses its definition only (type, start, increment, minimum, maximum, cache and cycle) and never `last_value`, so a sequence in use shows no drift. A sequence that belongs to an identity column stays out of this kind, because it comes with its column."
@@ -7732,7 +7732,7 @@
 {
 "id": "R-0967",
 "kind": "code",
-"step": "managed-ops",
+"step": "managed-types",
 "line": 0,
 "text": "- Dropping a sequence loses its position, because the inverse recreates it from its definition. That op's data effect is `lossy`, and its description says the position is lost.",
 "block": "- **R-0967** Dropping a sequence loses its position, because the inverse recreates it from its definition. That op's data effect is `lossy`, and its description says the position is lost."
@@ -7804,7 +7804,7 @@
 {
 "id": "R-0976",
 "kind": "code",
-"step": "types",
+"step": "enum-types",
 "line": 0,
 "text": "- **Type names.** A bare `#[derive(PgEnum)]`, `#[derive(PgDomain)]` or `#[derive(PgComposite)]` binds to the snake_case of the Rust name, so `OrderState` binds to `order_state`. `#[pg_type(name = \"...\")]` overrides that name, and it doesn't turn on management.",
 "block": "- **R-0976** **Type names.** A bare `#[derive(PgEnum)]`, `#[derive(PgDomain)]` or `#[derive(PgComposite)]` binds to the snake_case of the Rust name, so `OrderState` binds to `order_state`. `#[pg_type(name = \"...\")]` overrides that name, and it doesn't turn on management."
@@ -7812,7 +7812,7 @@
 {
 "id": "R-0977",
 "kind": "code",
-"step": "types",
+"step": "enum-types",
 "line": 0,
 "text": "- **Labels.** A variant's Postgres label is the snake_case of its name, so `AwaitingPayment` is `awaiting_payment`. `#[pg_enum(value = \"...\")]` on the variant overrides it. Attributes on a variant never turn on management: only `#[pg_enum(name = \"...\")]` on the type does.",
 "block": "- **R-0977** **Labels.** A variant's Postgres label is the snake_case of its name, so `AwaitingPayment` is `awaiting_payment`. `#[pg_enum(value = \"...\")]` on the variant overrides it. Attributes on a variant never turn on management: only `#[pg_enum(name = \"...\")]` on the type does."
@@ -7820,7 +7820,7 @@
 {
 "id": "R-0978",
 "kind": "code",
-"step": "types",
+"step": "enum-types",
 "line": 0,
 "text": "- **Enum binding needs no OID.** morm writes `ToSql` and `FromSql` for `PgEnum` itself and doesn't use `postgres-derive`, whose exact variant check fails on every connection opened after a value is added. `accepts` compares no variants. `Param::pg_type` returns `Type::UNKNOWN`, so Postgres infers the type and a query never carries an OID that a swap could make stale. Array parameters use text format, because a binary array carries its element's OID. Labels are matched as bytes at compile time, with no heap use.",
 "block": "- **R-0978** **Enum binding needs no OID.** morm writes `ToSql` and `FromSql` for `PgEnum` itself and doesn't use `postgres-derive`, whose exact variant check fails on every connection opened after a value is added. `accepts` compares no variants. `Param::pg_type` returns `Type::UNKNOWN`, so Postgres infers the type and a query never carries an OID that a swap could make stale. Array parameters use text format, because a binary array carries its element's OID. Labels are matched as bytes at compile time, with no heap use."
@@ -7828,26 +7828,26 @@
 {
 "id": "R-0979",
 "kind": "code",
-"step": "types",
+"step": "enum-types",
 "line": 0,
-"text": "- **A label the binary doesn't know** returns `Error::UnknownEnumValue`, with the type and the label, for rows holding it and no others. `#[pg_enum(unknown)]` on one unit variant decodes any such label to that variant instead, and writing that variant returns `Error::Validation`.",
-"block": "- **R-0979** **A label the binary doesn't know** returns `Error::UnknownEnumValue`, with the type and the label, for rows holding it and no others. `#[pg_enum(unknown)]` on one unit variant decodes any such label to that variant instead, and writing that variant returns `Error::Validation`."
+"text": "- **A label the binary doesn't know** returns `Error::UnknownEnumValue`, with the type and the label, for rows holding it and no others. `#[pg_enum(unknown)]` on one unit variant decodes any such label to that variant instead, and writing that variant returns `Error::Validation`. This variant has no label: it isn't in the CHECK list, the managed type or `check_schema`, and it can't take `value`, `was` or `deprecated`.",
+"block": "- **R-0979** **A label the binary doesn't know** returns `Error::UnknownEnumValue`, with the type and the label, for rows holding it and no others. `#[pg_enum(unknown)]` on one unit variant decodes any such label to that variant instead, and writing that variant returns `Error::Validation`. This variant has no label: it isn't in the CHECK list, the managed type or `check_schema`, and it can't take `value`, `was` or `deprecated`."
 },
 {
 "id": "R-0980",
 "kind": "code",
-"step": "types",
+"step": "enum-types",
 "line": 0,
-"text": "- **Renamed labels.** `#[pg_enum(was = \"old\")]` on a variant decodes both labels to it and writes the current one, so a new binary reads rows from either side of a rename.",
-"block": "- **R-0980** **Renamed labels.** `#[pg_enum(was = \"old\")]` on a variant decodes both labels to it and writes the current one, so a new binary reads rows from either side of a rename."
+"text": "- **Renamed labels.** `#[pg_enum(was = \"old\")]` on a variant decodes both labels to it and writes the current one, so a new binary reads rows from either side of a rename. A current label beats any `was`.",
+"block": "- **R-0980** **Renamed labels.** `#[pg_enum(was = \"old\")]` on a variant decodes both labels to it and writes the current one, so a new binary reads rows from either side of a rename. A current label beats any `was`."
 },
 {
 "id": "R-0981",
 "kind": "code",
 "step": "statements",
 "line": 0,
-"text": "- **Stale server state.** `XX000` with the message `cache lookup failed for type`, from any statement, means the session holds a dropped type, such as in a compiled plpgsql function. Evicting a statement can't clear that, so morm discards the connection, retries once on another outside a transaction, and raises the pool's connection generation.",
-"block": "- **R-0981** **Stale server state.** `XX000` with the message `cache lookup failed for type`, from any statement, means the session holds a dropped type, such as in a compiled plpgsql function. Evicting a statement can't clear that, so morm discards the connection, retries once on another outside a transaction, and raises the pool's connection generation."
+"text": "- **Stale server state.** `XX000` with the message `cache lookup failed for type`, from any statement, means the session holds a dropped type, such as in a compiled plpgsql function. Evicting a statement can't clear that, so morm discards the connection, retries once on another outside a transaction, and raises the pool's connection generation. On a `db.hold()` connection nothing moves: morm returns `Error::SchemaChanged`, and the connection is replaced on release.",
+"block": "- **R-0981** **Stale server state.** `XX000` with the message `cache lookup failed for type`, from any statement, means the session holds a dropped type, such as in a compiled plpgsql function. Evicting a statement can't clear that, so morm discards the connection, retries once on another outside a transaction, and raises the pool's connection generation. On a `db.hold()` connection nothing moves: morm returns `Error::SchemaChanged`, and the connection is replaced on release."
 },
 {
 "id": "R-0982",
@@ -7862,8 +7862,8 @@
 "kind": "code",
 "step": "statements",
 "line": 0,
-"text": "- **Retrying is safe.** Postgres rolls back a failed statement outside a transaction, so a retry can't apply a write twice. A statement that isn't in a cache is never retried this way, and a retry that fails again returns its error.",
-"block": "- **R-0983** **Retrying is safe.** Postgres rolls back a failed statement outside a transaction, so a retry can't apply a write twice. A statement that isn't in a cache is never retried this way, and a retry that fails again returns its error."
+"text": "- **Retrying is safe.** Postgres rolls back a failed statement outside a transaction, so a retry can't apply a write twice. A `42883` or `42804` from a statement that isn't in a cache is never retried, `XX000` with that message is retried from any statement, nothing is retried once a row has reached the caller, and a retry that fails again returns its error.",
+"block": "- **R-0983** **Retrying is safe.** Postgres rolls back a failed statement outside a transaction, so a retry can't apply a write twice. A `42883` or `42804` from a statement that isn't in a cache is never retried, `XX000` with that message is retried from any statement, nothing is retried once a row has reached the caller, and a retry that fails again returns its error."
 },
 {
 "id": "R-0984",
@@ -7918,13 +7918,13 @@
 "kind": "code",
 "step": "managed-decl",
 "line": 0,
-"text": "**Enum changes are declared on the variants.** `was` names a label this variant used to have, and `value` sets its label when snake_case isn't it:\n\n```rust\n#[derive(PgEnum)]\n#[pg_enum(name = \"order_state\")]\npub enum OrderState {\n    Pending,\n    #[pg_enum(was = \"paid_up\")] Paid,\n    #[pg_enum(value = \"in-transit\")] Shipping,\n}\n```\n\nThe manifest carries the labels in variant order, with each `was`.",
-"block": "**R-0990** **Enum changes are declared on the variants.** `was` names a label this variant used to have, and `value` sets its label when snake_case isn't it:\n\n```rust\n#[derive(PgEnum)]\n#[pg_enum(name = \"order_state\")]\npub enum OrderState {\n    Pending,\n    #[pg_enum(was = \"paid_up\")] Paid,\n    #[pg_enum(value = \"in-transit\")] Shipping,\n}\n```\n\nThe manifest carries the labels in variant order, with each `was`."
+"text": "**Enum changes are declared on the variants.** `was` names a label this variant used to have, and `value` sets its label when snake_case isn't it:\n\n```rust\n#[derive(PgEnum)]\n#[pg_enum(name = \"order_state\")]\npub enum OrderState {\n    Pending,\n    #[pg_enum(was = \"paid_up\")] Paid,\n    #[pg_enum(value = \"in-transit\")] Shipping,\n}\n```\n\nThe manifest carries the labels in variant order, with each `was` and, from step 41, each `deprecated`.",
+"block": "**R-0990** **Enum changes are declared on the variants.** `was` names a label this variant used to have, and `value` sets its label when snake_case isn't it:\n\n```rust\n#[derive(PgEnum)]\n#[pg_enum(name = \"order_state\")]\npub enum OrderState {\n    Pending,\n    #[pg_enum(was = \"paid_up\")] Paid,\n    #[pg_enum(value = \"in-transit\")] Shipping,\n}\n```\n\nThe manifest carries the labels in variant order, with each `was` and, from step 41, each `deprecated`."
 },
 {
 "id": "R-0991",
 "kind": "code",
-"step": "managed-ops",
+"step": "managed-types",
 "line": 0,
 "text": "- **Enums in this step** are created with their labels in variant order, dropped, and have values renamed. `ALTER TYPE ... RENAME VALUE` is instant, takes no table lock, and its inverse renames back, with data effect `none`. Renames run before any other change to the type, so a new value can reuse an old label. Exchanging two labels goes through a temporary label in one transaction.",
 "block": "- **R-0991** **Enums in this step** are created with their labels in variant order, dropped, and have values renamed. `ALTER TYPE ... RENAME VALUE` is instant, takes no table lock, and its inverse renames back, with data effect `none`. Renames run before any other change to the type, so a new value can reuse an old label. Exchanging two labels goes through a temporary label in one transaction."
@@ -7932,7 +7932,7 @@
 {
 "id": "R-0992",
 "kind": "code",
-"step": "managed-ops",
+"step": "managed-types",
 "line": 0,
 "text": "- **Rename or not.** A label that's gone and a label that's new on the same type are a rename decision, unless `was` answers it. It's never guessed. Rust variants alone can't show which it was.",
 "block": "- **R-0992** **Rename or not.** A label that's gone and a label that's new on the same type are a rename decision, unless `was` answers it. It's never guessed. Rust variants alone can't show which it was."
@@ -7940,18 +7940,18 @@
 {
 "id": "R-0993",
 "kind": "code",
-"step": "managed-ops",
+"step": "managed-types",
 "line": 0,
-"text": "- Any other change to an enum's values is refused by the diff with exit code `2`. Step 51 replaces this refusal.",
-"block": "- **R-0993** Any other change to an enum's values is refused by the diff with exit code `2`. Step 51 replaces this refusal."
+"text": "- Any other change to an enum's values is refused by the diff with exit code `2`. Step 51 replaces this refusal for adds and reorders, and step 58 for removals.",
+"block": "- **R-0993** Any other change to an enum's values is refused by the diff with exit code `2`. Step 51 replaces this refusal for adds and reorders, and step 58 for removals."
 },
 {
 "id": "R-0994",
 "kind": "code",
 "step": "managed-deps",
 "line": 0,
-"text": "- **Refreshing functions.** A session keeps its compiled copy of a plpgsql function, and when a type is replaced under it, that copy fails on every call. Nothing in the catalog shows this, and `DISCARD PLANS` doesn't clear it. The planner can re-run a managed function's `CREATE OR REPLACE` with its definition unchanged, in the same transaction, which makes every session recompile it. Step 53 decides which functions need it.",
-"block": "- **R-0994** **Refreshing functions.** A session keeps its compiled copy of a plpgsql function, and when a type is replaced under it, that copy fails on every call. Nothing in the catalog shows this, and `DISCARD PLANS` doesn't clear it. The planner can re-run a managed function's `CREATE OR REPLACE` with its definition unchanged, in the same transaction, which makes every session recompile it. Step 53 decides which functions need it."
+"text": "- **Refreshing functions.** A session keeps its compiled copy of a plpgsql function, and when a type is replaced under it, that copy fails on every call. Nothing in the catalog shows this, and `DISCARD PLANS` doesn't clear it. The planner can re-run a managed function's `CREATE OR REPLACE` with its definition unchanged, in the same transaction, which makes every session recompile it. Step 59 decides which functions need it.",
+"block": "- **R-0994** **Refreshing functions.** A session keeps its compiled copy of a plpgsql function, and when a type is replaced under it, that copy fails on every call. Nothing in the catalog shows this, and `DISCARD PLANS` doesn't clear it. The planner can re-run a managed function's `CREATE OR REPLACE` with its definition unchanged, in the same transaction, which makes every session recompile it. Step 59 decides which functions need it."
 },
 {
 "id": "R-0995",
@@ -7974,16 +7974,16 @@
 "kind": "code",
 "step": "rolling",
 "line": 0,
-"text": "- **Enums in `check_schema`.** The per-model list also holds each enum's labels. Every variant's label must exist, or its `was` label, and a `deprecated` variant may be missing. Extra labels in the database are fine, because a binary only fails on a row that holds one, and `Error::UnknownEnumValue` names it.",
-"block": "- **R-0997** **Enums in `check_schema`.** The per-model list also holds each enum's labels. Every variant's label must exist, or its `was` label, and a `deprecated` variant may be missing. Extra labels in the database are fine, because a binary only fails on a row that holds one, and `Error::UnknownEnumValue` names it."
+"text": "- **Enums in `check_schema`.** The per-model list also holds each enum's labels. Every labelled variant's label must exist, or its `was` label, and a `deprecated` variant may be missing. Extra labels in the database are fine, because a binary only fails on a row that holds one, and `Error::UnknownEnumValue` names it.",
+"block": "- **R-0997** **Enums in `check_schema`.** The per-model list also holds each enum's labels. Every labelled variant's label must exist, or its `was` label, and a `deprecated` variant may be missing. Extra labels in the database are fine, because a binary only fails on a row that holds one, and `Error::UnknownEnumValue` names it."
 },
 {
 "id": "R-0998",
 "kind": "code",
 "step": "rolling",
 "line": 0,
-"text": "- **Enum phases.** Adds, renames and the online swap's steps before its cutover are `expand`. A cutover that removes a label is `contract`, because binaries that still write it would fail. A cutover that only reorders stays in `expand`. In one migration that adds and removes, the add goes in `expand`, so a value and its replacement exist together through the rollout.",
-"block": "- **R-0998** **Enum phases.** Adds, renames and the online swap's steps before its cutover are `expand`. A cutover that removes a label is `contract`, because binaries that still write it would fail. A cutover that only reorders stays in `expand`. In one migration that adds and removes, the add goes in `expand`, so a value and its replacement exist together through the rollout."
+"text": "- **Enum phases.** Adds, renames and the online swap's steps before its cutover are `expand`. A cutover that removes a label is `contract`, because binaries that still write it would fail. A cutover that only reorders stays in `expand`. In one migration that adds and removes, the add goes in `expand`, so a value and its replacement exist together through the rollout. A `--fast` swap takes the phase its cutover would.",
+"block": "- **R-0998** **Enum phases.** Adds, renames and the online swap's steps before its cutover are `expand`. A cutover that removes a label is `contract`, because binaries that still write it would fail. A cutover that only reorders stays in `expand`. In one migration that adds and removes, the add goes in `expand`, so a value and its replacement exist together through the rollout. A `--fast` swap takes the phase its cutover would."
 },
 {
 "id": "R-0999",
@@ -7998,16 +7998,16 @@
 "kind": "code",
 "step": "rolling",
 "line": 0,
-"text": "- **Renaming a value in a rolling deploy.** A rename runs instantly by default, so old binaries fail on that value during the rollout: reads of rows holding it return `Error::UnknownEnumValue`, and writes of the old label return `22P02`. The rename decision also offers expand/contract: add the new label in `expand`, copy rows across in batches, and remove the old label by swap in `contract`. With `was`, a new binary reads both labels through either path.",
-"block": "- **R-1000** **Renaming a value in a rolling deploy.** A rename runs instantly by default, so old binaries fail on that value during the rollout: reads of rows holding it return `Error::UnknownEnumValue`, and writes of the old label return `22P02`. The rename decision also offers expand/contract: add the new label in `expand`, copy rows across in batches, and remove the old label by swap in `contract`. With `was`, a new binary reads both labels through either path."
+"text": "- **Renaming a value in a rolling deploy.** A rename runs instantly by default, so old binaries fail on that value during the rollout: reads of rows holding it return `Error::UnknownEnumValue`, and writes of the old label return `22P02`. The rename decision also offers expand/contract: add the new label in `expand`, copy rows across in batches, and remove the old label by swap in `contract`. With `was`, a new binary reads both labels through either path. `was` answers only whether it's a rename. The path stays a decision with the instant rename as its default.",
+"block": "- **R-1000** **Renaming a value in a rolling deploy.** A rename runs instantly by default, so old binaries fail on that value during the rollout: reads of rows holding it return `Error::UnknownEnumValue`, and writes of the old label return `22P02`. The rename decision also offers expand/contract: add the new label in `expand`, copy rows across in batches, and remove the old label by swap in `contract`. With `was`, a new binary reads both labels through either path. `was` answers only whether it's a rename. The path stays a decision with the instant rename as its default."
 },
 {
 "id": "R-1001",
 "kind": "code",
 "step": "import",
 "line": 0,
-"text": "- `import` writes bare `#[derive(PgEnum)]`, `#[derive(PgDomain)]` and `#[derive(PgComposite)]`, and never `#[pg_enum(name = \"...\")]`, `#[pg_domain]` or `#[pg_composite]`, so nothing becomes managed by accident. It adds `#[pg_type(name = \"...\")]` and `#[pg_enum(value = \"...\")]` where snake_case wouldn't give the existing name.",
-"block": "- **R-1001** `import` writes bare `#[derive(PgEnum)]`, `#[derive(PgDomain)]` and `#[derive(PgComposite)]`, and never `#[pg_enum(name = \"...\")]`, `#[pg_domain]` or `#[pg_composite]`, so nothing becomes managed by accident. It adds `#[pg_type(name = \"...\")]` and `#[pg_enum(value = \"...\")]` where snake_case wouldn't give the existing name."
+"text": "- `import` writes bare `#[derive(PgEnum)]`, `#[derive(PgDomain)]` and `#[derive(PgComposite)]`, and never `#[pg_enum(name = \"...\")]`, `#[pg_domain]` or `#[pg_composite]`, so nothing becomes managed by accident. It adds `#[pg_type(name = \"...\")]` and `#[pg_enum(value = \"...\")]` where snake_case wouldn't give the existing name. A `text` column with a CHECK stays `String` with `checks(...)`, and `import` never writes `TextEnum`.",
+"block": "- **R-1001** `import` writes bare `#[derive(PgEnum)]`, `#[derive(PgDomain)]` and `#[derive(PgComposite)]`, and never `#[pg_enum(name = \"...\")]`, `#[pg_domain]` or `#[pg_composite]`, so nothing becomes managed by accident. It adds `#[pg_type(name = \"...\")]` and `#[pg_enum(value = \"...\")]` where snake_case wouldn't give the existing name. A `text` column with a CHECK stays `String` with `checks(...)`, and `import` never writes `TextEnum`."
 },
 {
 "id": "R-1002",
@@ -8062,8 +8062,8 @@
 "kind": "doc",
 "step": "readme-release",
 "line": 0,
-"text": "The README shows this notice loudly, beside the enum rows:\n\n> **Use `TextEnum` unless you have a reason not to.** Changing a `TextEnum` is an ordinary migration. Postgres can't remove or reorder an enum value, so morm has to replace the whole type, including everything that depends on it. On a big table that means a long online copy or a table rewrite under a full lock. Adding or renaming a value is cheap, but its down is not, and old binaries can't read values they don't know. morm does all of this safely, but `TextEnum` never needs it.",
-"block": "**R-1008** The README shows this notice loudly, beside the enum rows:\n\n> **Use `TextEnum` unless you have a reason not to.** Changing a `TextEnum` is an ordinary migration. Postgres can't remove or reorder an enum value, so morm has to replace the whole type, including everything that depends on it. On a big table that means a long online copy or a table rewrite under a full lock. Adding or renaming a value is cheap, but its down is not, and old binaries can't read values they don't know. morm does all of this safely, but `TextEnum` never needs it."
+"text": "The README shows this notice loudly, beside the enum rows:\n\n> **Use `TextEnum` unless you have a reason not to.** Changing a `TextEnum` is an ordinary migration. Postgres can't remove or reorder an enum value, so morm has to replace the whole type, including everything that depends on it. On a big table that means a long online copy or a table rewrite under a full lock. Adding a value is cheap, but its down is not. morm does all of this safely, but `TextEnum` never needs it.",
+"block": "**R-1008** The README shows this notice loudly, beside the enum rows:\n\n> **Use `TextEnum` unless you have a reason not to.** Changing a `TextEnum` is an ordinary migration. Postgres can't remove or reorder an enum value, so morm has to replace the whole type, including everything that depends on it. On a big table that means a long online copy or a table rewrite under a full lock. Adding a value is cheap, but its down is not. morm does all of this safely, but `TextEnum` never needs it."
 },
 {
 "id": "R-1009",
@@ -8116,15 +8116,15 @@
 {
 "id": "R-1015",
 "kind": "code",
-"step": "enum-swap",
+"step": "enum-remove",
 "line": 0,
-"text": "- **Rows holding a removed value.** `makemigrations` can't see live data, so removing a value is a decision, and `migrate` enforces its answer. The options are `refuse`, the default answer, which stops with exit code `2` and row counts per table while any row holds the value; `map` to another label, keeping the old values; and `map` with `drop now`, which keeps nothing.",
-"block": "- **R-1015** **Rows holding a removed value.** `makemigrations` can't see live data, so removing a value is a decision, and `migrate` enforces its answer. The options are `refuse`, the default answer, which stops with exit code `2` and row counts per table while any row holds the value; `map` to another label, keeping the old values; and `map` with `drop now`, which keeps nothing."
+"text": "- **Rows holding a removed value.** `makemigrations` can't see live data, so removing a value is a decision, and `migrate` enforces its answer. The options are `refuse`, the default answer, which stops with exit code `2` and row counts per table while any row holds the value; `map` to another label, keeping the old values; and `map` with `drop now`, which keeps nothing. An add takes an optional `down_map`, given to `makemigrations` as a decision answer and stored in `op_data`, and it never leaves a decision open. On down, rows holding the added value move to that label. With none, down refuses with row counts.",
+"block": "- **R-1015** **Rows holding a removed value.** `makemigrations` can't see live data, so removing a value is a decision, and `migrate` enforces its answer. The options are `refuse`, the default answer, which stops with exit code `2` and row counts per table while any row holds the value; `map` to another label, keeping the old values; and `map` with `drop now`, which keeps nothing. An add takes an optional `down_map`, given to `makemigrations` as a decision answer and stored in `op_data`, and it never leaves a decision open. On down, rows holding the added value move to that label. With none, down refuses with row counts."
 },
 {
 "id": "R-1016",
 "kind": "code",
-"step": "enum-swap",
+"step": "enum-remove",
 "line": 0,
 "text": "- **Keeping old values.** A `map` that keeps old values adds a `text` column named as a retired column, filled only for rows it changes, and step 38's retired state tracks it until `purge`.",
 "block": "- **R-1016** **Keeping old values.** A `map` that keeps old values adds a `text` column named as a retired column, filled only for rows it changes, and step 38's retired state tracks it until `purge`."
@@ -8140,7 +8140,7 @@
 {
 "id": "R-1018",
 "kind": "code",
-"step": "enum-swap",
+"step": "enum-remove",
 "line": 0,
 "text": "| Add | `none` | Remove by swap. It refuses while rows hold the value, unless a `down_map` is decided |",
 "block": "| R-1018 | Add | `none` | Remove by swap. It refuses while rows hold the value, unless a `down_map` is decided |"
@@ -8156,7 +8156,7 @@
 {
 "id": "R-1020",
 "kind": "code",
-"step": "enum-swap",
+"step": "enum-remove",
 "line": 0,
 "text": "| Remove, no rows | `none` | `ADD VALUE` at the old position |",
 "block": "| R-1020 | Remove, no rows | `none` | `ADD VALUE` at the old position |"
@@ -8164,7 +8164,7 @@
 {
 "id": "R-1021",
 "kind": "code",
-"step": "enum-swap",
+"step": "enum-remove",
 "line": 0,
 "text": "| Remove, map, keep old values | `retires` | `ADD VALUE`, then in a later step restore the rows below |",
 "block": "| R-1021 | Remove, map, keep old values | `retires` | `ADD VALUE`, then in a later step restore the rows below |"
@@ -8172,7 +8172,7 @@
 {
 "id": "R-1022",
 "kind": "code",
-"step": "enum-swap",
+"step": "enum-remove",
 "line": 0,
 "text": "| Remove, map, `drop now` | `lossy` | `ADD VALUE`. The label returns and the rows don't |",
 "block": "| R-1022 | Remove, map, `drop now` | `lossy` | `ADD VALUE`. The label returns and the rows don't |"
@@ -8180,7 +8180,7 @@
 {
 "id": "R-1023",
 "kind": "code",
-"step": "enum-swap",
+"step": "enum-remove",
 "line": 0,
 "text": "- **Restoring rows.** Down restores an old value only where the row still holds the value it was mapped to. A row the app changed since `up`, or a row inserted since, keeps what it has. `purge` makes that down irreversible.",
 "block": "- **R-1023** **Restoring rows.** Down restores an old value only where the row still holds the value it was mapped to. A row the app changed since `up`, or a row inserted since, keeps what it has. `purge` makes that down irreversible."
@@ -8212,7 +8212,7 @@
 {
 "id": "R-1027",
 "kind": "code",
-"step": "enum-swap",
+"step": "enum-remove",
 "line": 0,
 "text": "- **With-data proof.** Enum columns get a row per label. A map also puts rows on the removed label, and `refuse` keeps rows off it. A column kept by a retired copy must match its checksum after up and down, and with `drop now` it's left out.",
 "block": "- **R-1027** **With-data proof.** Enum columns get a row per label. A map also puts rows on the removed label, and `refuse` keeps rows off it. A column kept by a retired copy must match its checksum after up and down, and with `drop now` it's left out."
@@ -8300,7 +8300,7 @@
 {
 "id": "R-1038",
 "kind": "code",
-"step": "enum-deps",
+"step": "enum-stale",
 "line": 0,
 "text": "- **Code Postgres doesn't track.** Before a swap, a rename or a removal, step 38's source search also runs for the type's name, for each label that changes, and for each affected table and column. A hit on a managed function is a decision, and `makemigrations` proposes the rewritten function. A `plpgsql` body can name a removed label, and a `s::text = 'old'` comparison never fails, it just stops matching.",
 "block": "- **R-1038** **Code Postgres doesn't track.** Before a swap, a rename or a removal, step 38's source search also runs for the type's name, for each label that changes, and for each affected table and column. A hit on a managed function is a decision, and `makemigrations` proposes the rewritten function. A `plpgsql` body can name a removed label, and a `s::text = 'old'` comparison never fails, it just stops matching."
@@ -8308,7 +8308,7 @@
 {
 "id": "R-1039",
 "kind": "code",
-"step": "enum-deps",
+"step": "enum-stale",
 "line": 0,
 "text": "- **Refreshing managed functions.** Every managed plpgsql function that search finds, and every one an affected table's triggers call, is refreshed in the swap's transaction. A trigger function needs this even when it never names the type: on Postgres 18 a trigger comparing `NEW.s` failed on every call in every open session until it was refreshed.",
 "block": "- **R-1039** **Refreshing managed functions.** Every managed plpgsql function that search finds, and every one an affected table's triggers call, is refreshed in the swap's transaction. A trigger function needs this even when it never names the type: on Postgres 18 a trigger comparing `NEW.s` failed on every call in every open session until it was refreshed."
@@ -8316,7 +8316,7 @@
 {
 "id": "R-1040",
 "kind": "code",
-"step": "enum-deps",
+"step": "enum-stale",
 "line": 0,
 "text": "- **Unmanaged functions** that would go stale are a decision, repeated in preflight on the live database. The default refuses. Accepting says other services must reconnect, because morm doesn't change unmanaged functions. morm apps recover by themselves.",
 "block": "- **R-1040** **Unmanaged functions** that would go stale are a decision, repeated in preflight on the live database. The default refuses. Accepting says other services must reconnect, because morm doesn't change unmanaged functions. morm apps recover by themselves."
@@ -8374,8 +8374,8 @@
 "kind": "code",
 "step": "enum-online",
 "line": 0,
-"text": "- **The steps,** each with its own boundary:\n\n1. `tx`: create the new type under a temporary name.\n2. `tx` per table: add the shadow column and a sync trigger on every insert and update, applying the map.\n3. `batch` per table: copy by key, with a resumable cursor.\n4. `no-tx`: build each index on the shadow column with `CREATE INDEX CONCURRENTLY`.\n5. `tx`, then a separate `tx`: add `CHECK (shadow IS NOT NULL) NOT VALID`, then `VALIDATE`. A CHECK with a literal goes the same way.\n6. `ANALYZE`, because statistics follow the column through a rename.\n7. `tx`: the cutover, below.",
-"block": "- **R-1047** **The steps,** each with its own boundary:\n\n1. `tx`: create the new type under a temporary name.\n2. `tx` per table: add the shadow column and a sync trigger on every insert and update, applying the map.\n3. `batch` per table: copy by key, with a resumable cursor.\n4. `no-tx`: build each index on the shadow column with `CREATE INDEX CONCURRENTLY`.\n5. `tx`, then a separate `tx`: add `CHECK (shadow IS NOT NULL) NOT VALID`, then `VALIDATE`. A CHECK with a literal goes the same way.\n6. `ANALYZE`, because statistics follow the column through a rename.\n7. `tx`: the cutover, below."
+"text": "- **The steps,** each with its own boundary:\n\n1. `tx`: create the new type under a temporary name.\n2. `tx` per table: add the shadow column and a sync trigger on every insert and update, applying the map.\n3. `batch` per table: copy by key, with a resumable cursor.\n4. `no-tx`: build each index on the shadow column with `CREATE INDEX CONCURRENTLY`.\n5. `tx`, then a separate `tx`: for a `NOT NULL` column add `CHECK (shadow IS NOT NULL) NOT VALID`. For a nullable one add `CHECK (<col> IS NULL OR shadow IS NOT NULL) NOT VALID`, dropped at cutover. Then `VALIDATE`. Any CHECK naming the column goes the same way.\n6. `ANALYZE`, because statistics follow the column through a rename.\n7. `tx`: the cutover, below.",
+"block": "- **R-1047** **The steps,** each with its own boundary:\n\n1. `tx`: create the new type under a temporary name.\n2. `tx` per table: add the shadow column and a sync trigger on every insert and update, applying the map.\n3. `batch` per table: copy by key, with a resumable cursor.\n4. `no-tx`: build each index on the shadow column with `CREATE INDEX CONCURRENTLY`.\n5. `tx`, then a separate `tx`: for a `NOT NULL` column add `CHECK (shadow IS NOT NULL) NOT VALID`. For a nullable one add `CHECK (<col> IS NULL OR shadow IS NOT NULL) NOT VALID`, dropped at cutover. Then `VALIDATE`. Any CHECK naming the column goes the same way.\n6. `ANALYZE`, because statistics follow the column through a rename.\n7. `tx`: the cutover, below."
 },
 {
 "id": "R-1048",
@@ -8390,8 +8390,8 @@
 "kind": "code",
 "step": "enum-online",
 "line": 0,
-"text": "- **The cutover** is one short transaction across all affected tables, locked in sorted order with `lock_timeout`, retried with backoff, because a waiting lock holds up new readers behind it. It drops the sync trigger, the old indexes and step 53's dependents, renames the old column to a retired column with `NOT NULL` and its default removed, and renames the shadow column to the real name. It sets `NOT NULL` from the validated check, renames the indexes, retires the old type, gives the new type the real name and restores defaults. Then it recreates the dependents, copies the owner, comment and grants, and refreshes functions.",
-"block": "- **R-1049** **The cutover** is one short transaction across all affected tables, locked in sorted order with `lock_timeout`, retried with backoff, because a waiting lock holds up new readers behind it. It drops the sync trigger, the old indexes and step 53's dependents, renames the old column to a retired column with `NOT NULL` and its default removed, and renames the shadow column to the real name. It sets `NOT NULL` from the validated check, renames the indexes, retires the old type, gives the new type the real name and restores defaults. Then it recreates the dependents, copies the owner, comment and grants, and refreshes functions."
+"text": "- **The cutover** is one short transaction across all affected tables, locked in sorted order with `lock_timeout`, retried with backoff, because a waiting lock holds up new readers behind it. It drops the sync trigger, the old indexes and step 53's dependents, renames the old column to a retired column with `NOT NULL` and its default removed, and renames the shadow column to the real name. It sets `NOT NULL` from the validated check, for a column that had it, renames the indexes, re-attaches unique constraints with `ADD CONSTRAINT ... USING INDEX`, and copies the column's comment and grants. It retires the old type, gives the new type the real name and restores defaults. Then it recreates the dependents, copies the owner, comment and grants, and refreshes functions.",
+"block": "- **R-1049** **The cutover** is one short transaction across all affected tables, locked in sorted order with `lock_timeout`, retried with backoff, because a waiting lock holds up new readers behind it. It drops the sync trigger, the old indexes and step 53's dependents, renames the old column to a retired column with `NOT NULL` and its default removed, and renames the shadow column to the real name. It sets `NOT NULL` from the validated check, for a column that had it, renames the indexes, re-attaches unique constraints with `ADD CONSTRAINT ... USING INDEX`, and copies the column's comment and grants. It retires the old type, gives the new type the real name and restores defaults. Then it recreates the dependents, copies the owner, comment and grants, and refreshes functions."
 },
 {
 "id": "R-1050",
@@ -8406,16 +8406,16 @@
 "kind": "code",
 "step": "enum-online",
 "line": 0,
-"text": "- **Text on the shadow column.** morm has no SQL parser, so a partial index filter or CHECK that names the column is rewritten by replacing the column's name outside quoted strings and comments, with step 14's scanner. The scratch proof confirms the result: after cutover, each definition must match the one built from the models.",
-"block": "- **R-1051** **Text on the shadow column.** morm has no SQL parser, so a partial index filter or CHECK that names the column is rewritten by replacing the column's name outside quoted strings and comments, with step 14's scanner. The scratch proof confirms the result: after cutover, each definition must match the one built from the models."
+"text": "- **Text on the shadow column.** morm has no SQL parser, so a partial index filter or CHECK that names the column is rewritten by replacing the column's name outside quoted strings and comments, with step 14's scanner, and the rewrite replaces a cast to the old type's name with the temporary name. Identifiers in double quotes are compared, not skipped. The scratch proof confirms the result: after cutover, each definition must match the one built from the models.",
+"block": "- **R-1051** **Text on the shadow column.** morm has no SQL parser, so a partial index filter or CHECK that names the column is rewritten by replacing the column's name outside quoted strings and comments, with step 14's scanner, and the rewrite replaces a cast to the old type's name with the temporary name. Identifiers in double quotes are compared, not skipped. The scratch proof confirms the result: after cutover, each definition must match the one built from the models."
 },
 {
 "id": "R-1052",
 "kind": "code",
 "step": "enum-online",
 "line": 0,
-"text": "- **Refused in this form, allowed with `--fast`,** naming the cause: partitioned tables, because concurrent indexes don't work on the parent; enum columns in a primary key or foreign key, as for key type changes; stored generated columns that read the column, because recreating them rewrites under lock; and columns of a domain or composite type.",
-"block": "- **R-1052** **Refused in this form, allowed with `--fast`,** naming the cause: partitioned tables, because concurrent indexes don't work on the parent; enum columns in a primary key or foreign key, as for key type changes; stored generated columns that read the column, because recreating them rewrites under lock; and columns of a domain or composite type."
+"text": "- **Refused in this form, allowed with `--fast`,** naming the cause: partitioned tables, because concurrent indexes don't work on the parent; enum columns in a primary key or foreign key, as for key type changes; stored generated columns that read the column, because recreating them rewrites under lock; columns of a domain or composite type; and exclusion constraints and extended statistics on the column.",
+"block": "- **R-1052** **Refused in this form, allowed with `--fast`,** naming the cause: partitioned tables, because concurrent indexes don't work on the parent; enum columns in a primary key or foreign key, as for key type changes; stored generated columns that read the column, because recreating them rewrites under lock; columns of a domain or composite type; and exclusion constraints and extended statistics on the column."
 },
 {
 "id": "R-1053",
@@ -8436,18 +8436,18 @@
 {
 "id": "R-1055",
 "kind": "code",
-"step": "types",
+"step": "enum-types",
 "line": 0,
-"text": "- **`TextEnum` labels.** `#[derive(TextEnum)]` stores each variant's Rust spelling, so `Pending` is stored as `Pending`, and the CHECK constraint lists that same spelling. This differs from `PgEnum`, whose labels are snake_case.",
-"block": "- **R-1055** **`TextEnum` labels.** `#[derive(TextEnum)]` stores each variant's Rust spelling, so `Pending` is stored as `Pending`, and the CHECK constraint lists that same spelling. This differs from `PgEnum`, whose labels are snake_case."
+"text": "- **`TextEnum` labels.** `#[derive(TextEnum)]` stores each variant's Rust spelling, so `Pending` is stored as `Pending`, and the CHECK constraint lists that same spelling. This differs from `PgEnum`, whose labels are snake_case. `#[model]` emits the CHECK in metadata like a range CHECK, named `__CHK_{table}_{column}_enum__`, reading labels through a trait constant on the type.",
+"block": "- **R-1055** **`TextEnum` labels.** `#[derive(TextEnum)]` stores each variant's Rust spelling, so `Pending` is stored as `Pending`, and the CHECK constraint lists that same spelling. This differs from `PgEnum`, whose labels are snake_case. `#[model]` emits the CHECK in metadata like a range CHECK, named `__CHK_{table}_{column}_enum__`, reading labels through a trait constant on the type."
 },
 {
 "id": "R-1056",
 "kind": "code",
-"step": "types",
+"step": "enum-types",
 "line": 0,
-"text": "- **`TextEnum` fallback.** `#[text_enum(unknown)]` on one unit variant works like `#[pg_enum(unknown)]`: any stored value the binary doesn't know decodes to that variant, as one branch on read, instead of returning `Error::UnknownEnumValue`, and writing that variant returns `Error::Validation`. It's opt-in.",
-"block": "- **R-1056** **`TextEnum` fallback.** `#[text_enum(unknown)]` on one unit variant works like `#[pg_enum(unknown)]`: any stored value the binary doesn't know decodes to that variant, as one branch on read, instead of returning `Error::UnknownEnumValue`, and writing that variant returns `Error::Validation`. It's opt-in."
+"text": "- **`TextEnum` fallback.** `#[text_enum(unknown)]` on one unit variant works like `#[pg_enum(unknown)]`: any stored value the binary doesn't know decodes to that variant, as one branch on read, instead of returning `Error::UnknownEnumValue`, and writing that variant returns `Error::Validation`. It's opt-in. Without it, an unknown stored value returns `Error::UnknownEnumValue`, with the Rust type's name and the value. This variant has no label: it isn't in the CHECK list, the managed type or `check_schema`, and it can't take `value`, `was` or `deprecated`.",
+"block": "- **R-1056** **`TextEnum` fallback.** `#[text_enum(unknown)]` on one unit variant works like `#[pg_enum(unknown)]`: any stored value the binary doesn't know decodes to that variant, as one branch on read, instead of returning `Error::UnknownEnumValue`, and writing that variant returns `Error::Validation`. It's opt-in. Without it, an unknown stored value returns `Error::UnknownEnumValue`, with the Rust type's name and the value. This variant has no label: it isn't in the CHECK list, the managed type or `check_schema`, and it can't take `value`, `was` or `deprecated`."
 },
 {
 "id": "R-1057",
@@ -8456,6 +8456,22 @@
 "line": 0,
 "text": "| `#[text_enum(unknown)]` | Old binaries must keep reading a `TextEnum` column during a rollout that adds a value |",
 "block": "| R-1057 | `#[text_enum(unknown)]` | Old binaries must keep reading a `TextEnum` column during a rollout that adds a value |"
+},
+{
+"id": "R-1058",
+"kind": "doc",
+"step": "readme-release",
+"line": 0,
+"text": "| `#[derive(TextEnum)]` | A column holds one of a fixed set of values; prefer this to a Postgres enum |",
+"block": "| R-1058 | `#[derive(TextEnum)]` | A column holds one of a fixed set of values; prefer this to a Postgres enum |"
+},
+{
+"id": "R-1059",
+"kind": "code",
+"step": "managed-types",
+"line": 0,
+"text": "- **Changing a domain or composite type.** A changed domain `check` drops and adds the constraint `NOT VALID`, then runs `VALIDATE`. A composite attribute is added or dropped with `ALTER TYPE` when no column uses the type. A changed base type, or a change to a composite a column uses, is refused with exit code `2`. The with-data proof leaves out domain columns whose `check` its rows fail.",
+"block": "- **R-1059** **Changing a domain or composite type.** A changed domain `check` drops and adds the constraint `NOT VALID`, then runs `VALIDATE`. A composite attribute is added or dropped with `ALTER TYPE` when no column uses the type. A changed base type, or a change to a composite a column uses, is refused with exit code `2`. The with-data proof leaves out domain columns whose `check` its rows fail."
 }
 ],
 "tests": [
@@ -9441,14 +9457,14 @@
 },
 {
 "id": "T-0141",
-"step": "types",
+"step": "enum-types",
 "kind": "integration",
 "line": 0,
 "text": "`#[derive(PgDomain)]` and `#[derive(PgComposite)]` round-tripping through columns and parameters on types created by hand"
 },
 {
 "id": "T-0142",
-"step": "types",
+"step": "enum-types",
 "kind": "integration",
 "line": 0,
 "text": "**Plain `String` on a domain:** test whether a `String` field or parameter binds to a column of a text domain, and don't assume it. State the result in the PR. If it doesn't bind, `PgDomain` is the only way to use such a column, and its docs say so."
@@ -9469,7 +9485,7 @@
 },
 {
 "id": "T-0145",
-"step": "managed-ops",
+"step": "managed-types",
 "kind": "integration",
 "line": 0,
 "text": "**Sequences:** a sequence shows no drift after `nextval` calls, an identity column's sequence isn't read as an object of this kind, and dropping a sequence reports `lossy`."
@@ -9490,24 +9506,24 @@
 },
 {
 "id": "T-0148",
-"step": "types",
+"step": "enum-types",
 "kind": "integration",
 "line": 0,
 "text": "**Enum binding survives type changes:** on an open connection and on one opened afterwards, `PgEnum` values and arrays bind and decode through `query_typed` and prepared statements after `ADD VALUE`, and through `query_typed` after a hand-run type swap."
 },
 {
 "id": "T-0149",
-"step": "types",
+"step": "enum-types",
 "kind": "integration",
 "line": 0,
 "text": "**Names and labels:** a bare derive binds to the snake_case name, `#[pg_type(name = \"...\")]` and `#[pg_enum(value = \"...\")]` override it, an unknown label returns `Error::UnknownEnumValue`, `#[pg_enum(unknown)]` decodes it and refuses to write, and `was` decodes both labels."
 },
 {
 "id": "T-0150",
-"step": "types",
+"step": "enum-types",
 "kind": "trybuild",
 "line": 0,
-"text": "a `PgEnum` with duplicate labels, an empty label, a label over 63 bytes, a variant that isn't a unit variant, or two `#[pg_enum(unknown)]` variants"
+"text": "a `PgEnum` with duplicate labels, an empty label, a label over 63 bytes, a variant that isn't a unit variant, two `#[pg_enum(unknown)]` variants, or an `unknown` variant that also has `value`, `was` or `deprecated`"
 },
 {
 "id": "T-0151",
@@ -9521,7 +9537,7 @@
 "step": "statements",
 "kind": "integration",
 "line": 0,
-"text": "**Stale sessions:** a plpgsql trigger compiled before a hand-run swap fails with `XX000`, morm replaces the connection and the write succeeds once, other connections in the pool are replaced at checkout, and `pool_stats()` shows it."
+"text": "**Stale sessions:** a plpgsql trigger compiled before a hand-run swap fails with `XX000`, morm replaces the connection and the write succeeds once, other connections in the pool are replaced at checkout, and `pool_stats()` shows it. On a `db.hold()` connection the same failure returns `Error::SchemaChanged`, nothing moves, and the connection is replaced on release."
 },
 {
 "id": "T-0153",
@@ -9539,10 +9555,10 @@
 },
 {
 "id": "T-0155",
-"step": "managed-ops",
+"step": "managed-types",
 "kind": "integration",
 "line": 0,
-"text": "**Enum renames:** `was` and a decision each rename a value with rows holding it, the inverse restores it, two labels exchange, an open decision exits with code `3`, and adding a value exits with code `2`."
+"text": "**Enum renames:** `was` and a decision each rename a value with rows holding it, the inverse restores it, two labels exchange, an open decision exits with code `3`, and adding a value exits with code `2` until step 51, which rewrites this case."
 },
 {
 "id": "T-0156",
@@ -9567,17 +9583,17 @@
 },
 {
 "id": "T-0159",
-"step": "enum-swap",
+"step": "enum-remove",
 "kind": "suite",
 "line": 0,
-"text": "**Enum ops:** every op in the inverse table, with and without data, up, down and up, on Postgres 15–18, ending on the exact labels, order and rows, with no drift."
+"text": "**Enum ops:** every op in the inverse table, and a reorder, with and without data, up, down and up, on Postgres 15–18, ending on the exact labels, order and rows, with no drift."
 },
 {
 "id": "T-0160",
-"step": "enum-swap",
+"step": "enum-remove",
 "kind": "suite",
 "line": 0,
-"text": "**Removed values:** `refuse` stops with row counts and changes nothing, `map` keeps old values and restores them on down, a row changed or inserted after `up` keeps its value, `drop now` reports `lossy`, a column array maps per element, and a row written between preflight and the swap fails the cast and rolls back."
+"text": "**Removed values:** `refuse` stops with row counts and changes nothing, `map` keeps old values and restores them on down, a row changed or inserted after `up` keeps its value, `drop now` reports `lossy`, a column array maps per element, and a row written between preflight and the swap fails the cast and rolls back. An add with a `down_map` moves rows holding the added value to that label on down, and with none, down refuses with row counts. A remove runs as a role that owns the type and its tables but isn't superuser, and the owner, comment and every grant survive."
 },
 {
 "id": "T-0161",
@@ -9598,14 +9614,14 @@
 "step": "enum-swap",
 "kind": "integration",
 "line": 0,
-"text": "**Proof, a non-superuser swap on Postgres 15–18:** add, remove and reorder as a role that owns the type and its tables but isn't superuser, and again with the type owned by another role it's a member of. The owner, comment and every grant, including `WITH GRANT OPTION`, survive, and a role lacking a privilege is refused by preflight. This was tested only as a superuser. If a result contradicts this design, stop and ask the owner with the evidence and options."
+"text": "**Proof, a non-superuser swap on Postgres 15–18:** add and reorder as a role that owns the type and its tables but isn't superuser, and again with the type owned by another role it's a member of. The owner, comment and every grant, including `WITH GRANT OPTION`, survive, and a role lacking a privilege is refused by preflight. This was tested only as a superuser. If a result contradicts this design, stop and ask the owner with the evidence and options."
 },
 {
 "id": "T-0164",
 "step": "enum-swap",
 "kind": "integration",
 "line": 0,
-"text": "**Proof, logical replication on Postgres 15–18:** with a subscription on the same server, run an add and a swap in both orders of primary and subscriber. Record what breaks, and confirm that migrating the subscriber first works, as the `lint` finding says. If a result contradicts this design, stop and ask the owner with the evidence and options."
+"text": "**Proof, logical replication on Postgres 15–18:** with a subscription on the same server, run an add and a swap in both orders of primary and subscriber. Record what breaks, and confirm that migrating the subscriber first works, as the `lint` finding says. If a result contradicts this design, stop and ask the owner with the evidence and options. Add a `ci.yml` job for this on Postgres 15–18 that starts Postgres with `wal_level=logical`. The test has its own Cargo feature with `required-features`, as `pooler` does."
 },
 {
 "id": "T-0165",
@@ -9630,7 +9646,7 @@
 },
 {
 "id": "T-0168",
-"step": "enum-deps",
+"step": "enum-stale",
 "kind": "integration",
 "line": 0,
 "text": "**Stale plpgsql on Postgres 15–18:** a session that compiled `DECLARE v the_enum`, `SELECT ... INTO`, `%ROWTYPE` and a trigger function before a swap gets what proof 15 recorded with no refresh, and all four work with one. If a result contradicts this design, stop and ask the owner with the evidence and options."
@@ -9640,7 +9656,7 @@
 "step": "enum-deps",
 "kind": "suite",
 "line": 0,
-"text": "**Live refusals:** an unmanaged column in another schema, an unmanaged view, a function that only names the type in its body, and a new dependent created after `makemigrations` each stop `migrate` with exit code `2` and the list, changing nothing. Accepting the unmanaged function decision lets it run."
+"text": "**Live refusals:** an unmanaged column in another schema, an unmanaged view and a new dependent created after `makemigrations` each stop `migrate` with exit code `2` and the list, changing nothing."
 },
 {
 "id": "T-0170",
@@ -9651,17 +9667,17 @@
 },
 {
 "id": "T-0171",
-"step": "enum-deps",
+"step": "enum-stale",
 "kind": "integration",
 "line": 0,
 "text": "**Proof, PgBouncer:** in a `pooler` test, in transaction mode, an app recovers from a swap the way proof 16 recorded, with managed functions refreshed. If replacing the client connection can't clear stale server state and no refresh covers it, stop and ask the owner with the evidence and options."
 },
 {
 "id": "T-0172",
-"step": "enum-deps",
+"step": "enum-stale",
 "kind": "integration",
 "line": 0,
-"text": "**Proof, hot standby:** a `read_only` pool on a standby recovers from a swap on the primary the way proof 17 recorded. If a result contradicts this design, stop and ask the owner with the evidence and options."
+"text": "**Proof, hot standby:** a `read_only` pool on a standby recovers from a swap on the primary the way proof 17 recorded. If a result contradicts this design, stop and ask the owner with the evidence and options. Add a `ci.yml` job on Postgres 15–18 with a streaming standby. The test has its own Cargo feature with `required-features`, as `pooler` does."
 },
 {
 "id": "T-0173",
@@ -9682,7 +9698,7 @@
 "step": "enum-online",
 "kind": "suite",
 "line": 0,
-"text": "**Live traffic:** with writers on an old binary, including writes of the removed value until cutover and inserts during the copy, no write is lost and every row holds its mapped value. The table isn't rewritten, the stale statements recover, indexes are used after cutover, and `purge` drops the retired column and type."
+"text": "**Live traffic:** with writers on an old binary, including writes of the removed value until cutover and inserts during the copy, no write is lost and every row holds its mapped value. The table isn't rewritten, the stale statements recover, indexes are used after cutover, and `purge` drops the retired column and type. The cutover runs as a role that owns the type and its tables but isn't superuser."
 },
 {
 "id": "T-0176",
@@ -9696,7 +9712,7 @@
 "step": "enum-online",
 "kind": "suite",
 "line": 0,
-"text": "**Proof, foreign keys and domains:** each refused layout is refused before anything changes, with `--fast` handling the same change. A foreign key on a different column of the table, and a domain on a different column, run online with no lost write. The design's online test had neither. If a result contradicts this design, stop and ask the owner with the evidence and options."
+"text": "**Proof, foreign keys and domains:** each refused layout is refused before anything changes, with `--fast` handling the same change. A foreign key on a different column of the table, and a domain on a different column, run online with no lost write. A unique constraint, a CHECK with no literal and a cast to the old type's name in a definition come through cutover, and so do the column's comment and grants. The design's online test had neither. If a result contradicts this design, stop and ask the owner with the evidence and options."
 },
 {
 "id": "T-0178",
@@ -9714,17 +9730,45 @@
 },
 {
 "id": "T-0180",
-"step": "types",
+"step": "enum-types",
 "kind": "integration",
 "line": 0,
-"text": "**`TextEnum` labels:** variants such as `Pending` and `AwaitingPayment` are stored as those exact spellings, not snake_case, and the CHECK constraint lists the same spellings."
+"text": "**`TextEnum` labels:** variants such as `Pending` and `AwaitingPayment` are stored as those exact spellings, not snake_case, and the CHECK in `ModelMeta` lists the same spellings."
 },
 {
 "id": "T-0181",
-"step": "types",
+"step": "enum-types",
 "kind": "integration",
 "line": 0,
 "text": "**`TextEnum` fallback:** `#[text_enum(unknown)]` decodes a stored value the binary doesn't know to that variant, known values still decode to their own variants, writing that variant returns `Error::Validation`, and without the attribute the same value returns `Error::UnknownEnumValue`."
+},
+{
+"id": "T-0182",
+"step": "enum-types",
+"kind": "trybuild",
+"line": 0,
+"text": "a `TextEnum` with two `#[text_enum(unknown)]` variants, or a variant that isn't a unit variant"
+},
+{
+"id": "T-0183",
+"step": "schema-diff",
+"kind": "integration",
+"line": 0,
+"text": "**`TextEnum` CHECK:** the migration creates the named CHECK, adding or removing a variant replaces it through the constraint diff, and a direct write of another value is rejected."
+},
+{
+"id": "T-0184",
+"step": "enum-stale",
+"kind": "suite",
+"line": 0,
+"text": "**Unmanaged functions:** a function that only names the type in its body stops `migrate` with exit code `2` and the list, changing nothing. Accepting the unmanaged function decision lets it run."
+},
+{
+"id": "T-0185",
+"step": "managed-types",
+"kind": "integration",
+"line": 0,
+"text": "**Domain and composite changes:** with rows, a changed domain `check` replaces the constraint and validates it, a row that fails it stops at `VALIDATE`, and a composite attribute is added and dropped when no column uses the type, each with its inverse. A changed base type and a change to a composite a column uses each exit with code `2` and change nothing, and the with-data proof leaves out a domain column whose `check` its rows fail."
 }
 ],
 "frame": {
@@ -9868,7 +9912,6 @@
 "types": [
 "### Crates and tools",
 "### Hard to misuse",
-"### Managed enums",
 "### Models / Type inference",
 "### Reading and writing / Decimal",
 "Copied word for word from the approved plan. Every ID must end with a test tagged with it, as `rules.md` describes. Section references such as \"section 8\" mean the frozen `plans/rust-morm-plan.md`; everything a step needs is copied here or in `contracts.md`.",
@@ -10101,7 +10144,6 @@
 "Copied word for word from the approved plan. Every ID must end with a test tagged with it, as `rules.md` describes. Section references such as \"section 8\" mean the frozen `plans/rust-morm-plan.md`; everything a step needs is copied here or in `contracts.md`."
 ],
 "managed-ops": [
-"### Managed enums",
 "### Migrations / Triggers, functions and other objects",
 "Copied word for word from the approved plan. Every ID must end with a test tagged with it, as `rules.md` describes. Section references such as \"section 8\" mean the frozen `plans/rust-morm-plan.md`; everything a step needs is copied here or in `contracts.md`."
 ],
@@ -10243,6 +10285,32 @@
 ],
 "enum-online": [
 "### Migrations / Managed enums / Online swap",
+"Copied word for word from the approved plan. Every ID must end with a test tagged with it, as `rules.md` describes. Section references such as \"section 8\" mean the frozen `plans/rust-morm-plan.md`; everything a step needs is copied here or in `contracts.md`."
+],
+"enum-proofs": [
+"Copied word for word from the approved plan. Every ID must end with a test tagged with it, as `rules.md` describes. Section references such as \"section 8\" mean the frozen `plans/rust-morm-plan.md`; everything a step needs is copied here or in `contracts.md`.",
+"None beyond the deliverables above."
+],
+"enum-remove": [
+"### Migrations / Managed enums",
+"### Migrations / Managed enums / After the swap",
+"### Migrations / Managed enums / Inverses",
+"Copied word for word from the approved plan. Every ID must end with a test tagged with it, as `rules.md` describes. Section references such as \"section 8\" mean the frozen `plans/rust-morm-plan.md`; everything a step needs is copied here or in `contracts.md`.",
+"| ID | Op | Data effect | Inverse |",
+"|---|---|---|---|"
+],
+"enum-stale": [
+"### Migrations / Managed enums / Dependents",
+"Copied word for word from the approved plan. Every ID must end with a test tagged with it, as `rules.md` describes. Section references such as \"section 8\" mean the frozen `plans/rust-morm-plan.md`; everything a step needs is copied here or in `contracts.md`."
+],
+"enum-types": [
+"### Managed enums",
+"### Models / Type inference",
+"Copied word for word from the approved plan. Every ID must end with a test tagged with it, as `rules.md` describes. Section references such as \"section 8\" mean the frozen `plans/rust-morm-plan.md`; everything a step needs is copied here or in `contracts.md`."
+],
+"managed-types": [
+"### Managed enums",
+"### Migrations / Triggers, functions and other objects",
 "Copied word for word from the approved plan. Every ID must end with a test tagged with it, as `rules.md` describes. Section references such as \"section 8\" mean the frozen `plans/rust-morm-plan.md`; everything a step needs is copied here or in `contracts.md`."
 ]
 }

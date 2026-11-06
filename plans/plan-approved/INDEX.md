@@ -18,7 +18,7 @@ The frozen plan was split word for word into requirements (`R-nnnn`) and test ob
 |---|---|---|---|---|
 | 01 | [Repo bootstrap and CI](steps/01-bootstrap.md) | Foundation | none | in progress |
 | 02 | [Proofs of the risky parts](steps/02-proofs.md) | Foundation | 01 | todo |
-| 03 | [Freeze the contracts](steps/03-contracts-freeze.md) | Foundation | 02 | todo |
+| 03 | [Freeze the contracts](steps/03-contracts-freeze.md) | Foundation | 55 | todo |
 | 04 | [`#[model]`, names and types](steps/04-model-core.md) | Models | 03 | todo |
 | 05 | [Type inference and decoding](steps/05-model-types.md) | Models | 04 | todo |
 | 06 | [Bases, indexes and constraint names](steps/06-bases-indexes.md) | Models | 04 | todo |
@@ -29,7 +29,7 @@ The frozen plan was split word for word into requirements (`R-nnnn`) and test ob
 | 11 | [`morm::Pool`](steps/11-pool.md) | Runtime | 10 | todo |
 | 12 | [`db.hold()`, jobs and PgBouncer](steps/12-hold-pooler.md) | Runtime | 11 | todo |
 | 13 | [Numbers and special types](steps/13-types.md) | Runtime | 05 | todo |
-| 14 | [Statement caches and fragments](steps/14-statements.md) | Runtime | 11, 13 | todo |
+| 14 | [Statement caches and fragments](steps/14-statements.md) | Runtime | 11, 12, 13, 56 | todo |
 | 15 | [Reads](steps/15-reads.md) | Runtime | 14, 07 | todo |
 | 16 | [Raw SQL, related rows and keyset pages](steps/16-reads-more.md) | Runtime | 15 | todo |
 | 17 | [Inserts](steps/17-inserts.md) | Runtime | 14, 07 | todo |
@@ -45,17 +45,17 @@ The frozen plan was split word for word into requirements (`R-nnnn`) and test ob
 | 27 | [Transactional outbox](steps/27-outbox.md) | Runtime | 25 | todo |
 | 28 | [Registration and `morm-mgr`](steps/28-manifest.md) | Migrations | 06, 05 | todo |
 | 29 | [Schema IR, catalog and scratch](steps/29-schema-ir.md) | Migrations | 28, 10 | todo |
-| 30 | [Diff and typed ops](steps/30-schema-diff.md) | Migrations | 29 | todo |
-| 31 | [`lint`](steps/31-lint.md) | Migrations | 30, 07, 13 | todo |
+| 30 | [Diff and typed ops](steps/30-schema-diff.md) | Migrations | 29, 56 | todo |
+| 31 | [`lint`](steps/31-lint.md) | Migrations | 30, 07, 13, 56 | todo |
 | 32 | [Proof pipeline, files and decisions](steps/32-proof-files.md) | Migrations | 31 | todo |
 | 33 | [Migration execution and recovery](steps/33-execution.md) | Migrations | 32 | todo |
 | 34 | [Rollback and crash recovery](steps/34-recovery.md) | Migrations | 33 | todo |
 | 35 | [Managed objects: declarations](steps/35-managed-decl.md) | Migrations | 34 | todo |
 | 36 | [Managed objects: catalog and ops](steps/36-managed-ops.md) | Migrations | 35, 18 | todo |
-| 37 | [Managed objects: dependencies](steps/37-managed-deps.md) | Migrations | 36 | todo |
+| 37 | [Managed objects: dependencies](steps/37-managed-deps.md) | Migrations | 36, 57 | todo |
 | 38 | [Retire, purge and down with data](steps/38-retire.md) | Migrations | 37 | todo |
 | 39 | [Safe forms](steps/39-safe-forms.md) | Migrations | 38 | todo |
-| 40 | [Production mode, revert and squash](steps/40-live-modes.md) | Migrations | 52, 54 | todo |
+| 40 | [Production mode, revert and squash](steps/40-live-modes.md) | Migrations | 52 | todo |
 | 41 | [Rolling deploys](steps/41-rolling.md) | Migrations | 40, 15 | todo |
 | 42 | [`morm-admin init` and project setup](steps/42-admin-init.md) | Tools | 38, 27, 17, 16 | todo |
 | 43 | [`morm-admin doctor`](steps/43-doctor.md) | Tools | 42 | todo |
@@ -67,9 +67,14 @@ The frozen plan was split word for word into requirements (`R-nnnn`) and test ob
 | 49 | [Lock-order detector and hardening](steps/49-hardening.md) | Finish | 26, 27, 41, 45, 47 | todo |
 | 50 | [README and 0.1.0](steps/50-readme-release.md) | Finish | 48, 49, 44, 46, 43 | todo |
 | 51 | [Managed enums: add, remove and reorder](steps/51-enum-swap.md) | Migrations | 38 | todo |
-| 52 | [Managed enums: online swap](steps/52-enum-online.md) | Migrations | 39, 53 | todo |
-| 53 | [Managed enums: dependents](steps/53-enum-deps.md) | Migrations | 51, 12 | todo |
+| 52 | [Managed enums: online swap](steps/52-enum-online.md) | Migrations | 39, 54, 59 | todo |
+| 53 | [Managed enums: dependents](steps/53-enum-deps.md) | Migrations | 58 | todo |
 | 54 | [Managed enums: domains and composite types](steps/54-enum-wrappers.md) | Migrations | 53 | todo |
+| 55 | [Proofs of the managed enum design](steps/55-enum-proofs.md) | Foundation | 02 | todo |
+| 56 | [Enums, domains and composite types in Rust](steps/56-enum-types.md) | Runtime | 13 | todo |
+| 57 | [Managed objects: enums, domains, composite types and sequences](steps/57-managed-types.md) | Migrations | 36 | todo |
+| 58 | [Managed enums: removing values and inverses](steps/58-enum-remove.md) | Migrations | 51 | todo |
+| 59 | [Managed enums: stale functions and standbys](steps/59-enum-stale.md) | Migrations | 53, 12 | todo |
 
 Status is one of `todo`, `in progress`, `in review` or `done`. Only the coordinator changes it.
 
@@ -79,27 +84,31 @@ Each wave below needs only earlier waves. Each step file's "Can run beside" line
 
 1. 01
 2. 02
-3. 03
-4. 04, 10
-5. 05, 06, 09, 11
-6. 07, 12, 13, 28
-7. 08, 14, 29
-8. 15, 17, 30
-9. 16, 31
-10. 18, 23, 32
-11. 19, 20, 33
-12. 21, 34
-13. 22, 35
-14. 24, 36
-15. 25, 37
-16. 26, 27, 38, 47
-17. 39, 42, 51
-18. 43, 44, 45, 53
-19. 46, 48, 52, 54
-20. 40
-21. 41
-22. 49
-23. 50
+3. 55
+4. 03
+5. 04, 10
+6. 05, 06, 09, 11
+7. 07, 12, 13, 28
+8. 08, 29, 56
+9. 14, 30
+10. 15, 17, 31
+11. 16, 32
+12. 18, 23, 33
+13. 19, 20, 34
+14. 21, 35
+15. 22, 36
+16. 24, 57
+17. 25, 37
+18. 26, 27, 38, 47
+19. 39, 42, 51
+20. 43, 44, 45, 58
+21. 46, 48, 53
+22. 54, 59
+23. 52
+24. 40
+25. 41
+26. 49
+27. 50
 
 Steps run in parallel only when `contracts.md` covers what they share. Each gets its own worktree and branch. When a parallel step needs something shared that isn't in `contracts.md`, it stops, and the contract is updated first.
 

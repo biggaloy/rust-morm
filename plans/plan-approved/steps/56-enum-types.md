@@ -1,0 +1,73 @@
+# Step 56: Enums, domains and composite types in Rust
+
+- **Phase:** Runtime
+- **Depends on:** 13
+- **Can run beside:** 10, 11, 12, 29
+- **Crates:** `morm`, `morm-macros`
+- **PR approval:** CI and an independent review
+
+Read `../rules.md`, `../contracts.md` and, once it exists, `../proofs.md` first. Everything needed for this step is in those files and this one.
+
+## Goal
+
+Map Rust enums, domains and composite types to their columns, with binding that a type swap can't break.
+
+## Deliverables
+
+- `TextEnum` with its CHECK in metadata and its `unknown` fallback, `PgEnum` with OID-free binding, `#[pg_type]`, variant labels, `was`, `PgDomain`, `PgComposite`
+
+## End-to-end check
+
+Each of these types round-trips through a real Postgres on tables and types created by hand, and `PgEnum` values still bind and decode after `ADD VALUE` and a hand-run type swap.
+
+## Context from other steps
+
+Owned elsewhere, and quoted so this step needs no other file. Nothing here needs a test in this step.
+
+> Step 13 gives exact encoding and `morm::Param` for every other type. Step 05 emits each range CHECK in `ModelMeta`.
+>
+> Step 30 proves the `TextEnum` CHECK on a database. Step 35 adds the attributes that make morm manage a type, and step 41 adds `deprecated`.
+>
+
+## Out of scope
+
+- Creating these types or the CHECK on a database (steps 30 and 57)
+- `#[pg_enum(name = "...")]`, `#[pg_domain]` and `#[pg_composite]` (step 35)
+- JSON formats (step 23)
+
+## Requirements
+
+Copied word for word from the approved plan. Every ID must end with a test tagged with it, as `rules.md` describes. Section references such as "section 8" mean the frozen `plans/rust-morm-plan.md`; everything a step needs is copied here or in `contracts.md`.
+
+### Models / Type inference
+
+**R-0187** `#[derive(TextEnum)]` maps a Rust enum to `text` with a CHECK constraint, the recommended form, because adding or removing a value is an ordinary migration.
+
+**R-0188** `#[derive(PgEnum)]` maps to a Postgres enum, and on its own it only binds to a type that already exists. `#[pg_enum(name = "...")]` turns on full management, in step 35: adding, renaming, removing and reordering values. `TextEnum` stays the preferred form, because removing or reordering a Postgres enum value means replacing the whole type.
+
+**R-0189** Domains and composite types are also supported.
+
+- **R-0961** **Domains and composite types in Rust.** `#[derive(PgDomain)]` goes on a one-field struct, such as `pub struct Email(pub String);`, and `#[derive(PgComposite)]` on a struct with named fields, one field per attribute, in order. Each gives encoding, decoding and `morm::Param`, and a model column uses the Rust type directly, as it does a `PgEnum`. `pg_type` returns `Type::UNKNOWN`, and composite parameters use text format. On its own, `PgDomain`, `PgComposite` or `PgEnum` only binds to a type that already exists: morm doesn't create or change that type. Step 35 adds the attributes that make morm manage one.
+
+### Managed enums
+
+- **R-0976** **Type names.** A bare `#[derive(PgEnum)]`, `#[derive(PgDomain)]` or `#[derive(PgComposite)]` binds to the snake_case of the Rust name, so `OrderState` binds to `order_state`. `#[pg_type(name = "...")]` overrides that name, and it doesn't turn on management.
+- **R-0977** **Labels.** A variant's Postgres label is the snake_case of its name, so `AwaitingPayment` is `awaiting_payment`. `#[pg_enum(value = "...")]` on the variant overrides it. Attributes on a variant never turn on management: only `#[pg_enum(name = "...")]` on the type does.
+- **R-1055** **`TextEnum` labels.** `#[derive(TextEnum)]` stores each variant's Rust spelling, so `Pending` is stored as `Pending`, and the CHECK constraint lists that same spelling. This differs from `PgEnum`, whose labels are snake_case. `#[model]` emits the CHECK in metadata like a range CHECK, named `__CHK_{table}_{column}_enum__`, reading labels through a trait constant on the type.
+- **R-0978** **Enum binding needs no OID.** morm writes `ToSql` and `FromSql` for `PgEnum` itself and doesn't use `postgres-derive`, whose exact variant check fails on every connection opened after a value is added. `accepts` compares no variants. `Param::pg_type` returns `Type::UNKNOWN`, so Postgres infers the type and a query never carries an OID that a swap could make stale. Array parameters use text format, because a binary array carries its element's OID. Labels are matched as bytes at compile time, with no heap use.
+- **R-0979** **A label the binary doesn't know** returns `Error::UnknownEnumValue`, with the type and the label, for rows holding it and no others. `#[pg_enum(unknown)]` on one unit variant decodes any such label to that variant instead, and writing that variant returns `Error::Validation`. This variant has no label: it isn't in the CHECK list, the managed type or `check_schema`, and it can't take `value`, `was` or `deprecated`.
+- **R-1056** **`TextEnum` fallback.** `#[text_enum(unknown)]` on one unit variant works like `#[pg_enum(unknown)]`: any stored value the binary doesn't know decodes to that variant, as one branch on read, instead of returning `Error::UnknownEnumValue`, and writing that variant returns `Error::Validation`. It's opt-in. Without it, an unknown stored value returns `Error::UnknownEnumValue`, with the Rust type's name and the value. This variant has no label: it isn't in the CHECK list, the managed type or `check_schema`, and it can't take `value`, `was` or `deprecated`.
+- **R-0980** **Renamed labels.** `#[pg_enum(was = "old")]` on a variant decodes both labels to it and writes the current one, so a new binary reads rows from either side of a rename. A current label beats any `was`.
+
+## Test obligations
+
+| ID | Type | Obligation |
+|---|---|---|
+| T-0141 | integration | `#[derive(PgDomain)]` and `#[derive(PgComposite)]` round-tripping through columns and parameters on types created by hand |
+| T-0142 | integration | **Plain `String` on a domain:** test whether a `String` field or parameter binds to a column of a text domain, and don't assume it. State the result in the PR. If it doesn't bind, `PgDomain` is the only way to use such a column, and its docs say so. |
+| T-0148 | integration | **Enum binding survives type changes:** on an open connection and on one opened afterwards, `PgEnum` values and arrays bind and decode through `query_typed` and prepared statements after `ADD VALUE`, and through `query_typed` after a hand-run type swap. |
+| T-0149 | integration | **Names and labels:** a bare derive binds to the snake_case name, `#[pg_type(name = "...")]` and `#[pg_enum(value = "...")]` override it, an unknown label returns `Error::UnknownEnumValue`, `#[pg_enum(unknown)]` decodes it and refuses to write, and `was` decodes both labels. |
+| T-0150 | trybuild | a `PgEnum` with duplicate labels, an empty label, a label over 63 bytes, a variant that isn't a unit variant, two `#[pg_enum(unknown)]` variants, or an `unknown` variant that also has `value`, `was` or `deprecated` |
+| T-0180 | integration | **`TextEnum` labels:** variants such as `Pending` and `AwaitingPayment` are stored as those exact spellings, not snake_case, and the CHECK in `ModelMeta` lists the same spellings. |
+| T-0181 | integration | **`TextEnum` fallback:** `#[text_enum(unknown)]` decodes a stored value the binary doesn't know to that variant, known values still decode to their own variants, writing that variant returns `Error::Validation`, and without the attribute the same value returns `Error::UnknownEnumValue`. |
+| T-0182 | trybuild | a `TextEnum` with two `#[text_enum(unknown)]` variants, or a variant that isn't a unit variant |

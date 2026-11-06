@@ -2,7 +2,7 @@
 
 - **Phase:** Tools
 - **Depends on:** 42
-- **Can run beside:** 08, 23, 26, 39, 40, 41, 43, 45, 46, 47, 48, 49, 51, 52, 53, 54
+- **Can run beside:** 08, 23, 26, 39, 40, 41, 43, 45, 46, 47, 48, 49, 51, 52, 53, 54, 58, 59
 - **Crates:** `morm-admin`
 - **PR approval:** CI and an independent review
 
@@ -57,7 +57,7 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 
 ### Managed enums
 
-- **R-1001** `import` writes bare `#[derive(PgEnum)]`, `#[derive(PgDomain)]` and `#[derive(PgComposite)]`, and never `#[pg_enum(name = "...")]`, `#[pg_domain]` or `#[pg_composite]`, so nothing becomes managed by accident. It adds `#[pg_type(name = "...")]` and `#[pg_enum(value = "...")]` where snake_case wouldn't give the existing name.
+- **R-1001** `import` writes bare `#[derive(PgEnum)]`, `#[derive(PgDomain)]` and `#[derive(PgComposite)]`, and never `#[pg_enum(name = "...")]`, `#[pg_domain]` or `#[pg_composite]`, so nothing becomes managed by accident. It adds `#[pg_type(name = "...")]` and `#[pg_enum(value = "...")]` where snake_case wouldn't give the existing name. A `text` column with a CHECK stays `String` with `checks(...)`, and `import` never writes `TextEnum`.
 
 ## Test obligations
 

@@ -18,7 +18,7 @@ Map Rust types to columns, and decode rows with no needless allocation.
 
 ## End-to-end check
 
-A model with every inferred type decodes rows from a real Postgres table created by hand, borrowed and owned, except the types step 13 owns: `Decimal`, `Numeric`, `Range<T>`, `IpAddr`, enums, domains and composite types. Each compile-time rule is proven with `trybuild`.
+A model with every inferred type decodes rows from a real Postgres table created by hand, borrowed and owned, except the types steps 13 and 56 own: `Decimal`, `Numeric`, `Range<T>`, `IpAddr`, enums, domains and composite types. Each compile-time rule is proven with `trybuild`.
 
 ## Out of scope
 

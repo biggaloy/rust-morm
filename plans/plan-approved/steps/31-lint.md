@@ -1,7 +1,7 @@
 # Step 31: `lint`
 
 - **Phase:** Migrations
-- **Depends on:** 30, 07, 13
+- **Depends on:** 30, 07, 13, 56
 - **Can run beside:** 08, 09, 11, 12, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 47
 - **Crates:** `morm-migrate`, `morm-admin`
 - **PR approval:** CI and an independent review

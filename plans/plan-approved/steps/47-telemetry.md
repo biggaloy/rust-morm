@@ -2,7 +2,7 @@
 
 - **Phase:** Tools
 - **Depends on:** 14, 25
-- **Can run beside:** 08, 23, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 46, 51, 52, 53, 54
+- **Can run beside:** 08, 23, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 46, 51, 52, 53, 54, 57, 58, 59
 - **Crates:** `morm`
 - **PR approval:** CI and an independent review
 
@@ -147,7 +147,7 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 **R-0739** **Metrics.** Nothing is published from the query path. Each connection keeps plain counters and fixed-bucket duration histograms. A connection has one user at a time, so these are uncontended. One background task per pool adds them up every `metrics_interval` and publishes them, and a closing connection adds its totals to the pool first.
 
 - **R-0740** Names follow the same conventions: `db.client.connection.count`, `db.client.connection.max`, `db.client.connection.pending_requests`, `db.client.connection.wait_time`, `db.client.operation.duration`.
-- **R-0741** morm adds `db.morm.*` metrics for deadlocks, retries, lock timeouts and `shape_cache` churn.
+- **R-0741** morm adds `db.morm.*` metrics for deadlocks, retries, lock timeouts, `shape_cache` churn and connections replaced for a stale generation.
 - **R-0742** A shorter interval gives finer graphs but more data points, and the platform's bill rises with it. It adds no cost per query.
 
 **R-0743** **No per-request SQL comments.** Trace-linking modes such as Datadog's `full` propagation add a `traceparent` comment to every statement. That makes every query text unique, so no statement could be reused. morm won't do it. `application_name` and `.tag()` give the fixed, service-level equivalent. A query still appears inside its request trace through the app-side span, and only the jump from a database sample to one exact trace is lost.

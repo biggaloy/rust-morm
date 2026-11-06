@@ -1,7 +1,7 @@
 # Step 03: Freeze the contracts
 
 - **Phase:** Foundation
-- **Depends on:** 02
+- **Depends on:** 55
 - **Can run beside:** nothing
 - **Crates:** `morm`, `morm-core`, `morm-macros`: traits and types only
 - **PR approval:** the owner approves the PR

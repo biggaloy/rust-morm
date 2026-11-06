@@ -4,7 +4,7 @@ Generated from the frozen plan. Each requirement and test obligation lives in ex
 
 Kinds: `code` needs a tagged test, `doc` is checked in the README step, `info` is context with nothing to build.
 
-Totals: 1057 requirements, 181 test obligations.
+Totals: 1059 requirements, 185 test obligations.
 
 ## Requirements
 
@@ -196,9 +196,9 @@ Totals: 1057 requirements, 181 test obligations.
 | R-0184 | code | 04 | 412 | \| `keep_case` \| allow uppercase in an existing column's name \| |
 | R-0185 | code | 04 | 413 | \| `was` \| previous column name (rename hint) \| |
 | R-0186 | code | 05 | 417 | `i16` → smallint, `i32` → integer, `i64` → bigint, `f32` → real, `f64` → double precision,… |
-| R-0187 | code | 13 | 417 | `#[derive(TextEnum)]` maps a Rust enum to `text` with a CHECK constraint, the recommended … |
-| R-0188 | code | 13 | 417 | `#[derive(PgEnum)]` maps to a Postgres enum, and on its own it only binds to a type that a… |
-| R-0189 | code | 13 | 417 | Domains and composite types are also supported. |
+| R-0187 | code | 56 | 417 | `#[derive(TextEnum)]` maps a Rust enum to `text` with a CHECK constraint, the recommended … |
+| R-0188 | code | 56 | 417 | `#[derive(PgEnum)]` maps to a Postgres enum, and on its own it only binds to a type that a… |
+| R-0189 | code | 56 | 417 | Domains and composite types are also supported. |
 | R-0190 | code | 05 | 419 | - **Integers Postgres has no exact type for** map to the smallest column that holds every … |
 | R-0191 | code | 05 | 423 | \| `i8` \| `smallint` \| -128 to 127 \| |
 | R-0192 | code | 05 | 424 | \| `u8` \| `smallint` \| 0 to 255 \| |
@@ -750,7 +750,7 @@ Totals: 1057 requirements, 181 test obligations.
 | R-0738 | code | 47 | 1550 | - **Field names** follow the OpenTelemetry database conventions: `db.system.name`, `db.que… |
 | R-0739 | code | 47 | 1552 | **Metrics.** Nothing is published from the query path. Each connection keeps plain counter… |
 | R-0740 | code | 47 | 1554 | - Names follow the same conventions: `db.client.connection.count`, `db.client.connection.m… |
-| R-0741 | code | 47 | 1555 | - morm adds `db.morm.*` metrics for deadlocks, retries, lock timeouts and `shape_cache` ch… |
+| R-0741 | code | 47 | 1555 | - morm adds `db.morm.*` metrics for deadlocks, retries, lock timeouts, `shape_cache` churn… |
 | R-0742 | code | 47 | 1556 | - A shorter interval gives finer graphs but more data points, and the platform's bill rise… |
 | R-0743 | code | 47 | 1558 | **No per-request SQL comments.** Trace-linking modes such as Datadog's `full` propagation … |
 | R-0744 | code | 48 | 1562 | - Release profile for benches and examples, recommended in the docs: `lto = "fat"`, `codeg… |
@@ -970,13 +970,13 @@ Totals: 1057 requirements, 181 test obligations.
 | R-0958 | code | 01 | 0 | - **Repo files for a public project.** `SECURITY.md` says how to report a vulnerability pr… |
 | R-0959 | code | 42 | 0 | - `morm::pg_outbox!()` declares the outbox table as a managed table, tracked by migrations… |
 | R-0960 | code | 34 | 0 | - **`full-chain` job.** This step sets what `nightly.yml`'s `full-chain` job runs and chan… |
-| R-0961 | code | 13 | 0 | - **Domains and composite types in Rust.** `#[derive(PgDomain)]` goes on a one-field struc… |
+| R-0961 | code | 56 | 0 | - **Domains and composite types in Rust.** `#[derive(PgDomain)]` goes on a one-field struc… |
 | R-0962 | code | 35 | 0 | Types are declared once, on their Rust type. A sequence has no Rust type, so it uses a mac… |
 | R-0963 | code | 35 | 0 | - `#[pg_domain]`, `#[pg_composite]` and `#[pg_enum]` make morm manage the type they sit on… |
 | R-0964 | code | 35 | 0 | - The Rust item gives the type's shape, so nothing is written twice: a domain's base type … |
 | R-0965 | code | 35 | 0 | - `morm::pg_sequence!(name, "options")` declares a standalone sequence, and `options` is t… |
-| R-0966 | code | 36 | 0 | - **Sequences:** a sequence's catalog comparison uses its definition only (type, start, in… |
-| R-0967 | code | 36 | 0 | - Dropping a sequence loses its position, because the inverse recreates it from its defini… |
+| R-0966 | code | 57 | 0 | - **Sequences:** a sequence's catalog comparison uses its definition only (type, start, in… |
+| R-0967 | code | 57 | 0 | - Dropping a sequence loses its position, because the inverse recreates it from its defini… |
 | R-0968 | code | 37 | 0 | - Sequences count as types in this fixed order, so they apply before tables and a column d… |
 | R-0969 | doc | 50 | 0 | \| `#[derive(PgDomain)]` \| A column uses a Postgres domain that already exists \| |
 | R-0970 | doc | 50 | 0 | \| `#[derive(PgComposite)]` \| A column uses a Postgres composite type that already exists… |
@@ -985,11 +985,11 @@ Totals: 1057 requirements, 181 test obligations.
 | R-0973 | doc | 50 | 0 | \| `#[pg_enum(...)]` \| You need a real Postgres enum and want migrations to manage it, in… |
 | R-0974 | doc | 50 | 0 | \| `morm::pg_sequence!` \| You need numbers from a sequence that no identity column owns, … |
 | R-0975 | code | 11 | 0 | - **Stale generation.** The pool holds a generation counter for connections, in one atomic… |
-| R-0976 | code | 13 | 0 | - **Type names.** A bare `#[derive(PgEnum)]`, `#[derive(PgDomain)]` or `#[derive(PgComposi… |
-| R-0977 | code | 13 | 0 | - **Labels.** A variant's Postgres label is the snake_case of its name, so `AwaitingPaymen… |
-| R-0978 | code | 13 | 0 | - **Enum binding needs no OID.** morm writes `ToSql` and `FromSql` for `PgEnum` itself and… |
-| R-0979 | code | 13 | 0 | - **A label the binary doesn't know** returns `Error::UnknownEnumValue`, with the type and… |
-| R-0980 | code | 13 | 0 | - **Renamed labels.** `#[pg_enum(was = "old")]` on a variant decodes both labels to it and… |
+| R-0976 | code | 56 | 0 | - **Type names.** A bare `#[derive(PgEnum)]`, `#[derive(PgDomain)]` or `#[derive(PgComposi… |
+| R-0977 | code | 56 | 0 | - **Labels.** A variant's Postgres label is the snake_case of its name, so `AwaitingPaymen… |
+| R-0978 | code | 56 | 0 | - **Enum binding needs no OID.** morm writes `ToSql` and `FromSql` for `PgEnum` itself and… |
+| R-0979 | code | 56 | 0 | - **A label the binary doesn't know** returns `Error::UnknownEnumValue`, with the type and… |
+| R-0980 | code | 56 | 0 | - **Renamed labels.** `#[pg_enum(was = "old")]` on a variant decodes both labels to it and… |
 | R-0981 | code | 14 | 0 | - **Stale server state.** `XX000` with the message `cache lookup failed for type`, from an… |
 | R-0982 | code | 14 | 0 | - **Telling the rest of the pool.** Any stale statement raises a statement generation, hel… |
 | R-0983 | code | 14 | 0 | - **Retrying is safe.** Postgres rolls back a failed statement outside a transaction, so a… |
@@ -1000,13 +1000,13 @@ Totals: 1057 requirements, 181 test obligations.
 | R-0988 | code | 31 | 0 | - An op can declare `lint` findings of its own, and `--url` filters them by table size lik… |
 | R-0989 | code | 32 | 0 | - **Op data in `meta.json`.** An op can store its own data in `meta.json`, under `op_data`… |
 | R-0990 | code | 35 | 0 | **Enum changes are declared on the variants.** `was` names a label this variant used to ha… |
-| R-0991 | code | 36 | 0 | - **Enums in this step** are created with their labels in variant order, dropped, and have… |
-| R-0992 | code | 36 | 0 | - **Rename or not.** A label that's gone and a label that's new on the same type are a ren… |
-| R-0993 | code | 36 | 0 | - Any other change to an enum's values is refused by the diff with exit code `2`. Step 51 … |
+| R-0991 | code | 57 | 0 | - **Enums in this step** are created with their labels in variant order, dropped, and have… |
+| R-0992 | code | 57 | 0 | - **Rename or not.** A label that's gone and a label that's new on the same type are a ren… |
+| R-0993 | code | 57 | 0 | - Any other change to an enum's values is refused by the diff with exit code `2`. Step 51 … |
 | R-0994 | code | 37 | 0 | - **Refreshing functions.** A session keeps its compiled copy of a plpgsql function, and w… |
 | R-0995 | code | 38 | 0 | - **Retired types.** A type can be retired along with the columns that still use it. It's … |
 | R-0996 | code | 40 | 0 | - **Reverting an enum change.** `revert` plans its forward migration like any other change… |
-| R-0997 | code | 41 | 0 | - **Enums in `check_schema`.** The per-model list also holds each enum's labels. Every var… |
+| R-0997 | code | 41 | 0 | - **Enums in `check_schema`.** The per-model list also holds each enum's labels. Every lab… |
 | R-0998 | code | 41 | 0 | - **Enum phases.** Adds, renames and the online swap's steps before its cutover are `expan… |
 | R-0999 | code | 41 | 0 | - **Removing a value in a rolling deploy.** `#[pg_enum(deprecated)]` on a variant says tha… |
 | R-1000 | code | 41 | 0 | - **Renaming a value in a rolling deploy.** A rename runs instantly by default, so old bin… |
@@ -1024,19 +1024,19 @@ Totals: 1057 requirements, 181 test obligations.
 | R-1012 | code | 51 | 0 | - **The swap.** Postgres stores an enum value as an internal ID, so moving to a new type a… |
 | R-1013 | code | 51 | 0 | - **Array columns** change in the same way, and a map applies to each element with `array_… |
 | R-1014 | code | 51 | 0 | - **What the old type carried.** `COMMENT`, the owner and grants belong to the type's OID,… |
-| R-1015 | code | 51 | 0 | - **Rows holding a removed value.** `makemigrations` can't see live data, so removing a va… |
-| R-1016 | code | 51 | 0 | - **Keeping old values.** A `map` that keeps old values adds a `text` column named as a re… |
+| R-1015 | code | 58 | 0 | - **Rows holding a removed value.** `makemigrations` can't see live data, so removing a va… |
+| R-1016 | code | 58 | 0 | - **Keeping old values.** A `map` that keeps old values adds a `text` column named as a re… |
 | R-1017 | code | 51 | 0 | - **Reordering is a decision.** Sorting variants alphabetically must not quietly rewrite p… |
-| R-1018 | code | 51 | 0 | \| Add \| `none` \| Remove by swap. It refuses while rows hold the value, unless a `down_m… |
+| R-1018 | code | 58 | 0 | \| Add \| `none` \| Remove by swap. It refuses while rows hold the value, unless a `down_m… |
 | R-1019 | code | 51 | 0 | \| Reorder \| `none` \| Reorder back by swap \| |
-| R-1020 | code | 51 | 0 | \| Remove, no rows \| `none` \| `ADD VALUE` at the old position \| |
-| R-1021 | code | 51 | 0 | \| Remove, map, keep old values \| `retires` \| `ADD VALUE`, then in a later step restore … |
-| R-1022 | code | 51 | 0 | \| Remove, map, `drop now` \| `lossy` \| `ADD VALUE`. The label returns and the rows don't… |
-| R-1023 | code | 51 | 0 | - **Restoring rows.** Down restores an old value only where the row still holds the value … |
+| R-1020 | code | 58 | 0 | \| Remove, no rows \| `none` \| `ADD VALUE` at the old position \| |
+| R-1021 | code | 58 | 0 | \| Remove, map, keep old values \| `retires` \| `ADD VALUE`, then in a later step restore … |
+| R-1022 | code | 58 | 0 | \| Remove, map, `drop now` \| `lossy` \| `ADD VALUE`. The label returns and the rows don't… |
+| R-1023 | code | 58 | 0 | - **Restoring rows.** Down restores an old value only where the row still holds the value … |
 | R-1024 | code | 51 | 0 | - **Crash recovery.** The swap is all or nothing, so a killed run leaves the old type, and… |
 | R-1025 | code | 51 | 0 | - **`max_rewrite_mb`.** `[migrations] max_rewrite_mb`, default 1024, limits a table rewrit… |
 | R-1026 | code | 51 | 0 | - **`lint`** reports every swap, with the tables it rewrites, an add on an enum that's a l… |
-| R-1027 | code | 51 | 0 | - **With-data proof.** Enum columns get a row per label. A map also puts rows on the remov… |
+| R-1027 | code | 58 | 0 | - **With-data proof.** Enum columns get a row per label. A map also puts rows on the remov… |
 | R-1028 | code | 51 | 0 | - **morm never edits `pg_enum`.** It needs superuser, and it would leave indexes referring… |
 | R-1029 | code | 53 | 0 | - **The walk.** Start at the enum and follow `pg_depend` through every type built on it: i… |
 | R-1030 | code | 53 | 0 | - **Compared on the live database.** `makemigrations` stores the walk's result from scratc… |
@@ -1047,9 +1047,9 @@ Totals: 1057 requirements, 181 test obligations.
 | R-1035 | code | 53 | 0 | - **A function or procedure with the enum in its signature** is dropped and created, becau… |
 | R-1036 | code | 53 | 0 | - **Always refused for a remove or reorder,** listing the object: the enum as a partition … |
 | R-1037 | code | 53 | 0 | - **Unmanaged dependents are refused,** whatever their kind, including a column in another… |
-| R-1038 | code | 53 | 0 | - **Code Postgres doesn't track.** Before a swap, a rename or a removal, step 38's source … |
-| R-1039 | code | 53 | 0 | - **Refreshing managed functions.** Every managed plpgsql function that search finds, and … |
-| R-1040 | code | 53 | 0 | - **Unmanaged functions** that would go stale are a decision, repeated in preflight on the… |
+| R-1038 | code | 59 | 0 | - **Code Postgres doesn't track.** Before a swap, a rename or a removal, step 38's source … |
+| R-1039 | code | 59 | 0 | - **Refreshing managed functions.** Every managed plpgsql function that search finds, and … |
+| R-1040 | code | 59 | 0 | - **Unmanaged functions** that would go stale are a decision, repeated in preflight on the… |
 | R-1041 | code | 54 | 0 | - **A managed domain over the enum gets a new type too.** Postgres has no command to chang… |
 | R-1042 | code | 54 | 0 | - **A managed composite type holding the enum** changes with `ALTER ATTRIBUTE` when no col… |
 | R-1043 | code | 54 | 0 | - **Order.** New types are created from the enum outward, and old types are dropped from t… |
@@ -1064,9 +1064,11 @@ Totals: 1057 requirements, 181 test obligations.
 | R-1052 | code | 52 | 0 | - **Refused in this form, allowed with `--fast`,** naming the cause: partitioned tables, b… |
 | R-1053 | code | 52 | 0 | - **Recovery.** Each step has a precondition, so `--resume` continues, the copy resumes fr… |
 | R-1054 | code | 52 | 0 | - **Column position.** The real column moves to the end of the table. Position isn't compa… |
-| R-1055 | code | 13 | 0 | - **`TextEnum` labels.** `#[derive(TextEnum)]` stores each variant's Rust spelling, so `Pe… |
-| R-1056 | code | 13 | 0 | - **`TextEnum` fallback.** `#[text_enum(unknown)]` on one unit variant works like `#[pg_en… |
+| R-1055 | code | 56 | 0 | - **`TextEnum` labels.** `#[derive(TextEnum)]` stores each variant's Rust spelling, so `Pe… |
+| R-1056 | code | 56 | 0 | - **`TextEnum` fallback.** `#[text_enum(unknown)]` on one unit variant works like `#[pg_en… |
 | R-1057 | doc | 50 | 0 | \| `#[text_enum(unknown)]` \| Old binaries must keep reading a `TextEnum` column during a … |
+| R-1058 | doc | 50 | 0 | \| `#[derive(TextEnum)]` \| A column holds one of a fixed set of values; prefer this to a … |
+| R-1059 | code | 57 | 0 | - **Changing a domain or composite type.** A changed domain `check` drops and adds the con… |
 
 ## Test obligations
 
@@ -1212,38 +1214,38 @@ Totals: 1057 requirements, 181 test obligations.
 | T-0138 | suite | 49 | **Full chain runs in CI:** `nightly.yml`'s `full-chain` job runs the T-0127 test on Postgr… |
 | T-0139 | suite | 49 | **Fuzzing runs in CI:** `nightly.yml`'s `fuzz` job runs the T-0128 targets, and the PR lin… |
 | T-0140 | suite | 49 | **Full chain covers the whole chain:** the migrations in `nightly.yml`'s `full-chain` job … |
-| T-0141 | integration | 13 | `#[derive(PgDomain)]` and `#[derive(PgComposite)]` round-tripping through columns and para… |
-| T-0142 | integration | 13 | **Plain `String` on a domain:** test whether a `String` field or parameter binds to a colu… |
+| T-0141 | integration | 56 | `#[derive(PgDomain)]` and `#[derive(PgComposite)]` round-tripping through columns and para… |
+| T-0142 | integration | 56 | **Plain `String` on a domain:** test whether a `String` field or parameter binds to a colu… |
 | T-0143 | trybuild | 35 | a `#[pg_composite]` field with no SQL type: its Rust type infers none, and it has no `#[co… |
 | T-0144 | suite | 35 | **Bare derives:** `#[derive(PgDomain)]`, `#[derive(PgComposite)]` or `#[derive(PgEnum)]` w… |
-| T-0145 | integration | 36 | **Sequences:** a sequence shows no drift after `nextval` calls, an identity column's seque… |
+| T-0145 | integration | 57 | **Sequences:** a sequence shows no drift after `nextval` calls, an identity column's seque… |
 | T-0146 | integration | 37 | a column default calling `nextval` on a managed sequence applies, and a sequence declared … |
 | T-0147 | integration | 11 | **Stale generation:** raising the counter replaces every older connection at its next chec… |
-| T-0148 | integration | 13 | **Enum binding survives type changes:** on an open connection and on one opened afterwards… |
-| T-0149 | integration | 13 | **Names and labels:** a bare derive binds to the snake_case name, `#[pg_type(name = "...")… |
-| T-0150 | trybuild | 13 | a `PgEnum` with duplicate labels, an empty label, a label over 63 bytes, a variant that is… |
+| T-0148 | integration | 56 | **Enum binding survives type changes:** on an open connection and on one opened afterwards… |
+| T-0149 | integration | 56 | **Names and labels:** a bare derive binds to the snake_case name, `#[pg_type(name = "...")… |
+| T-0150 | trybuild | 56 | a `PgEnum` with duplicate labels, an empty label, a label over 63 bytes, a variant that is… |
 | T-0151 | integration | 14 | **Stale statements on Postgres 15–18:** after a hand-run enum swap, with the old type drop… |
 | T-0152 | integration | 14 | **Stale sessions:** a plpgsql trigger compiled before a hand-run swap fails with `XX000`, … |
 | T-0153 | integration | 14 | **No false recovery:** a `42883` from SQL that was never cached isn't retried, a retried w… |
 | T-0154 | trybuild | 35 | `#[pg_type]` on a type that also has `#[pg_enum(name = "...")]`, `#[pg_domain]` or `#[pg_c… |
-| T-0155 | integration | 36 | **Enum renames:** `was` and a decision each rename a value with rows holding it, the inver… |
+| T-0155 | integration | 57 | **Enum renames:** `was` and a decision each rename a value with rows holding it, the inver… |
 | T-0156 | integration | 37 | **Refresh:** a function compiled in an open session before a hand-run type swap fails, and… |
 | T-0157 | suite | 40 | **Enum revert:** `revert` of an add runs the online swap and stops on rows holding the val… |
 | T-0158 | integration | 41 | **Enums in a rolling deploy:** `check_schema` passes during an add and reports a missing l… |
-| T-0159 | suite | 51 | **Enum ops:** every op in the inverse table, with and without data, up, down and up, on Po… |
-| T-0160 | suite | 51 | **Removed values:** `refuse` stops with row counts and changes nothing, `map` keeps old va… |
+| T-0159 | suite | 58 | **Enum ops:** every op in the inverse table, and a reorder, with and without data, up, dow… |
+| T-0160 | suite | 58 | **Removed values:** `refuse` stops with row counts and changes nothing, `map` keeps old va… |
 | T-0161 | suite | 51 | **Decisions:** a reorder with no answer exits with code `3`, a remove and add with no `was… |
 | T-0162 | suite | 51 | **Fault injection:** kill the process at every step boundary and during a table rewrite. `… |
-| T-0163 | integration | 51 | **Proof, a non-superuser swap on Postgres 15–18:** add, remove and reorder as a role that … |
+| T-0163 | integration | 51 | **Proof, a non-superuser swap on Postgres 15–18:** add and reorder as a role that owns the… |
 | T-0164 | integration | 51 | **Proof, logical replication on Postgres 15–18:** with a subscription on the same server, … |
 | T-0165 | integration | 51 | **`max_rewrite_mb`:** a swap over the limit is refused with exit code `2` naming the table… |
 | T-0166 | suite | 53 | **Every dependent kind:** one test per kind in the rebuilt, recreated, foreign key, genera… |
 | T-0167 | integration | 53 | **Proof, the dependency list on Postgres 15–18:** the walk on one schema holding every kin… |
-| T-0168 | integration | 53 | **Stale plpgsql on Postgres 15–18:** a session that compiled `DECLARE v the_enum`, `SELECT… |
-| T-0169 | suite | 53 | **Live refusals:** an unmanaged column in another schema, an unmanaged view, a function th… |
+| T-0168 | integration | 59 | **Stale plpgsql on Postgres 15–18:** a session that compiled `DECLARE v the_enum`, `SELECT… |
+| T-0169 | suite | 53 | **Live refusals:** an unmanaged column in another schema, an unmanaged view and a new depe… |
 | T-0170 | suite | 53 | **Fault injection:** kill the process during a swap with recreated dependents, and every d… |
-| T-0171 | integration | 53 | **Proof, PgBouncer:** in a `pooler` test, in transaction mode, an app recovers from a swap… |
-| T-0172 | integration | 53 | **Proof, hot standby:** a `read_only` pool on a standby recovers from a swap on the primar… |
+| T-0171 | integration | 59 | **Proof, PgBouncer:** in a `pooler` test, in transaction mode, an app recovers from a swap… |
+| T-0172 | integration | 59 | **Proof, hot standby:** a `read_only` pool on a standby recovers from a swap on the primar… |
 | T-0173 | suite | 54 | **Domains and composites:** with rows, on Postgres 15–18: a domain, a composite with and w… |
 | T-0174 | suite | 54 | **Fault injection:** kill the process during a swap through a domain and a composite, and … |
 | T-0175 | suite | 52 | **Live traffic:** with writers on an old binary, including writes of the removed value unt… |
@@ -1251,5 +1253,9 @@ Totals: 1057 requirements, 181 test obligations.
 | T-0177 | suite | 52 | **Proof, foreign keys and domains:** each refused layout is refused before anything change… |
 | T-0178 | suite | 52 | **Proof, name replacement:** on Postgres 15–18, the column's name inside a string literal,… |
 | T-0179 | suite | 52 | **Copy edges:** rows inserted just before the trigger attached are copied, a missed row fa… |
-| T-0180 | integration | 13 | **`TextEnum` labels:** variants such as `Pending` and `AwaitingPayment` are stored as thos… |
-| T-0181 | integration | 13 | **`TextEnum` fallback:** `#[text_enum(unknown)]` decodes a stored value the binary doesn't… |
+| T-0180 | integration | 56 | **`TextEnum` labels:** variants such as `Pending` and `AwaitingPayment` are stored as thos… |
+| T-0181 | integration | 56 | **`TextEnum` fallback:** `#[text_enum(unknown)]` decodes a stored value the binary doesn't… |
+| T-0182 | trybuild | 56 | a `TextEnum` with two `#[text_enum(unknown)]` variants, or a variant that isn't a unit var… |
+| T-0183 | integration | 30 | **`TextEnum` CHECK:** the migration creates the named CHECK, adding or removing a variant … |
+| T-0184 | suite | 59 | **Unmanaged functions:** a function that only names the type in its body stops `migrate` w… |
+| T-0185 | integration | 57 | **Domain and composite changes:** with rows, a changed domain `check` replaces the constra… |

@@ -1,8 +1,8 @@
 # Step 37: Managed objects: dependencies
 
 - **Phase:** Migrations
-- **Depends on:** 36
-- **Can run beside:** 08, 09, 12, 19, 20, 21, 22, 23, 24, 25, 26, 27, 47
+- **Depends on:** 36, 57
+- **Can run beside:** 08, 09, 19, 20, 21, 22, 23, 24, 25, 26, 27, 47
 - **Crates:** `morm-migrate`
 - **PR approval:** CI and an independent review
 
@@ -37,7 +37,7 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 
 ### Managed enums
 
-- **R-0994** **Refreshing functions.** A session keeps its compiled copy of a plpgsql function, and when a type is replaced under it, that copy fails on every call. Nothing in the catalog shows this, and `DISCARD PLANS` doesn't clear it. The planner can re-run a managed function's `CREATE OR REPLACE` with its definition unchanged, in the same transaction, which makes every session recompile it. Step 53 decides which functions need it.
+- **R-0994** **Refreshing functions.** A session keeps its compiled copy of a plpgsql function, and when a type is replaced under it, that copy fails on every call. Nothing in the catalog shows this, and `DISCARD PLANS` doesn't clear it. The planner can re-run a managed function's `CREATE OR REPLACE` with its definition unchanged, in the same transaction, which makes every session recompile it. Step 59 decides which functions need it.
 
 ## Test obligations
 

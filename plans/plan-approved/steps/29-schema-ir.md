@@ -2,7 +2,7 @@
 
 - **Phase:** Migrations
 - **Depends on:** 28, 10
-- **Can run beside:** 07, 08, 09, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 47
+- **Can run beside:** 07, 08, 09, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 47, 56
 - **Crates:** `morm-migrate`
 - **PR approval:** CI and an independent review
 

@@ -1,8 +1,8 @@
 # Step 40: Production mode, revert and squash
 
 - **Phase:** Migrations
-- **Depends on:** 52, 54
-- **Can run beside:** 08, 09, 12, 19, 20, 21, 22, 23, 24, 25, 26, 27, 43, 44, 45, 46, 47, 48
+- **Depends on:** 52
+- **Can run beside:** 08, 09, 19, 20, 21, 22, 23, 24, 25, 26, 27, 43, 44, 45, 46, 47, 48
 - **Crates:** `morm-migrate`, `morm-admin`
 - **PR approval:** CI and an independent review
 

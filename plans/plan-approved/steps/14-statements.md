@@ -1,9 +1,9 @@
 # Step 14: Statement caches and fragments
 
 - **Phase:** Runtime
-- **Depends on:** 11, 13
-- **Can run beside:** 06, 07, 08, 09, 12, 28, 29, 30, 31, 32, 33, 34, 35
-- **Crates:** `morm`
+- **Depends on:** 11, 12, 13, 56
+- **Can run beside:** 06, 07, 08, 09, 28, 29, 30, 31, 32, 33, 34, 35
+- **Crates:** `morm`, `morm-core`
 - **PR approval:** CI and an independent review
 
 Read `../rules.md`, `../contracts.md` and, once it exists, `../proofs.md` first. Everything needed for this step is in those files and this one.
@@ -34,7 +34,7 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 
 ### Reading and writing / Query safety
 
-- **R-0433** **`$n` in a fragment is local.** `comp`, `set_expr` and `.q()` fragments each count from `$1`, and morm renumbers them. The scan skips quoted strings and comments, so `'$1'` stays text.
+- **R-0433** **`$n` in a fragment is local.** `comp`, `set_expr` and `.q()` fragments each count from `$1`, and morm renumbers them. The scan skips quoted strings and comments, so `'$1'` stays text. The scanner lives in `morm-core`.
 - **R-0434** Typed errors: `Unique { constraint, field }`, `ForeignKey`, `NotNull`, `Check`, `Serialization`, `Deadlock`, `LockTimeout`, `TransactionTimeout`, `TransactionAborted`, `CommitUnknown`, `NestedConnection`, `PoolerMode`, `NotFound`, `EmptyPatch`, `Conflict`, `Forbidden`, `Validation`, `PoolBusy`, `ConnectionLost`, `ReadOnly`, `OutOfRange`, `InvalidText`, `InvalidOrder`, `InvalidCursor`, `Decimal`.
 
 ### Performance and memory / `morm::Pool`
@@ -75,13 +75,13 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 |---|---|---|
 | R-0755 | A per-request id in SQL, which would defeat every statement cache | `.tag()` takes only `&'static str`, and no trace comments are added |
 | R-0757 | Client-chosen fields evicting hot statements | Runtime-built SQL has its own cache, and one-off shapes are never prepared |
-| R-0764 | A stale cached statement after a migration or an enum swap | Re-prepared or replaced automatically outside a transaction, and `Error::SchemaChanged` inside one |
+| R-0764 | A stale cached statement after a migration or an enum swap | Re-prepared or replaced automatically outside a transaction. Inside one, step 20 returns `Error::SchemaChanged`. |
 
 ### Managed enums
 
-- **R-0981** **Stale server state.** `XX000` with the message `cache lookup failed for type`, from any statement, means the session holds a dropped type, such as in a compiled plpgsql function. Evicting a statement can't clear that, so morm discards the connection, retries once on another outside a transaction, and raises the pool's connection generation.
+- **R-0981** **Stale server state.** `XX000` with the message `cache lookup failed for type`, from any statement, means the session holds a dropped type, such as in a compiled plpgsql function. Evicting a statement can't clear that, so morm discards the connection, retries once on another outside a transaction, and raises the pool's connection generation. On a `db.hold()` connection nothing moves: morm returns `Error::SchemaChanged`, and the connection is replaced on release.
 - **R-0982** **Telling the rest of the pool.** Any stale statement raises a statement generation, held in the same atomic word as the pool's connection generation. A connection that checks out behind it clears both statement caches first, so connections don't each fail once per cached statement. The cost is the one atomic read a checkout already does.
-- **R-0983** **Retrying is safe.** Postgres rolls back a failed statement outside a transaction, so a retry can't apply a write twice. A statement that isn't in a cache is never retried this way, and a retry that fails again returns its error.
+- **R-0983** **Retrying is safe.** Postgres rolls back a failed statement outside a transaction, so a retry can't apply a write twice. A `42883` or `42804` from a statement that isn't in a cache is never retried, `XX000` with that message is retried from any statement, nothing is retried once a row has reached the caller, and a retry that fails again returns its error.
 
 ## Test obligations
 
@@ -92,5 +92,5 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 | T-0076 | integration | `InvalidText` |
 | T-0084 | integration | fragment renumbering |
 | T-0151 | integration | **Stale statements on Postgres 15–18:** after a hand-run enum swap, with the old type dropped and with it kept, a select, a filter, an insert, an update and an `= ANY` on a cached statement all succeed with no error reaching the caller, and the same SQL runs clean a second time. The codes match what proof 14 recorded. If they differ from this design on any version, stop and ask the owner with the evidence and options. |
-| T-0152 | integration | **Stale sessions:** a plpgsql trigger compiled before a hand-run swap fails with `XX000`, morm replaces the connection and the write succeeds once, other connections in the pool are replaced at checkout, and `pool_stats()` shows it. |
+| T-0152 | integration | **Stale sessions:** a plpgsql trigger compiled before a hand-run swap fails with `XX000`, morm replaces the connection and the write succeeds once, other connections in the pool are replaced at checkout, and `pool_stats()` shows it. On a `db.hold()` connection the same failure returns `Error::SchemaChanged`, nothing moves, and the connection is replaced on release. |
 | T-0153 | integration | **No false recovery:** a `42883` from SQL that was never cached isn't retried, a retried write applies once, and a cached statement that fails again returns its error. |

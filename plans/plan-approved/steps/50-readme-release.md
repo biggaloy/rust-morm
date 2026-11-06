@@ -115,6 +115,7 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 | R-1003 | `#[pg_enum(value = "...")]` | A variant's Postgres label isn't the snake_case of its name |
 | R-1004 | `#[pg_enum(was = "...")]` | You renamed a value, and the migration must rename it and not remove and add it |
 | R-1005 | `#[pg_enum(unknown)]` | Old binaries must keep reading rows during a rollout that adds a value |
+| R-1058 | `#[derive(TextEnum)]` | A column holds one of a fixed set of values; prefer this to a Postgres enum |
 | R-1057 | `#[text_enum(unknown)]` | Old binaries must keep reading a `TextEnum` column during a rollout that adds a value |
 | R-1006 | `#[pg_enum(deprecated)]` | You're removing a value in a rolling deploy, and `contract` must wait until this release has shipped |
 | R-1007 | `max_rewrite_mb` | You want a different size limit on rewriting a table under a full lock |
@@ -165,7 +166,7 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 
 **R-1008** The README shows this notice loudly, beside the enum rows:
 
-> **Use `TextEnum` unless you have a reason not to.** Changing a `TextEnum` is an ordinary migration. Postgres can't remove or reorder an enum value, so morm has to replace the whole type, including everything that depends on it. On a big table that means a long online copy or a table rewrite under a full lock. Adding or renaming a value is cheap, but its down is not, and old binaries can't read values they don't know. morm does all of this safely, but `TextEnum` never needs it.
+> **Use `TextEnum` unless you have a reason not to.** Changing a `TextEnum` is an ordinary migration. Postgres can't remove or reorder an enum value, so morm has to replace the whole type, including everything that depends on it. On a big table that means a long online copy or a table rewrite under a full lock. Adding a value is cheap, but its down is not. morm does all of this safely, but `TextEnum` never needs it.
 
 ### Risks, open items and later work / Open items
 

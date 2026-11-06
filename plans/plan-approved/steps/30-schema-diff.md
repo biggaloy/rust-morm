@@ -1,8 +1,8 @@
 # Step 30: Diff and typed ops
 
 - **Phase:** Migrations
-- **Depends on:** 29
-- **Can run beside:** 07, 08, 09, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 47
+- **Depends on:** 29, 56
+- **Can run beside:** 07, 08, 09, 11, 12, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 47
 - **Crates:** `morm-migrate`
 - **PR approval:** CI and an independent review
 
@@ -19,6 +19,13 @@ Diff two schemas into typed operations with inverses.
 ## End-to-end check
 
 For a set of schema pairs, the diff produces ops whose forward and inverse SQL move a real database between both states exactly.
+
+## Context from other steps
+
+Owned elsewhere, and quoted so this step needs no other file. Nothing here needs a test in this step.
+
+> Step 56 makes `#[model]` emit a `TextEnum` column's CHECK in metadata, like a range CHECK, named `__CHK_{table}_{column}_enum__`.
+>
 
 ## Out of scope
 
@@ -69,4 +76,5 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 | T-0003 | suite | Unit: diff |
 | T-0074 | integration | range CHECKs rejecting direct SQL writes |
 | T-0119 | suite | **Op tests:** every op's inverse, with and without data |
+| T-0183 | integration | **`TextEnum` CHECK:** the migration creates the named CHECK, adding or removing a variant replaces it through the constraint diff, and a direct write of another value is rejected. |
 | T-0135 | suite | **Migration suite runs in CI:** the `Migration suite` step of `ci.yml`'s `integration` job runs the T-0119 tests, and the PR links that step's log showing them pass. A run of zero tests doesn't count. At step 01 it ran `cargo test --locked -p morm-migrate --all-features`, which doesn't reach `tests/` (package `morm-tests`). If its command doesn't reach these tests, change it and update the line in `tests/tests/repo_policy.rs` that pins it. |

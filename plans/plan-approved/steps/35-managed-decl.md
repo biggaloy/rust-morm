@@ -22,7 +22,7 @@ Every macro form appears correctly in the manifest, a bad `on` reference fails t
 
 ## Out of scope
 
-- Applying objects to a database (step 36)
+- Applying objects to a database (steps 36 and 57)
 
 ## Requirements
 
@@ -86,7 +86,7 @@ morm::pg_sequence!(order_no, file = "sql/order_no.sql");
 ```
 
 - **R-0963** `#[pg_domain]`, `#[pg_composite]` and `#[pg_enum]` make morm manage the type they sit on, and each registers it in the manifest like any other object. `name` is the Postgres type's name, and `#[pg_domain]` also takes an optional `check`. A bare derive registers nothing, so morm never creates or changes that type: it binds to the snake_case of the Rust name, and `#[pg_type(name = "...")]` overrides that name without turning on management.
-- **R-0964** The Rust item gives the type's shape, so nothing is written twice: a domain's base type comes from its field, a composite's attributes from its fields in order, and an enum's values from its variants in order. Fields use normal type inference, and `#[col(sql = "...")]` overrides it. These three attributes take no `file`, because a `.sql` file would restate the base type, fields or values.
+- **R-0964** The Rust item gives the type's shape, so nothing is written twice: a domain's base type comes from its field, a composite's attributes from its fields in order, and an enum's values from its variants in order, except an `unknown` variant. Fields use normal type inference, and `#[col(sql = "...")]` overrides it. These three attributes take no `file`, because a `.sql` file would restate the base type, fields or values.
 - **R-0965** `morm::pg_sequence!(name, "options")` declares a standalone sequence, and `options` is the text after `CREATE SEQUENCE name`. With `file`, the file holds the complete `CREATE SEQUENCE` statement. `OWNED BY` isn't available: sequences apply before tables, so the table it names doesn't exist yet.
 
 ### Managed enums
@@ -103,7 +103,7 @@ pub enum OrderState {
 }
 ```
 
-The manifest carries the labels in variant order, with each `was`.
+The manifest carries the labels in variant order, with each `was` and, from step 41, each `deprecated`.
 
 ## Test obligations
 

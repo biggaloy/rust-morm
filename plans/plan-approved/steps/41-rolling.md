@@ -2,8 +2,8 @@
 
 - **Phase:** Migrations
 - **Depends on:** 40, 15
-- **Can run beside:** 12, 19, 20, 21, 22, 23, 24, 25, 27, 43, 44, 46, 47, 48
-- **Crates:** `morm-migrate`, `morm-admin`, `morm`, `morm-macros`
+- **Can run beside:** 19, 20, 21, 22, 23, 24, 25, 27, 43, 44, 46, 47, 48
+- **Crates:** `morm-migrate`, `morm-admin`, `morm`, `morm-macros`, `morm-core`
 - **PR approval:** CI and an independent review
 
 Read `../rules.md`, `../contracts.md` and, once it exists, `../proofs.md` first. Everything needed for this step is in those files and this one.
@@ -42,10 +42,10 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 
 ### Managed enums
 
-- **R-0997** **Enums in `check_schema`.** The per-model list also holds each enum's labels. Every variant's label must exist, or its `was` label, and a `deprecated` variant may be missing. Extra labels in the database are fine, because a binary only fails on a row that holds one, and `Error::UnknownEnumValue` names it.
-- **R-0998** **Enum phases.** Adds, renames and the online swap's steps before its cutover are `expand`. A cutover that removes a label is `contract`, because binaries that still write it would fail. A cutover that only reorders stays in `expand`. In one migration that adds and removes, the add goes in `expand`, so a value and its replacement exist together through the rollout.
+- **R-0997** **Enums in `check_schema`.** The per-model list also holds each enum's labels. Every labelled variant's label must exist, or its `was` label, and a `deprecated` variant may be missing. Extra labels in the database are fine, because a binary only fails on a row that holds one, and `Error::UnknownEnumValue` names it.
+- **R-0998** **Enum phases.** Adds, renames and the online swap's steps before its cutover are `expand`. A cutover that removes a label is `contract`, because binaries that still write it would fail. A cutover that only reorders stays in `expand`. In one migration that adds and removes, the add goes in `expand`, so a value and its replacement exist together through the rollout. A `--fast` swap takes the phase its cutover would.
 - **R-0999** **Removing a value in a rolling deploy.** `#[pg_enum(deprecated)]` on a variant says that value is on its way out. `contract` refuses a swap that removes a label until a release with that variant marked `deprecated` has shipped, the same gate `#[col(deprecated)]` uses.
-- **R-1000** **Renaming a value in a rolling deploy.** A rename runs instantly by default, so old binaries fail on that value during the rollout: reads of rows holding it return `Error::UnknownEnumValue`, and writes of the old label return `22P02`. The rename decision also offers expand/contract: add the new label in `expand`, copy rows across in batches, and remove the old label by swap in `contract`. With `was`, a new binary reads both labels through either path.
+- **R-1000** **Renaming a value in a rolling deploy.** A rename runs instantly by default, so old binaries fail on that value during the rollout: reads of rows holding it return `Error::UnknownEnumValue`, and writes of the old label return `22P02`. The rename decision also offers expand/contract: add the new label in `expand`, copy rows across in batches, and remove the old label by swap in `contract`. With `was`, a new binary reads both labels through either path. `was` answers only whether it's a rename. The path stays a decision with the instant rename as its default.
 
 ## Test obligations
 

@@ -2,7 +2,7 @@
 
 - **Phase:** Runtime
 - **Depends on:** 03
-- **Can run beside:** 04, 05, 06, 07, 08, 09, 13, 28
+- **Can run beside:** 04, 05, 06, 07, 08, 09, 13, 28, 56
 - **Crates:** `morm-core`, `morm`
 - **PR approval:** CI and an independent review
 
