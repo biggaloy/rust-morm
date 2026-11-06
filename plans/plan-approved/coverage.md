@@ -4,7 +4,7 @@ Generated from the frozen plan. Each requirement and test obligation lives in ex
 
 Kinds: `code` needs a tagged test, `doc` is checked in the README step, `info` is context with nothing to build.
 
-Totals: 1061 requirements, 187 test obligations.
+Totals: 1069 requirements, 193 test obligations.
 
 ## Requirements
 
@@ -990,7 +990,7 @@ Totals: 1061 requirements, 187 test obligations.
 | R-0978 | code | 56 | 0 | - **Enum binding needs no OID.** morm writes `ToSql` and `FromSql` for `PgEnum` itself and… |
 | R-0979 | code | 56 | 0 | - **A label the binary doesn't know** returns `Error::UnknownEnumValue`, with the type and… |
 | R-0980 | code | 56 | 0 | - **Renamed labels.** `#[pg_enum(was = "old")]` on a variant decodes both labels to it and… |
-| R-0981 | code | 14 | 0 | - **Stale server state.** `XX000` with the message `cache lookup failed for type`, from an… |
+| R-0981 | code | 14 | 0 | - **Stale server state.** Two errors, from any statement, mean a session holds compiled co… |
 | R-0982 | code | 14 | 0 | - **Telling the rest of the pool.** Any stale statement raises a statement generation, hel… |
 | R-0983 | code | 14 | 0 | - **Retrying is safe.** Postgres rolls back a failed statement outside a transaction, so a… |
 | R-0984 | code | 20 | 0 | - **Stale statements inside a transaction.** The stale errors that step 14 retries can't b… |
@@ -1049,7 +1049,7 @@ Totals: 1061 requirements, 187 test obligations.
 | R-1037 | code | 53 | 0 | - **Unmanaged dependents are refused,** whatever their kind, including a column in another… |
 | R-1038 | code | 59 | 0 | - **Code Postgres doesn't track.** Before any op, or its inverse, that changes a column's … |
 | R-1039 | code | 59 | 0 | - **Refreshing managed functions.** Every managed plpgsql function R-1038 finds, which inc… |
-| R-1040 | code | 59 | 0 | - **Unmanaged functions** R-1038 finds are a decision, repeated in preflight on the live d… |
+| R-1040 | code | 59 | 0 | - **Unmanaged functions** R-1038 finds can't be proven, because scratch can't see them, so… |
 | R-1041 | code | 54 | 0 | - **A managed domain over the enum gets a new type too.** Postgres has no command to chang… |
 | R-1042 | code | 54 | 0 | - **A managed composite type holding the enum** changes with `ALTER ATTRIBUTE` when no col… |
 | R-1043 | code | 54 | 0 | - **Order.** New types are created from the enum outward, and old types are dropped from t… |
@@ -1058,9 +1058,9 @@ Totals: 1061 requirements, 187 test obligations.
 | R-1046 | code | 52 | 0 | - **Online by default.** On an existing table a swap uses this form, and `--fast` uses the… |
 | R-1047 | code | 52 | 0 | - **The steps,** each with its own boundary: 1. `tx`: create the new type under a temporar… |
 | R-1048 | code | 52 | 0 | - **The copy walks by key until nothing is left,** and reads each batch after the sync tri… |
-| R-1049 | code | 52 | 0 | - **The cutover** is one short transaction across all affected tables, locked in sorted or… |
+| R-1049 | code | 52 | 0 | - **The cutover** is one short transaction across all affected tables, with `lock_timeout`… |
 | R-1050 | code | 52 | 0 | - **Old values stay.** The retired column holds every old value and keeps the retired type… |
-| R-1051 | code | 52 | 0 | - **Text on the shadow column.** morm has no SQL parser, so a partial index filter or CHEC… |
+| R-1051 | code | 52 | 0 | - **Text on the shadow column.** A partial index filter, a CHECK or a materialized view's … |
 | R-1052 | code | 52 | 0 | - **Refused in this form, allowed with `--fast`,** naming the cause: partitioned tables, b… |
 | R-1053 | code | 52 | 0 | - **Recovery.** Each step has a precondition, so `--resume` continues, the copy resumes fr… |
 | R-1054 | code | 52 | 0 | - **Column position.** The real column moves to the end of the table. Position isn't compa… |
@@ -1071,6 +1071,14 @@ Totals: 1061 requirements, 187 test obligations.
 | R-1059 | code | 57 | 0 | - **Changing a domain or composite type.** A changed domain `check` drops and adds the con… |
 | R-1060 | code | 37 | 0 | **Composite types with dependents.** Step 57 refuses a composite type change that needs a … |
 | R-1061 | code | 39 | 0 | **A view above an online column swap.** R-0566's swap carries a managed view above the col… |
+| R-1062 | code | 38 | 0 | - **Retired materialized views.** An online column swap (step 39) retires the old copy of … |
+| R-1063 | code | 39 | 0 | **A materialized view above an online column swap.** Recreating one would run its query un… |
+| R-1064 | code | 39 | 0 | **Text on the shadow column.** morm has no SQL parser, so R-1063's query is rewritten by r… |
+| R-1065 | code | 35 | 0 | - **`proof`.** `pg_function!` and `pg_procedure!` take an optional `proof`, one SQL statem… |
+| R-1066 | code | 59 | 0 | - **Managed functions are proven by a real call.** Every managed function or procedure R-1… |
+| R-1067 | code | 59 | 0 | - **What a call may touch.** A rollback undoes what a call does in the database, including… |
+| R-1068 | doc | 50 | 0 | \| `proof = "..."` \| A managed function or procedure takes arguments, or a migration can … |
+| R-1069 | doc | 50 | 0 | The README says this plainly, beside the managed function rows. A migration can stop and a… |
 
 ## Test obligations
 
@@ -1263,3 +1271,9 @@ Totals: 1061 requirements, 187 test obligations.
 | T-0185 | integration | 57 | **Domain and composite changes:** with rows, a changed domain `check` replaces the constra… |
 | T-0186 | integration | 37 | **Composite dependents:** on a composite no column uses, a middle attribute, a new order a… |
 | T-0187 | suite | 39 | **View above an online column swap:** on Postgres 15–18, with readers on the view and writ… |
+| T-0188 | suite | 38 | **Retired materialized view:** after an online swap the old copy sits in `_morm_retired` w… |
+| T-0189 | suite | 39 | **Materialized view above an online column swap:** on Postgres 15–18, with readers on it, … |
+| T-0190 | suite | 39 | **Proof, rewritten query:** on Postgres 15–18, an output column keeps its name, as a bare … |
+| T-0191 | suite | 35 | **`proof`:** on `pg_function!` and `pg_procedure!`, with `file` or inline, it reaches the … |
+| T-0192 | suite | 59 | **Proof by a real call, on Postgres 15–18:** after a column type change, a plpgsql `RETURN… |
+| T-0193 | suite | 59 | **What a call may touch:** an automatic call that reaches `dblink` directly, through anoth… |

@@ -66,7 +66,7 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 - **R-0590** `up` reaches the models exactly.
 - **R-0591** `down` returns to the previous schema exactly.
 - **R-0592** `up` again gives the same fingerprint.
-- **R-0593** **With data:** synthetic rows per column type (NULLs, boundaries, empties) go in first, and preserved-column checksums must match after up → down. Rows are also inserted and updated after `up`, so a broken trigger fails here and not in production. Rows come from a table keyed by column type, so a later step can add a type, and an op can say which values must or must not appear. A `TextEnum` column's rows use its labels.
+- **R-0593** **With data:** synthetic rows per column type (NULLs, boundaries, empties) go in first, and preserved-column checksums must match after up → down. Rows are also inserted and updated after `up`, so a broken trigger fails here and not in production. Rows come from a table keyed by column type, so a later step can add a type, and an op can say which values must or must not appear. A `TextEnum` column's rows use its labels. An op can add checks of its own at this point, on this database, and a failure stops `makemigrations` with exit code `2`.
 - **R-0594** `lint` passes, or each finding is explicitly accepted.
 
 ### Migrations / Files and ledger

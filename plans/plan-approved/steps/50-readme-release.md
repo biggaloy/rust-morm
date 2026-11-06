@@ -120,6 +120,7 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 | R-1006 | `#[pg_enum(deprecated)]` | You're removing a value in a rolling deploy, and `contract` must wait until this release has shipped |
 | R-1007 | `max_rewrite_mb` | You want a different size limit on rewriting a table under a full lock |
 | R-0974 | `morm::pg_sequence!` | You need numbers from a sequence that no identity column owns, such as invoice numbers |
+| R-1068 | `proof = "..."` | A managed function or procedure takes arguments, or a migration can only prove it through a call you choose |
 | R-0861 | `storage = "fillfactor=90"` | A table gets many updates to columns with no index |
 | R-0862 | `.returning()` | You need the changed rows back |
 | R-0863 | `.all()` | You want every row, and you know the result is small |
@@ -167,6 +168,8 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 **R-1008** The README shows this notice loudly, beside the enum rows:
 
 > **Use `TextEnum` unless you have a reason not to.** Changing a `TextEnum` is an ordinary migration. Postgres can't remove or reorder an enum value, so morm has to replace the whole type, including everything that depends on it. On a big table that means a long online copy or a table rewrite under a full lock. Adding a value is cheap, but its down is not. morm does all of this safely, but `TextEnum` never needs it.
+
+**R-1069** The README says this plainly, beside the managed function rows. A migration can stop and ask you to add a `proof` line to a managed function or procedure before it goes through, because a change under a function can break it in ways Postgres only shows when it's called, and morm won't ship one it can't call. morm really runs that call, on a scratch database, in a transaction it rolls back, with a 30-second timeout, so the call has to be safe to run, and it must not reach outside Postgres. With no `proof`, morm's own call runs as a role that can't use extension functions or other languages, so a function that uses `dblink`, an HTTP extension or `COPY ... PROGRAM` stops and asks for a `proof`. With a `proof`, morm runs what you wrote with your scratch user's rights and can't check it, so write a call that takes no outside action. Unmanaged functions can't be proven, because scratch can't see them, so they become a migration decision that names each one and says it may fail until it's rewritten.
 
 ### Risks, open items and later work / Open items
 
