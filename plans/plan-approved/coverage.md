@@ -4,7 +4,7 @@ Generated from the frozen plan. Each requirement and test obligation lives in ex
 
 Kinds: `code` needs a tagged test, `doc` is checked in the README step, `info` is context with nothing to build.
 
-Totals: 1075 requirements, 197 test obligations.
+Totals: 1083 requirements, 205 test obligations.
 
 ## Requirements
 
@@ -1085,6 +1085,14 @@ Totals: 1075 requirements, 197 test obligations.
 | R-1073 | doc | 50 | 0 | \| `--terminate-blockers` \| A cutover keeps giving way, and you'd rather end the transact… |
 | R-1074 | doc | 50 | 0 | \| `cutover_lock_timeout`, `cutover_attempts`, `cutover_pause` \| A cutover gives up on a… |
 | R-1075 | doc | 50 | 0 | The README says this plainly, beside the online swap. During a cutover, a client that is… |
+| R-1076 | code | 59 | 0 | - **Every path is checked statically.** A real call proves only the path it takes, and Pos… |
+| R-1077 | code | 59 | 0 | **The check has its own database.** It runs in a database of its own on the scratch server… |
+| R-1078 | code | 59 | 0 | - **Without the extension.** With a managed plpgsql function in scope, `makemigrations` st… |
+| R-1079 | code | 59 | 0 | - **Findings stop `makemigrations`.** Any finding at level `error` stops it with exit code… |
+| R-1080 | code | 59 | 0 | - **A narrowing is a decision.** An `int` variable reading a column now `bigint` isn't an … |
+| R-1081 | code | 59 | 0 | - **`EXECUTE` needs a `proof`.** The check can't read a query built at run time, and it gi… |
+| R-1082 | code | 59 | 0 | - **morm won't run a disabled check.** With `plpgsql_check.mode` set to `disabled`, the ch… |
+| R-1083 | code | 59 | 0 | **The extension in CI.** Every job whose tests run `makemigrations` over a managed plpgsql… |
 
 ## Test obligations
 
@@ -1280,10 +1288,18 @@ Totals: 1075 requirements, 197 test obligations.
 | T-0188 | suite | 38 | **Retired materialized view:** on Postgres 15–18, after an online swap the old copy sits i… |
 | T-0189 | suite | 39 | **Materialized view above an online column swap:** on Postgres 15–18, with readers on it, … |
 | T-0190 | suite | 39 | **Proof, rewritten query:** on Postgres 15–18, an output column keeps its name, as a bare … |
-| T-0191 | suite | 35 | **`proof`:** on `pg_function!` and `pg_procedure!`, with `file` or inline, it reaches the … |
+| T-0191 | suite | 35 | **`proof`:** on `pg_function!` and `pg_procedure!`, with `file` or inline, each `proof` re… |
 | T-0192 | suite | 59 | **Proof by a real call, on Postgres 15–18:** after a column type change, a plpgsql `RETURN… |
 | T-0193 | suite | 59 | **What a call may touch:** on Postgres 15–18, an automatic call that reaches `dblink` dire… |
 | T-0194 | suite | 39 | **Same meaning:** on Postgres 15–18, every `USING` and `NATURAL JOIN` shape in T-0190, as … |
 | T-0195 | suite | 39 | **Column positions:** on Postgres 15–18, with a `USING` materialized view above the column… |
 | T-0196 | suite | 39 | **A cutover gives way:** on Postgres 15–18, under nonstop transactions that touch the ta… |
 | T-0197 | suite | 52 | **The cutover gives way:** on Postgres 15–18, a swap across two tables with a view above… |
+| T-0198 | integration | 59 | **`plpgsql_check` on Postgres 15–18:** after a retire, a rename and a column type change, … |
+| T-0199 | integration | 59 | **Its own database, on Postgres 15–18:** a scratch user with `CREATEDB` that isn't superus… |
+| T-0200 | integration | 59 | **No extension, on Postgres 15–18, in the `no-plpgsql-check` job:** a function in scope st… |
+| T-0201 | integration | 59 | **Findings, on Postgres 15–18:** an `error` finding stops `makemigrations` with exit code … |
+| T-0202 | integration | 59 | **Narrowing, on Postgres 15–18:** an `int` variable reading a column changed to `bigint` t… |
+| T-0203 | integration | 59 | **`EXECUTE`, on Postgres 15–18:** a function that takes no arguments and uses `EXECUTE`, `… |
+| T-0204 | integration | 59 | **A disabled check, on Postgres 15–18:** with `plpgsql_check.mode` set to `disabled` on th… |
+| T-0205 | suite | 59 | **The extension in CI:** `tests/tests/repo_policy.rs` fails unless each job R-1083 names r… |

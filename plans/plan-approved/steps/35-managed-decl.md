@@ -14,7 +14,7 @@ Declare every managed object in Rust, next to its model.
 
 ## Deliverables
 
-- `pg_function!`, `pg_trigger!`, `pg_policy!`, `pg_procedure!`, `pg_grant!`, `pg_sequence!`, `#[pg_view]` with `materialized`, `#[pg_domain]`, `#[pg_composite]`, `#[pg_enum]` with its variant attributes, `file` paths, `proof` on functions and procedures, `on = Model` references, each object in the manifest
+- `pg_function!`, `pg_trigger!`, `pg_policy!`, `pg_procedure!`, `pg_grant!`, `pg_sequence!`, `#[pg_view]` with `materialized`, `#[pg_domain]`, `#[pg_composite]`, `#[pg_enum]` with its variant attributes, `file` paths, one or more `proof` lines on functions and procedures, `on = Model` references, each object in the manifest
 
 ## End-to-end check
 
@@ -62,7 +62,7 @@ pub struct ActiveUser { pub id: i64, pub email: String }
 - **R-0533** `file` paths are relative to the Rust file, like `include_str!`, so editing the SQL triggers a rebuild.
 - **R-0534** `on = User` is a real type reference, so a typo fails to compile and table renames carry through.
 - **R-0537** **These definitions never reach the app binary.** They're compiled only into `morm-mgr`.
-- **R-1065** **`proof`.** `pg_function!` and `pg_procedure!` take an optional `proof`, one SQL statement that step 59 runs to prove the object still works: `morm::pg_function!(totals, file = "sql/totals.sql", proof = "SELECT * FROM totals(1)")`, or `morm::pg_procedure!(archive_users, file = "sql/archive_users.sql", proof = "CALL archive_users(30)")`. morm has no SQL parser, so the macro only stores it in the manifest. It isn't part of the schema, so changing only a `proof` opens no migration.
+- **R-1065** **`proof`.** `pg_function!` and `pg_procedure!` take an optional `proof`, one SQL statement that step 59 runs to prove the object still works, and it can repeat, because a call proves only the path it takes: `morm::pg_function!(totals, file = "sql/totals.sql", proof = "SELECT * FROM totals(1)", proof = "SELECT * FROM totals(-1)")`, or `morm::pg_procedure!(archive_users, file = "sql/archive_users.sql", proof = "CALL archive_users(30)")`. morm has no SQL parser, so the macro only stores each one in the manifest, in the order written. They aren't part of the schema, so changing, adding or removing only a `proof` opens no migration.
 
 **R-0962** Types are declared once, on their Rust type. A sequence has no Rust type, so it uses a macro:
 
@@ -113,4 +113,4 @@ The manifest carries the labels in variant order, with each `was` and, from step
 | T-0143 | trybuild | a `#[pg_composite]` field with no SQL type: its Rust type infers none, and it has no `#[col(sql = "...")]` |
 | T-0144 | suite | **Bare derives:** `#[derive(PgDomain)]`, `#[derive(PgComposite)]` or `#[derive(PgEnum)]` with no attribute, or with only `#[pg_type(name = "...")]` or variant-level `#[pg_enum(...)]` attributes, adds nothing to the manifest. |
 | T-0154 | trybuild | `#[pg_type]` on a type that also has `#[pg_enum(name = "...")]`, `#[pg_domain]` or `#[pg_composite]` |
-| T-0191 | suite | **`proof`:** on `pg_function!` and `pg_procedure!`, with `file` or inline, it reaches the manifest byte for byte, a declaration without it stays valid, and changing only a `proof` opens no migration. |
+| T-0191 | suite | **`proof`:** on `pg_function!` and `pg_procedure!`, with `file` or inline, each `proof` reaches the manifest byte for byte and in the order written, including several on one declaration, a declaration without one stays valid, and changing, adding or removing only a `proof` opens no migration. |
