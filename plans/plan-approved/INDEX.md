@@ -129,6 +129,7 @@ The coordinator stays thin: it reads this file and never reads code.
 - **`import` never writes `TextEnum`:** a `text` column with a CHECK stays `String` with `checks(...)`, because the catalog can't show that a CHECK is an enum. Owner decision.
 - **Changing a domain or composite:** a domain's `check` is replaced `NOT VALID` then validated, and composite attributes change with `ALTER TYPE` when no column uses the type. A changed base type, or a composite in use, is refused with exit `2`. Owner decision.
 - **Reviews trace plan changes:** the checker only proves step files and `manifest.json` agree, so a review confirms each changed ID has a Decisions entry here. Owner decision.
+- **Third review corrections:** these make owner-decided rules buildable and add no new behaviour. Retries: R-0764, R-0981, R-0983, T-0152. Scanner in `morm-core`: R-0433, R-1051. Online swap: R-1047, R-1049, R-1051, R-1052, T-0175, T-0177. `down_map`: R-1015, T-0160. `TextEnum` CHECK: R-0593, R-1055, T-0180, T-0183. Labels and rolling: R-0961, R-0964, R-0979, R-0980, R-0990, R-0997, R-0998, R-1000, R-1056, T-0150, T-0182. CI for proofs: T-0164, T-0172. Counters: R-0741. README: R-1008, R-1058. Step edges this needed: 14 depends on 12 for the held-connection rule, and 30 depends on 56 for the CHECK test. The owner approves all of this through PR #1.
 - **`TextEnum` labels keep the Rust spelling:** `Pending` is stored as `Pending`, unlike `PgEnum`'s snake_case. It gets the same opt-in `unknown` fallback as `PgEnum`. Owner decision.
 
 ## Record from the frozen plan
