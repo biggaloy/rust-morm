@@ -21,7 +21,7 @@ Nothing is kept in `/tmp`: it's memory-backed here, so a power cut wipes it. Age
 - All repo settings are live: required `ci` check, `crates-io` environment, tag ruleset.
 - The third review found problems in two parts, and each has a fix round running on `step-01-bootstrap`:
   - **Plan fixes:** apply `reviews/step-01-review-3-plan.md`, all blockers and minors, with owner answers O1 to O5 at the reviewer's recommendation and all five splits (new steps 55 to 59). `rules.md` gains step 55 in the owner's list and the manifest check in "Independent review". The `INDEX.md` rows, depends-on cells and "Order" change on the branch, because the checker needs them with the step files. Decisions and statuses stay on `main`.
-  - **Code fixes:** apply `reviews/step-01-review-3-code.md`, including the owner's decisions at its end.
+  - **Code fixes:** done at `57e2c20`, with CI green. The rewritten `fetch_last_bench.sh` and `fuzz` step have only run against stubs. `nothing_switches_a_job_or_step_off` is still tagged R-0957, so the next code review should judge that tag.
 
 ## What comes next
 
