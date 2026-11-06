@@ -2,7 +2,7 @@
 
 - **Phase:** Models
 - **Depends on:** 04
-- **Can run beside:** 10, 11, 12, 14
+- **Can run beside:** 10, 11, 12
 - **Crates:** `morm-macros`, `morm-core`
 - **PR approval:** CI and an independent review
 

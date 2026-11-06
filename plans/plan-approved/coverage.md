@@ -1047,7 +1047,7 @@ Totals: 1060 requirements, 186 test obligations.
 | R-1035 | code | 53 | 0 | - **A function or procedure with the enum in its signature** is dropped and created, becau… |
 | R-1036 | code | 53 | 0 | - **Always refused for a remove or reorder,** listing the object: the enum as a partition … |
 | R-1037 | code | 53 | 0 | - **Unmanaged dependents are refused,** whatever their kind, including a column in another… |
-| R-1038 | code | 59 | 0 | - **Code Postgres doesn't track.** Before a swap, a rename or a removal, step 38's source … |
+| R-1038 | code | 59 | 0 | - **Code Postgres doesn't track.** Before a swap, a rename, a removal or a composite type … |
 | R-1039 | code | 59 | 0 | - **Refreshing managed functions.** Every managed plpgsql function that search finds, and … |
 | R-1040 | code | 59 | 0 | - **Unmanaged functions** that would go stale are a decision, repeated in preflight on the… |
 | R-1041 | code | 54 | 0 | - **A managed domain over the enum gets a new type too.** Postgres has no command to chang… |
