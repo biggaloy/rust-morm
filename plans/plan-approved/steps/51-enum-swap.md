@@ -1,4 +1,4 @@
-# Step 51: Managed enums: add, remove and reorder
+# Step 51: Managed enums: add and reorder
 
 - **Phase:** Migrations
 - **Depends on:** 38

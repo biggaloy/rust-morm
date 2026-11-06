@@ -66,7 +66,7 @@ The frozen plan was split word for word into requirements (`R-nnnn`) and test ob
 | 48 | [Benchmarks](steps/48-benchmarks.md) | Finish | 26, 27, 47, 45 | todo |
 | 49 | [Lock-order detector and hardening](steps/49-hardening.md) | Finish | 26, 27, 41, 45, 47 | todo |
 | 50 | [README and 0.1.0](steps/50-readme-release.md) | Finish | 48, 49, 44, 46, 43 | todo |
-| 51 | [Managed enums: add, remove and reorder](steps/51-enum-swap.md) | Migrations | 38 | todo |
+| 51 | [Managed enums: add and reorder](steps/51-enum-swap.md) | Migrations | 38 | todo |
 | 52 | [Managed enums: online swap](steps/52-enum-online.md) | Migrations | 39, 54, 59 | todo |
 | 53 | [Managed enums: dependents](steps/53-enum-deps.md) | Migrations | 58 | todo |
 | 54 | [Managed enums: domains and composite types](steps/54-enum-wrappers.md) | Migrations | 53 | todo |
