@@ -1208,7 +1208,7 @@ fn dependabot_covers_cargo_and_actions() {
 
 // `exclude:` drops matrix entries, and `working-directory` or another shell can
 // leave a command green without running it, so all three count as switching off.
-// covers: R-0792, R-0793, R-0794, R-0795, R-0797, R-0957
+// covers: R-0792, R-0793, R-0794, R-0795, R-0797
 #[test]
 fn nothing_switches_a_job_or_step_off() {
     const ALLOWED: &[(&str, &str)] = &[
