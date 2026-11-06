@@ -4,7 +4,7 @@ Generated from the frozen plan. Each requirement and test obligation lives in ex
 
 Kinds: `code` needs a tagged test, `doc` is checked in the README step, `info` is context with nothing to build.
 
-Totals: 960 requirements, 140 test obligations.
+Totals: 974 requirements, 146 test obligations.
 
 ## Requirements
 
@@ -970,6 +970,20 @@ Totals: 960 requirements, 140 test obligations.
 | R-0958 | code | 01 | 0 | - **Repo files for a public project.** `SECURITY.md` says how to report a vulnerability pr… |
 | R-0959 | code | 42 | 0 | - `morm::pg_outbox!()` declares the outbox table as a managed table, tracked by migrations… |
 | R-0960 | code | 34 | 0 | - **`full-chain` job.** This step sets what `nightly.yml`'s `full-chain` job runs and chan… |
+| R-0961 | code | 13 | 0 | - **Domains and composite types in Rust.** `#[derive(PgDomain)]` goes on a one-field struc… |
+| R-0962 | code | 35 | 0 | Types are declared once, on their Rust type. A sequence has no Rust type, so it uses a mac… |
+| R-0963 | code | 35 | 0 | - `#[pg_domain]`, `#[pg_composite]` and `#[pg_enum]` make morm manage the type they sit on… |
+| R-0964 | code | 35 | 0 | - The Rust item gives the type's shape, so nothing is written twice: a domain's base type … |
+| R-0965 | code | 35 | 0 | - `morm::pg_sequence!(name, "options")` declares a standalone sequence, and `options` is t… |
+| R-0966 | code | 36 | 0 | - **Sequences:** a sequence's catalog comparison uses its definition only (type, start, in… |
+| R-0967 | code | 36 | 0 | - Dropping a sequence loses its position, because the inverse recreates it from its defini… |
+| R-0968 | code | 37 | 0 | - Sequences count as types in this fixed order, so they apply before tables and a column d… |
+| R-0969 | doc | 50 | 0 | \| `#[derive(PgDomain)]` \| A column uses a Postgres domain that already exists \| |
+| R-0970 | doc | 50 | 0 | \| `#[derive(PgComposite)]` \| A column uses a Postgres composite type that already exists… |
+| R-0971 | doc | 50 | 0 | \| `#[pg_domain(...)]` \| You want migrations to create and track a domain, so one rule on… |
+| R-0972 | doc | 50 | 0 | \| `#[pg_composite(...)]` \| You want migrations to create and track a composite type, for… |
+| R-0973 | doc | 50 | 0 | \| `#[pg_enum(...)]` \| You want migrations to create and track a Postgres enum; use `Text… |
+| R-0974 | doc | 50 | 0 | \| `morm::pg_sequence!` \| You need numbers from a sequence that no identity column owns, … |
 
 ## Test obligations
 
@@ -1115,3 +1129,9 @@ Totals: 960 requirements, 140 test obligations.
 | T-0138 | suite | 49 | **Full chain runs in CI:** `nightly.yml`'s `full-chain` job runs the T-0127 test on Postgr… |
 | T-0139 | suite | 49 | **Fuzzing runs in CI:** `nightly.yml`'s `fuzz` job runs the T-0128 targets, and the PR lin… |
 | T-0140 | suite | 49 | **Full chain covers the whole chain:** the migrations in `nightly.yml`'s `full-chain` job … |
+| T-0141 | integration | 13 | `#[derive(PgDomain)]` and `#[derive(PgComposite)]` round-tripping through columns and para… |
+| T-0142 | integration | 13 | **Plain `String` on a domain:** test whether a `String` field or parameter binds to a colu… |
+| T-0143 | trybuild | 35 | a `#[pg_composite]` field with no SQL type: its Rust type infers none, and it has no `#[co… |
+| T-0144 | suite | 35 | **Bare derives:** `#[derive(PgDomain)]`, `#[derive(PgComposite)]` or `#[derive(PgEnum)]` w… |
+| T-0145 | integration | 36 | **Sequences:** a sequence shows no drift after `nextval` calls, an identity column's seque… |
+| T-0146 | integration | 37 | a column default calling `nextval` on a managed sequence applies, and a sequence declared … |

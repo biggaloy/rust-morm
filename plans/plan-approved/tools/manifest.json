@@ -7678,8 +7678,120 @@
 "kind": "code",
 "step": "recovery",
 "line": 0,
-"text": "- **`full-chain` job.** This step sets what `nightly.yml`'s `full-chain` job runs and changes the job to run it: all up, all down, all up, across the migrations this step can run, on Postgres 15\u201318. Until now the job ran the same command as CI's migration suite, so the result must go beyond that suite: a job that runs only what that suite runs doesn't satisfy this. Step 49 widens it to the whole chain later. Gate the test with a Cargo feature on `morm-tests` and `required-features`, as `pooler` is. Tag the test the job runs and the job itself, update the line in `tests/tests/repo_policy.rs` that pins the old command, and link the job's log from a `workflow_dispatch` run in the PR.",
-"block": "- **R-0960** **`full-chain` job.** This step sets what `nightly.yml`'s `full-chain` job runs and changes the job to run it: all up, all down, all up, across the migrations this step can run, on Postgres 15\u201318. Until now the job ran the same command as CI's migration suite, so the result must go beyond that suite: a job that runs only what that suite runs doesn't satisfy this. Step 49 widens it to the whole chain later. Gate the test with a Cargo feature on `morm-tests` and `required-features`, as `pooler` is. Tag the test the job runs and the job itself, update the line in `tests/tests/repo_policy.rs` that pins the old command, and link the job's log from a `workflow_dispatch` run in the PR."
+"text": "- **`full-chain` job.** This step sets what `nightly.yml`'s `full-chain` job runs and changes the job to run it: all up, all down, all up, across the migrations this step can run, on Postgres 15\u201318. Until now the job ran the same command as CI's migration suite, so the result must go beyond that suite: a job that runs only what that suite runs doesn't satisfy this. Step 49 widens it to the whole chain later. Gate the test with a Cargo feature on `morm-tests` and `required-features`, as `pooler` is. If the migration suite's command uses `--all-features` on `morm-tests`, change it so this feature stays off. Tag the test the job runs and the job itself, update the line in `tests/tests/repo_policy.rs` that pins the old command, and link the job's log from a `workflow_dispatch` run in the PR.",
+"block": "- **R-0960** **`full-chain` job.** This step sets what `nightly.yml`'s `full-chain` job runs and changes the job to run it: all up, all down, all up, across the migrations this step can run, on Postgres 15\u201318. Until now the job ran the same command as CI's migration suite, so the result must go beyond that suite: a job that runs only what that suite runs doesn't satisfy this. Step 49 widens it to the whole chain later. Gate the test with a Cargo feature on `morm-tests` and `required-features`, as `pooler` is. If the migration suite's command uses `--all-features` on `morm-tests`, change it so this feature stays off. Tag the test the job runs and the job itself, update the line in `tests/tests/repo_policy.rs` that pins the old command, and link the job's log from a `workflow_dispatch` run in the PR."
+},
+{
+"id": "R-0961",
+"kind": "code",
+"step": "types",
+"line": 0,
+"text": "- **Domains and composite types in Rust.** `#[derive(PgDomain)]` goes on a one-field struct, such as `pub struct Email(pub String);`, and `#[derive(PgComposite)]` on a struct with named fields, one field per attribute, in order. Each gives encoding, decoding and `morm::Param`, and a model column uses the Rust type directly, as it does a `PgEnum`. On its own, `PgDomain`, `PgComposite` or `PgEnum` only binds to a type that already exists: morm doesn't create or change that type. Step 35 adds the attributes that make morm manage one.",
+"block": "- **R-0961** **Domains and composite types in Rust.** `#[derive(PgDomain)]` goes on a one-field struct, such as `pub struct Email(pub String);`, and `#[derive(PgComposite)]` on a struct with named fields, one field per attribute, in order. Each gives encoding, decoding and `morm::Param`, and a model column uses the Rust type directly, as it does a `PgEnum`. On its own, `PgDomain`, `PgComposite` or `PgEnum` only binds to a type that already exists: morm doesn't create or change that type. Step 35 adds the attributes that make morm manage one."
+},
+{
+"id": "R-0962",
+"kind": "code",
+"step": "managed-decl",
+"line": 0,
+"text": "Types are declared once, on their Rust type. A sequence has no Rust type, so it uses a macro:\n\n```rust\n#[derive(PgDomain)]\n#[pg_domain(name = \"email\", check = \"VALUE LIKE '%@%'\")]\npub struct Email(pub String);                       // base type comes from String: text\n\n#[derive(PgComposite)]\n#[pg_composite(name = \"money_amount\")]\npub struct MoneyAmount {\n    #[col(sql = \"numeric(12,2)\")] pub amount: Decimal,\n    pub currency: String,\n}\n\n#[derive(PgEnum)]\n#[pg_enum(name = \"order_state\")]\npub enum OrderState { Pending, Paid }\n\nmorm::pg_sequence!(invoice_no, \"START 1000 CACHE 20\");\nmorm::pg_sequence!(order_no, file = \"sql/order_no.sql\");\n```",
+"block": "**R-0962** Types are declared once, on their Rust type. A sequence has no Rust type, so it uses a macro:\n\n```rust\n#[derive(PgDomain)]\n#[pg_domain(name = \"email\", check = \"VALUE LIKE '%@%'\")]\npub struct Email(pub String);                       // base type comes from String: text\n\n#[derive(PgComposite)]\n#[pg_composite(name = \"money_amount\")]\npub struct MoneyAmount {\n    #[col(sql = \"numeric(12,2)\")] pub amount: Decimal,\n    pub currency: String,\n}\n\n#[derive(PgEnum)]\n#[pg_enum(name = \"order_state\")]\npub enum OrderState { Pending, Paid }\n\nmorm::pg_sequence!(invoice_no, \"START 1000 CACHE 20\");\nmorm::pg_sequence!(order_no, file = \"sql/order_no.sql\");\n```"
+},
+{
+"id": "R-0963",
+"kind": "code",
+"step": "managed-decl",
+"line": 0,
+"text": "- `#[pg_domain]`, `#[pg_composite]` and `#[pg_enum]` make morm manage the type they sit on, and each registers it in the manifest like any other object. `name` is the Postgres type's name, and `#[pg_domain]` also takes the domain's `check`. A derive with no attribute registers nothing, so morm never creates or changes that type.",
+"block": "- **R-0963** `#[pg_domain]`, `#[pg_composite]` and `#[pg_enum]` make morm manage the type they sit on, and each registers it in the manifest like any other object. `name` is the Postgres type's name, and `#[pg_domain]` also takes the domain's `check`. A derive with no attribute registers nothing, so morm never creates or changes that type."
+},
+{
+"id": "R-0964",
+"kind": "code",
+"step": "managed-decl",
+"line": 0,
+"text": "- The Rust item gives the type's shape, so nothing is written twice: a domain's base type comes from its field, a composite's attributes from its fields in order, and an enum's values from its variants in order. Fields use normal type inference, and `#[col(sql = \"...\")]` overrides it. These three attributes take no `file`, because a `.sql` file would restate the base type, fields or values.",
+"block": "- **R-0964** The Rust item gives the type's shape, so nothing is written twice: a domain's base type comes from its field, a composite's attributes from its fields in order, and an enum's values from its variants in order. Fields use normal type inference, and `#[col(sql = \"...\")]` overrides it. These three attributes take no `file`, because a `.sql` file would restate the base type, fields or values."
+},
+{
+"id": "R-0965",
+"kind": "code",
+"step": "managed-decl",
+"line": 0,
+"text": "- `morm::pg_sequence!(name, \"options\")` declares a standalone sequence, and `options` is the text after `CREATE SEQUENCE name`. With `file`, the file holds the complete `CREATE SEQUENCE` statement. `OWNED BY` isn't available: sequences apply before tables, so the table it names doesn't exist yet.",
+"block": "- **R-0965** `morm::pg_sequence!(name, \"options\")` declares a standalone sequence, and `options` is the text after `CREATE SEQUENCE name`. With `file`, the file holds the complete `CREATE SEQUENCE` statement. `OWNED BY` isn't available: sequences apply before tables, so the table it names doesn't exist yet."
+},
+{
+"id": "R-0966",
+"kind": "code",
+"step": "managed-ops",
+"line": 0,
+"text": "- **Sequences:** a sequence's catalog comparison uses its definition only (type, start, increment, minimum, maximum, cache and cycle) and never `last_value`, so a sequence in use shows no drift. A sequence that belongs to an identity column stays out of this kind, because it comes with its column.",
+"block": "- **R-0966** **Sequences:** a sequence's catalog comparison uses its definition only (type, start, increment, minimum, maximum, cache and cycle) and never `last_value`, so a sequence in use shows no drift. A sequence that belongs to an identity column stays out of this kind, because it comes with its column."
+},
+{
+"id": "R-0967",
+"kind": "code",
+"step": "managed-ops",
+"line": 0,
+"text": "- Dropping a sequence loses its position, because the inverse recreates it from its definition. That op's data effect is `lossy`, and its description says the position is lost.",
+"block": "- **R-0967** Dropping a sequence loses its position, because the inverse recreates it from its definition. That op's data effect is `lossy`, and its description says the position is lost."
+},
+{
+"id": "R-0968",
+"kind": "code",
+"step": "managed-deps",
+"line": 0,
+"text": "- Sequences count as types in this fixed order, so they apply before tables and a column default can call `nextval`. This is why `OWNED BY` isn't available: its table doesn't exist yet, so a declaration using it fails on scratch with an error naming the sequence.",
+"block": "- **R-0968** Sequences count as types in this fixed order, so they apply before tables and a column default can call `nextval`. This is why `OWNED BY` isn't available: its table doesn't exist yet, so a declaration using it fails on scratch with an error naming the sequence."
+},
+{
+"id": "R-0969",
+"kind": "doc",
+"step": "readme-release",
+"line": 0,
+"text": "| `#[derive(PgDomain)]` | A column uses a Postgres domain that already exists |",
+"block": "| R-0969 | `#[derive(PgDomain)]` | A column uses a Postgres domain that already exists |"
+},
+{
+"id": "R-0970",
+"kind": "doc",
+"step": "readme-release",
+"line": 0,
+"text": "| `#[derive(PgComposite)]` | A column uses a Postgres composite type that already exists |",
+"block": "| R-0970 | `#[derive(PgComposite)]` | A column uses a Postgres composite type that already exists |"
+},
+{
+"id": "R-0971",
+"kind": "doc",
+"step": "readme-release",
+"line": 0,
+"text": "| `#[pg_domain(...)]` | You want migrations to create and track a domain, so one rule on a value lives in the database |",
+"block": "| R-0971 | `#[pg_domain(...)]` | You want migrations to create and track a domain, so one rule on a value lives in the database |"
+},
+{
+"id": "R-0972",
+"kind": "doc",
+"step": "readme-release",
+"line": 0,
+"text": "| `#[pg_composite(...)]` | You want migrations to create and track a composite type, for fields stored together in one column |",
+"block": "| R-0972 | `#[pg_composite(...)]` | You want migrations to create and track a composite type, for fields stored together in one column |"
+},
+{
+"id": "R-0973",
+"kind": "doc",
+"step": "readme-release",
+"line": 0,
+"text": "| `#[pg_enum(...)]` | You want migrations to create and track a Postgres enum; use `TextEnum` otherwise |",
+"block": "| R-0973 | `#[pg_enum(...)]` | You want migrations to create and track a Postgres enum; use `TextEnum` otherwise |"
+},
+{
+"id": "R-0974",
+"kind": "doc",
+"step": "readme-release",
+"line": 0,
+"text": "| `morm::pg_sequence!` | You need numbers from a sequence that no identity column owns, such as invoice numbers |",
+"block": "| R-0974 | `morm::pg_sequence!` | You need numbers from a sequence that no identity column owns, such as invoice numbers |"
 }
 ],
 "tests": [
@@ -8662,6 +8774,48 @@
 "kind": "suite",
 "line": 0,
 "text": "**Full chain covers the whole chain:** the migrations in `nightly.yml`'s `full-chain` job grow to cover tables and every managed object kind: functions, procedures, triggers, policies, grants, views, materialized views, enums, domains, composite types and sequences. Step 34 set this job up before managed objects existed, so a T-0127 run that covers only what step 34 could run doesn't count. The PR lists each kind the run covered."
+},
+{
+"id": "T-0141",
+"step": "types",
+"kind": "integration",
+"line": 0,
+"text": "`#[derive(PgDomain)]` and `#[derive(PgComposite)]` round-tripping through columns and parameters on types created by hand"
+},
+{
+"id": "T-0142",
+"step": "types",
+"kind": "integration",
+"line": 0,
+"text": "**Plain `String` on a domain:** test whether a `String` field or parameter binds to a column of a text domain, and don't assume it. State the result in the PR. If it doesn't bind, `PgDomain` is the only way to use such a column, and its docs say so."
+},
+{
+"id": "T-0143",
+"step": "managed-decl",
+"kind": "trybuild",
+"line": 0,
+"text": "a `#[pg_composite]` field with no SQL type: its Rust type infers none, and it has no `#[col(sql = \"...\")]`"
+},
+{
+"id": "T-0144",
+"step": "managed-decl",
+"kind": "suite",
+"line": 0,
+"text": "**Bare derives:** `#[derive(PgDomain)]`, `#[derive(PgComposite)]` or `#[derive(PgEnum)]` with no attribute adds nothing to the manifest."
+},
+{
+"id": "T-0145",
+"step": "managed-ops",
+"kind": "integration",
+"line": 0,
+"text": "**Sequences:** a sequence shows no drift after `nextval` calls, an identity column's sequence isn't read as an object of this kind, and dropping a sequence reports `lossy`."
+},
+{
+"id": "T-0146",
+"step": "managed-deps",
+"kind": "integration",
+"line": 0,
+"text": "a column default calling `nextval` on a managed sequence applies, and a sequence declared with `OWNED BY` fails on scratch with an error naming the sequence"
 }
 ],
 "frame": {

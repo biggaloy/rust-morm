@@ -37,7 +37,11 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 - **R-0538** **Models over views are read-only.** `#[pg_view]` and `#[pg_view(materialized)]` models have no insert, update or delete, so a write is a compile error. `db.refresh::<T>()` refreshes a materialized view, concurrently when it has a unique index.
 - **R-0539** Macros also generate a typed caller where the signature allows, for example `db.call(archive_users, &days)`.
 - **R-0540** Roles are cluster-wide, so they aren't created. `morm-admin scratch` makes placeholder roles so policies and grants can run on scratch.
+- **R-0966** **Sequences:** a sequence's catalog comparison uses its definition only (type, start, increment, minimum, maximum, cache and cycle) and never `last_value`, so a sequence in use shows no drift. A sequence that belongs to an identity column stays out of this kind, because it comes with its column.
+- **R-0967** Dropping a sequence loses its position, because the inverse recreates it from its definition. That op's data effect is `lossy`, and its description says the position is lost.
 
 ## Test obligations
 
-None beyond one tagged test per requirement.
+| ID | Type | Obligation |
+|---|---|---|
+| T-0145 | integration | **Sequences:** a sequence shows no drift after `nextval` calls, an identity column's sequence isn't read as an object of this kind, and dropping a sequence reports `lossy`. |

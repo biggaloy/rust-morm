@@ -106,6 +106,12 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 | R-0858 | `.custom_plan()` | A query is slow only for some values, because your data is skewed |
 | R-0859 | `nulls_not_distinct` | A unique column may hold only one NULL |
 | R-0860 | `#[derive(PgEnum)]` | You're matching an existing Postgres enum; use `TextEnum` otherwise |
+| R-0969 | `#[derive(PgDomain)]` | A column uses a Postgres domain that already exists |
+| R-0970 | `#[derive(PgComposite)]` | A column uses a Postgres composite type that already exists |
+| R-0971 | `#[pg_domain(...)]` | You want migrations to create and track a domain, so one rule on a value lives in the database |
+| R-0972 | `#[pg_composite(...)]` | You want migrations to create and track a composite type, for fields stored together in one column |
+| R-0973 | `#[pg_enum(...)]` | You want migrations to create and track a Postgres enum; use `TextEnum` otherwise |
+| R-0974 | `morm::pg_sequence!` | You need numbers from a sequence that no identity column owns, such as invoice numbers |
 | R-0861 | `storage = "fillfactor=90"` | A table gets many updates to columns with no index |
 | R-0862 | `.returning()` | You need the changed rows back |
 | R-0863 | `.all()` | You want every row, and you know the result is small |

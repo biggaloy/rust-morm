@@ -42,6 +42,7 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 
 **R-0189** Domains and composite types are also supported.
 
+- **R-0961** **Domains and composite types in Rust.** `#[derive(PgDomain)]` goes on a one-field struct, such as `pub struct Email(pub String);`, and `#[derive(PgComposite)]` on a struct with named fields, one field per attribute, in order. Each gives encoding, decoding and `morm::Param`, and a model column uses the Rust type directly, as it does a `PgEnum`. On its own, `PgDomain`, `PgComposite` or `PgEnum` only binds to a type that already exists: morm doesn't create or change that type. Step 35 adds the attributes that make morm manage one.
 - **R-0207** **Timestamps:** Postgres stores microseconds and chrono nanoseconds, so a value can compare unequal after a round trip. `Timestamp::now()` truncates to microseconds, and `insert` fills database-set timestamps in place. Compare stored values, not values read from the clock.
 
 ### Reading and writing / Decimal
@@ -79,3 +80,5 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 |---|---|---|
 | T-0031 | trybuild | `Decimal` and float on unsuitable `numeric` columns |
 | T-0075 | integration | `OutOfRange` |
+| T-0141 | integration | `#[derive(PgDomain)]` and `#[derive(PgComposite)]` round-tripping through columns and parameters on types created by hand |
+| T-0142 | integration | **Plain `String` on a domain:** test whether a `String` field or parameter binds to a column of a text domain, and don't assume it. State the result in the PR. If it doesn't bind, `PgDomain` is the only way to use such a column, and its docs say so. |

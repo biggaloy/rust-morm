@@ -14,7 +14,7 @@ Declare every managed object in Rust, next to its model.
 
 ## Deliverables
 
-- `pg_function!`, `pg_trigger!`, `pg_policy!`, `pg_procedure!`, `pg_grant!`, `#[pg_view]` with `materialized`, `file` paths, `on = Model` references, each object in the manifest
+- `pg_function!`, `pg_trigger!`, `pg_policy!`, `pg_procedure!`, `pg_grant!`, `pg_sequence!`, `#[pg_view]` with `materialized`, `#[pg_domain]`, `#[pg_composite]`, `#[pg_enum]`, `file` paths, `on = Model` references, each object in the manifest
 
 ## End-to-end check
 
@@ -63,6 +63,35 @@ pub struct ActiveUser { pub id: i64, pub email: String }
 - **R-0534** `on = User` is a real type reference, so a typo fails to compile and table renames carry through.
 - **R-0537** **These definitions never reach the app binary.** They're compiled only into `morm-mgr`.
 
+**R-0962** Types are declared once, on their Rust type. A sequence has no Rust type, so it uses a macro:
+
+```rust
+#[derive(PgDomain)]
+#[pg_domain(name = "email", check = "VALUE LIKE '%@%'")]
+pub struct Email(pub String);                       // base type comes from String: text
+
+#[derive(PgComposite)]
+#[pg_composite(name = "money_amount")]
+pub struct MoneyAmount {
+    #[col(sql = "numeric(12,2)")] pub amount: Decimal,
+    pub currency: String,
+}
+
+#[derive(PgEnum)]
+#[pg_enum(name = "order_state")]
+pub enum OrderState { Pending, Paid }
+
+morm::pg_sequence!(invoice_no, "START 1000 CACHE 20");
+morm::pg_sequence!(order_no, file = "sql/order_no.sql");
+```
+
+- **R-0963** `#[pg_domain]`, `#[pg_composite]` and `#[pg_enum]` make morm manage the type they sit on, and each registers it in the manifest like any other object. `name` is the Postgres type's name, and `#[pg_domain]` also takes the domain's `check`. A derive with no attribute registers nothing, so morm never creates or changes that type.
+- **R-0964** The Rust item gives the type's shape, so nothing is written twice: a domain's base type comes from its field, a composite's attributes from its fields in order, and an enum's values from its variants in order. Fields use normal type inference, and `#[col(sql = "...")]` overrides it. These three attributes take no `file`, because a `.sql` file would restate the base type, fields or values.
+- **R-0965** `morm::pg_sequence!(name, "options")` declares a standalone sequence, and `options` is the text after `CREATE SEQUENCE name`. With `file`, the file holds the complete `CREATE SEQUENCE` statement. `OWNED BY` isn't available: sequences apply before tables, so the table it names doesn't exist yet.
+
 ## Test obligations
 
-None beyond one tagged test per requirement.
+| ID | Type | Obligation |
+|---|---|---|
+| T-0143 | trybuild | a `#[pg_composite]` field with no SQL type: its Rust type infers none, and it has no `#[col(sql = "...")]` |
+| T-0144 | suite | **Bare derives:** `#[derive(PgDomain)]`, `#[derive(PgComposite)]` or `#[derive(PgEnum)]` with no attribute adds nothing to the manifest. |
