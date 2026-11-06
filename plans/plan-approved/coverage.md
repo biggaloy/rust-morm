@@ -4,7 +4,7 @@ Generated from the frozen plan. Each requirement and test obligation lives in ex
 
 Kinds: `code` needs a tagged test, `doc` is checked in the README step, `info` is context with nothing to build.
 
-Totals: 1071 requirements, 195 test obligations.
+Totals: 1074 requirements, 197 test obligations.
 
 ## Requirements
 
@@ -1058,7 +1058,7 @@ Totals: 1071 requirements, 195 test obligations.
 | R-1046 | code | 52 | 0 | - **Online by default.** On an existing table a swap uses this form, and `--fast` uses the… |
 | R-1047 | code | 52 | 0 | - **The steps,** each with its own boundary: 1. `tx`: create the new type under a temporar… |
 | R-1048 | code | 52 | 0 | - **The copy walks by key until nothing is left,** and reads each batch after the sync tri… |
-| R-1049 | code | 52 | 0 | - **The cutover** is one short transaction across all affected tables, with `lock_timeout`… |
+| R-1049 | code | 52 | 0 | - **The cutover** is one short transaction across all affected tables, and it gives way… |
 | R-1050 | code | 52 | 0 | - **Old values stay.** The retired column holds every old value and keeps the retired type… |
 | R-1051 | code | 52 | 0 | - **Text on the shadow column.** A partial index, an expression index, a CHECK or a materi… |
 | R-1052 | code | 52 | 0 | - **Refused in this form, allowed with `--fast`,** naming the cause: partitioned tables, b… |
@@ -1070,7 +1070,7 @@ Totals: 1071 requirements, 195 test obligations.
 | R-1058 | doc | 50 | 0 | \| `#[derive(TextEnum)]` \| A column holds one of a fixed set of values; prefer this to a … |
 | R-1059 | code | 57 | 0 | - **Changing a domain or composite type.** A changed domain `check` drops and adds the con… |
 | R-1060 | code | 37 | 0 | **Composite types with dependents.** Step 57 refuses a composite type change that needs a … |
-| R-1061 | code | 39 | 0 | **A view above an online column swap.** R-0566's swap carries a managed view above the col… |
+| R-1061 | code | 39 | 0 | **A view above an online column swap.** R-0566's swap carries a managed view above the c… |
 | R-1062 | code | 38 | 0 | - **Retired materialized views.** An online column swap (step 39) retires the old copy of … |
 | R-1063 | code | 39 | 0 | **A materialized view above an online column swap.** Recreating one would run its query un… |
 | R-1064 | code | 39 | 0 | **Text on the shadow column.** morm has no SQL parser and replaces no names in text, so R-… |
@@ -1081,6 +1081,9 @@ Totals: 1071 requirements, 195 test obligations.
 | R-1069 | doc | 50 | 0 | The README says this plainly, beside the managed function rows. A migration can stop and a… |
 | R-1070 | code | 39 | 0 | **Same meaning when the text differs.** Postgres keeps an alias once it has one, so after … |
 | R-1071 | code | 39 | 0 | **Column positions.** A `USING` view's text holds a column list, such as `t t(id, _morm_re… |
+| R-1072 | code | 39 | 0 | **A cutover gives way.** A cutover can deadlock with an app transaction: one that touche… |
+| R-1073 | doc | 50 | 0 | \| `--terminate-blockers` \| A cutover keeps giving way, and you'd rather end the transact… |
+| R-1074 | doc | 50 | 0 | \| `cutover_lock_timeout`, `cutover_attempts`, `cutover_pause` \| A cutover gives up on a… |
 
 ## Test obligations
 
@@ -1281,3 +1284,5 @@ Totals: 1071 requirements, 195 test obligations.
 | T-0193 | suite | 59 | **What a call may touch:** on Postgres 15–18, an automatic call that reaches `dblink` dire… |
 | T-0194 | suite | 39 | **Same meaning:** on Postgres 15–18, every `USING` and `NATURAL JOIN` shape in T-0190, as … |
 | T-0195 | suite | 39 | **Column positions:** on Postgres 15–18, with a `USING` materialized view above the column… |
+| T-0196 | suite | 39 | **A cutover gives way:** on Postgres 15–18, under nonstop transactions that touch the ta… |
+| T-0197 | suite | 52 | **The cutover gives way:** on Postgres 15–18, a swap across two tables with a view above… |

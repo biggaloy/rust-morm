@@ -155,6 +155,8 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 | R-0893 | `--fast` | The table is small, or you're in a maintenance window |
 | R-0894 | `--accept-data-loss` | You've read the plan, and you accept losing that data |
 | R-0895 | `--skip-fingerprint` | Your role can't create a temporary database, and you accept a weaker check |
+| R-1073 | `--terminate-blockers` | A cutover keeps giving way, and you'd rather end the transactions in its way than wait; those transactions die and their apps lose the connection |
+| R-1074 | `cutover_lock_timeout`, `cutover_attempts`, `cutover_pause` | A cutover gives up on a busy table, or its retries stall your traffic too much |
 
 - **R-0896** Models: bases, every `#[model]` and `#[col]` option in tables.
 - **R-0897** `get`, `insert`, `update`, `delete`, lists, `filter_cols`, related rows, pagination, batches, lost updates, raw SQL with `db.sql()`, transactions, and which of `Decimal`, `Numeric` or `bigint` to use.
