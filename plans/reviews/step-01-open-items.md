@@ -105,3 +105,10 @@ Decisions still to add on `main`: R-0608, R-1081, T-0208, T-0209.
 - **AM.** A widening with nothing to list shows no fixed line. Recommended: print it in `makemigrations` output and as a comment in the migration, without stopping.
 - **AN.** R-0612's "one the conversion layer accepts" never lists the pairs. Recommended: the plan lists them, including length and precision.
 - **Decisions still to add on `main`:** R-1102, T-0218, T-0219.
+
+## From the edit at `eb0e0d4`, waiting on the owner
+
+- **AO.** A check on another column using `query_to_xml('SELECT max(n)::numeric(6,2) ...')` fails after `n` widens, and AL takes it off the list. Options: keep built-ins that run query text listed (the `query_to_xml` family, `ts_stat`, `ts_rewrite(tsquery, text)`), or leave it under the fixed line.
+- **AP.** `integer` to `bigint` and `varchar(3)` to `text` fail `check_schema`, because R-0925 compiles decoding for one type with no branch, so an old binary can't start after such a widening.
+- **AQ. To confirm:** generated columns stay listed, `Decimal` has a 28-digit limit, and integer fields stay at scale 0.
+- **Decisions still to add on `main`:** R-1085, R-1092, T-0220, alongside the IDs already there.
