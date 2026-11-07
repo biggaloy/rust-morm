@@ -62,3 +62,21 @@ Changed: R-0572, R-0593, R-0981, R-0983, R-1038, R-1040, R-1047, R-1049, R-1050,
 - **W. `migrate` has no `--decide`:** R-1040 and R-0572 exit `3` in preflight, and nothing says how to answer there.
 - **X. R-1040's `%TYPE` text** names only `integer out of range`. A length or precision change gives `numeric field overflow`.
 - **Decisions still to add on `main`:** R-0572, R-0593, R-0608, R-1015, R-1038, R-1040, R-1068, R-1076, R-1078 to R-1080, R-1085, R-1092 to R-1094, T-0168, T-0184, T-0198 to T-0202, T-0206, T-0207.
+
+## From the edit at `db265e1`, waiting on the owner
+
+**W, `--decide` on `migrate` and `rollback`:** not written. Four points, with the agent's recommendations:
+
+1. A recorded answer stands only for the same migration id, checksum, direction and decision ID.
+2. A live decision's ID is built from the migration id, kind and function signature, plus a hash of the function's source.
+3. The ledger keeps `meta.json` verbatim, so `rollback` can search when the files are gone.
+4. Answers go in a new `_morm.decisions` table, plus a history row.
+
+**Other gaps:**
+
+- **Y.** A third stale `%TYPE` error: `22001 value too long` after `varchar(3)` to `varchar(10)`.
+- **Z.** An unmanaged `EXECUTE` function that names nothing the search looks for is never found.
+- **AA.** Non-function callers: a view with `inner_f()::numeric(6,2)` failed the same way, and defaults and checks that call a hit function aren't searched.
+- **AB.** R-0572's search says nothing about case, so retires and renames may miss `SELECT N FROM T`.
+
+Decisions still to add on `main`: R-0608, R-1081, T-0208, T-0209.
