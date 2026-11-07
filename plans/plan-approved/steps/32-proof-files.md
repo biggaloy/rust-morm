@@ -57,7 +57,7 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 
 **R-0587** Every rename, retire, purge, lossy change and missing backfill is a decision with an id, evidence (type match, name similarity, row presence, dependents, size) and options. They're answered interactively, by `--decide ID=OPT`, or by file. `--json` suits CI and agents. `was` is a pre-answered rename, ignored once the old name is gone. An op can declare decisions of its own through this same flow, so later steps add kinds such as enum value changes.
 
-**R-0588** Exit codes: `0` ok, `1` error or drift, `2` refused by a guard, `3` open decisions.
+**R-0588** Exit codes: `0` ok, `1` error or drift, `2` refused by a guard, `3` open decisions. A run with both a refusal and an open decision exits `2`, because answering the decision wouldn't let it through.
 
 ### Migrations / Proof before writing
 
@@ -98,4 +98,6 @@ morm-migrations/
 
 ## Test obligations
 
-None beyond one tagged test per requirement.
+| ID | Type | Obligation |
+|---|---|---|
+| T-0209 | suite | **A refusal and an open decision together:** a `makemigrations` run with both a hard refusal, such as a model's `extensions` entry scratch doesn't have, and an open decision exits with code `2`, with no file written, and answering the decision alone still exits `2`. With the refusal fixed and the decision open it exits `3`, and with the decision answered it exits `0`. |

@@ -4,7 +4,7 @@ Generated from the frozen plan. Each requirement and test obligation lives in ex
 
 Kinds: `code` needs a tagged test, `doc` is checked in the README step, `info` is context with nothing to build.
 
-Totals: 1094 requirements, 207 test obligations.
+Totals: 1094 requirements, 209 test obligations.
 
 ## Requirements
 
@@ -597,7 +597,7 @@ Totals: 1094 requirements, 207 test obligations.
 | R-0585 | code | 40 | 1252 | - **Emergency override:** `rollback --production --reason "..."` works but is logged to `_… |
 | R-0586 | code | 38 | 1253 | - Retired columns are a tracked state, so `verify` doesn't report them as drift. |
 | R-0587 | code | 32 | 1257 | Every rename, retire, purge, lossy change and missing backfill is a decision with an id, e… |
-| R-0588 | code | 32 | 1259 | Exit codes: `0` ok, `1` error or drift, `2` refused by a guard, `3` open decisions. |
+| R-0588 | code | 32 | 1259 | Exit codes: `0` ok, `1` error or drift, `2` refused by a guard, `3` open decisions. A run … |
 | R-0589 | code | 32 | 1263 | Files are written only after all of these pass on scratch: |
 | R-0590 | code | 32 | 1265 | 1. `up` reaches the models exactly. |
 | R-0591 | code | 32 | 1266 | 2. `down` returns to the previous schema exactly. |
@@ -1316,3 +1316,5 @@ Totals: 1094 requirements, 207 test obligations.
 | T-0205 | suite | 59 | **The extension in CI:** `tests/tests/repo_policy.rs` fails unless each job R-1083 names r… |
 | T-0206 | integration | 59 | **A changed column, on Postgres 15–18:** a column changed from `numeric(6,2)` to `numeric(… |
 | T-0207 | integration | 59 | **In-comment options, on Postgres 15–18:** a managed plpgsql function with `@plpgsql_check… |
+| T-0208 | integration | 59 | **Functions that reach a column indirectly, on Postgres 15–18:** a column changes from `nu… |
+| T-0209 | suite | 32 | **A refusal and an open decision together:** a `makemigrations` run with both a hard refus… |

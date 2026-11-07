@@ -17,7 +17,7 @@ What parallel steps share. Signatures here are the starting point, taken from th
 
 - Rust 2024, MSRV 1.99.1, Tokio only, PostgreSQL 15 and later only.
 - Tool prefix `morm-`. Config `morm.toml`. Environment `MORM_*` and `DATABASE_URL`. Migrations in `morm-migrations/`. Ledger schema `_morm`.
-- Exit codes: `0` ok, `1` error or drift, `2` refused by a guard, `3` open decisions.
+- Exit codes: `0` ok, `1` error or drift, `2` refused by a guard, `3` open decisions. A run with both a refusal and an open decision exits `2`.
 - Generated SQL always quotes names. Generated code uses static dispatch.
 - Macro-generated items are public API: names below don't change without following `rules.md`.
 

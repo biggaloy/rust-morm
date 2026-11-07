@@ -47,7 +47,7 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 - **R-0600** **Fingerprint gate.** Fingerprints cover only objects the chain manages, so unmanaged objects can't fail a run. Live schema must match `schema_before`, or the run refuses. A single-transaction migration must match `schema_after` before commit, or it rolls back. A multi-step migration can't, because its steps commit separately, so the check runs after the last step, and a mismatch marks it `failed` for `rollback --failed`.
 - **R-0606** **One migrator:** session advisory lock on a dedicated connection. If that connection is lost, the run stops.
 - **R-0607** **Lock safety:** `lock_timeout` on every step with bounded retry and backoff, plus per-step `statement_timeout`.
-- **R-0608** **Preflight:** privileges, long-running transactions, invalid indexes, checksums, table sizes. An op can add preflight checks of its own, which run with these and can refuse the run with exit code `2`, or stop it with code `3` when what they found is an open decision.
+- **R-0608** **Preflight:** privileges, long-running transactions, invalid indexes, checksums, table sizes. An op can add preflight checks of its own, which run with these and can refuse the run with exit code `2`, or stop it with code `3` when what they found is an open decision. A run where both happen exits with code `2`.
 
 ### Migrations / Commands
 
