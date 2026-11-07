@@ -27,7 +27,7 @@ The 30-minute wake-up lived only in the session, so a restart removes it. After 
 - Step 01's code is reviewed and fixed. PR #1 now also carries the plan redesign that came out of the reviews: managed enums, steps 51 to 59, the general walk, `plpgsql_check`, `--decide`, and type changes that never break a running app.
 - Every owner decision is in `INDEX.md` under "Decisions since the split". `reviews/step-01-open-items.md` has every open item, A to AV, each answered.
 
-**In flight when saved:** an edit agent writing "Narrowing and type families" in `INDEX.md`, including the online-mode rule: a silent narrowing only cuts over in `contract` or with `--fast`. It also adds two lines to the PR body. It may not have finished. **To check:** compare `git log origin/step-01-bootstrap` with `acf82a2`, and read the PR body for those two lines. If either is missing, start a fresh agent from that `INDEX.md` entry, items AR to AV, and the online-mode rule.
+**Latest:** the narrowing edit landed at `3d91eab`, with CI green and the PR body updated. Items AW to BA of `reviews/step-01-open-items.md` are waiting on the owner, with recommendations. Once answered, write them in, add the IDs to Decisions, then design online widening of a referenced key and bring that design to the owner.
 
 ## What comes next
 

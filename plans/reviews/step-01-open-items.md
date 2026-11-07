@@ -122,3 +122,13 @@ Decisions still to add on `main`: R-0608, R-1081, T-0208, T-0209.
 - **AV. To confirm:** `contracts.md` gains `fn from_row_as(row, &Decoders<Self>)` and `pub struct Decoders<M>` on `Model`.
 - **The PR body isn't updated.** The agent's `sed` edit was refused and it stopped. The next edit agent should add the two prepared items.
 - **Decisions still to add on `main`:** R-0202, R-0925, R-1103 to R-1107, T-0220 to T-0223.
+
+## From the edit at `3d91eab`, waiting on the owner
+
+- **AW.** `rollback` has no gate: rolling back a `numeric(20,2)` to `numeric(20,4)` widening narrows the column under live apps, which then round writes silently. Recommended: `rollback` refuses a silent narrowing unless run with `--phase contract` or `--fast`, as `migrate` does.
+- **AX.** An old binary restarted after `contract`, such as an app rolled back to an older build, rounds writes silently, because `check_schema` accepts a field built for `numeric(6,2)` on `numeric(4,1)`. Recommended: `check_schema` refuses a field built for a wider scale, precision or length than the column has, so the app fails loudly rather than corrupting data.
+- **AY.** `table_to_xml` and `cursor_to_xml` through a runtime regclass aren't on the query-text list. Recommended: add them.
+- **AZ.** `morm::Numeric` doesn't read integer columns. Recommended: extend it, as with `Decimal`.
+- **BA.** Lowering a scale rounds rows already stored: `1.0051` becomes `1.01`. Recommended: any silent narrowing of stored data is a `lossy` change, so it opens a decision.
+- **Decisions still to add on `main`:** R-0424, R-0893, R-1108, R-1109, T-0224.
+- **After these:** design online widening of a referenced key, then the short check, then PR #1.
