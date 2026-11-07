@@ -14,7 +14,7 @@ Exact encoding and decoding for every supported type, with no silent rounding.
 
 ## Deliverables
 
-- `Decimal` decoding with no heap use, `morm::Numeric`, every integer path, `morm::Param` for these types, `Range<T>`, `IpAddr`, timestamps
+- `Decimal` decoding with no heap use, `morm::Numeric`, every integer path, `morm::Param` for these types, `Range<T>`, `IpAddr`, timestamps, and the decoders each type uses on another column type of its family
 
 ## End-to-end check
 
@@ -38,6 +38,7 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 ### Models / Type inference
 
 - **R-0207** **Timestamps:** Postgres stores microseconds and chrono nanoseconds, so a value can compare unequal after a round trip. `Timestamp::now()` truncates to microseconds, and `insert` fills database-set timestamps in place. Compare stored values, not values read from the clock.
+- **R-1103** **Reading a column whose type changed.** A migration can change a column's type under a running binary, so each field also decodes every column type in its family, through the decoder for the column's real type, which step 14 chooses once per statement. These are the families, and there are no others: a field of a Rust integer type reads `smallint`, `integer`, `bigint` and `numeric(p,0)` with any `p`, and never a `numeric` with a scale or with no precision; `Decimal` and `morm::Numeric` read `numeric` with any precision and scale, or with none; `String` reads `text`, and `varchar` with any length or none; `DateTime<Utc>` and `Timestamp` read `timestamptz` with any precision, and `NaiveDateTime` reads `timestamp` with any precision; and an array reads an array of its element's family. A field wider than the column reads every value losslessly. A field narrower than the column checks each value's range, and only a value that can't fit errors: an integer field returns `Error::OutOfRange` naming the column, never a wrapped value, and `Decimal` returns `Error::Decimal` for a value it can't hold exactly, past its 28 significant digits, as on unbounded `numeric`. `morm::Numeric` and `String` read every value whole. Nothing read is rounded, as R-0423 says. A write goes as the column type the field was built against, and Postgres converts it to the column's real type, so a value the column can't hold, such as a number with more digits before the point than it allows or a text longer than its length, gets the database's error for that write.
 
 ### Reading and writing / Decimal
 
@@ -74,3 +75,4 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 |---|---|---|
 | T-0031 | trybuild | `Decimal` and float on unsuitable `numeric` columns |
 | T-0075 | integration | `OutOfRange` |
+| T-0223 | integration | **Reading across a type change, on Postgres 15–18:** every integer field reads `smallint`, `integer`, `bigint` and `numeric(p,0)` columns at its own limits and theirs: a value in its range reads exactly, and one outside it returns `Error::OutOfRange` naming the column, never a wrapped value. `Decimal` reads every `numeric(6,2)` value exactly, and a `numeric(40,2)` or `numeric` value exactly up to 28 significant digits, and returns `Error::Decimal` for a 30-digit value of either, never a rounded one, while `morm::Numeric` reads it whole. `String` reads `varchar(3)`, `varchar` and `text`, `DateTime<Utc>` reads `timestamptz(0)` and `timestamptz`, and `NaiveDateTime` reads `timestamp(3)`, each exactly. |

@@ -4,7 +4,7 @@ Generated from the frozen plan. Each requirement and test obligation lives in ex
 
 Kinds: `code` needs a tagged test, `doc` is checked in the README step, `info` is context with nothing to build.
 
-Totals: 1102 requirements, 220 test obligations.
+Totals: 1107 requirements, 223 test obligations.
 
 ## Requirements
 
@@ -1112,6 +1112,11 @@ Totals: 1102 requirements, 220 test obligations.
 | R-1100 | doc | 50 | 0 | \| `--decide ID=OPT` on `migrate`, `rollback` and `rehearse` \| A run stopped with exit code… |
 | R-1101 | code | 40 | 0 | - **Answering a decision at `rehearse`.** `rehearse` runs step 33's preflight, with each o… |
 | R-1102 | code | 59 | 0 | - **What the walk lists.** R-1038's walk can find anything, and it keeps only what carries… |
+| R-1103 | code | 13 | 0 | - **Reading a column whose type changed.** A migration can change a column's type under a … |
+| R-1104 | code | 14 | 0 | - **Decoding follows the column's real type.** When a statement is prepared, morm reads ea… |
+| R-1105 | code | 48 | 0 | - Reading a column whose type changed: `from_row_as` with a narrower field's per-value ran… |
+| R-1106 | doc | 50 | 0 | The README says this plainly, beside the `Decimal` and `Numeric` rows. `Decimal` holds up … |
+| R-1107 | doc | 50 | 0 | The README says this plainly, beside the rolling deploy rows. A type change never stops a … |
 
 ## Test obligations
 
@@ -1336,4 +1341,7 @@ Totals: 1102 requirements, 220 test obligations.
 | T-0217 | suite | 40 | **`--decide` on `rehearse`:** on a restored backup marked `development`, with no row in `_… |
 | T-0218 | integration | 59 | **What the walk lists, on Postgres 15–18:** a column changes from `numeric(6,2)` to `numer… |
 | T-0219 | integration | 59 | **A widening's fixed line, on Postgres 15–18:** the decision for `numeric(6,2)` to `numeri… |
-| T-0220 | integration | 41 | **`check_schema`'s type pairs:** a `Decimal` field built against `numeric(6,2)` passes on … |
+| T-0220 | integration | 41 | **`check_schema`'s type families, on Postgres 15–18:** each of these passes: an `i32` fiel… |
+| T-0221 | integration | 41 | **An old binary through a type change, on Postgres 15–18:** a binary built against `intege… |
+| T-0222 | integration | 14 | **Decoding follows the column's real type, on Postgres 15–18:** a cached statement on an `… |
+| T-0223 | integration | 13 | **Reading across a type change, on Postgres 15–18:** every integer field reads `smallint`,… |

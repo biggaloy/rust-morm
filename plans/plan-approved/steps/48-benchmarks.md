@@ -55,6 +55,7 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 - **R-0745** Criterion benchmarks in CI against raw tokio-postgres, SQLx, SeaORM and Diesel.
 - **R-0746** Telemetry overhead on a primary-key read, for each row of the cost table in section 11. Target: under 1% with `tracing` on and the default `span_sample`. A miss is a bug, not a note in the docs.
 - **R-0747** Also: `morm::Pool` vs `deadpool-postgres`, pool sizes under mixed fast and slow queries, `fetch_ref` vs `fetch` vs `fetch_json`, morm's `Decimal` decoding vs `rust_decimal`'s, binary size and RSS with `tls` compiled in but unused, and RSS on both app and Postgres.
+- **R-1105** Reading a column whose type changed: `from_row_as` with a narrower field's per-value range check, against `from_row` on the same rows with matching types, for an integer, a `Decimal` and a `String` column, measured over a statement of many rows. `from_row` stays within noise of hand-written tokio-postgres decoding, so a binary whose columns match pays nothing for this.
 
 ## Test obligations
 

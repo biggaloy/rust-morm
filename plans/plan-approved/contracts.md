@@ -35,7 +35,13 @@ pub trait Model: Sized + Send + Sync + 'static {
     const SELECT: &'static str;
     fn from_row(row: &tokio_postgres::Row) -> Result<Self>;
     fn from_row_named(row: &tokio_postgres::Row) -> Result<Self>;
+    // A column whose type changed: reads each field through the decoder the
+    // statement chose once, from the column's real type, when it was prepared
+    fn from_row_as(row: &tokio_postgres::Row, decoders: &Decoders<Self>) -> Result<Self>;
 }
+// One statement's choice: each field's column position and the decoder for its real type,
+// kept with the statement in its cache entry
+pub struct Decoders<M: Model> { /* private */ }
 pub trait HasPk: Model {}             // absent on models with no primary key
 pub trait PkValue: Send + Sync + 'static {}   // one Param, or a tuple for a composite key
 
