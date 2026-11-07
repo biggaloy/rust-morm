@@ -4,7 +4,7 @@ Generated from the frozen plan. Each requirement and test obligation lives in ex
 
 Kinds: `code` needs a tagged test, `doc` is checked in the README step, `info` is context with nothing to build.
 
-Totals: 1101 requirements, 217 test obligations.
+Totals: 1102 requirements, 219 test obligations.
 
 ## Requirements
 
@@ -1111,6 +1111,7 @@ Totals: 1101 requirements, 217 test obligations.
 | R-1099 | code | 59 | 0 | - **The walk's unmanaged part only works in preflight.** Scratch can't see an unmanaged ob… |
 | R-1100 | doc | 50 | 0 | \| `--decide ID=OPT` on `migrate`, `rollback` and `rehearse` \| A run stopped with exit code… |
 | R-1101 | code | 40 | 0 | - **Answering a decision at `rehearse`.** `rehearse` runs step 33's preflight, with each o… |
+| R-1102 | code | 59 | 0 | - **What the walk lists.** R-1038's walk can find anything, and it keeps only what carries… |
 
 ## Test obligations
 
@@ -1333,3 +1334,5 @@ Totals: 1101 requirements, 217 test obligations.
 | T-0215 | integration | 59 | **One list per migration, on Postgres 15–18:** a migration that changes two columns on two… |
 | T-0216 | integration | 59 | **A live decision's ID against `meta.json`, on Postgres 15–18:** an unmanaged function tha… |
 | T-0217 | suite | 40 | **`--decide` on `rehearse`:** on a restored backup marked `development`, with no row in `_… |
+| T-0218 | integration | 59 | **What the walk lists, on Postgres 15–18:** a column changes from `numeric(6,2)` to `numer… |
+| T-0219 | integration | 59 | **A widening's fixed line, on Postgres 15–18:** the decision for `numeric(6,2)` to `numeri… |
