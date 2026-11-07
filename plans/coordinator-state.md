@@ -29,7 +29,7 @@ This session has an in-memory wake-up every 30 minutes that resumes stopped agen
 
 ## What comes next
 
-1. The owner approved AH to AK of `reviews/step-01-open-items.md`, recorded in `INDEX.md` under "What the walk lists, and its limit". A last edit is running for them. Then run a short check of the changes since `09338c2`, the checker and CI, and bring PR #1 to the owner. Anything found after that stops at the step that finds it. The owner doesn't accept open gaps: bring any gap to the owner, don't record it as accepted.
+1. Head `6fcce01`, with CI green. Items AL to AN of `reviews/step-01-open-items.md` are waiting on the owner. Then apply them, add the IDs to Decisions, run a short check of the changes since `09338c2`, the checker and CI, and bring PR #1 to the owner. The owner doesn't accept open gaps: bring any gap to the owner, don't record it as accepted.
 2. Bring PR #1 to the owner. The owner approves it, and no agent merges it without that.
 3. Merge, mark step 01 `done`, and pull. Check `INDEX.md` on `main` has both its Decisions and the branch's rows and order.
 4. Start the next step as a fresh agent, then an independent review. The owner approves the PRs of steps 01, 02, 03, 50 and, once the plan edit lands, 55.

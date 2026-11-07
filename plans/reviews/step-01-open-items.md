@@ -98,3 +98,10 @@ Decisions still to add on `main`: R-0608, R-1081, T-0208, T-0209.
 - **AJ. A whole row plus another column.** `SELECT x.id, (to_jsonb(x) ->> 'n')::numeric(6,2) FROM t x` has a `pg_depend` row only against `id`.
 - **AK. To confirm:** a `rehearse` rerun carries on from `_morm.history` (R-1101). Other ops use the same walk, each hit with its own decision, and the one list applies to column changes. Preflight leaves out objects `meta.json` already holds accepted. The `--resume` re-ask also covers views, defaults and checks.
 - **Decisions still to add on `main`:** R-0952, R-1094, R-1101, T-0206, T-0217.
+
+## From the edit at `6fcce01`, waiting on the owner
+
+- **AL.** `DEFAULT now()` on another column makes every change on that table stop once. Recommended: on other columns, a default or check that only calls built-ins isn't listed.
+- **AM.** A widening with nothing to list shows no fixed line. Recommended: print it in `makemigrations` output and as a comment in the migration, without stopping.
+- **AN.** R-0612's "one the conversion layer accepts" never lists the pairs. Recommended: the plan lists them, including length and precision.
+- **Decisions still to add on `main`:** R-1102, T-0218, T-0219.
