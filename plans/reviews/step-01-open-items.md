@@ -80,3 +80,13 @@ Changed: R-0572, R-0593, R-0981, R-0983, R-1038, R-1040, R-1047, R-1049, R-1050,
 - **AB.** R-0572's search says nothing about case, so retires and renames may miss `SELECT N FROM T`.
 
 Decisions still to add on `main`: R-0608, R-1081, T-0208, T-0209.
+
+## From the edit at `4e6d12a`, waiting on the owner
+
+- **AC.** A caller of an unmanaged `EXECUTE` function isn't found: `v := ex_f(a, b)` into `numeric(6,2)`. The decision lists only `ex_f`.
+- **AD.** A function or view that reads a found view with no cast isn't found.
+- **AE.** A trigger's `WHEN`, a policy, a rule, and expression and partial indexes that call a found function fail the same way. A plpgsql body using an operator built on a found function has no name to search and no `pg_depend` row.
+- **AF.** `rehearse` has no `--decide`, so a stopped run has no way to answer, and a restored backup holds no answers.
+- **AG.** A `BEGIN ATOMIC` body's source is deparsed, so a rename in an earlier step changes its hash, and `--resume` asks again. Safe, one extra stop.
+- **Filled in by the agent, standing unless the owner objects:** `--yes` answers no decision, `--plan` records nothing, an unused ID is reported, a bad option exits `1`, an answer that refuses exits `2` and a later answer replaces it, preflight runs before each migration, the ID form is `<id>/<kind>/<signature>/<hash>`, and one `makemigrations --decide` answers a decision open in both directions.
+- **Decisions still to add on `main`:** R-0597, R-0615, R-0950, R-0951, R-1069, R-1095 to R-1100, T-0122, T-0210 to T-0216.
