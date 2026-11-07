@@ -4,7 +4,7 @@ Generated from the frozen plan. Each requirement and test obligation lives in ex
 
 Kinds: `code` needs a tagged test, `doc` is checked in the README step, `info` is context with nothing to build.
 
-Totals: 1107 requirements, 223 test obligations.
+Totals: 1109 requirements, 224 test obligations.
 
 ## Requirements
 
@@ -902,7 +902,7 @@ Totals: 1107 requirements, 223 test obligations.
 | R-0890 | doc | 50 | 1764 | \| `q_unchecked`, `sql_unchecked` \| You must build SQL at runtime, and you will handle in… |
 | R-0891 | doc | 50 | 1765 | \| `recycle_when` \| You need your own rule for replacing connections \| |
 | R-0892 | doc | 50 | 1766 | \| `no_default` \| You want a compile error when a required field is missed \| |
-| R-0893 | doc | 50 | 1767 | \| `--fast` \| The table is small, or you're in a maintenance window \| |
+| R-0893 | doc | 50 | 1767 | \| `--fast` \| The table is small, or you're in a maintenance window; for a narrowing Postgr… |
 | R-0894 | doc | 50 | 1768 | \| `--accept-data-loss` \| You've read the plan, and you accept losing that data \| |
 | R-0895 | doc | 50 | 1769 | \| `--skip-fingerprint` \| Your role can't create a temporary database, and you accept a w… |
 | R-0896 | doc | 50 | 1771 | 6. Models: bases, every `#[model]` and `#[col]` option in tables. |
@@ -1117,6 +1117,8 @@ Totals: 1107 requirements, 223 test obligations.
 | R-1105 | code | 48 | 0 | - Reading a column whose type changed: `from_row_as` with a narrower field's per-value ran… |
 | R-1106 | doc | 50 | 0 | The README says this plainly, beside the `Decimal` and `Numeric` rows. `Decimal` holds up … |
 | R-1107 | doc | 50 | 0 | The README says this plainly, beside the rolling deploy rows. A type change never stops a … |
+| R-1108 | code | 41 | 0 | **A narrowing Postgres would change silently waits for `contract`.** Postgres rounds or cu… |
+| R-1109 | doc | 50 | 0 | \| `migrate --phase expand`, then `--phase contract` \| You deploy without stopping apps, an… |
 
 ## Test obligations
 
@@ -1345,3 +1347,4 @@ Totals: 1107 requirements, 223 test obligations.
 | T-0221 | integration | 41 | **An old binary through a type change, on Postgres 15–18:** a binary built against `intege… |
 | T-0222 | integration | 14 | **Decoding follows the column's real type, on Postgres 15–18:** a cached statement on an `… |
 | T-0223 | integration | 13 | **Reading across a type change, on Postgres 15–18:** every integer field reads `smallint`,… |
+| T-0224 | integration | 41 | **A silent narrowing waits for `contract`, on Postgres 15–18:** the test first confirms on… |
