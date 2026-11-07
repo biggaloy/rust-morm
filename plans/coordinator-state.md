@@ -10,7 +10,7 @@ Nothing is kept in `/tmp`: it's memory-backed here, so a power cut wipes it. Age
 
 ## Wake-up
 
-This session has an in-memory wake-up every 30 minutes that resumes stopped agents after a usage limit. It's lost when the session ends, so a new or resumed session must set it again with `CronCreate`, and delete it when the job is done.
+The 30-minute wake-up lived only in the session, so a restart removes it. After resuming, set it again with `CronCreate`, so a usage limit doesn't stall the work, and delete it when the job is done. A session started after 2026-11-06 15:50 also loads `autoContinueAtUsageLimit`.
 
 ## How to resume
 
@@ -21,22 +21,26 @@ This session has an in-memory wake-up every 30 minutes that resumes stopped agen
 
 ## Where step 01 stands
 
-- PR #1 is open and unmerged. `INDEX.md` shows `in review`. Base head for this round: `79d7c42`.
-- All repo settings are live: required `ci` check, `crates-io` environment, tag ruleset.
-- The third review found problems in two parts, and both fix rounds have landed on `step-01-bootstrap`:
-  - **Plan fixes:** done at `9ee02f9`, with CI green, plus the step 51 title fix after it. New steps 55 to 59, 1059 requirements, 185 test obligations.
-  - **Code fixes:** done at `57e2c20`, with CI green. The rewritten `fetch_last_bench.sh` and `fuzz` step have only run against stubs. `nothing_switches_a_job_or_step_off` is still tagged R-0957, so the next code review should judge that tag.
+**Last saved:** 2026-11-07, before a PC restart, with the weekly usage limit nearly reached.
+
+- PR #1 is open and unmerged, at `acf82a2` when saved. `INDEX.md` shows `in review`. All repo settings are live.
+- Step 01's code is reviewed and fixed. PR #1 now also carries the plan redesign that came out of the reviews: managed enums, steps 51 to 59, the general walk, `plpgsql_check`, `--decide`, and type changes that never break a running app.
+- Every owner decision is in `INDEX.md` under "Decisions since the split". `reviews/step-01-open-items.md` has every open item, A to AV, each answered.
+
+**In flight when saved:** an edit agent writing "Narrowing and type families" in `INDEX.md`, including the online-mode rule: a silent narrowing only cuts over in `contract` or with `--fast`. It also adds two lines to the PR body. It may not have finished. **To check:** compare `git log origin/step-01-bootstrap` with `acf82a2`, and read the PR body for those two lines. If either is missing, start a fresh agent from that `INDEX.md` entry, items AR to AV, and the online-mode rule.
 
 ## What comes next
 
-1. The owner took every recommendation in AR to AV, recorded in `INDEX.md` under "Narrowing and type families". A last edit is running for them and for the PR body. Then run a short check of the changes since `09338c2`, the checker and CI, and bring PR #1 to the owner. The owner doesn't accept open gaps: bring any gap to the owner, don't record it as accepted.
-2. Bring PR #1 to the owner. The owner approves it, and no agent merges it without that.
-3. Merge, mark step 01 `done`, and pull. Check `INDEX.md` on `main` has both its Decisions and the branch's rows and order.
-4. Start the next step as a fresh agent, then an independent review. The owner approves the PRs of steps 01, 02, 03, 50 and, once the plan edit lands, 55.
+1. Finish that edit, then add any new IDs to Decisions on `main`.
+2. Run a short check of the changes since `09338c2`, the checker and CI, with one fresh reviewer. By owner decision, this is the last round.
+3. Bring PR #1 to the owner, who approves it. No agent merges without that.
+4. Merge, mark step 01 `done`, pull, and check `INDEX.md` on `main` keeps both its Decisions and the branch's rows and order.
+5. Start step 02 as a fresh agent, then an independent review. The owner approves the PRs of steps 01, 02, 03, 50 and 55.
 
 ## Open with the owner
 
-- Four collaborators have write access to the repo, and `main` needs no review. The owner may want to reduce that list.
+- **Asked, not yet answered:** should widening a key that foreign keys reference, such as a primary key from `integer` to `bigint`, become online in 0.1? Today R-0567 refuses it on a live table, `--fast` does it in a maintenance window, and an online form is in `later-defo-build.plan`.
+- Four collaborators have write access, and `main` needs no review. The owner may want to reduce that list.
 
 ## Not proven yet
 
@@ -44,5 +48,6 @@ Moved to "Repo tooling" in `later-defo-build.plan`, by owner decision.
 
 ## Housekeeping
 
-- Old agent worktrees under `.claude/worktrees/` are locked by the harness, and one holds `step-01-bootstrap`. Remove them once no agent needs them, and don't force a lock while an agent is running.
+- Agent worktrees under `.claude/worktrees/`, about a dozen and some locked, hold only finished scratch work, including 1.4 GB from the `plpgsql_check` builds. Once no agent is running, list them and ask the owner before removing any.
 - `.claude/` and `target/` show as untracked on `main` until PR #1 brings `.gitignore`. Don't commit them.
+- The rust-morm repo's `.claude/scratch/session-scratchpad/` holds copies of the first session's scratch files. They're not needed to resume.
