@@ -112,3 +112,13 @@ Decisions still to add on `main`: R-0608, R-1081, T-0208, T-0209.
 - **AP.** `integer` to `bigint` and `varchar(3)` to `text` fail `check_schema`, because R-0925 compiles decoding for one type with no branch, so an old binary can't start after such a widening.
 - **AQ. To confirm:** generated columns stay listed, `Decimal` has a 28-digit limit, and integer fields stay at scale 0.
 - **Decisions still to add on `main`:** R-1085, R-1092, T-0220, alongside the IDs already there.
+
+## From the edit at `acf82a2`, waiting on the owner
+
+- **AR. Narrowing writes can change a value silently.** An old app built against `numeric(20,4)` writes `1.0051` after the column becomes `numeric(20,2)`, and `1.01` is stored with no error. The same happens with `timestamptz` to `timestamptz(3)`, and with `'abc  '` into `varchar(3)`, stored as `'abc'`.
+- **AS.** `timestamp` and `timestamptz` stay different kinds, because a change between them converts values through the session's `TimeZone`.
+- **AT.** `char(n)` is out of the text family, because Postgres pads it. A `Decimal` field on a column changed from `numeric` to `bigint` fails as a cross-family change.
+- **AU.** `schema_to_xml`, `database_to_xml` and their xmlschema variants aren't on the query-text list.
+- **AV. To confirm:** `contracts.md` gains `fn from_row_as(row, &Decoders<Self>)` and `pub struct Decoders<M>` on `Model`.
+- **The PR body isn't updated.** The agent's `sed` edit was refused and it stopped. The next edit agent should add the two prepared items.
+- **Decisions still to add on `main`:** R-0202, R-0925, R-1103 to R-1107, T-0220 to T-0223.
