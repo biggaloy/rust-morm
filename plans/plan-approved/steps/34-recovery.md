@@ -30,7 +30,7 @@ Owned elsewhere, and quoted so this step needs no other file. Nothing here needs
 > rollback [--last N | --to ID | --orphans | --failed] [--plan] [--yes] [--accept-data-loss] [--production --reason R] [--decide ID=OPT]
 > revert ID [--plan] [--decide ID=OPT]    mode [development --confirm NAME | production]    squash --to ID
 > status [--json]    verify [--json]    check    lint    check-sql
-> rehearse --url URL    purge --older-than D | --now ID    baseline    rebase-chain
+> rehearse --url URL [--decide ID=OPT]    purge --older-than D | --now ID    baseline    rebase-chain
 > repair --reason R     refingerprint           sql ID
 > ```
 >

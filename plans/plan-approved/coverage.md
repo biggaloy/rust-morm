@@ -4,7 +4,7 @@ Generated from the frozen plan. Each requirement and test obligation lives in ex
 
 Kinds: `code` needs a tagged test, `doc` is checked in the README step, `info` is context with nothing to build.
 
-Totals: 1100 requirements, 216 test obligations.
+Totals: 1101 requirements, 217 test obligations.
 
 ## Requirements
 
@@ -961,7 +961,7 @@ Totals: 1100 requirements, 216 test obligations.
 | R-0949 | code | 32 | 0 | - `makemigrations [--plan] [--json] [-n name] [--decide ID=OPT] [--decisions F] [--empty] … |
 | R-0950 | code | 33 | 0 | - `migrate [--plan] [--json] [--yes] [--to ID] [--resume] [--phase expand\|contract] [--de… |
 | R-0951 | code | 34 | 0 | - `rollback [--last N \| --to ID \| --orphans \| --failed] [--plan] [--yes] [--accept-data… |
-| R-0952 | code | 40 | 0 | - `revert ID [--plan] [--decide ID=OPT]`. `mode [development --confirm NAME \| production]… |
+| R-0952 | code | 40 | 0 | - `revert ID [--plan] [--decide ID=OPT]`. `mode [development --confirm NAME \| production]`… |
 | R-0953 | code | 38 | 0 | - `purge --older-than D \| --now ID`. |
 | R-0954 | code | 42 | 0 | - `baseline`. |
 | R-0955 | code | 42 | 0 | - `morm-admin init [path] [--axum]`, `morm-admin scratch` to check or create the scratch d… |
@@ -1047,9 +1047,9 @@ Totals: 1100 requirements, 216 test obligations.
 | R-1035 | code | 53 | 0 | - **A function or procedure with the enum in its signature** is dropped and created, becau… |
 | R-1036 | code | 53 | 0 | - **Always refused for a remove or reorder,** listing the object: the enum as a partition … |
 | R-1037 | code | 53 | 0 | - **Unmanaged dependents are refused,** whatever their kind, including a column in another… |
-| R-1038 | code | 59 | 0 | - **Code Postgres doesn't track.** Before any op, or its inverse, that changes a column's … |
+| R-1038 | code | 59 | 0 | - **Code Postgres doesn't track.** Before any op, or its inverse, that changes a column's… |
 | R-1039 | code | 59 | 0 | - **Refreshing managed functions.** Every managed plpgsql function R-1038 finds, which inc… |
-| R-1040 | code | 59 | 0 | - **Unmanaged functions** R-1038 finds, and the unmanaged views, defaults and checks it re… |
+| R-1040 | code | 59 | 0 | - **Unmanaged objects** R-1038 finds can't be proven, because scratch can't see them, so e… |
 | R-1041 | code | 54 | 0 | - **A managed domain over the enum gets a new type too.** Postgres has no command to chang… |
 | R-1042 | code | 54 | 0 | - **A managed composite type holding the enum** changes with `ALTER ATTRIBUTE` when no col… |
 | R-1043 | code | 54 | 0 | - **Order.** New types are created from the enum outward, and old types are dropped from t… |
@@ -1101,15 +1101,16 @@ Totals: 1100 requirements, 216 test obligations.
 | R-1089 | doc | 50 | 0 | \| Accepting a narrowing \| A variable is narrower than what it reads, and you know the va… |
 | R-1090 | doc | 50 | 0 | \| Accepting a missing `plpgsql_check` \| Your scratch server can't have the extension, an… |
 | R-1091 | doc | 50 | 0 | \| `morm_plpgsql_check` template \| Your scratch user isn't a superuser, so a superuser ma… |
-| R-1092 | code | 59 | 0 | - **A changed column is a decision, in either direction.** `plpgsql_check` can't see a len… |
+| R-1092 | code | 59 | 0 | - **A changed column is one decision, in either direction.** `plpgsql_check` can't see a l… |
 | R-1093 | code | 59 | 0 | - **In-comment options are refused.** `plpgsql_check` can read options from a comment, in … |
-| R-1094 | doc | 50 | 0 | \| Accepting a changed column \| A column's type, length or precision changes under a mana… |
-| R-1095 | code | 32 | 0 | **A decision about a database object keeps its ID across a rerun.** A decision about a fun… |
+| R-1094 | doc | 50 | 0 | \| Accepting a changed column \| A column's type, length or precision changes, and you've re… |
+| R-1095 | code | 32 | 0 | **A decision about a database object keeps its ID across a rerun.** A decision about a dat… |
 | R-1096 | code | 33 | 0 | - `_morm.decisions`: each answer given to `migrate` or `rollback`, one row per migration i… |
 | R-1097 | code | 33 | 0 | - **Answering a decision at `migrate`.** Some decisions only appear against the live datab… |
 | R-1098 | code | 34 | 0 | - **Answering a decision at `rollback`.** `rollback` runs step 33's preflight, with each o… |
-| R-1099 | code | 59 | 0 | - **Unmanaged functions using `EXECUTE`.** On any change to a column's type, length or pre… |
-| R-1100 | doc | 50 | 0 | \| `--decide ID=OPT` on `migrate` and `rollback` \| A run stopped with exit code `3` on so… |
+| R-1099 | code | 59 | 0 | - **The walk's unmanaged part only works in preflight.** Scratch can't see an unmanaged ob… |
+| R-1100 | doc | 50 | 0 | \| `--decide ID=OPT` on `migrate`, `rollback` and `rehearse` \| A run stopped with exit code… |
+| R-1101 | code | 40 | 0 | - **Answering a decision at `rehearse`.** `rehearse` runs step 33's preflight, with each o… |
 
 ## Test obligations
 
@@ -1322,12 +1323,13 @@ Totals: 1100 requirements, 216 test obligations.
 | T-0205 | suite | 59 | **The extension in CI:** `tests/tests/repo_policy.rs` fails unless each job R-1083 names r… |
 | T-0206 | integration | 59 | **A changed column, on Postgres 15–18:** a column changed from `numeric(6,2)` to `numeric(… |
 | T-0207 | integration | 59 | **In-comment options, on Postgres 15–18:** a managed plpgsql function with `@plpgsql_check… |
-| T-0208 | integration | 59 | **Functions that reach a column indirectly, on Postgres 15–18:** a column changes from `nu… |
+| T-0208 | integration | 59 | **The walk, on Postgres 15–18:** a column changes from `numeric(6,2)` to `numeric(20,4)`,… |
 | T-0209 | suite | 32 | **A refusal and an open decision together:** a `makemigrations` run with both a hard refus… |
 | T-0210 | suite | 32 | **Decision IDs:** on Postgres 15–18, through a test-only op that declares a decision about… |
 | T-0211 | suite | 33 | **`--decide` on `migrate`:** on a real database, through a test-only op whose preflight op… |
 | T-0212 | suite | 34 | **`--decide` on `rollback`:** through step 33's test-only op, after `migrate --decide` wit… |
 | T-0213 | suite | 38 | **Answering a hit at `migrate` and `rollback`:** on Postgres 15–18, an unmanaged function … |
-| T-0214 | integration | 59 | **Unmanaged functions using `EXECUTE`, on Postgres 15–18:** on the live database, with two… |
-| T-0215 | integration | 59 | **Views, defaults and checks that call a found function, on Postgres 15–18:** a column cha… |
+| T-0214 | integration | 59 | **The walk on the live database, on Postgres 15–18:** on a live database holding unmanaged… |
+| T-0215 | integration | 59 | **One list per migration, on Postgres 15–18:** a migration that changes two columns on two… |
 | T-0216 | integration | 59 | **A live decision's ID against `meta.json`, on Postgres 15–18:** an unmanaged function tha… |
+| T-0217 | suite | 40 | **`--decide` on `rehearse`:** on a restored backup marked `development`, with no row in `_… |

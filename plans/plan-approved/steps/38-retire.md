@@ -30,11 +30,11 @@ Owned elsewhere, and quoted so this step needs no other file. Nothing here needs
 > rollback [--last N | --to ID | --orphans | --failed] [--plan] [--yes] [--accept-data-loss] [--production --reason R] [--decide ID=OPT]
 > revert ID [--plan] [--decide ID=OPT]    mode [development --confirm NAME | production]    squash --to ID
 > status [--json]    verify [--json]    check    lint    check-sql
-> rehearse --url URL    purge --older-than D | --now ID    baseline    rebase-chain
+> rehearse --url URL [--decide ID=OPT]    purge --older-than D | --now ID    baseline    rebase-chain
 > repair --reason R     refingerprint           sql ID
 > ```
 >
-> Steps 32, 33 and 34 own answers to decisions. A decision about a function has an ID built from the migration id, kind and function signature, plus a hash of the function's source. `migrate` and `rollback` take `--decide ID=OPT` for a decision preflight opens, and an answer stands only for the same migration id, checksum, direction and decision ID. The ledger keeps `meta.json` verbatim, and an op stores its own data in `meta.json` under `op_data`.
+> Steps 32, 33 and 34 own answers to decisions. A decision about a function has an ID built from the migration id, kind and function signature, plus a hash of the function's source. `migrate`, `rollback` and `rehearse` take `--decide ID=OPT` for a decision preflight opens, and an answer stands only for the same migration id, checksum, direction and decision ID. The ledger keeps `meta.json` verbatim, and an op stores its own data in `meta.json` under `op_data`.
 >
 
 ## Out of scope

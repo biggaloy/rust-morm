@@ -30,7 +30,7 @@ Owned elsewhere, and quoted so this step needs no other file. Nothing here needs
 >
 > Step 29 reads definitions through catalog queries such as `pg_get_viewdef` into the `Schema` IR, and step 30 compares that text between database A, replayed from the chain, and database B, built from the models. `verify` in step 34 compares the live schema with the models and ledger, and it's read-only. `op_data` in `meta.json` and op preflight checks come from steps 32 and 33, and `pg_major` and its replay in a temporary database come from step 34.
 >
-> Step 59 comes after this step and adds its source search, function refresh and unmanaged function decision to every op that changes a column's type, including this cutover. Nothing here needs to call them.
+> Step 59 comes after this step and adds its walk, function refresh and decision to every op that changes a column's type, including this cutover. Nothing here needs to call them.
 >
 > Measured on Postgres 18.6 and 17.11 with 2 million rows: the cutover took 5 to 21 ms with no view, 10 to 14 ms with one view, and 8 to 16 ms with five stacked views and their functions. With 8 readers on the view at about 88,000 reads a second and 2 writers, it took 13 to 20 ms, the longest read 10 ms and the longest write 78 ms, with no failed read and no lost write.
 >
@@ -64,7 +64,7 @@ Owned elsewhere, and quoted so this step needs no other file. Nothing here needs
 ## Out of scope
 
 - Production mode (step 40)
-- The source search, function refresh and unmanaged function decision at cutover (step 59)
+- The walk, function refresh and decision at cutover (step 59)
 
 ## Requirements
 
