@@ -31,7 +31,7 @@ The 30-minute wake-up lived only in the session, so a restart removes it. After 
 
 ## What comes next
 
-1. Finish that edit, then add any new IDs to Decisions on `main`.
+1. Finish that edit, then add any new IDs to Decisions on `main`. Then design online widening of a referenced key, as under "Open with the owner", and write it in once the owner approves.
 2. Run a short check of the changes since `09338c2`, the checker and CI, with one fresh reviewer. By owner decision, this is the last round.
 3. Bring PR #1 to the owner, who approves it. No agent merges without that.
 4. Merge, mark step 01 `done`, pull, and check `INDEX.md` on `main` keeps both its Decisions and the branch's rows and order.
@@ -39,7 +39,7 @@ The 30-minute wake-up lived only in the session, so a restart removes it. After 
 
 ## Open with the owner
 
-- **Asked, not yet answered:** should widening a key that foreign keys reference, such as a primary key from `integer` to `bigint`, become online in 0.1? Today R-0567 refuses it on a live table, `--fast` does it in a maintenance window, and an online form is in `later-defo-build.plan`.
+- **Decided: widening a referenced key is online in 0.1.** See that entry in `INDEX.md`. Next, after the running edit lands: a fresh agent designs it from the online-key section of `later-defo-build.plan` and R-0567, tests it on throwaway Postgres, and brings the design to the owner before anything is written in. Then move that section out of `later-defo-build.plan`.
 - Four collaborators have write access, and `main` needs no review. The owner may want to reduce that list.
 
 ## Not proven yet
