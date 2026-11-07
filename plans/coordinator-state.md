@@ -27,7 +27,7 @@ The 30-minute wake-up lived only in the session, so a restart removes it. After 
 - Step 01's code is reviewed and fixed. PR #1 now also carries the plan redesign that came out of the reviews: managed enums, steps 51 to 59, the general walk, `plpgsql_check`, `--decide`, and type changes that never break a running app.
 - Every owner decision is in `INDEX.md` under "Decisions since the split". `reviews/step-01-open-items.md` has every open item, A to AV, each answered.
 
-**Latest:** the narrowing edit landed at `3d91eab`, with CI green and the PR body updated. Items AW to BA of `reviews/step-01-open-items.md` are waiting on the owner, with recommendations. Once answered, write them in, add the IDs to Decisions, then design online widening of a referenced key and bring that design to the owner. A design-only agent for that is running, with no plan edits. Its report goes to `.claude/scratch/fk-widening-design.md` in its worktree, to be copied to `reviews/` once it reports. If it's lost, rerun it from the "Widening a referenced key" entry in `INDEX.md` and the later plan's section.
+**Latest:** the narrowing edit landed at `3d91eab`, with CI green and the PR body updated. The owner took every recommendation in AW to BA, recorded in `INDEX.md` under "Silent narrowing, closed", and an edit agent is writing them in. Then add the IDs to Decisions, then design online widening of a referenced key and bring that design to the owner. A design-only agent for that is running, with no plan edits. Its report goes to `.claude/scratch/fk-widening-design.md` in its worktree, to be copied to `reviews/` once it reports. If it's lost, rerun it from the "Widening a referenced key" entry in `INDEX.md` and the later plan's section.
 
 ## What comes next
 
