@@ -4,7 +4,7 @@ Generated from the frozen plan. Each requirement and test obligation lives in ex
 
 Kinds: `code` needs a tagged test, `doc` is checked in the README step, `info` is context with nothing to build.
 
-Totals: 1102 requirements, 219 test obligations.
+Totals: 1102 requirements, 220 test obligations.
 
 ## Requirements
 
@@ -1336,3 +1336,4 @@ Totals: 1102 requirements, 219 test obligations.
 | T-0217 | suite | 40 | **`--decide` on `rehearse`:** on a restored backup marked `development`, with no row in `_… |
 | T-0218 | integration | 59 | **What the walk lists, on Postgres 15–18:** a column changes from `numeric(6,2)` to `numer… |
 | T-0219 | integration | 59 | **A widening's fixed line, on Postgres 15–18:** the decision for `numeric(6,2)` to `numeri… |
+| T-0220 | integration | 41 | **`check_schema`'s type pairs:** a `Decimal` field built against `numeric(6,2)` passes on … |
