@@ -90,3 +90,11 @@ Decisions still to add on `main`: R-0608, R-1081, T-0208, T-0209.
 - **AG.** A `BEGIN ATOMIC` body's source is deparsed, so a rename in an earlier step changes its hash, and `--resume` asks again. Safe, one extra stop.
 - **Filled in by the agent, standing unless the owner objects:** `--yes` answers no decision, `--plan` records nothing, an unused ID is reported, a bad option exits `1`, an answer that refuses exits `2` and a later answer replaces it, preflight runs before each migration, the ID form is `<id>/<kind>/<signature>/<hash>`, and one `makemigrations --decide` answers a decision open in both directions.
 - **Decisions still to add on `main`:** R-0597, R-0615, R-0950, R-0951, R-1069, R-1095 to R-1100, T-0122, T-0210 to T-0216.
+
+## From the edit at `da5961a`, waiting on the owner
+
+- **AH. Most column changes now stop once.** "Every dependent object" includes a plain index, the column's default and, on Postgres 18, its `NOT NULL`.
+- **AI. A function that only receives the value as an argument.** With `pass_f(x numeric)` holding `v numeric(6,2) := x`, the call `pass_f(inner_f())` in a found view overflows, and `pass_f` isn't found. Following what found objects call would pull in far more objects.
+- **AJ. A whole row plus another column.** `SELECT x.id, (to_jsonb(x) ->> 'n')::numeric(6,2) FROM t x` has a `pg_depend` row only against `id`.
+- **AK. To confirm:** a `rehearse` rerun carries on from `_morm.history` (R-1101). Other ops use the same walk, each hit with its own decision, and the one list applies to column changes. Preflight leaves out objects `meta.json` already holds accepted. The `--resume` re-ask also covers views, defaults and checks.
+- **Decisions still to add on `main`:** R-0952, R-1094, R-1101, T-0206, T-0217.
