@@ -2,7 +2,7 @@
 
 - **Phase:** Runtime
 - **Depends on:** 18
-- **Can run beside:** 08, 09, 12, 19, 23, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41
+- **Can run beside:** 08, 09, 19, 23, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 51, 52, 53, 54, 57, 58, 59
 - **Crates:** `morm`
 - **PR approval:** CI and an independent review
 
@@ -76,6 +76,11 @@ db.transaction(async |tx| {                       // runs again on 40001 or 40P0
 |---|---|---|
 | R-0765 | Swallowing an error, then committing | `TransactionAborted` at runtime |
 | R-0767 | `.retry()` on a closure that changes captured rows | Compile error |
+
+### Managed enums
+
+- **R-0984** **Stale statements inside a transaction.** The stale errors that step 14 retries can't be retried inside a transaction, because Postgres has already failed it. morm returns `Error::SchemaChanged`, marks the transaction failed, and clears the statement or replaces the connection as step 14 does.
+- **R-0985** `.retry(n)` also retries `Error::SchemaChanged`, because the next attempt runs on fresh statements.
 
 ## Test obligations
 

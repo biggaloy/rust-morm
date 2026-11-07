@@ -1,0 +1,27 @@
+name: Set up Rust
+description: Installs a toolchain with rustup and restores the build cache.
+inputs:
+  toolchain:
+    description: Toolchain to install
+    default: stable
+  components:
+    description: Comma-separated rustup components
+    default: ""
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      env:
+        TOOLCHAIN: ${{ inputs.toolchain }}
+        COMPONENTS: ${{ inputs.components }}
+      run: |
+        rustup toolchain install "$TOOLCHAIN" --profile minimal --no-self-update ${COMPONENTS:+--component "$COMPONENTS"}
+        rustup default "$TOOLCHAIN"
+    - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: |
+          ~/.cargo/registry
+          ~/.cargo/git
+          target
+        key: ${{ runner.os }}-${{ runner.arch }}-${{ github.job }}-${{ inputs.toolchain }}-${{ hashFiles('Cargo.lock') }}
+        restore-keys: ${{ runner.os }}-${{ runner.arch }}-${{ github.job }}-${{ inputs.toolchain }}-

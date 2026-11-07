@@ -2,7 +2,7 @@
 
 - **Phase:** Migrations
 - **Depends on:** 28, 10
-- **Can run beside:** 07, 08, 09, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 47
+- **Can run beside:** 07, 08, 09, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 47, 56
 - **Crates:** `morm-migrate`
 - **PR approval:** CI and an independent review
 
@@ -50,6 +50,10 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 ### Risks, open items and later work / Risks
 
 - **R-0918** **Scratch databases:** `makemigrations` needs a Postgres where it can `CREATE DATABASE`.
+
+### Managed enums
+
+- **R-0986** **Enum catalog reads.** Labels come from `pg_enum` directly, ordered by `enumsortorder`. The reader never calls `enum_range` or casts a label to its type, because both fail inside a transaction after `ADD VALUE`, and the fingerprint is read there. The fingerprint holds labels in order, and never an OID or a sort position, so a swap to the same labels shows no drift.
 
 ## Test obligations
 

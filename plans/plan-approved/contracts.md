@@ -1,6 +1,6 @@
 # Contracts
 
-What parallel steps share. Signatures here are the starting point, taken from the approved plan. Step 02 corrects them from the proofs, and step 03 freezes them as compiling Rust. After step 03, changing anything here follows "Changing the plan" in `rules.md`.
+What parallel steps share. Signatures here are the starting point, taken from the approved plan. Steps 02 and 55 correct them from the proofs, and step 03 freezes them as compiling Rust. After step 03, changing anything here follows "Changing the plan" in `rules.md`.
 
 ## Crates
 
@@ -17,7 +17,7 @@ What parallel steps share. Signatures here are the starting point, taken from th
 
 - Rust 2024, MSRV 1.99.1, Tokio only, PostgreSQL 15 and later only.
 - Tool prefix `morm-`. Config `morm.toml`. Environment `MORM_*` and `DATABASE_URL`. Migrations in `morm-migrations/`. Ledger schema `_morm`.
-- Exit codes: `0` ok, `1` error or drift, `2` refused by a guard, `3` open decisions.
+- Exit codes: `0` ok, `1` error or drift, `2` refused by a guard, `3` open decisions. A run with both a refusal and an open decision exits `2`.
 - Generated SQL always quotes names. Generated code uses static dispatch.
 - Macro-generated items are public API: names below don't change without following `rules.md`.
 
@@ -35,7 +35,13 @@ pub trait Model: Sized + Send + Sync + 'static {
     const SELECT: &'static str;
     fn from_row(row: &tokio_postgres::Row) -> Result<Self>;
     fn from_row_named(row: &tokio_postgres::Row) -> Result<Self>;
+    // A column whose type changed: reads each field through the decoder the
+    // statement chose once, from the column's real type, when it was prepared
+    fn from_row_as(row: &tokio_postgres::Row, decoders: &Decoders<Self>) -> Result<Self>;
 }
+// One statement's choice: each field's column position and the decoder for its real type,
+// kept with the statement in its cache entry
+pub struct Decoders<M: Model> { /* private */ }
 pub trait HasPk: Model {}             // absent on models with no primary key
 pub trait PkValue: Send + Sync + 'static {}   // one Param, or a tuple for a composite key
 
@@ -43,6 +49,7 @@ pub trait PkValue: Send + Sync + 'static {}   // one Param, or a tuple for a com
 pub struct Column<M, T, Cap> { /* name, marker data */ }
 
 // A parameter: ToSql plus its Postgres type, because query_typed needs the type
+// PgEnum returns Type::UNKNOWN, so no OID is ever sent and a type swap can't leave one stale
 pub trait Param: tokio_postgres::types::ToSql + Sync { fn pg_type(&self) -> tokio_postgres::types::Type; }
 
 // Product::UK.<name>, and columns that are unique keys
@@ -89,6 +96,8 @@ pub enum Error {
     PoolerMode, NotFound, EmptyPatch, Conflict, Forbidden, Validation,
     PoolBusy, ConnectionLost, ReadOnly, OutOfRange, InvalidText,
     InvalidOrder, InvalidCursor, Decimal,
+    SchemaChanged,                             // a stale statement or session inside a transaction or on a held connection, after a type swap
+    UnknownEnumValue,                          // a label this binary's enum doesn't have, with the type and label
     Config, Connect, ServerTooOld, Postgres,   // config, connecting, a server below 15, any other database error
     // payloads settled in step 03
 }
@@ -106,21 +115,23 @@ These are shared by steps that can run side by side, so each is written and froz
 | The internal query entry point, which runs SQL through the caches | `morm` | Pool, statements, every query step |
 | Macro field IR: the parsed form of `#[model]`, `#[col]` and `#[view]` | `morm-macros` | All model steps |
 | The conversion layer between a field and its column | `morm` | Models, types, reads, writes |
+| The trait that gives a column its SQL type and, for an enum, its labels as a constant | `morm` | Models, types, manifest |
 | `ModelMeta`, the metadata every model emits | `morm-core` | Models, manifest, migrations |
 | The name function, with the 63-byte rule | `morm-core` | Macros, migrations |
 | The connection budget function, implemented in step 11 | `morm-core` | Pool, `doctor`, `size` |
 | `Timestamp`, re-exported `Uuid`, `Range<T>` as types | `morm` | Bases and inference, before `types` adds their encoding |
 | The internal transaction with confirmed commit, implemented in step 17 for `insert_many` and chunked paths, before `db.transaction` exists | `morm` | Inserts, updates, upsert, transactions |
-| `PoolStats`, with every counter the plan names | `morm` | Pool, hold-pooler, locks, outbox, telemetry |
+| `PoolStats`, with every counter the plan names, including connections replaced for a stale generation | `morm` | Pool, hold-pooler, locks, outbox, telemetry |
 | The internal warning sink: stderr now, `tracing` when enabled | `morm-core` | Every step that warns |
 | Expansion layout: `#[model]` calls one module per feature, so model steps add a module and don't edit one shared function | `morm-macros` | Model steps, `manifest`, `rolling` |
 | The config structs | `morm-core` | `morm`, `morm-migrate`, `morm-admin` |
+| The SQL text scanner | `morm-core` | Statements |
 
 `Op`, the typed migration operation, is defined in step 30. Migration steps run one at a time, so it needs no earlier freeze.
 
 ## Between `morm-mgr` and `morm-admin`
 
-`morm-mgr` prints one JSON manifest: `format`, then models (table, schema, columns, types, nullability, defaults, flags, indexes, constraints, `was` hints, comments), managed objects, extensions, and registered `sql!` queries. Step 28 defines it, in `morm-core`. Everything else reads it, and it's versioned by `format`.
+`morm-mgr` prints one JSON manifest: `format`, then models (table, schema, columns, types, nullability, defaults, flags, indexes, constraints, enum labels, `was` hints, comments), managed objects, extensions, and registered `sql!` queries. Step 28 defines it, in `morm-core`. Everything else reads it, and it's versioned by `format`.
 
 ## `morm-admin` layout
 

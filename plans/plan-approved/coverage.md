@@ -4,7 +4,7 @@ Generated from the frozen plan. Each requirement and test obligation lives in ex
 
 Kinds: `code` needs a tagged test, `doc` is checked in the README step, `info` is context with nothing to build.
 
-Totals: 959 requirements, 133 test obligations.
+Totals: 1109 requirements, 224 test obligations.
 
 ## Requirements
 
@@ -196,9 +196,9 @@ Totals: 959 requirements, 133 test obligations.
 | R-0184 | code | 04 | 412 | \| `keep_case` \| allow uppercase in an existing column's name \| |
 | R-0185 | code | 04 | 413 | \| `was` \| previous column name (rename hint) \| |
 | R-0186 | code | 05 | 417 | `i16` → smallint, `i32` → integer, `i64` → bigint, `f32` → real, `f64` → double precision,… |
-| R-0187 | code | 13 | 417 | `#[derive(TextEnum)]` maps a Rust enum to `text` with a CHECK constraint, the recommended … |
-| R-0188 | code | 13 | 417 | `#[derive(PgEnum)]` maps to a Postgres enum, mainly to match existing tables, because remo… |
-| R-0189 | code | 13 | 417 | Domains and composite types are also supported. |
+| R-0187 | code | 56 | 417 | `#[derive(TextEnum)]` maps a Rust enum to `text` with a CHECK constraint, the recommended … |
+| R-0188 | code | 56 | 417 | `#[derive(PgEnum)]` maps to a Postgres enum, and on its own it only binds to a type that a… |
+| R-0189 | code | 56 | 417 | Domains and composite types are also supported. |
 | R-0190 | code | 05 | 419 | - **Integers Postgres has no exact type for** map to the smallest column that holds every … |
 | R-0191 | code | 05 | 423 | \| `i8` \| `smallint` \| -128 to 127 \| |
 | R-0192 | code | 05 | 424 | \| `u8` \| `smallint` \| 0 to 255 \| |
@@ -597,16 +597,16 @@ Totals: 959 requirements, 133 test obligations.
 | R-0585 | code | 40 | 1252 | - **Emergency override:** `rollback --production --reason "..."` works but is logged to `_… |
 | R-0586 | code | 38 | 1253 | - Retired columns are a tracked state, so `verify` doesn't report them as drift. |
 | R-0587 | code | 32 | 1257 | Every rename, retire, purge, lossy change and missing backfill is a decision with an id, e… |
-| R-0588 | code | 32 | 1259 | Exit codes: `0` ok, `1` error or drift, `2` refused by a guard, `3` open decisions. |
+| R-0588 | code | 32 | 1259 | Exit codes: `0` ok, `1` error or drift, `2` refused by a guard, `3` open decisions. A run … |
 | R-0589 | code | 32 | 1263 | Files are written only after all of these pass on scratch: |
 | R-0590 | code | 32 | 1265 | 1. `up` reaches the models exactly. |
 | R-0591 | code | 32 | 1266 | 2. `down` returns to the previous schema exactly. |
 | R-0592 | code | 32 | 1267 | 3. `up` again gives the same fingerprint. |
-| R-0593 | code | 32 | 1268 | 4. **With data:** synthetic rows per column type (NULLs, boundaries, empties) go in first,… |
+| R-0593 | code | 32 | 1268 | - **With data:** synthetic rows per column type (NULLs, boundaries, empties) go in first, … |
 | R-0594 | code | 32 | 1269 | 5. `lint` passes, or each finding is explicitly accepted. |
 | R-0595 | code | 32 | 1273 | ``` morm-migrations/ └── 0007_add_products/ ├── up.sql # steps split by: -- morm:step tx \… |
 | R-0596 | code | 32 | 1282 | `format` is a version number, so future tools can read old files. Generated files are byte… |
-| R-0597 | code | 33 | 1284 | - `_morm.migrations`: what's applied, with exact up and down SQL, so rollback works when f… |
+| R-0597 | code | 33 | 1284 | - `_morm.migrations`: what's applied, with exact up and down SQL and `meta.json` verbatim,… |
 | R-0598 | code | 33 | 1285 | - `_morm.steps`: per-step state (`pending/running/done/failed`) and batch cursors. |
 | R-0599 | code | 33 | 1286 | - `_morm.history`: append-only log of every action, with user, host, duration and tool ver… |
 | R-0600 | code | 33 | 1290 | - **Fingerprint gate.** Fingerprints cover only objects the chain manages, so unmanaged ob… |
@@ -727,7 +727,7 @@ Totals: 959 requirements, 133 test obligations.
 | R-0715 | code | 14 | 1516 | - Built SQL text is kept in a small bounded map keyed by model and column bitmask, so a re… |
 | R-0716 | code | 14 | 1517 | - Other dynamic SQL and overflow go through `query_typed`, which needs no prepare round tr… |
 | R-0717 | code | 48 | 1518 | - The first benchmark run measures this split against a single cache, and a patch through … |
-| R-0718 | code | 14 | 1519 | - `cached plan must not change result type` (0A000): evict and re-prepare once outside a t… |
+| R-0718 | code | 14 | 1519 | - A cached statement can go stale when a migration changes something under it, and it then… |
 | R-0719 | code | 20 | 1519 | - `cached plan must not change result type` (0A000) inside a transaction returns a typed e… |
 | R-0720 | code | 14 | 1523 | - SQL for `get` and `delete` by primary key is a compile-time `&'static str`, as are a mod… |
 | R-0721 | code | 18 | 1524 | - `= ANY($1)` instead of `IN` lists, so list length doesn't create statement variants. |
@@ -750,7 +750,7 @@ Totals: 959 requirements, 133 test obligations.
 | R-0738 | code | 47 | 1550 | - **Field names** follow the OpenTelemetry database conventions: `db.system.name`, `db.que… |
 | R-0739 | code | 47 | 1552 | **Metrics.** Nothing is published from the query path. Each connection keeps plain counter… |
 | R-0740 | code | 47 | 1554 | - Names follow the same conventions: `db.client.connection.count`, `db.client.connection.m… |
-| R-0741 | code | 47 | 1555 | - morm adds `db.morm.*` metrics for deadlocks, retries, lock timeouts and `shape_cache` ch… |
+| R-0741 | code | 47 | 1555 | - morm adds `db.morm.*` metrics for deadlocks, retries, lock timeouts, `shape_cache` churn… |
 | R-0742 | code | 47 | 1556 | - A shorter interval gives finer graphs but more data points, and the platform's bill rise… |
 | R-0743 | code | 47 | 1558 | **No per-request SQL comments.** Trace-linking modes such as Datadog's `full` propagation … |
 | R-0744 | code | 48 | 1562 | - Release profile for benches and examples, recommended in the docs: `lto = "fat"`, `codeg… |
@@ -773,7 +773,7 @@ Totals: 959 requirements, 133 test obligations.
 | R-0761 | code | 16 | 1586 | \| Paging with `OFFSET` \| No helper exists; `keyset` is the documented path \| |
 | R-0762 | code | 40 | 1587 | \| Rolling back a production database \| Refused, exit code `2`, unless marked `developmen… |
 | R-0763 | code | 05 | 1588 | \| A Rust type wider than its column, or `usize` on a column \| Compile error \| |
-| R-0764 | code | 14 | 1589 | \| A stale cached statement after a migration \| Re-prepared automatically outside a trans… |
+| R-0764 | code | 14 | 1589 | \| A stale cached statement after a migration or an enum swap \| Re-prepared or replaced a… |
 | R-0765 | code | 20 | 1590 | \| Swallowing an error, then committing \| `TransactionAborted` at runtime \| |
 | R-0766 | code | 18 | 1591 | \| Updating or deleting a missing id \| `NotFound` at runtime \| |
 | R-0767 | code | 20 | 1592 | \| `.retry()` on a closure that changes captured rows \| Compile error \| |
@@ -869,7 +869,7 @@ Totals: 959 requirements, 133 test obligations.
 | R-0857 | doc | 50 | 1731 | \| `morm::quote_ident` \| You use a dynamic table or column name in `q_unchecked` or `sql_… |
 | R-0858 | doc | 50 | 1732 | \| `.custom_plan()` \| A query is slow only for some values, because your data is skewed \… |
 | R-0859 | doc | 50 | 1733 | \| `nulls_not_distinct` \| A unique column may hold only one NULL \| |
-| R-0860 | doc | 50 | 1734 | \| `#[derive(PgEnum)]` \| You're matching an existing Postgres enum; use `TextEnum` otherw… |
+| R-0860 | doc | 50 | 1734 | \| `#[derive(PgEnum)]` \| You're matching a Postgres enum that morm must never change; use… |
 | R-0861 | doc | 50 | 1735 | \| `storage = "fillfactor=90"` \| A table gets many updates to columns with no index \| |
 | R-0862 | doc | 50 | 1736 | \| `.returning()` \| You need the changed rows back \| |
 | R-0863 | doc | 50 | 1737 | \| `.all()` \| You want every row, and you know the result is small \| |
@@ -902,7 +902,7 @@ Totals: 959 requirements, 133 test obligations.
 | R-0890 | doc | 50 | 1764 | \| `q_unchecked`, `sql_unchecked` \| You must build SQL at runtime, and you will handle in… |
 | R-0891 | doc | 50 | 1765 | \| `recycle_when` \| You need your own rule for replacing connections \| |
 | R-0892 | doc | 50 | 1766 | \| `no_default` \| You want a compile error when a required field is missed \| |
-| R-0893 | doc | 50 | 1767 | \| `--fast` \| The table is small, or you're in a maintenance window \| |
+| R-0893 | doc | 50 | 1767 | \| `--fast` \| The table is small, or you're in a maintenance window; for a narrowing Postgr… |
 | R-0894 | doc | 50 | 1768 | \| `--accept-data-loss` \| You've read the plan, and you accept losing that data \| |
 | R-0895 | doc | 50 | 1769 | \| `--skip-fingerprint` \| Your role can't create a temporary database, and you accept a w… |
 | R-0896 | doc | 50 | 1771 | 6. Models: bases, every `#[model]` and `#[col]` option in tables. |
@@ -959,9 +959,9 @@ Totals: 959 requirements, 133 test obligations.
 | R-0947 | code | 19 | 0 | - `db.upsert_many(&mut rows, target)` is the batch form of `upsert`, taking the same confl… |
 | R-0948 | code | 19 | 0 | - Array columns work through `upsert` and `upsert_many` the same way as `insert_many`. |
 | R-0949 | code | 32 | 0 | - `makemigrations [--plan] [--json] [-n name] [--decide ID=OPT] [--decisions F] [--empty] … |
-| R-0950 | code | 33 | 0 | - `migrate [--plan] [--json] [--yes] [--to ID] [--resume] [--phase expand\|contract]`, whe… |
+| R-0950 | code | 33 | 0 | - `migrate [--plan] [--json] [--yes] [--to ID] [--resume] [--phase expand\|contract] [--de… |
 | R-0951 | code | 34 | 0 | - `rollback [--last N \| --to ID \| --orphans \| --failed] [--plan] [--yes] [--accept-data… |
-| R-0952 | code | 40 | 0 | - `revert ID [--plan] [--decide ID=OPT]`. `mode [development --confirm NAME \| production]… |
+| R-0952 | code | 40 | 0 | - `revert ID [--plan] [--decide ID=OPT]`. `mode [development --confirm NAME \| production]`… |
 | R-0953 | code | 38 | 0 | - `purge --older-than D \| --now ID`. |
 | R-0954 | code | 42 | 0 | - `baseline`. |
 | R-0955 | code | 42 | 0 | - `morm-admin init [path] [--axum]`, `morm-admin scratch` to check or create the scratch d… |
@@ -969,6 +969,156 @@ Totals: 959 requirements, 133 test obligations.
 | R-0957 | code | 01 | 0 | - **Workflows in a public repo.** Every workflow sets `permissions: contents: read` and ra… |
 | R-0958 | code | 01 | 0 | - **Repo files for a public project.** `SECURITY.md` says how to report a vulnerability pr… |
 | R-0959 | code | 42 | 0 | - `morm::pg_outbox!()` declares the outbox table as a managed table, tracked by migrations… |
+| R-0960 | code | 34 | 0 | - **`full-chain` job.** This step sets what `nightly.yml`'s `full-chain` job runs and chan… |
+| R-0961 | code | 56 | 0 | - **Domains and composite types in Rust.** `#[derive(PgDomain)]` goes on a one-field struc… |
+| R-0962 | code | 35 | 0 | Types are declared once, on their Rust type. A sequence has no Rust type, so it uses a mac… |
+| R-0963 | code | 35 | 0 | - `#[pg_domain]`, `#[pg_composite]` and `#[pg_enum]` make morm manage the type they sit on… |
+| R-0964 | code | 35 | 0 | - The Rust item gives the type's shape, so nothing is written twice: a domain's base type … |
+| R-0965 | code | 35 | 0 | - `morm::pg_sequence!(name, "options")` declares a standalone sequence, and `options` is t… |
+| R-0966 | code | 57 | 0 | - **Sequences:** a sequence's catalog comparison uses its definition only (type, start, in… |
+| R-0967 | code | 57 | 0 | - Dropping a sequence loses its position, because the inverse recreates it from its defini… |
+| R-0968 | code | 37 | 0 | - Sequences count as types in this fixed order, so they apply before tables and a column d… |
+| R-0969 | doc | 50 | 0 | \| `#[derive(PgDomain)]` \| A column uses a Postgres domain that already exists \| |
+| R-0970 | doc | 50 | 0 | \| `#[derive(PgComposite)]` \| A column uses a Postgres composite type that already exists… |
+| R-0971 | doc | 50 | 0 | \| `#[pg_domain(...)]` \| You want migrations to create and track a domain, so one rule on… |
+| R-0972 | doc | 50 | 0 | \| `#[pg_composite(...)]` \| You want migrations to create and track a composite type, for… |
+| R-0973 | doc | 50 | 0 | \| `#[pg_enum(...)]` \| You need a real Postgres enum and want migrations to manage it, in… |
+| R-0974 | doc | 50 | 0 | \| `morm::pg_sequence!` \| You need numbers from a sequence that no identity column owns, … |
+| R-0975 | code | 11 | 0 | - **Stale generation.** The pool holds a generation counter for connections, in one atomic… |
+| R-0976 | code | 56 | 0 | - **Type names.** A bare `#[derive(PgEnum)]`, `#[derive(PgDomain)]` or `#[derive(PgComposi… |
+| R-0977 | code | 56 | 0 | - **Labels.** A variant's Postgres label is the snake_case of its name, so `AwaitingPaymen… |
+| R-0978 | code | 56 | 0 | - **Enum binding needs no OID.** morm writes `ToSql` and `FromSql` for `PgEnum` itself and… |
+| R-0979 | code | 56 | 0 | - **A label the binary doesn't know** returns `Error::UnknownEnumValue`, with the type and… |
+| R-0980 | code | 56 | 0 | - **Renamed labels.** `#[pg_enum(was = "old")]` on a variant decodes both labels to it and… |
+| R-0981 | code | 14 | 0 | - **Stale server state.** Two errors, from any statement, mean a session holds compiled co… |
+| R-0982 | code | 14 | 0 | - **Telling the rest of the pool.** Any stale statement raises a statement generation, hel… |
+| R-0983 | code | 14 | 0 | - **Retrying is safe.** Postgres rolls back a failed statement outside a transaction, so a… |
+| R-0984 | code | 20 | 0 | - **Stale statements inside a transaction.** The stale errors that step 14 retries can't b… |
+| R-0985 | code | 20 | 0 | - `.retry(n)` also retries `Error::SchemaChanged`, because the next attempt runs on fresh … |
+| R-0986 | code | 29 | 0 | - **Enum catalog reads.** Labels come from `pg_enum` directly, ordered by `enumsortorder`.… |
+| R-0987 | code | 30 | 0 | - **Step boundaries.** An op can declare that its step ends after it, so the planner puts … |
+| R-0988 | code | 31 | 0 | - An op can declare `lint` findings of its own, and `--url` filters them by table size lik… |
+| R-0989 | code | 32 | 0 | - **Op data in `meta.json`.** An op can store its own data in `meta.json`, under `op_data`… |
+| R-0990 | code | 35 | 0 | **Enum changes are declared on the variants.** `was` names a label this variant used to ha… |
+| R-0991 | code | 57 | 0 | - **Enums in this step** are created with their labels in variant order, dropped, and have… |
+| R-0992 | code | 57 | 0 | - **Rename or not.** A label that's gone and a label that's new on the same type are a ren… |
+| R-0993 | code | 57 | 0 | - Any other change to an enum's values is refused by the diff with exit code `2`. Step 51 … |
+| R-0994 | code | 37 | 0 | - **Refreshing functions.** A session keeps its compiled copy of a plpgsql function, and w… |
+| R-0995 | code | 38 | 0 | - **Retired types.** A type can be retired along with the columns that still use it. It's … |
+| R-0996 | code | 40 | 0 | - **Reverting an enum change.** `revert` plans its forward migration like any other change… |
+| R-0997 | code | 41 | 0 | - **Enums in `check_schema`.** The per-model list also holds each enum's labels. Every lab… |
+| R-0998 | code | 41 | 0 | - **Enum phases.** Adds, renames and the online swap's steps before its cutover are `expan… |
+| R-0999 | code | 41 | 0 | - **Removing a value in a rolling deploy.** `#[pg_enum(deprecated)]` on a variant says tha… |
+| R-1000 | code | 41 | 0 | - **Renaming a value in a rolling deploy.** A rename runs instantly by default, so old bin… |
+| R-1001 | code | 44 | 0 | - `import` writes bare `#[derive(PgEnum)]`, `#[derive(PgDomain)]` and `#[derive(PgComposit… |
+| R-1002 | doc | 50 | 0 | \| `#[pg_type(name = "...")]` \| A bare derive must bind to a type whose name isn't the sn… |
+| R-1003 | doc | 50 | 0 | \| `#[pg_enum(value = "...")]` \| A variant's Postgres label isn't the snake_case of its n… |
+| R-1004 | doc | 50 | 0 | \| `#[pg_enum(was = "...")]` \| You renamed a value, and the migration must rename it and … |
+| R-1005 | doc | 50 | 0 | \| `#[pg_enum(unknown)]` \| Old binaries must keep reading rows during a rollout that adds… |
+| R-1006 | doc | 50 | 0 | \| `#[pg_enum(deprecated)]` \| You're removing a value in a rolling deploy, and `contract`… |
+| R-1007 | doc | 50 | 0 | \| `max_rewrite_mb` \| You want a different size limit on rewriting a table under a full l… |
+| R-1008 | doc | 50 | 0 | The README shows this notice loudly, beside the enum rows: > **Use `TextEnum` unless you h… |
+| R-1009 | code | 51 | 0 | - **Reading the change.** The diff compares the chain's labels with the declared labels, i… |
+| R-1010 | code | 51 | 0 | - **Adding a value.** Each new label becomes `ALTER TYPE ... ADD VALUE` with `BEFORE` or `… |
+| R-1011 | code | 51 | 0 | - **Adds and renames run before a swap,** so a swap never introduces a label, and a label … |
+| R-1012 | code | 51 | 0 | - **The swap.** Postgres stores an enum value as an internal ID, so moving to a new type a… |
+| R-1013 | code | 51 | 0 | - **Array columns** change in the same way, and a map applies to each element with `array_… |
+| R-1014 | code | 51 | 0 | - **What the old type carried.** `COMMENT`, the owner and grants belong to the type's OID,… |
+| R-1015 | code | 58 | 0 | - **Rows holding a removed value.** `makemigrations` can't see live data, so removing a va… |
+| R-1016 | code | 58 | 0 | - **Keeping old values.** A `map` that keeps old values adds a `text` column named as a re… |
+| R-1017 | code | 51 | 0 | - **Reordering is a decision.** Sorting variants alphabetically must not quietly rewrite p… |
+| R-1018 | code | 58 | 0 | \| Add \| `none` \| Remove by swap. It refuses while rows hold the value, unless a `down_m… |
+| R-1019 | code | 51 | 0 | \| Reorder \| `none` \| Reorder back by swap \| |
+| R-1020 | code | 58 | 0 | \| Remove, no rows \| `none` \| `ADD VALUE` at the old position \| |
+| R-1021 | code | 58 | 0 | \| Remove, map, keep old values \| `retires` \| `ADD VALUE`, then in a later step restore … |
+| R-1022 | code | 58 | 0 | \| Remove, map, `drop now` \| `lossy` \| `ADD VALUE`. The label returns and the rows don't… |
+| R-1023 | code | 58 | 0 | - **Restoring rows.** Down restores an old value only where the row still holds the value … |
+| R-1024 | code | 51 | 0 | - **Crash recovery.** The swap is all or nothing, so a killed run leaves the old type, and… |
+| R-1025 | code | 51 | 0 | - **`max_rewrite_mb`.** `[migrations] max_rewrite_mb`, default 1024, limits a table rewrit… |
+| R-1026 | code | 51 | 0 | - **`lint`** reports every swap, with the tables it rewrites, an add on an enum that's a l… |
+| R-1027 | code | 58 | 0 | - **With-data proof.** A map also puts rows on the removed label, and `refuse` keeps rows … |
+| R-1028 | code | 51 | 0 | - **morm never edits `pg_enum`.** It needs superuser, and it would leave indexes referring… |
+| R-1029 | code | 53 | 0 | - **The walk.** Start at the enum and follow `pg_depend` through every type built on it: i… |
+| R-1030 | code | 53 | 0 | - **Compared on the live database.** `makemigrations` stores the walk's result from scratc… |
+| R-1031 | code | 53 | 0 | - **Rebuilt by Postgres, so left alone:** plain, unique and multi-column indexes, unique a… |
+| R-1032 | code | 53 | 0 | - **Dropped and recreated, if managed:** partial and expression indexes and CHECK constrai… |
+| R-1033 | code | 53 | 0 | - **Foreign keys between enum columns** are dropped, both columns change, and the key is a… |
+| R-1034 | code | 53 | 0 | - **Stored generated columns** that read the column, or are of the enum type, are dropped … |
+| R-1035 | code | 53 | 0 | - **A function or procedure with the enum in its signature** is dropped and created, becau… |
+| R-1036 | code | 53 | 0 | - **Always refused for a remove or reorder,** listing the object: the enum as a partition … |
+| R-1037 | code | 53 | 0 | - **Unmanaged dependents are refused,** whatever their kind, including a column in another… |
+| R-1038 | code | 59 | 0 | - **Code Postgres doesn't track.** Before any op, or its inverse, that changes a column's… |
+| R-1039 | code | 59 | 0 | - **Refreshing managed functions.** Every managed plpgsql function R-1038 finds, which inc… |
+| R-1040 | code | 59 | 0 | - **Unmanaged objects** R-1038 finds can't be proven, because scratch can't see them, so e… |
+| R-1041 | code | 54 | 0 | - **A managed domain over the enum gets a new type too.** Postgres has no command to chang… |
+| R-1042 | code | 54 | 0 | - **A managed composite type holding the enum** changes with `ALTER ATTRIBUTE` when no col… |
+| R-1043 | code | 54 | 0 | - **Order.** New types are created from the enum outward, and old types are dropped from t… |
+| R-1044 | code | 54 | 0 | - **Maps pass through.** A map applies inside a domain value, a composite attribute and ea… |
+| R-1045 | code | 54 | 0 | - These types keep their owner, comment and grants the way the enum does, and their invers… |
+| R-1046 | code | 52 | 0 | - **Online by default.** On an existing table a swap uses this form, and `--fast` uses the… |
+| R-1047 | code | 52 | 0 | - **The steps,** each with its own boundary: 1. `tx`: create the new type under a temporar… |
+| R-1048 | code | 52 | 0 | - **The copy walks by key until nothing is left,** and reads each batch after the sync tri… |
+| R-1049 | code | 52 | 0 | - **The cutover** is one short transaction across all affected tables, and it gives way… |
+| R-1050 | code | 52 | 0 | - **Old values stay.** The retired column holds every old value and keeps the retired type… |
+| R-1051 | code | 52 | 0 | - **Text on the shadow column.** A partial index, an expression index, a CHECK or a materi… |
+| R-1052 | code | 52 | 0 | - **Refused in this form, allowed with `--fast`,** naming the cause: partitioned tables, b… |
+| R-1053 | code | 52 | 0 | - **Recovery.** Each step has a precondition, so `--resume` continues, the copy resumes fr… |
+| R-1054 | code | 52 | 0 | - **Column position.** The real column moves to the end of the table. Position isn't compa… |
+| R-1055 | code | 56 | 0 | - **`TextEnum` labels.** `#[derive(TextEnum)]` stores each variant's Rust spelling, so `Pe… |
+| R-1056 | code | 56 | 0 | - **`TextEnum` fallback.** `#[text_enum(unknown)]` on one unit variant works like `#[pg_en… |
+| R-1057 | doc | 50 | 0 | \| `#[text_enum(unknown)]` \| Old binaries must keep reading a `TextEnum` column during a … |
+| R-1058 | doc | 50 | 0 | \| `#[derive(TextEnum)]` \| A column holds one of a fixed set of values; prefer this to a … |
+| R-1059 | code | 57 | 0 | - **Changing a domain or composite type.** A changed domain `check` drops and adds the con… |
+| R-1060 | code | 37 | 0 | **Composite types with dependents.** Step 57 refuses a composite type change that needs a … |
+| R-1061 | code | 39 | 0 | **A view above an online column swap.** R-0566's swap carries a managed view above the c… |
+| R-1062 | code | 38 | 0 | - **Retired materialized views.** An online column swap (step 39) retires the old copy of … |
+| R-1063 | code | 39 | 0 | **A materialized view above an online column swap.** Recreating one would run its query un… |
+| R-1064 | code | 39 | 0 | **Text on the shadow column.** morm has no SQL parser and replaces no names in text, so R-… |
+| R-1065 | code | 35 | 0 | - **`proof`.** `pg_function!` and `pg_procedure!` take an optional `proof`, one SQL statem… |
+| R-1066 | code | 59 | 0 | - **Managed functions are proven by a real call.** Every managed function or procedure R-1… |
+| R-1067 | code | 59 | 0 | - **What a call may touch.** A rollback undoes what a call does in the database, including… |
+| R-1068 | doc | 50 | 0 | \| `proof = "..."` \| A managed function or procedure takes arguments, or a migration can … |
+| R-1069 | doc | 50 | 0 | The README says this plainly, beside the managed function rows. A migration can stop and a… |
+| R-1070 | code | 39 | 0 | **Same meaning when the text differs.** Postgres keeps an alias once it has one, so after … |
+| R-1071 | code | 39 | 0 | **Column positions.** A `USING` view's text holds a column list, such as `t t(id, _morm_re… |
+| R-1072 | code | 39 | 0 | **A cutover gives way.** A cutover can deadlock with an app transaction: one that touche… |
+| R-1073 | doc | 50 | 0 | \| `--terminate-blockers` \| A cutover keeps giving way, and you'd rather end the transact… |
+| R-1074 | doc | 50 | 0 | \| `cutover_lock_timeout`, `cutover_attempts`, `cutover_pause` \| A cutover gives up on a… |
+| R-1075 | doc | 50 | 0 | The README says this plainly, beside the online swap. During a cutover, a client that is… |
+| R-1076 | code | 59 | 0 | - **Every path is checked statically.** A real call proves only the path it takes, and Pos… |
+| R-1077 | code | 59 | 0 | **The check has its own database.** It runs in a database of its own on the scratch server… |
+| R-1078 | code | 59 | 0 | - **Without the extension.** With a managed plpgsql function in scope, `makemigrations` wr… |
+| R-1079 | code | 59 | 0 | - **Findings stop `makemigrations`.** Any finding at level `error` is an open decision, so… |
+| R-1080 | code | 59 | 0 | - **A narrowing is a decision.** An `int` variable reading a column now `bigint` isn't an … |
+| R-1081 | code | 59 | 0 | - **`EXECUTE` needs a `proof`.** The check can't read a query built at run time, and it gi… |
+| R-1082 | code | 59 | 0 | - **morm won't run a disabled check.** With `plpgsql_check.mode` set to `disabled`, the ch… |
+| R-1083 | code | 59 | 0 | **The extension in CI.** Every job whose tests run `makemigrations` over a managed plpgsql… |
+| R-1084 | doc | 50 | 0 | The README shows this notice loudly, beside the managed function rows: > **Silencing a che… |
+| R-1085 | doc | 50 | 0 | The README says this plainly, beside that notice. A call proves only the path it takes, so… |
+| R-1086 | doc | 50 | 0 | \| `PERFORM 'PRAGMA:TABLE: ...'`, `PERFORM 'PRAGMA:TYPE: ...'` \| `plpgsql_check` reports … |
+| R-1087 | doc | 50 | 0 | \| `PERFORM 'PRAGMA:DISABLE:CHECK'` \| A false error can't be described with `TABLE` or `T… |
+| R-1088 | doc | 50 | 0 | \| Accepting a `plpgsql_check` finding \| A finding is false on this one migration and you… |
+| R-1089 | doc | 50 | 0 | \| Accepting a narrowing \| A variable is narrower than what it reads, and you know the va… |
+| R-1090 | doc | 50 | 0 | \| Accepting a missing `plpgsql_check` \| Your scratch server can't have the extension, an… |
+| R-1091 | doc | 50 | 0 | \| `morm_plpgsql_check` template \| Your scratch user isn't a superuser, so a superuser ma… |
+| R-1092 | code | 59 | 0 | - **A changed column is one decision, in either direction.** `plpgsql_check` can't see a l… |
+| R-1093 | code | 59 | 0 | - **In-comment options are refused.** `plpgsql_check` can read options from a comment, in … |
+| R-1094 | doc | 50 | 0 | \| Accepting a changed column \| A column's type, length or precision changes, and you've re… |
+| R-1095 | code | 32 | 0 | **A decision about a database object keeps its ID across a rerun.** A decision about a dat… |
+| R-1096 | code | 33 | 0 | - `_morm.decisions`: each answer given to `migrate` or `rollback`, one row per migration i… |
+| R-1097 | code | 33 | 0 | - **Answering a decision at `migrate`.** Some decisions only appear against the live datab… |
+| R-1098 | code | 34 | 0 | - **Answering a decision at `rollback`.** `rollback` runs step 33's preflight, with each o… |
+| R-1099 | code | 59 | 0 | - **The walk's unmanaged part only works in preflight.** Scratch can't see an unmanaged ob… |
+| R-1100 | doc | 50 | 0 | \| `--decide ID=OPT` on `migrate`, `rollback` and `rehearse` \| A run stopped with exit code… |
+| R-1101 | code | 40 | 0 | - **Answering a decision at `rehearse`.** `rehearse` runs step 33's preflight, with each o… |
+| R-1102 | code | 59 | 0 | - **What the walk lists.** R-1038's walk can find anything, and it keeps only what carries… |
+| R-1103 | code | 13 | 0 | - **Reading a column whose type changed.** A migration can change a column's type under a … |
+| R-1104 | code | 14 | 0 | - **Decoding follows the column's real type.** When a statement is prepared, morm reads ea… |
+| R-1105 | code | 48 | 0 | - Reading a column whose type changed: `from_row_as` with a narrower field's per-value ran… |
+| R-1106 | doc | 50 | 0 | The README says this plainly, beside the `Decimal` and `Numeric` rows. `Decimal` holds up … |
+| R-1107 | doc | 50 | 0 | The README says this plainly, beside the rolling deploy rows. A type change never stops a … |
+| R-1108 | code | 41 | 0 | **A narrowing Postgres would change silently waits for `contract`.** Postgres rounds or cu… |
+| R-1109 | doc | 50 | 0 | \| `migrate --phase expand`, then `--phase contract` \| You deploy without stopping apps, an… |
 
 ## Test obligations
 
@@ -1107,3 +1257,94 @@ Totals: 959 requirements, 133 test obligations.
 | T-0131 | suite | 27 | **Failures:** backoff, `max_attempts`, `failed` events kept, and cleanup after `retention` |
 | T-0132 | suite | 42 | `morm-admin outbox retry ID` on a failed event |
 | T-0133 | trybuild | 49 | every compile-time guarantee has a `trybuild` case |
+| T-0134 | suite | 27 | **Fault injection runs in CI:** `ci.yml`'s `integration` job runs the T-0129 tests, and th… |
+| T-0135 | suite | 30 | **Migration suite runs in CI:** the `Migration suite` step of `ci.yml`'s `integration` job… |
+| T-0136 | suite | 34 | **Fault injection runs in CI:** the `Migration suite` step of `ci.yml`'s `integration` job… |
+| T-0137 | suite | 49 | **Property tests run in CI:** `nightly.yml`'s `property` job runs the T-0114 and T-0118 te… |
+| T-0138 | suite | 49 | **Full chain runs in CI:** `nightly.yml`'s `full-chain` job runs the T-0127 test on Postgr… |
+| T-0139 | suite | 49 | **Fuzzing runs in CI:** `nightly.yml`'s `fuzz` job runs the T-0128 targets, and the PR lin… |
+| T-0140 | suite | 49 | **Full chain covers the whole chain:** the migrations in `nightly.yml`'s `full-chain` job … |
+| T-0141 | integration | 56 | `#[derive(PgDomain)]` and `#[derive(PgComposite)]` round-tripping through columns and para… |
+| T-0142 | integration | 56 | **Plain `String` on a domain:** test whether a `String` field or parameter binds to a colu… |
+| T-0143 | trybuild | 35 | a `#[pg_composite]` field with no SQL type: its Rust type infers none, and it has no `#[co… |
+| T-0144 | suite | 35 | **Bare derives:** `#[derive(PgDomain)]`, `#[derive(PgComposite)]` or `#[derive(PgEnum)]` w… |
+| T-0145 | integration | 57 | **Sequences:** a sequence shows no drift after `nextval` calls, an identity column's seque… |
+| T-0146 | integration | 37 | a column default calling `nextval` on a managed sequence applies, and a sequence declared … |
+| T-0147 | integration | 11 | **Stale generation:** raising the counter replaces every older connection at its next chec… |
+| T-0148 | integration | 56 | **Enum binding survives type changes:** on an open connection and on one opened afterwards… |
+| T-0149 | integration | 56 | **Names and labels:** a bare derive binds to the snake_case name, `#[pg_type(name = "...")… |
+| T-0150 | trybuild | 56 | a `PgEnum` with duplicate labels, an empty label, a label over 63 bytes, a variant that is… |
+| T-0151 | integration | 14 | **Stale statements on Postgres 15–18:** after a hand-run enum swap, with the old type drop… |
+| T-0152 | integration | 14 | **Stale sessions:** a plpgsql trigger compiled before a hand-run swap fails with `XX000`, … |
+| T-0153 | integration | 14 | **No false recovery:** a `42883` from SQL that was never cached isn't retried, a retried w… |
+| T-0154 | trybuild | 35 | `#[pg_type]` on a type that also has `#[pg_enum(name = "...")]`, `#[pg_domain]` or `#[pg_c… |
+| T-0155 | integration | 57 | **Enum renames:** `was` and a decision each rename a value with rows holding it, the inver… |
+| T-0156 | integration | 37 | **Refresh:** a function compiled in an open session before a hand-run type swap fails, and… |
+| T-0157 | suite | 40 | **Enum revert:** `revert` of an add runs the online swap and stops on rows holding the val… |
+| T-0158 | integration | 41 | **Enums in a rolling deploy:** `check_schema` passes during an add and reports a missing l… |
+| T-0159 | suite | 58 | **Enum ops:** every op in the inverse table, and a reorder, with and without data, up, dow… |
+| T-0160 | suite | 58 | **Removed values:** `refuse` stops with row counts and changes nothing, `map` keeps old va… |
+| T-0161 | suite | 51 | **Decisions:** a reorder with no answer exits with code `3`, a remove and add with no `was… |
+| T-0162 | suite | 51 | **Fault injection:** kill the process at every step boundary and during a table rewrite. `… |
+| T-0163 | integration | 51 | **Proof, a non-superuser swap on Postgres 15–18:** add and reorder as a role that owns the… |
+| T-0164 | integration | 51 | **Proof, logical replication on Postgres 15–18:** with a subscription on the same server, … |
+| T-0165 | integration | 51 | **`max_rewrite_mb`:** a swap over the limit is refused with exit code `2` naming the table… |
+| T-0166 | suite | 53 | **Every dependent kind:** one test per kind in the rebuilt, recreated, foreign key, genera… |
+| T-0167 | integration | 53 | **Proof, the dependency list on Postgres 15–18:** the walk on one schema holding every kin… |
+| T-0168 | integration | 59 | **Stale plpgsql on Postgres 15–18:** a session that compiled `DECLARE v the_enum`, `SELECT… |
+| T-0169 | suite | 53 | **Live refusals:** an unmanaged column in another schema, an unmanaged view and a new depe… |
+| T-0170 | suite | 53 | **Fault injection:** kill the process during a swap with recreated dependents, and every d… |
+| T-0171 | integration | 59 | **Proof, PgBouncer:** in a `pooler` test, in transaction mode, an app recovers from a swap… |
+| T-0172 | integration | 59 | **Proof, hot standby:** a `read_only` pool on a standby recovers from a swap on the primar… |
+| T-0173 | suite | 54 | **Domains and composites:** with rows, on Postgres 15–18: a domain, a composite with and w… |
+| T-0174 | suite | 54 | **Fault injection:** kill the process during a swap through a domain and a composite, and … |
+| T-0175 | suite | 52 | **Live traffic:** with writers on an old binary, including writes of the removed value unt… |
+| T-0176 | suite | 52 | **Proof, killed mid-run:** kill the process at every step boundary, and during the copy an… |
+| T-0177 | suite | 52 | **Proof, foreign keys and domains:** each refused layout is refused before anything change… |
+| T-0178 | suite | 52 | **Proof, definitions from scratch:** on Postgres 15–18, a partial index, a unique partial … |
+| T-0179 | suite | 52 | **Copy edges:** rows inserted just before the trigger attached are copied, a missed row fa… |
+| T-0180 | integration | 56 | **`TextEnum` labels:** variants such as `Pending` and `AwaitingPayment` are stored as thos… |
+| T-0181 | integration | 56 | **`TextEnum` fallback:** `#[text_enum(unknown)]` decodes a stored value the binary doesn't… |
+| T-0182 | trybuild | 56 | a `TextEnum` with two `#[text_enum(unknown)]` variants, or a variant that isn't a unit var… |
+| T-0183 | integration | 30 | **`TextEnum` CHECK:** the migration creates the named CHECK, adding or removing a variant … |
+| T-0184 | suite | 59 | **Unmanaged functions:** a function that only names the type in its body stops `migrate` w… |
+| T-0185 | integration | 57 | **Domain and composite changes:** with rows, a changed domain `check` replaces the constra… |
+| T-0186 | integration | 37 | **Composite dependents:** on a composite no column uses, a middle attribute, a new order a… |
+| T-0187 | suite | 39 | **View above an online column swap:** on Postgres 15–18, with readers on the view and writ… |
+| T-0188 | suite | 38 | **Retired materialized view:** on Postgres 15–18, after an online swap the old copy sits i… |
+| T-0189 | suite | 39 | **Materialized view above an online column swap:** on Postgres 15–18, with readers on it, … |
+| T-0190 | suite | 39 | **Proof, rewritten query:** on Postgres 15–18, an output column keeps its name, as a bare … |
+| T-0191 | suite | 35 | **`proof`:** on `pg_function!` and `pg_procedure!`, with `file` or inline, each `proof` re… |
+| T-0192 | suite | 59 | **Proof by a real call, on Postgres 15–18:** after a column type change, a plpgsql `RETURN… |
+| T-0193 | suite | 59 | **What a call may touch:** on Postgres 15–18, an automatic call that reaches `dblink` dire… |
+| T-0194 | suite | 39 | **Same meaning:** on Postgres 15–18, every `USING` and `NATURAL JOIN` shape in T-0190, as … |
+| T-0195 | suite | 39 | **Column positions:** on Postgres 15–18, with a `USING` materialized view above the column… |
+| T-0196 | suite | 39 | **A cutover gives way:** on Postgres 15–18, under nonstop transactions that touch the ta… |
+| T-0197 | suite | 52 | **The cutover gives way:** on Postgres 15–18, a swap across two tables with a view above… |
+| T-0198 | integration | 59 | **`plpgsql_check` on Postgres 15–18:** after a retire, a rename and a column type change, … |
+| T-0199 | integration | 59 | **Its own database, on Postgres 15–18:** a scratch user with `CREATEDB` that isn't superus… |
+| T-0200 | integration | 59 | **No extension, on Postgres 15–18, in the `no-plpgsql-check` job:** a function in scope wi… |
+| T-0201 | integration | 59 | **Findings, on Postgres 15–18:** an `error` finding stops `makemigrations` with exit code … |
+| T-0202 | integration | 59 | **Narrowing, on Postgres 15–18:** an `int` variable reading a column changed to `bigint` t… |
+| T-0203 | integration | 59 | **`EXECUTE`, on Postgres 15–18:** a function that takes no arguments and uses `EXECUTE`, `… |
+| T-0204 | integration | 59 | **A disabled check, on Postgres 15–18:** with `plpgsql_check.mode` set to `disabled` on th… |
+| T-0205 | suite | 59 | **The extension in CI:** `tests/tests/repo_policy.rs` fails unless each job R-1083 names r… |
+| T-0206 | integration | 59 | **A changed column, on Postgres 15–18:** a column changed from `numeric(6,2)` to `numeric(… |
+| T-0207 | integration | 59 | **In-comment options, on Postgres 15–18:** a managed plpgsql function with `@plpgsql_check… |
+| T-0208 | integration | 59 | **The walk, on Postgres 15–18:** a column changes from `numeric(6,2)` to `numeric(20,4)`,… |
+| T-0209 | suite | 32 | **A refusal and an open decision together:** a `makemigrations` run with both a hard refus… |
+| T-0210 | suite | 32 | **Decision IDs:** on Postgres 15–18, through a test-only op that declares a decision about… |
+| T-0211 | suite | 33 | **`--decide` on `migrate`:** on a real database, through a test-only op whose preflight op… |
+| T-0212 | suite | 34 | **`--decide` on `rollback`:** through step 33's test-only op, after `migrate --decide` wit… |
+| T-0213 | suite | 38 | **Answering a hit at `migrate` and `rollback`:** on Postgres 15–18, an unmanaged function … |
+| T-0214 | integration | 59 | **The walk on the live database, on Postgres 15–18:** on a live database holding unmanaged… |
+| T-0215 | integration | 59 | **One list per migration, on Postgres 15–18:** a migration that changes two columns on two… |
+| T-0216 | integration | 59 | **A live decision's ID against `meta.json`, on Postgres 15–18:** an unmanaged function tha… |
+| T-0217 | suite | 40 | **`--decide` on `rehearse`:** on a restored backup marked `development`, with no row in `_… |
+| T-0218 | integration | 59 | **What the walk lists, on Postgres 15–18:** a column changes from `numeric(6,2)` to `numer… |
+| T-0219 | integration | 59 | **A widening's fixed line, on Postgres 15–18:** the decision for `numeric(6,2)` to `numeri… |
+| T-0220 | integration | 41 | **`check_schema`'s type families, on Postgres 15–18:** each of these passes: an `i32` fiel… |
+| T-0221 | integration | 41 | **An old binary through a type change, on Postgres 15–18:** a binary built against `intege… |
+| T-0222 | integration | 14 | **Decoding follows the column's real type, on Postgres 15–18:** a cached statement on an `… |
+| T-0223 | integration | 13 | **Reading across a type change, on Postgres 15–18:** every integer field reads `smallint`,… |
+| T-0224 | integration | 41 | **A silent narrowing waits for `contract`, on Postgres 15–18:** the test first confirms on… |

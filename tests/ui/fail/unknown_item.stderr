@@ -1,0 +1,7 @@
+error[E0432]: unresolved import `morm::NoSuchItem`
+ --> ui/fail/unknown_item.rs:2:5
+  |
+2 | use morm::NoSuchItem;
+  |     ^^^^^^----------
+  |           |
+  |           no `NoSuchItem` in the root

@@ -1,0 +1,13 @@
+# covers: R-0958
+version: 2
+updates:
+  - package-ecosystem: cargo
+    directory: /
+    schedule:
+      interval: weekly
+  - package-ecosystem: github-actions
+    directories:
+      - /
+      - /.github/actions/setup-rust
+    schedule:
+      interval: weekly

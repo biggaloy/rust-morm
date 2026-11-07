@@ -1,7 +1,7 @@
 # Step 31: `lint`
 
 - **Phase:** Migrations
-- **Depends on:** 30, 07, 13
+- **Depends on:** 30, 07, 13, 56
 - **Can run beside:** 08, 09, 11, 12, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 47
 - **Crates:** `morm-migrate`, `morm-admin`
 - **PR approval:** CI and an independent review
@@ -49,6 +49,10 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 
 - **R-0619** `lint`: statement risk, in the style of `squawk`, plus index advice. With `--url` it reads real table sizes and reports risky operations only on tables big enough to matter.
 - **R-0956** `morm-admin mgr <command>` runs migration and schema work, and each `mgr` command lives in its own module.
+
+### Managed enums
+
+- **R-0988** An op can declare `lint` findings of its own, and `--url` filters them by table size like any other finding, so later op kinds add rules with no change here.
 
 ## Test obligations
 

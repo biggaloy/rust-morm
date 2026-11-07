@@ -2,7 +2,7 @@
 
 - **Phase:** Migrations
 - **Depends on:** 35, 18
-- **Can run beside:** 12, 19, 20, 21, 22, 23, 24, 25, 27, 47
+- **Can run beside:** 19, 20, 21, 22, 23, 24, 25, 27, 47
 - **Crates:** `morm-migrate`, `morm-macros`, `morm`
 - **PR approval:** CI and an independent review
 
@@ -14,7 +14,7 @@ Read each object kind from the catalog, diff it, and apply it with an exact inve
 
 ## Deliverables
 
-- IR, catalog reading, diff and `Op` with inverse for each kind: functions, procedures, triggers, policies, grants, views, materialized views, enums, domains, composite types, sequences
+- IR, catalog reading, diff and `Op` with inverse for each kind: functions, procedures, triggers, policies, grants, views, materialized views
 - Running `.sql` definitions on scratch
 - Placeholder roles on scratch
 - Read-only view models, `db.call`, `db.refresh`
@@ -26,6 +26,7 @@ Each object kind goes from a declaration to a real database and back through the
 ## Out of scope
 
 - Dependency recreation (step 37)
+- Enums, domains, composite types and sequences (step 57)
 
 ## Requirements
 

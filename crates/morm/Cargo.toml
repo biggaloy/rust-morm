@@ -1,0 +1,13 @@
+[package]
+name = "morm"
+description = "PostgreSQL models in code, rock-solid migrations and plain SQL queries."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+readme = "README.md"
+
+[dependencies]
+morm-core.workspace = true
+morm-macros.workspace = true

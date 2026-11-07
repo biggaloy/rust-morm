@@ -2,7 +2,7 @@
 
 - **Phase:** Tools
 - **Depends on:** 42
-- **Can run beside:** 08, 23, 26, 39, 40, 41, 44, 45, 47, 48, 49
+- **Can run beside:** 08, 23, 26, 39, 40, 41, 44, 45, 47, 48, 49, 51, 52, 53, 54, 58, 59
 - **Crates:** `morm-admin`, `morm-core`
 - **PR approval:** CI and an independent review
 
@@ -34,7 +34,7 @@ Owned elsewhere, and quoted so this step needs no other file. Nothing here needs
 > morm-admin mgr <command>              # migrations and schema work (section 10)
 > ```
 >
-> - **Code Postgres doesn't track.** A `plpgsql` function body has no recorded dependency on the columns it names, so a retire or rename can break inserts through a trigger like `NEW.note := 'x'`. Before either, morm searches `pg_proc.prosrc` in the affected schemas, and in every function the table's triggers call, in any schema, for the name, whole words only. Common names like `status` will give false hits, which is fine, because a hit is only a decision. A hit on a managed function is a decision with evidence, and `makemigrations` proposes the rewritten function. `migrate` preflight repeats the search on the live database, which is the only way to see unmanaged functions, and refuses on a hit unless accepted.
+> - **Code Postgres doesn't track.** A `plpgsql` function body has no recorded dependency on the columns it names, so a retire or rename can break inserts through a trigger like `NEW.note := 'x'`. Before either, morm searches `pg_proc.prosrc` in every schema for the name, whole words only, in any case, because a body in another schema can name the object too. Common names like `status` will give false hits, which is fine, because a hit is only a decision. A hit on a managed function is a decision with evidence, and `makemigrations` proposes the rewritten function. `migrate` preflight repeats the search on the live database, which is the only way to see unmanaged functions, and a hit not yet accepted is an open decision, which stops `migrate` with exit code `3` until `--decide` answers it. `rollback` preflight does the same before an inverse that retires or renames.
 >
 > Pools open in one process share the budget, so `db.pool("jobs")` beside the default pool can't double it. If `min` or `max` exceed the budget, including explicit values, morm lowers them and emits a warning, through `tracing` when enabled and stderr otherwise.
 >
