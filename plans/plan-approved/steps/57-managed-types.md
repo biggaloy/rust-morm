@@ -29,7 +29,7 @@ Owned elsewhere, and quoted so this step needs no other file. Nothing here needs
 >
 > Step 29 reads enum labels from `pg_enum`, ordered by `enumsortorder`. Step 32's with-data proof keeps its synthetic rows in a table keyed by column type. Step 33 lets an op add preflight checks.
 >
-> Step 33's ledger keeps each migration's exact up and down SQL, so `rollback`, from step 34, works when the migration's files are gone. Its check before an inverse that drops an attribute must read the live catalog and not rely on `meta.json`.
+> Step 33's ledger keeps each migration's exact up and down SQL and its `meta.json`, so `rollback`, from step 34, works when the migration's files are gone. Its check before an inverse that drops an attribute must read the live catalog and not rely on `meta.json`.
 >
 
 ## Out of scope

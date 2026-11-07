@@ -14,7 +14,7 @@ Write a migration only after it's proven, with decisions as explicit data.
 
 ## Deliverables
 
-- `makemigrations`, the five-part proof, decisions, `up.sql`, `down.sql`, `meta.json`, deterministic output, exit codes, `min_postgres` and extension checks
+- `makemigrations`, the five-part proof, decisions and their IDs, `up.sql`, `down.sql`, `meta.json`, deterministic output, exit codes, `min_postgres` and extension checks
 
 ## End-to-end check
 
@@ -28,8 +28,8 @@ Owned elsewhere, and quoted so this step needs no other file. Nothing here needs
 >
 > ```
 > makemigrations [--plan] [--json] [-n name] [--decide ID=OPT] [--decisions F] [--empty] [--fast]
-> migrate [--plan] [--json] [--yes] [--to ID] [--resume] [--phase expand|contract]
-> rollback [--last N | --to ID | --orphans | --failed] [--plan] [--yes] [--accept-data-loss] [--production --reason R]
+> migrate [--plan] [--json] [--yes] [--to ID] [--resume] [--phase expand|contract] [--decide ID=OPT]
+> rollback [--last N | --to ID | --orphans | --failed] [--plan] [--yes] [--accept-data-loss] [--production --reason R] [--decide ID=OPT]
 > revert ID [--plan] [--decide ID=OPT]    mode [development --confirm NAME | production]    squash --to ID
 > status [--json]    verify [--json]    check    lint    check-sql
 > rehearse --url URL    purge --older-than D | --now ID    baseline    rebase-chain
@@ -40,6 +40,7 @@ Owned elsewhere, and quoted so this step needs no other file. Nothing here needs
 ## Out of scope
 
 - Running migrations (step 33)
+- Answering a decision at `migrate` (step 33) and `rollback` (step 34)
 
 ## Requirements
 
@@ -58,6 +59,8 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 **R-0587** Every rename, retire, purge, lossy change and missing backfill is a decision with an id, evidence (type match, name similarity, row presence, dependents, size) and options. They're answered interactively, by `--decide ID=OPT`, or by file. `--json` suits CI and agents. `was` is a pre-answered rename, ignored once the old name is gone. An op can declare decisions of its own through this same flow, so later steps add kinds such as enum value changes.
 
 **R-0588** Exit codes: `0` ok, `1` error or drift, `2` refused by a guard, `3` open decisions. A run with both a refusal and an open decision exits `2`, because answering the decision wouldn't let it through.
+
+**R-1095** **A decision about a database object keeps its ID across a rerun.** A decision about a function, view, default or check gets an ID built from the migration's `id`, the decision's kind and the object's signature, plus a hash of its source, in the form `<id>/<kind>/<signature>/<hash>`. So the ID stays the same across a rerun, and changes if the object's source does. `makemigrations` and the preflight of `migrate` and `rollback` build it with the same code, because an unmanaged function already accepted on scratch must match on the live database and not be asked about again. The hash is the first 16 hex digits of the SHA-256 of the source. Every read below runs with `search_path` set to `pg_catalog`, because otherwise the text depends on the session: the same function reads `sf(ty,integer)` in one and `app.sf(app.ty,integer)` in another, and a view, a default and a check read the same way. A function's signature is its `regprocedure` text, and its source is `prosrc`, or `pg_get_function_sqlbody(oid)` when `prosqlbody` isn't null, because a `BEGIN ATOMIC` or `RETURN` body leaves `prosrc` empty, and hashing that would miss an edit. A view's signature is its `regclass` text, and its source is `pg_get_viewdef`. A default's signature is its table's `regclass` text and the column's name, and its source is `pg_get_expr`. A check's signature is the `regclass` text of its table, or the `regtype` text of its domain, and the constraint's name, and its source is `pg_get_constraintdef`. A decision that lists several objects has the signature `list`, and its hash covers the sorted lines `<signature> <hash>`, one per object, so adding or changing any of them gives a new ID. A migration's `id` doesn't depend on any answer, so the ID a stopped run prints still holds when the same command runs again with the answer. A name can hold a space or an `=`, so morm prints each ID quoted for the shell, and `--decide` splits at the last `=`. `meta.json` records each answer with the direction of the decision it answers, `up` or `down`, and a decision open in both directions is recorded for both.
 
 ### Migrations / Proof before writing
 
@@ -101,3 +104,4 @@ morm-migrations/
 | ID | Type | Obligation |
 |---|---|---|
 | T-0209 | suite | **A refusal and an open decision together:** a `makemigrations` run with both a hard refusal, such as a model's `extensions` entry scratch doesn't have, and an open decision exits with code `2`, with no file written, and answering the decision alone still exits `2`. With the refusal fixed and the decision open it exits `3`, and with the decision answered it exits `0`. |
+| T-0210 | suite | **Decision IDs:** on Postgres 15–18, through a test-only op that declares a decision about an object it reads from the catalog, two `makemigrations` runs print the same ID, and the migration's `id` is the same with the decision open, accepted or answered another way. The same function gives the same ID under two `search_path` settings in the scratch URL. An edit to a plpgsql body, even to a comment, and to a `BEGIN ATOMIC` and a `RETURN` body each gives a new ID. So does a change to a view, a default, a table's check and a domain's check, and each has the same ID under both `search_path` settings. A decision that lists two objects gets a new ID when either changes and when a third joins, and the same ID whatever order the catalog returns them in. A function whose name holds a space and an `=` is answered by pasting the ID morm printed. `meta.json` records the direction of each answer, and a decision open only on `down` is recorded for `down` only. |
