@@ -27,11 +27,11 @@ The 30-minute wake-up lived only in the session, so a restart removes it. After 
 - Step 01's code is reviewed and fixed. PR #1 now also carries the plan redesign that came out of the reviews: managed enums, steps 51 to 59, the general walk, `plpgsql_check`, `--decide`, and type changes that never break a running app.
 - Every owner decision is in `INDEX.md` under "Decisions since the split". `reviews/step-01-open-items.md` has every open item, A to AV, each answered.
 
-**Latest:** BE to BR are written in at `3c2eb3e` (checker 1150 R / 242 T, 0 problems), IDs in Decisions. CI's `pooler` job failed on an Ubuntu mirror DNS error, not the plan; rerun. The owner answered BS to BU as recommended; one edit agent writes them in. Next free IDs: R-1151, T-0243.
+**Latest:** BS to BU are written in at `63775d9` (checker 1156 R / 246 T, 0 problems), IDs in Decisions. CI: `pooler` failed again on the Ubuntu mirror DNS error; rerun 1 of 3 in progress (runs 43041915348, 43041929695). Four follow-ups, BV to BY in `reviews/step-01-open-items.md`, are with the owner. Next free IDs: R-1157, T-0247.
 
 ## What comes next
 
-1. Finish the BS to BU edit, confirm CI green, and add its IDs to Decisions on `main`.
+1. Confirm CI green on `63775d9` (rerun `pooler` if it hits the mirror DNS error), get the owner's answers to BV to BY, record them, and have one edit agent write them in.
 2. Run a short check of the changes since `09338c2`, the checker and CI, with one fresh reviewer. By owner decision, this is the last round.
 3. Bring PR #1 to the owner, who approves it. No agent merges without that.
 4. Merge, mark step 01 `done`, pull, and check `INDEX.md` on `main` keeps both its Decisions and the branch's rows and order.

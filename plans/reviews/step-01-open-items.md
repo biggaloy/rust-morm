@@ -160,3 +160,10 @@ Decisions still to add on `main`: R-0608, R-1081, T-0208, T-0209.
 - **BU. Shadow unique indexes in steps 39 and 52.** A value-changing swap of a unique non-key column can collide on the shadow index alone, and only step 60's is mapped. Recommended: the same `_morm_new_` mapping for every online swap.
 - **CI:** `pooler` failed three times at `apt-get install pgbouncer` (runner DNS for `azure.archive.ubuntu.com`); rerun by the coordinator.
 - **Answered:** BS to BU as recommended, and the edit's choices approved.
+
+## From the edit at `63775d9`, waiting on the owner
+
+- **BV. `--fast` can't change an inherited column on a child or a partition** (`cannot alter inherited column` on 18.6), and a change on the parent reaches children no model declares. Affects steps 39, 52 and 60 (R-1125, T-0241). Recommended: change an inherited column only through its top parent in one `ALTER`; refuse with exit `2`, naming them, a change to a child's inherited column alone and any change reaching a child or partition no model declares.
+- **BW. An index a foreign key depends on can't be dropped without `CASCADE`** when the index check must rebuild it (`2BP01`, the run stops). Recommended: `makemigrations` refuses with exit `2` naming the index and foreign key; `--fast` drops and re-adds the foreign key around the rebuild, as R-1126 does.
+- **BX. Values that would merge on a unique non-key column** in step 39's value-changing swap and step 52's map of two labels to one have no preflight refusal, only a failed concurrent index build. Recommended: step 60's `GROUP BY` preflight refusal for every unique index on a swapped column whose values change.
+- **BY. Other step 39 safe forms on partitioned tables** (R-0560, R-0562 build concurrently and use `USING INDEX`, both fail there; only from changes outside morm). Recommended: refuse in preflight, with `--fast`.
