@@ -175,3 +175,9 @@ Decisions still to add on `main`: R-0608, R-1081, T-0208, T-0209.
 - **CA. Other changes reaching undeclared children.** BV covers type and collation changes only. A `--fast` index on a partitioned table, and `ADD COLUMN`, `DROP COLUMN`, `SET NOT NULL` or a CHECK on a parent, also reach children no model declares. Options: (a) refuse any change that reaches one (recommended); (b) allow and list the affected tables; (c) keep BV to type changes only.
 - **CI:** `pooler`'s `apt-get` can't resolve `azure.archive.ubuntu.com`, on every run since about 14:00 UTC on 2026-11-11, seven attempts.
 - **Answered:** BZ (a), CA (a), and a fallback package source for `pooler`.
+
+## From the edit at `360b2f4` and `b38e532`, waiting on the owner
+
+- **CB. Retiring a partition or inheritance child while its parent stays live.** A retired partition stays attached, so the parent keeps routing rows to it and reading them. Options: (a) refuse with exit `2` (recommended); (b) detach it as part of the retire and re-attach it on rollback.
+- **CC. How a child's or partition's model accounts for what it inherits.** Postgres names inherited foreign keys and CHECKs after the parent's, and indexes with its own names (such as `p1_a_idx`), so they can't match morm's per-table names. Options: (a) the catalog reader treats inherited objects as the parent's, and a child's model declares only its own (recommended); (b) each child's model declares them under the parent's names; (c) refuse these statements on partitioned tables.
+- **CD. `bench.yml` also installs a package with `apt-get`** and can hit the same mirror outage. Recommended: the same fallback pattern (retry with a cut-off, then a pinned image or a cached download), failing loudly if all fail.
