@@ -146,3 +146,4 @@ Decisions still to add on `main`: R-0608, R-1081, T-0208, T-0209.
 - **BF. A group table with no primary key.** The copy walks by its own primary key; steps 39 and 52 have the same gap. Recommended: walk by a unique `NOT NULL` key when there is one, otherwise refuse online, with `--fast`.
 - **BG. A group table in old-style inheritance.** `ADD COLUMN` spreads to child tables. Recommended: refuse online, as for partitioned tables, with `--fast`.
 - **BH. README for the scaled-wait refusal.** When the scaled lock wait falls under 1 ms, preflight refuses with exit 2. Recommended: a loud README notice saying what it does, why, and how to go on (raise `deadlock_timeout` or `cutover_lock_timeout`, or `--fast`).
+- **Answered:** BE every same-family change (three gaps to design, see Decisions); BF, BG, BH as recommended.
