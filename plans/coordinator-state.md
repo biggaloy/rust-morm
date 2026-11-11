@@ -27,7 +27,7 @@ The 30-minute wake-up lived only in the session, so a restart removes it. After 
 - Step 01's code is reviewed and fixed. PR #1 now also carries the plan redesign that came out of the reviews: managed enums, steps 51 to 59, the general walk, `plpgsql_check`, `--decide`, and type changes that never break a running app.
 - Every owner decision is in `INDEX.md` under "Decisions since the split". `reviews/step-01-open-items.md` has every open item, A to AV, each answered.
 
-**Latest:** the silent narrowing edit landed at `124c49c`, with CI green and the PR body updated. Items BB to BD of `reviews/step-01-open-items.md` are waiting on the owner. A design-only agent for online widening of a referenced key is running, with its report going to `.claude/scratch/fk-widening-design.md` in its worktree, to be copied to `reviews/`. If it's lost, rerun it from the "Widening a referenced key" entry in `INDEX.md` and the later plan's section.
+**Latest:** the silent narrowing edit landed at `124c49c`, with CI green and the PR body updated. Items BB to BD of `reviews/step-01-open-items.md` are waiting on the owner. The design for online widening of a referenced key is in `reviews/fk-widening-design.md`, and its choices A to I are waiting on the owner. Its proposed IDs, R-1110 to R-1116 and T-0225 onward, collide with ones already used, so the edit agent must renumber from R-1113 and T-0227.
 
 ## What comes next
 
