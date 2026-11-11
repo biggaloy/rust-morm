@@ -159,3 +159,4 @@ Decisions still to add on `main`: R-0608, R-1081, T-0208, T-0209.
 - **BT. BQ outside step 60.** Step 39's `--fast` and in-place type changes have the same silent operator-class swap. Recommended: compare indexes with scratch and rebuild those that differ for every `ALTER COLUMN ... TYPE` morm runs.
 - **BU. Shadow unique indexes in steps 39 and 52.** A value-changing swap of a unique non-key column can collide on the shadow index alone, and only step 60's is mapped. Recommended: the same `_morm_new_` mapping for every online swap.
 - **CI:** `pooler` failed three times at `apt-get install pgbouncer` (runner DNS for `azure.archive.ubuntu.com`); rerun by the coordinator.
+- **Answered:** BS to BU as recommended, and the edit's choices approved.
