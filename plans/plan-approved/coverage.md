@@ -4,7 +4,7 @@ Generated from the frozen plan. Each requirement and test obligation lives in ex
 
 Kinds: `code` needs a tagged test, `doc` is checked in the README step, `info` is context with nothing to build.
 
-Totals: 1109 requirements, 224 test obligations.
+Totals: 1112 requirements, 226 test obligations.
 
 ## Requirements
 
@@ -1119,6 +1119,9 @@ Totals: 1109 requirements, 224 test obligations.
 | R-1107 | doc | 50 | 0 | The README says this plainly, beside the rolling deploy rows. A type change never stops a … |
 | R-1108 | code | 41 | 0 | **A narrowing Postgres would change silently waits for `contract`.** Postgres rounds or cu… |
 | R-1109 | doc | 50 | 0 | \| `migrate --phase expand`, then `--phase contract` \| You deploy without stopping apps, an… |
+| R-1110 | code | 41 | 0 | **`rollback` holds a silent narrowing too.** A migration's down can be one of R-1108's sil… |
+| R-1111 | code | 41 | 0 | **A silent narrowing of stored data is `lossy`.** A type change that's one of R-1108's sil… |
+| R-1112 | doc | 50 | 0 | \| `rollback --phase contract`, `rollback --fast` \| You roll back a migration that widene… |
 
 ## Test obligations
 
@@ -1348,3 +1351,5 @@ Totals: 1109 requirements, 224 test obligations.
 | T-0222 | integration | 14 | **Decoding follows the column's real type, on Postgres 15–18:** a cached statement on an `… |
 | T-0223 | integration | 13 | **Reading across a type change, on Postgres 15–18:** every integer field reads `smallint`,… |
 | T-0224 | integration | 41 | **A silent narrowing waits for `contract`, on Postgres 15–18:** the test first confirms on… |
+| T-0225 | integration | 41 | **`rollback` holds a silent narrowing, on Postgres 15–18:** on a database marked `developm… |
+| T-0226 | integration | 41 | **A silent narrowing of stored data is `lossy`, on Postgres 15–18:** the test first confir… |

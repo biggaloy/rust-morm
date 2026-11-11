@@ -27,7 +27,7 @@ Owned elsewhere, and quoted so this step needs no other file. Nothing here needs
 > ```
 > makemigrations [--plan] [--json] [-n name] [--decide ID=OPT] [--decisions F] [--empty] [--fast]
 > migrate [--plan] [--json] [--yes] [--to ID] [--resume] [--phase expand|contract] [--decide ID=OPT]
-> rollback [--last N | --to ID | --orphans | --failed] [--plan] [--yes] [--accept-data-loss] [--production --reason R] [--decide ID=OPT]
+> rollback [--last N | --to ID | --orphans | --failed] [--plan] [--yes] [--accept-data-loss] [--production --reason R] [--phase contract] [--fast] [--decide ID=OPT]
 > revert ID [--plan] [--decide ID=OPT]    mode [development --confirm NAME | production]    squash --to ID
 > status [--json]    verify [--json]    check    lint    check-sql
 > rehearse --url URL [--decide ID=OPT]    purge --older-than D | --now ID    baseline    rebase-chain
@@ -60,7 +60,7 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 ### Migrations / Commands
 
 - **R-0617** `verify`: live schema vs models and ledger; read-only and safe in production. Unmanaged objects are listed as information, not as drift.
-- **R-0951** `rollback [--last N | --to ID | --orphans | --failed] [--plan] [--yes] [--accept-data-loss] [--production --reason R] [--decide ID=OPT]`, where `--decide` answers a decision preflight opens. `verify [--json]`. `repair --reason R`. `refingerprint`.
+- **R-0951** `rollback [--last N | --to ID | --orphans | --failed] [--plan] [--yes] [--accept-data-loss] [--production --reason R] [--phase contract] [--fast] [--decide ID=OPT]`, where `--decide` answers a decision preflight opens, and `--phase contract` and `--fast` change nothing `rollback` runs: they only let through the silent narrowings step 41 holds. `verify [--json]`. `repair --reason R`. `refingerprint`.
 - **R-1098** **Answering a decision at `rollback`.** `rollback` runs step 33's preflight, with each op's own checks, before each migration it undoes, in direction `down`, in every form: `--last`, `--to`, `--orphans` and `--failed`. It reads `meta.json` from the ledger, so the search and the checks work when the files are gone. A decision it opens stops it with exit code `3`, and `rollback --decide ID=OPT` answers it, under step 33's rules for `--decide`, recorded in `_morm.decisions` with direction `down` and a history row. So an `up` answer from `migrate` doesn't cover `rollback`, and a `down` answer doesn't cover `migrate`, even with the same decision ID. An answer given to `migrate` survives `migrate --resume`, and one given to `rollback` survives a rerun of a `rollback` that was killed.
 - **R-0960** **`full-chain` job.** This step sets what `nightly.yml`'s `full-chain` job runs and changes the job to run it: all up, all down, all up, across the migrations this step can run, on Postgres 15–18. Until now the job ran the same command as CI's migration suite, so the result must go beyond that suite: a job that runs only what that suite runs doesn't satisfy this. Step 49 widens it to the whole chain later. Gate the test with a Cargo feature on `morm-tests` and `required-features`, as `pooler` is. If the migration suite's command uses `--all-features` on `morm-tests`, change it so this feature stays off. Tag the test the job runs and the job itself, update the line in `tests/tests/repo_policy.rs` that pins the old command, and link the job's log from a `workflow_dispatch` run in the PR.
 

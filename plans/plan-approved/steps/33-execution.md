@@ -61,7 +61,7 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 ```
 makemigrations [--plan] [--json] [-n name] [--decide ID=OPT] [--decisions F] [--empty] [--fast]
 migrate [--plan] [--json] [--yes] [--to ID] [--resume] [--phase expand|contract] [--decide ID=OPT]
-rollback [--last N | --to ID | --orphans | --failed] [--plan] [--yes] [--accept-data-loss] [--production --reason R] [--decide ID=OPT]
+rollback [--last N | --to ID | --orphans | --failed] [--plan] [--yes] [--accept-data-loss] [--production --reason R] [--phase contract] [--fast] [--decide ID=OPT]
 revert ID [--plan] [--decide ID=OPT]    mode [development --confirm NAME | production]    squash --to ID
 status [--json]    verify [--json]    check    lint    check-sql
 rehearse --url URL [--decide ID=OPT]    purge --older-than D | --now ID    baseline    rebase-chain
