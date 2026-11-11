@@ -27,11 +27,11 @@ The 30-minute wake-up lived only in the session, so a restart removes it. After 
 - Step 01's code is reviewed and fixed. PR #1 now also carries the plan redesign that came out of the reviews: managed enums, steps 51 to 59, the general walk, `plpgsql_check`, `--decide`, and type changes that never break a running app.
 - Every owner decision is in `INDEX.md` under "Decisions since the split". `reviews/step-01-open-items.md` has every open item, A to AV, each answered.
 
-**Latest:** BV to BY are written in at `a98aa45` (checker 1166 R / 252 T, 0 problems), IDs in Decisions. CI: `pooler` has failed on every run since about 14:00 UTC on 2026-11-11, because `apt-get` can't resolve `azure.archive.ubuntu.com`; everything else passes. Two follow-ups, BZ and CA in `reviews/step-01-open-items.md`, are with the owner. Next free IDs: R-1167, T-0253.
+**Latest:** BV to BY are written in at `a98aa45` (checker 1166 R / 252 T, 0 problems), IDs in Decisions. CI: `pooler` has failed on every run since about 14:00 UTC on 2026-11-11, because `apt-get` can't resolve `azure.archive.ubuntu.com`; everything else passes. The owner answered BZ and CA as recommended and chose a fallback package source for `pooler`; one edit agent does all three. Next free IDs: R-1167, T-0253.
 
 ## What comes next
 
-1. Get CI green (the `pooler` mirror problem), get the owner's answers to BZ and CA, record them, and have one edit agent write them in.
+1. Finish the BZ, CA and `pooler` fallback edit, confirm CI green, and add its IDs to Decisions.
 2. Run a short check of the changes since `09338c2`, the checker and CI, with one fresh reviewer. By owner decision, this is the last round.
 3. Bring PR #1 to the owner, who approves it. No agent merges without that.
 4. Merge, mark step 01 `done`, pull, and check `INDEX.md` on `main` keeps both its Decisions and the branch's rows and order.
