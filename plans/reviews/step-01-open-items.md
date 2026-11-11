@@ -151,3 +151,4 @@ Decisions still to add on `main`: R-0608, R-1081, T-0208, T-0209.
 ## From the families design at `c18de68`, waiting on the owner
 
 - **BI to BR:** see `reviews/step-60-families-design.md`, each lettered with a recommendation, and section 6 for the README notices.
+- **Answered:** BI to BR all as recommended.

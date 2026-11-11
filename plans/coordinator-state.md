@@ -27,11 +27,11 @@ The 30-minute wake-up lived only in the session, so a restart removes it. After 
 - Step 01's code is reviewed and fixed. PR #1 now also carries the plan redesign that came out of the reviews: managed enums, steps 51 to 59, the general walk, `plpgsql_check`, `--decide`, and type changes that never break a running app.
 - Every owner decision is in `INDEX.md` under "Decisions since the split". `reviews/step-01-open-items.md` has every open item, A to AV, each answered.
 
-**Latest:** step 60 is written in at `ae0498f` (CI green, checker 1130 R / 236 T, 0 problems); its IDs are in Decisions, and the key-type section is removed from `later-defo-build.plan` on `main`. The owner answered BE to BH (see Decisions). BE opened three gaps, designed in `reviews/step-60-families-design.md` (`c18de68`) as choices BI to BR, each with a recommendation, now with the owner. Next free IDs: R-1131, T-0237.
+**Latest:** step 60 is written in at `ae0498f` (CI green, checker 1130 R / 236 T, 0 problems); its IDs are in Decisions, and the key-type section is removed from `later-defo-build.plan` on `main`. The owner answered BE to BH (see Decisions). BE opened three gaps, designed in `reviews/step-60-families-design.md` (`c18de68`) as choices BI to BR; the owner took every recommendation. One edit agent writes BE to BR in on the branch. Next free IDs: R-1131, T-0237.
 
 ## What comes next
 
-1. Bring the BE gaps design to the owner, record the answers, then one edit agent writes BE to BH in on the branch.
+1. Finish the BE to BR edit, then add its IDs to Decisions on `main`.
 2. Run a short check of the changes since `09338c2`, the checker and CI, with one fresh reviewer. By owner decision, this is the last round.
 3. Bring PR #1 to the owner, who approves it. No agent merges without that.
 4. Merge, mark step 01 `done`, pull, and check `INDEX.md` on `main` keeps both its Decisions and the branch's rows and order.
