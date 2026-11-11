@@ -2,7 +2,7 @@
 
 Read this first when resuming. It's what the coordinating session needs that isn't in `plan-approved/INDEX.md`. The coordinator updates and pushes it after each milestone.
 
-**Last updated:** 2026-11-06, during step 01's third review fix round.
+**Last updated:** 2026-11-11, after BB to BD landed at `9f4ee7a`.
 
 ## Where working files live
 
@@ -27,11 +27,11 @@ The 30-minute wake-up lived only in the session, so a restart removes it. After 
 - Step 01's code is reviewed and fixed. PR #1 now also carries the plan redesign that came out of the reviews: managed enums, steps 51 to 59, the general walk, `plpgsql_check`, `--decide`, and type changes that never break a running app.
 - Every owner decision is in `INDEX.md` under "Decisions since the split". `reviews/step-01-open-items.md` has every open item, A to AV, each answered.
 
-**Latest:** the owner took every recommendation in BB to BD and the key-widening choices A to I, recorded in `INDEX.md`. Two edits run in turn on the PR branch: first BB to BD, then step 60 from `reviews/fk-widening-design.md`, renumbering its IDs from the next free ones. Then a short check of the changes since `09338c2`, the checker and CI, and PR #1 to the owner.
+**Latest:** BB to BD are written in at `9f4ee7a` (CI green, checker 1120 R / 229 T, 0 problems), and their IDs are in Decisions. Next free IDs: R-1121, T-0230. The step 60 edit from `reviews/fk-widening-design.md`, with choices A to I as recommended, is running next. Then a short check of the changes since `09338c2`, the checker and CI, and PR #1 to the owner.
 
 ## What comes next
 
-1. Finish that edit, then add any new IDs to Decisions on `main`. Then design online widening of a referenced key, as under "Open with the owner", and write it in once the owner approves.
+1. Finish the step 60 edit, then add its IDs to Decisions on `main`.
 2. Run a short check of the changes since `09338c2`, the checker and CI, with one fresh reviewer. By owner decision, this is the last round.
 3. Bring PR #1 to the owner, who approves it. No agent merges without that.
 4. Merge, mark step 01 `done`, pull, and check `INDEX.md` on `main` keeps both its Decisions and the branch's rows and order.
@@ -39,7 +39,7 @@ The 30-minute wake-up lived only in the session, so a restart removes it. After 
 
 ## Open with the owner
 
-- **Decided: widening a referenced key is online in 0.1.** See that entry in `INDEX.md`. Next, after the running edit lands: a fresh agent designs it from the online-key section of `later-defo-build.plan` and R-0567, tests it on throwaway Postgres, and brings the design to the owner before anything is written in. Then move that section out of `later-defo-build.plan`.
+- **When bringing PR #1:** point out the choices the BB to BD edit made (see the "Rollback loss and the startup check" entry in Decisions).
 - Four collaborators have write access, and `main` needs no review. The owner may want to reduce that list.
 
 ## Not proven yet
