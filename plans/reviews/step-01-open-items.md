@@ -147,3 +147,7 @@ Decisions still to add on `main`: R-0608, R-1081, T-0208, T-0209.
 - **BG. A group table in old-style inheritance.** `ADD COLUMN` spreads to child tables. Recommended: refuse online, as for partitioned tables, with `--fast`.
 - **BH. README for the scaled-wait refusal.** When the scaled lock wait falls under 1 ms, preflight refuses with exit 2. Recommended: a loud README notice saying what it does, why, and how to go on (raise `deadlock_timeout` or `cutover_lock_timeout`, or `--fast`).
 - **Answered:** BE every same-family change (three gaps to design, see Decisions); BF, BG, BH as recommended.
+
+## From the families design at `c18de68`, waiting on the owner
+
+- **BI to BR:** see `reviews/step-60-families-design.md`, each lettered with a recommendation, and section 6 for the README notices.
