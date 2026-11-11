@@ -14,7 +14,7 @@ Map Rust types to columns, and decode rows with no needless allocation.
 
 ## Deliverables
 
-- Type inference, the integer table with range CHECKs in metadata, `from_row`, `from_row_named`, `ProductRef`, `from_row_as`, capability markers on `F`, the conversion layer
+- Type inference, the integer table with range CHECKs in metadata, the compile error for `identity` on a non-integer column, `from_row`, `from_row_named`, `ProductRef`, `from_row_as`, capability markers on `F`, the conversion layer
 
 ## End-to-end check
 
@@ -51,6 +51,7 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 - **R-0201** **A column must hold the whole Rust type.** An explicit `sql` can only widen: `u32` on `numeric` compiles, while `u64` on `bigint` or `i64` on `integer` is a compile error, so a value can't wrap or fail at runtime.
 - **R-0202** **A wider column gets the range CHECK too,** so `i32` on `bigint` can't store a value the field can't read. If one still arrives, because the CHECK was removed outside morm, decoding returns `Error::OutOfRange` naming the column, never a wrapped value.
 - **R-0203** **`numeric` is larger and slower than `bigint`,** so `u64`, `i128` and `u128` columns and their indexes cost more. Use `i64` when values fit. `#[col(sql = "uuid")]` on `u128` is a compact alternative for ids and hashes: 16 fixed bytes, with no arithmetic in SQL.
+- **R-1131** **`identity` needs an integer column.** `identity` on a field whose SQL type, from `sql` or inferred, isn't `smallint`, `integer` or `bigint`, under any of their names, is a compile error, so `u64`, `i128` and `u128` can't be identity keys. Postgres allows identity, and sequences, only on those three types: on Postgres 18.6 and 17.11, `CREATE TABLE`, `ALTER COLUMN ... TYPE` and `ADD GENERATED ... AS IDENTITY` each refused a `numeric` identity column with `identity column type must be smallint, integer, or bigint`, so no generated key can count past `bigint`'s maximum. Scratch's error is the backstop for a type the macro can't see.
 
 ### Models / Generated per model
 
@@ -75,3 +76,4 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 |---|---|---|
 | T-0023 | trybuild | columns narrower than their Rust type |
 | T-0024 | trybuild | `usize` and `isize` |
+| T-0237 | trybuild | `identity` on a `u64` field, and on a field whose `sql` is `numeric(20,0)`, `text` or `uuid`, each fail with a message naming the field and the three types identity allows, while `identity` on `smallint`, `integer`, `bigint`, `int4` and `int8` compiles |

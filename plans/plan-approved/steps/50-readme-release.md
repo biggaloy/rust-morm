@@ -126,6 +126,7 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 | R-1088 | Accepting a `plpgsql_check` finding | A finding is false on this one migration and you won't change the function; the next migration that reaches the function checks it again, and the notice below says what this can hide |
 | R-1089 | Accepting a narrowing | A variable is narrower than what it reads, and you know the values will always fit |
 | R-1094 | Accepting a changed column | A column's type, length or precision changes, and you've read what morm lists and its limits still fit; being listed doesn't mean something is broken |
+| R-1146 | `makemigrations --decide ID=<zone>` | A column changes between `timestamp` and `timestamptz`; give the zone its stored values were written in, after reading the notice |
 | R-1090 | Accepting a missing `plpgsql_check` | Your scratch server can't have the extension, and the function's `proof` lines cover the paths you care about; every other path is unproven |
 | R-1091 | `morm_plpgsql_check` template | Your scratch user isn't a superuser, so a superuser makes this template once, and morm clones it |
 | R-0861 | `storage = "fillfactor=90"` | A table gets many updates to columns with no index |
@@ -216,14 +217,16 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 
 **R-1129** The README shows this notice loudly, beside the online swap:
 
-> **Changing a key other tables reference can be refused.** A type change on a key that foreign keys reference, such as an `integer` primary key becoming `bigint`, runs online with apps up. morm changes every column that references the key, and the identity sequence, with it. It adds a new column beside each one, copies the rows in batches, builds the indexes and foreign keys with no long lock, and swaps them all in one cutover of milliseconds. `rollback` and `revert` go back the same way.
+> **Changing a key other tables reference can be refused.** A type change on a key that foreign keys reference, such as an `integer` primary key becoming `bigint`, or any other change within one kind of type that rewrites the table, such as `numeric(20,4)` becoming `numeric(20,2)`, runs online with apps up. morm changes every column that references the key, and the identity sequence, with it. It adds a new column beside each one, copies the rows in batches, builds the indexes and foreign keys with no long lock, and swaps them all in one cutover of milliseconds. `rollback` and `revert` go back the same way.
 >
 > **What it refuses, and how to go on.** In these cases morm stops the migration with exit code `2`, naming the cause, before it changes anything:
 >
 > - **A foreign key your models don't declare,** on a table they don't declare or on one they do. morm can't change a column it doesn't manage, and if that column stayed narrow, its foreign key would fail once an id passed the old limit. `--fast` refuses it too. Declare the table in your models, or drop that foreign key first.
-> - **A partitioned table, a partition, or a table in a publication or a subscription.** Postgres can't swap a partitioned table's key without a scan, and the new columns would stop replication. Run `makemigrations --fast` instead.
+> - **A partitioned table, a partition, a table in old-style inheritance, or a table in a publication or a subscription.** Postgres can't swap a partitioned table's key without a scan, a new column on an inheritance parent lands on every child, and the new columns would stop replication. Run `makemigrations --fast` instead.
+> - **A table with no primary key and no unique key on `NOT NULL` columns.** The copy has no key to walk by. Add one first, or run `makemigrations --fast` instead.
 > - **An exclusion constraint, extended statistics, a stored generated column, a domain or composite type, or a view such as `SELECT *`, on a column in the change, or a view your models don't declare.** morm can't move these with no lock. Run `makemigrations --fast` instead.
-> - **A change to another kind of type,** such as `integer` to `uuid`. Run `makemigrations --fast` instead.
+> - **A change to another kind of type,** such as `integer` to `uuid`, or `timestamp` to `timestamptz`. Run `makemigrations --fast` instead.
+> - **A generated key leaving the integer types, a reference of another kind of number, keys that would merge, and some collation changes.** The notices below say why, and how to go on.
 > - **Going back down,** such as a `rollback` from `bigint` to `integer`, **once a value or the sequence has passed the old type's limit.** Nothing makes that safe, so nothing forces it. Leave the column wide, or remove the values that don't fit first.
 >
 > **When `--fast` is right.** Only with apps stopped, in a maintenance window, or on tables small enough that a full lock for their rewrite doesn't matter.
@@ -231,6 +234,78 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 > **What you give up.** `--fast` rewrites each table under `ACCESS EXCLUSIVE`, so every read and write on any of them waits until it's done, and `max_rewrite_mb` refuses a table bigger than its limit. Going back down online, an app write the old type can't hold, such as a new id past `2^31 - 1`, fails with `22003` from the migration's first step, not only after the cutover.
 
 **R-1130** The README says this plainly, beside that notice. When an identity key's type changes online, the cutover replaces its sequence with a new one under the same name, at the same position. A session that was open across the cutover gets `55000` from `currval` and `lastval` on that sequence until it next calls `nextval`, such as with its next insert. So read a new id from `RETURNING`, not from `currval` or `lastval`. A `serial` key keeps its sequence, so it isn't affected.
+
+**R-1137** The README shows this notice loudly, beside the cutover settings:
+
+> **A cutover that takes many locks can be refused before it starts.** A cutover gives way to your app: each lock waits at most `cutover_lock_timeout`, and then the attempt changes nothing and tries again, so Postgres never has to kill one of your transactions to break a deadlock. Postgres starts looking for a deadlock once a lock has waited `deadlock_timeout`, and an attempt holds every lock it has while it waits for the next, so morm shrinks each lock's wait to `deadlock_timeout / (2 × locks)` when that's shorter, and says so. Postgres counts `lock_timeout` in whole milliseconds and reads 0 as no limit, so when that wait comes to under 1 ms, `migrate` and `rollback` stop with exit code `2` before the change's first step, naming `cutover_lock_timeout`, `deadlock_timeout` and the number of locks, and change nothing.
+>
+> **How to go on.** Raise `deadlock_timeout` on the server, so each lock gets at least a millisecond: its default of `1s` covers a cutover of up to 500 locks. If `cutover_lock_timeout` is the one set under 1 ms, raise that instead. Or write the migration with `makemigrations --fast` and run it in a maintenance window.
+>
+> **What you give up.** With a higher `deadlock_timeout`, a real deadlock between your own transactions takes that long to be broken. `--fast` changes the tables in one transaction under `ACCESS EXCLUSIVE`, so every read and write on them waits until it's done.
+
+**R-1138** The README shows this notice loudly, beside the online swap:
+
+> **An online change needs a key to walk the table.** When morm changes a column's type online, swaps an enum online, or changes a key other tables reference, it copies the rows in batches, walking the table by its primary key, so the copy stops at a fixed point and carries on after a crash. A table with no primary key is walked by a unique key whose columns are all `NOT NULL`, with no `WHERE` and no expression. A table with neither is refused before anything changes, with exit code `2`, naming the table.
+>
+> **How to go on.** Add a primary key, or a unique key on `NOT NULL` columns, in an earlier migration, or write this one with `makemigrations --fast` and run it in a maintenance window.
+>
+> **What you give up.** `--fast` rewrites the table in one transaction under `ACCESS EXCLUSIVE`, so every read and write on it waits until it's done.
+
+**R-1139** The README shows this notice loudly, beside the notice on changing a key other tables reference:
+
+> **A generated key stays an integer.** Postgres allows identity columns, and sequences, only on `smallint`, `integer` and `bigint`, and no sequence can count past `bigint`'s maximum, so a generated key gains nothing as `numeric`. So `identity` on any other type is a compile error, and a migration that takes a key out of the integer types while dropping its identity, or a `serial` key's sequence, is refused with exit code `2` when it's made.
+>
+> **When it's right to go there anyway.** When your app supplies its own ids, such as `u64` ids from another system, stored as `numeric(20,0)`.
+>
+> **How to go on.** Use two migrations. The first drops the identity, or the default, which changes no rows. The second changes the type, with no sequence involved.
+>
+> **What you give up.** The database no longer makes the ids, so every insert must supply one, and a build that still leaves the id out of its inserts is refused when its pool starts. If you add identity back later, morm sets its sequence past the highest key, so the next insert doesn't collide.
+
+**R-1140** The README shows this notice loudly, beside the notice on changing a key other tables reference:
+
+> **Changing a key's values changes them everywhere.** A key change that lowers a scale, a timestamp precision or a length, such as `numeric(20,4)` to `numeric(20,2)`, changes the stored keys: `1.0051` becomes `1.01`. morm runs it online and changes every column that references the key the same way, so no reference is lost. Like every change Postgres would round or cut silently, it waits for `migrate --phase contract`, or for `--fast` with apps stopped. `makemigrations` asks you to accept it as a `lossy` decision, naming every referencing column, and `migrate` asks again with the number of rows that would change.
+>
+> **What it refuses.** Two keys that would become one, such as `1.0051` and `1.0149`, both `1.01`, stop `migrate` or `rollback` with exit code `2` before anything changes, naming them, because no answer can make two keys one. A referencing column that doesn't change to exactly the key's new type is refused when the migration is made, because it would no longer match its key.
+>
+> **How to go on.** Change or remove the keys that would merge, then run it again.
+>
+> **What you give up.** Copies of the key held outside the database, such as in caches, URLs, other services, logs and exports, keep the old values and won't match any more. While it runs, a write whose key matches another only once rounded fails with `Error::Unique` on the key's field.
+
+**R-1141** The README shows this notice loudly, beside the notice on changing a key other tables reference:
+
+> **A narrower key is refused while a value doesn't fit.** Going down to a narrower key, by `rollback`, `revert` or a narrowing migration, such as `bigint` to `integer` or `varchar(10)` to `varchar(3)`, stops with exit code `2` before anything changes when a live value doesn't fit the narrower type, naming the table, the column, one such value and how many there are. A sequence past the narrower limit is refused the same way. Nothing makes that safe, so nothing forces it.
+>
+> From the migration's first step until it's done, a write the narrower type can't hold fails with the database's error for that write, such as `22003` for an id past `2^31 - 1` or `22001` for a text too long. A row that doesn't fit and arrives before the migration's trigger is in place stops the copy with the same message, and `rollback --failed` cleans up.
+>
+> **How to go on.** Leave the key wide, or change or remove the values that don't fit first.
+
+**R-1142** The README shows this notice loudly, beside the notice on changing a key other tables reference:
+
+> **A reference must stay the key's kind of number.** When a key changes, every column that references it must end up the same kind of type as the key. Postgres accepts a `bigint` column referencing a `numeric(20,0)` key, but compares the two through a cast, so the foreign key can't use the referencing column's index, and every delete of a key reads the whole referencing table: deleting 10 keys took 683 ms, against 2 ms with matching types. So `makemigrations` refuses it with exit code `2`, naming both columns, with `--fast` too.
+>
+> **How to go on.** Give the referencing column the key's new type.
+
+**R-1143** The README shows this notice loudly, beside the notice on changing a key other tables reference:
+
+> **Some collation changes on a key are refused online.** morm names a column's collation in every type change it writes, because Postgres would otherwise reset it to the default, and a collation change on its own runs through the online swap, because it rebuilds the column's indexes. A key whose collation changes between two deterministic collations, where equal means the same bytes, changes online like any other key change. A change to or from a nondeterministic collation, such as a case-insensitive one, is refused online with exit code `2`, naming both collations, because it can turn two keys into one, such as `'abc'` and `'ABC'`, and Postgres won't keep a foreign key between the two collations while the change runs.
+>
+> **How to go on.** Write the migration with `makemigrations --fast` and run it with apps stopped. If two keys would become one, it fails on the unique index and changes nothing.
+>
+> **What you give up.** `--fast` rewrites every table in the change in one transaction under `ACCESS EXCLUSIVE`, so every read and write on them waits until it's done.
+
+**R-1144** The README shows this notice loudly, beside the rolling deploy rows:
+
+> **A change between `timestamp` and `timestamptz` asks which zone your values are in.** Postgres converts each value through the time zone of the session that runs the change, with no error, so the same stored `12:00` becomes `12:00` UTC on one host and `17:00` UTC on another. So `makemigrations` stops with exit code `3` and asks which zone the stored values are in, then writes that zone into the migration, so it gives the same data wherever it runs, and its down converts back through the same zone.
+>
+> **How to answer.** `makemigrations --decide ID=<zone>`, such as `ID=UTC`, with the zone your app wrote the values in.
+>
+> **What you give up.** One zone covers every row of the column, so rows written in different zones need fixing first. On a key other tables reference, the change can't run online, so it needs `makemigrations --fast`.
+
+**R-1145** The README shows this notice loudly, beside the notice on changing a key other tables reference:
+
+> **`--fast` on a key rebuilds its foreign keys and indexes.** With `--fast`, a key change that changes stored values, moves to another kind of number, such as `integer` to `numeric(20,0)`, or changes to or from a nondeterministic collation can't run with the foreign keys in place. So morm drops the foreign keys on the key, changes every column, and adds them back with the same names and rules, checking every row, all in the one transaction. Then it rebuilds any index on those columns that Postgres changed on its own, such as one whose operator class it replaced, so every index ends as your models declare it.
+>
+> **What you give up.** All of this runs under the one full lock, so checking the foreign keys and rebuilding the indexes adds to the time every read and write on those tables waits.
 
 **R-1106** The README says this plainly, beside the `Decimal` and `Numeric` rows. `Decimal` holds up to 28 significant digits. The limit comes from `rust_decimal`, which keeps every value in a fixed 16 bytes, as a 96-bit whole number and a scale, so it needs no heap and is `Copy`. A `Decimal` on a `numeric(p,s)` with `p` or `s` above 28 is a compile error. A `numeric` with no precision compiles with `Decimal`, because existing tables have it, and a value that doesn't fit fails at read with `Error::Decimal`. So does a value past 28 digits in a column a migration has widened. A `Decimal` field also reads `smallint`, `integer` and `bigint`, because every one of their values fits in 28 digits, so a column changed from `numeric` to an integer type doesn't stop a running app built for `numeric`. When that change drops a scale, Postgres would round what such an app writes, so `migrate` holds it for `contract`, and an app built for that scale that starts after it fails the schema check morm runs when a pool starts, rather than rounding what it writes. `morm::Numeric` reads `smallint`, `integer` and `bigint` the same way. morm never rounds a `Decimal`, on read or on write. Use `morm::Numeric` when values can exceed 28 digits, or be `NaN` or `Infinity`, or when you don't know a column's range.
 

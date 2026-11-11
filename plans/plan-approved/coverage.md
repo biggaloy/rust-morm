@@ -4,7 +4,7 @@ Generated from the frozen plan. Each requirement and test obligation lives in ex
 
 Kinds: `code` needs a tagged test, `doc` is checked in the README step, `info` is context with nothing to build.
 
-Totals: 1130 requirements, 236 test obligations.
+Totals: 1150 requirements, 242 test obligations.
 
 ## Requirements
 
@@ -1081,7 +1081,7 @@ Totals: 1130 requirements, 236 test obligations.
 | R-1069 | doc | 50 | 0 | The README says this plainly, beside the managed function rows. A migration can stop and a… |
 | R-1070 | code | 39 | 0 | **Same meaning when the text differs.** Postgres keeps an alias once it has one, so after … |
 | R-1071 | code | 39 | 0 | **Column positions.** A `USING` view's text holds a column list, such as `t t(id, _morm_re… |
-| R-1072 | code | 39 | 0 | **A cutover gives way.** A cutover can deadlock with an app transaction: one that touche… |
+| R-1072 | code | 39 | 0 | **A cutover gives way.** A cutover can deadlock with an app transaction: one that touched … |
 | R-1073 | doc | 50 | 0 | \| `--terminate-blockers` \| A cutover keeps giving way, and you'd rather end the transact… |
 | R-1074 | doc | 50 | 0 | \| `cutover_lock_timeout`, `cutover_attempts`, `cutover_pause` \| A cutover gives up on a… |
 | R-1075 | doc | 50 | 0 | The README says this plainly, beside the online swap. During a cutover, a client that is… |
@@ -1140,6 +1140,26 @@ Totals: 1130 requirements, 236 test obligations.
 | R-1128 | code | 60 | 0 | **Recovery.** Each step has a precondition, so `--resume` carries on from the boundary whe… |
 | R-1129 | doc | 50 | 0 | The README shows this notice loudly, beside the online swap: > **Changing a key other tabl… |
 | R-1130 | doc | 50 | 0 | The README says this plainly, beside that notice. When an identity key's type changes onli… |
+| R-1131 | code | 05 | 0 | - **`identity` needs an integer column.** `identity` on a field whose SQL type, from `sql`… |
+| R-1132 | code | 30 | 0 | **Adding identity to a column with rows.** Postgres starts a new identity's sequence at it… |
+| R-1133 | code | 39 | 0 | **The copy's key.** R-0566's batched copy walks by the table's primary key. A table with n… |
+| R-1134 | code | 39 | 0 | **The collation is always named.** `ALTER COLUMN ... TYPE` with no `COLLATE` resets the co… |
+| R-1135 | code | 39 | 0 | **A change between `timestamp` and `timestamptz` asks for the zone.** Postgres converts ea… |
+| R-1136 | code | 41 | 0 | **A silent narrowing of a key other tables reference.** When the column is a key that fore… |
+| R-1137 | doc | 50 | 0 | The README shows this notice loudly, beside the cutover settings: > **A cutover that takes… |
+| R-1138 | doc | 50 | 0 | The README shows this notice loudly, beside the online swap: > **An online change needs a … |
+| R-1139 | doc | 50 | 0 | The README shows this notice loudly, beside the notice on changing a key other tables refe… |
+| R-1140 | doc | 50 | 0 | The README shows this notice loudly, beside the notice on changing a key other tables refe… |
+| R-1141 | doc | 50 | 0 | The README shows this notice loudly, beside the notice on changing a key other tables refe… |
+| R-1142 | doc | 50 | 0 | The README shows this notice loudly, beside the notice on changing a key other tables refe… |
+| R-1143 | doc | 50 | 0 | The README shows this notice loudly, beside the notice on changing a key other tables refe… |
+| R-1144 | doc | 50 | 0 | The README shows this notice loudly, beside the rolling deploy rows: > **A change between … |
+| R-1145 | doc | 50 | 0 | The README shows this notice loudly, beside the notice on changing a key other tables refe… |
+| R-1146 | doc | 50 | 0 | \| `makemigrations --decide ID=<zone>` \| A column changes between `timestamp` and `timest… |
+| R-1147 | code | 52 | 0 | - **The copy's key.** Each table's copy walks by its primary key. A table with none is wal… |
+| R-1148 | code | 60 | 0 | **The copy's key.** Each table's copy walks by its primary key. A table with none is walke… |
+| R-1149 | code | 60 | 0 | **Key values that change.** A key change that's one of step 41's silent narrowings, a lowe… |
+| R-1150 | code | 60 | 0 | **Checking that a value fits a narrower type.** R-1127's check covers every narrowing in t… |
 
 ## Test obligations
 
@@ -1381,3 +1401,9 @@ Totals: 1130 requirements, 236 test obligations.
 | T-0234 | suite | 60 | **One decision for the group, on Postgres 15–18:** with a managed function, a view and a t… |
 | T-0235 | suite | 60 | **The cutover gives way, on Postgres 15–18:** under nonstop transactions that write a pare… |
 | T-0236 | suite | 40 | **Reverting a key widening, on Postgres 15–18:** on a database in production mode, `revert… |
+| T-0237 | trybuild | 05 | `identity` on a `u64` field, and on a field whose `sql` is `numeric(20,0)`, `text` or `uui… |
+| T-0238 | suite | 39 | **Collation, zone and the copy's key, on Postgres 15–18:** a type change in place, one und… |
+| T-0239 | suite | 60 | **Fit predicates, on Postgres 15–18:** a CI test compares every row of R-1150's table with… |
+| T-0240 | suite | 60 | **Key values that change, on Postgres 15–18:** a `numeric(20,4)` primary key on 300,000 ro… |
+| T-0241 | suite | 60 | **More refusals, on Postgres 15–18:** each of these stops `makemigrations`, `migrate` or `… |
+| T-0242 | suite | 60 | **`--fast` on a key, on Postgres 15–18:** `numeric(20,4)` to `numeric(20,2)`, `integer` to… |
