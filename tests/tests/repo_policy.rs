@@ -327,7 +327,10 @@ fn ci_runs_every_check_the_plan_names() {
         ),
         (
             "pooler",
-            &["cargo test --locked -p morm-tests --features pooler --test smoke --test pooler"],
+            &[
+                "bash .github/scripts/start_pgbouncer.sh",
+                "cargo test --locked -p morm-tests --features pooler --test smoke --test pooler",
+            ],
         ),
         ("msrv", &["cargo build --locked --workspace --all-targets"]),
         ("features", &["python3 .github/scripts/feature_combos.py"]),
@@ -369,53 +372,65 @@ fn integration_targets_each_version_and_transport() {
 }
 
 // covers: R-0792
-// The stub `apt-get` fails while any source still goes through the Azure mirror,
-// so in `mirror` mode only the switch to archive.ubuntu.com lets the install through.
+// Stubs stand in for `sudo`, `apt-get`, `systemctl`, `pgbouncer`, `docker` and
+// `pg_isready`, and record each call, so every path of the script runs here.
 #[test]
-fn pooler_installs_pgbouncer_from_another_source_when_the_mirror_fails() {
+fn pooler_starts_pgbouncer_from_another_source_when_apt_fails() {
     let ci = read(".github/workflows/ci.yml");
     assert!(
         has_line(
             &step(&ci, "Start PgBouncer"),
-            "sudo bash .github/scripts/install_pgbouncer.sh"
+            "run: bash .github/scripts/start_pgbouncer.sh"
         ),
-        "the pooler job doesn't install PgBouncer through install_pgbouncer.sh"
+        "the pooler job doesn't start PgBouncer through start_pgbouncer.sh"
     );
-    let dir = scratch("install-pgbouncer");
+    let script = read(".github/scripts/start_pgbouncer.sh");
+    let image = script
+        .lines()
+        .find_map(|line| line.strip_prefix("image="))
+        .expect("start_pgbouncer.sh names no image");
+    let digest = image.split_once("@sha256:").map(|(_, d)| d).unwrap_or("");
+    assert!(
+        digest.len() == 64 && digest.bytes().all(|b| b.is_ascii_hexdigit()),
+        "the fallback image isn't pinned by digest: {image}"
+    );
+
+    let dir = scratch("start-pgbouncer");
     let bin = dir.join("bin");
     fs::create_dir_all(&bin).unwrap();
+    let record = r#"echo "$(basename "$0") $*" >> "$STUB_DIR/calls""#;
+    stub(&bin, "sudo", "exec \"$@\"\n");
     stub(
         &bin,
         "apt-get",
-        r#"echo "$*" >> "$STUB_DIR/calls"
+        &format!(
+            r#"{record}
 case "$STUB_MODE" in
-ok) exit 0 ;;
 flaky) [ ! -f "$STUB_DIR/failed" ] || exit 0; touch "$STUB_DIR/failed"; exit 100 ;;
-mirror) ! grep -rqE 'azure|mirror\+file' "$APT_DIR" ;;
-*) exit 100 ;;
+down|docker-fails) exit 100 ;;
 esac
-"#,
+"#
+        ),
     );
-    let sources =
-        "Types: deb\nURIs: mirror+file:/etc/apt/apt-mirrors.txt\nSuites: noble noble-updates\n";
-    let mirrors = "http://azure.archive.ubuntu.com/ubuntu/\tpriority:1\nhttps://archive.ubuntu.com/ubuntu/\tpriority:2\n";
-    let direct = "deb http://azure.archive.ubuntu.com/ubuntu noble universe\n";
-    let other = "deb https://packages.microsoft.com/ubuntu/24.04/prod noble main\n";
-    let run = |mode: &str, through_mirror: bool| {
-        let apt = scratch("install-pgbouncer/apt");
-        fs::create_dir_all(apt.join("sources.list.d")).unwrap();
-        fs::write(apt.join("sources.list.d/microsoft-prod.list"), other).unwrap();
-        if through_mirror {
-            fs::write(apt.join("sources.list.d/ubuntu.sources"), sources).unwrap();
-            fs::write(apt.join("apt-mirrors.txt"), mirrors).unwrap();
-            fs::write(apt.join("sources.list"), direct).unwrap();
-        }
+    stub(&bin, "systemctl", &format!("{record}\n"));
+    stub(&bin, "pgbouncer", &format!("{record}\n"));
+    stub(
+        &bin,
+        "docker",
+        &format!("{record}\n[ \"$STUB_MODE\" != docker-fails ] || exit 125\n"),
+    );
+    stub(
+        &bin,
+        "pg_isready",
+        &format!("{record}\n[ \"$STUB_MODE\" != not-ready ] || exit 2\n"),
+    );
+    let run = |mode: &str| {
         let _ = fs::remove_file(dir.join("calls"));
         let _ = fs::remove_file(dir.join("failed"));
         let output = Command::new("bash")
-            .arg(root().join(".github/scripts/install_pgbouncer.sh"))
+            .arg(root().join(".github/scripts/start_pgbouncer.sh"))
+            .current_dir(root())
             .env("PATH", path_with(&bin))
-            .env("APT_DIR", &apt)
             .env("RETRY_DELAY", "0")
             .env("STUB_DIR", &dir)
             .env("STUB_MODE", mode)
@@ -423,55 +438,44 @@ esac
             .expect("bash should run");
         let calls = fs::read_to_string(dir.join("calls")).unwrap_or_default();
         let log = String::from_utf8(output.stdout.clone()).unwrap();
-        let read_apt = |name: &str| fs::read_to_string(apt.join(name)).unwrap_or_default();
-        let files = [
-            read_apt("sources.list.d/ubuntu.sources"),
-            read_apt("apt-mirrors.txt"),
-            read_apt("sources.list"),
-            read_apt("sources.list.d/microsoft-prod.list"),
-        ];
-        (output.status.success(), calls, log, files)
+        (output.status.success(), calls, log)
     };
+    let ini = root().join(".github/pgbouncer/pgbouncer.ini");
+    let ini = ini.display();
+    let update = "apt-get update\n";
+    let install = "apt-get install -y pgbouncer\n";
+    let from_apt = format!("systemctl stop pgbouncer\npgbouncer -d {ini}\n");
+    let docker = format!(
+        "docker run -d --name morm-pgbouncer --network host -v {ini}:/etc/pgbouncer/pgbouncer.ini:ro {image}\n"
+    );
+    let ready = "pg_isready -h 127.0.0.1 -p 6432 -t 30\n";
 
-    let (ok, calls, _, files) = run("ok", true);
+    let (ok, calls, _) = run("ok");
     assert!(ok);
-    assert_eq!(calls, "update\ninstall -y pgbouncer\n");
-    assert_eq!(
-        files,
-        [sources, mirrors, direct, other],
-        "a working mirror is left alone"
-    );
+    assert_eq!(calls, format!("{update}{install}{from_apt}{ready}"));
 
-    let (ok, calls, _, files) = run("flaky", true);
+    let (ok, calls, _) = run("flaky");
     assert!(ok, "one failure is retried");
-    assert_eq!(calls, "update\nupdate\ninstall -y pgbouncer\n");
-    assert_eq!(files, [sources, mirrors, direct, other]);
+    assert_eq!(calls, format!("{update}{update}{install}{from_apt}{ready}"));
 
-    let (ok, calls, log, files) = run("mirror", true);
-    assert!(ok, "two failures switch to archive.ubuntu.com: {log}");
-    assert_eq!(calls, "update\nupdate\nupdate\ninstall -y pgbouncer\n");
+    let (ok, calls, log) = run("down");
+    assert!(ok, "two failures run PgBouncer from the image: {log}");
+    assert_eq!(calls, format!("{update}{update}{docker}{ready}"));
     assert!(log.contains("::warning::"), "{log}");
-    assert_eq!(
-        files[0],
-        "Types: deb\nURIs: http://archive.ubuntu.com/ubuntu/\nSuites: noble noble-updates\n"
-    );
-    assert!(files[1].starts_with("http://archive.ubuntu.com/ubuntu/\tpriority:1\n"));
-    assert_eq!(
-        files[2],
-        "deb http://archive.ubuntu.com/ubuntu/ noble universe\n"
-    );
-    assert_eq!(files[3], other, "a source off the mirror is left alone");
 
-    let (ok, _, log, _) = run("down", true);
+    let (ok, calls, log) = run("docker-fails");
     assert!(!ok, "every source failing fails the step");
+    assert_eq!(calls, format!("{update}{update}{docker}"));
     assert!(log.contains("::error::"), "{log}");
 
-    let (ok, calls, log, _) = run("down", false);
-    assert!(!ok, "no source to switch fails the step");
-    assert_eq!(calls, "update\nupdate\n");
+    let (ok, _, _) = run("not-ready");
+    assert!(!ok, "a PgBouncer that doesn't answer fails the step");
+
     assert!(
-        log.contains("::error::") && log.contains("nothing to switch"),
-        "{log}"
+        script.contains(
+            "sudo timeout 300 apt-get update && sudo timeout 300 apt-get install -y pgbouncer"
+        ),
+        "each apt command must be cut off, so a hung mirror counts as a failure"
     );
 }
 

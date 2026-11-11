@@ -142,11 +142,7 @@ jobs:
           persist-credentials: false
       - uses: ./.github/actions/setup-rust
       - name: Start PgBouncer
-        run: |
-          sudo bash .github/scripts/install_pgbouncer.sh
-          sudo systemctl stop pgbouncer
-          pgbouncer -d "$PWD/.github/pgbouncer/pgbouncer.ini"
-          pg_isready -h 127.0.0.1 -p 6432 -t 30
+        run: bash .github/scripts/start_pgbouncer.sh
       - run: cargo test --locked -p morm-tests --features pooler --test smoke --test pooler
 
   msrv:
