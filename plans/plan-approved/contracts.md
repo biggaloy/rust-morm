@@ -98,6 +98,7 @@ pub enum Error {
     InvalidOrder, InvalidCursor, Decimal,
     SchemaChanged,                             // a stale statement or session inside a transaction or on a held connection, after a type swap
     UnknownEnumValue,                          // a label this binary's enum doesn't have, with the type and label
+    SchemaMismatch,                            // check_schema's findings, from a pool's start or db.check_schema(), each naming the table, column, both definitions and what's wrong
     Config, Connect, ServerTooOld, Postgres,   // config, connecting, a server below 15, any other database error
     // payloads settled in step 03
 }

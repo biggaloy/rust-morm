@@ -68,6 +68,7 @@ Owned elsewhere, and quoted so this step needs no other file. Nothing here needs
 > idle_in_transaction_session_timeout = "1m"
 > client_connection_check_interval = "5s"
 > tx_warn_after = "1s"
+> check_schema = "on"              # "off" starts against a schema that may not match: read the README first
 >
 > [pools.replica]                  # a read replica
 > host = "db-replica.internal"

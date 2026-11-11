@@ -4,7 +4,7 @@ Generated from the frozen plan. Each requirement and test obligation lives in ex
 
 Kinds: `code` needs a tagged test, `doc` is checked in the README step, `info` is context with nothing to build.
 
-Totals: 1112 requirements, 226 test obligations.
+Totals: 1120 requirements, 229 test obligations.
 
 ## Requirements
 
@@ -890,7 +890,7 @@ Totals: 1112 requirements, 226 test obligations.
 | R-0878 | doc | 50 | 1752 | \| `db.tx()` \| A hook needs `tx.emit` or another `tx`-only call \| |
 | R-0879 | doc | 50 | 1753 | \| `.pause_ms(n)` \| Batches must leave room for other work, such as replicas catching up … |
 | R-0880 | doc | 50 | 1754 | \| `.limit_each(n)` \| You load related rows and each parent needs only a few \| |
-| R-0881 | doc | 50 | 1755 | \| `db.check_schema()` \| A binary should refuse to boot against a schema it can't use \| |
+| R-0881 | doc | 50 | 1755 | \| `db.check_schema()` \| You want the startup check's answer again later, such as in a re… |
 | R-0882 | doc | 50 | 1756 | \| `#[col(deprecated)]` \| You're removing a column, and old binaries still run \| |
 | R-0883 | doc | 19 | 1757 | \| `insert_only` \| A column is set once on insert and must never change afterwards \| |
 | R-0884 | doc | 50 | 1758 | \| `Product::UK.<name>` \| An upsert targets an expression unique index, or two partial in… |
@@ -1122,6 +1122,14 @@ Totals: 1112 requirements, 226 test obligations.
 | R-1110 | code | 41 | 0 | **`rollback` holds a silent narrowing too.** A migration's down can be one of R-1108's sil… |
 | R-1111 | code | 41 | 0 | **A silent narrowing of stored data is `lossy`.** A type change that's one of R-1108's sil… |
 | R-1112 | doc | 50 | 0 | \| `rollback --phase contract`, `rollback --fast` \| You roll back a migration that widene… |
+| R-1113 | code | 41 | 0 | **Counting the rows a silent narrowing would change.** Before `rollback` undoes, or `migra… |
+| R-1114 | code | 41 | 0 | **`rollback` asks before it changes stored rows.** When R-1113's count for a step `rollbac… |
+| R-1115 | code | 41 | 0 | **`migrate` shows the rows a silent narrowing changes.** R-1111's `lossy` decision is answ… |
+| R-1116 | code | 41 | 0 | **`check_schema` runs when a pool starts.** morm runs `check_schema` by itself on every po… |
+| R-1117 | code | 41 | 0 | **Turning the startup check off.** The pool setting `check_schema` is `"on"` by default, a… |
+| R-1118 | code | 10 | 0 | \| `MORM_POOL_CHECK_SCHEMA` \| `check_schema` \| |
+| R-1119 | doc | 50 | 0 | The README shows this notice loudly, beside the rolling deploy rows: > **Turning off the s… |
+| R-1120 | doc | 50 | 0 | \| `check_schema = "off"` \| A pool's database isn't meant to hold this binary's models, s… |
 
 ## Test obligations
 
@@ -1353,3 +1361,6 @@ Totals: 1112 requirements, 226 test obligations.
 | T-0224 | integration | 41 | **A silent narrowing waits for `contract`, on Postgres 15–18:** the test first confirms on… |
 | T-0225 | integration | 41 | **`rollback` holds a silent narrowing, on Postgres 15–18:** on a database marked `developm… |
 | T-0226 | integration | 41 | **A silent narrowing of stored data is `lossy`, on Postgres 15–18:** the test first confir… |
+| T-0227 | integration | 41 | **Counting the rows a silent narrowing would change, on Postgres 15–18:** for each of thes… |
+| T-0228 | integration | 41 | **Rows a narrowing would change, at `rollback` and `migrate`, on Postgres 15–18:** on a da… |
+| T-0229 | integration | 41 | **`check_schema` when a pool starts, on Postgres 15–18:** a binary whose model names a col… |
