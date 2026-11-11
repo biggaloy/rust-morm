@@ -143,8 +143,7 @@ jobs:
       - uses: ./.github/actions/setup-rust
       - name: Start PgBouncer
         run: |
-          sudo apt-get update
-          sudo apt-get install -y pgbouncer
+          sudo bash .github/scripts/install_pgbouncer.sh
           sudo systemctl stop pgbouncer
           pgbouncer -d "$PWD/.github/pgbouncer/pgbouncer.ini"
           pg_isready -h 127.0.0.1 -p 6432 -t 30

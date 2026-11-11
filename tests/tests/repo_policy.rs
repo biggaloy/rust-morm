@@ -369,6 +369,113 @@ fn integration_targets_each_version_and_transport() {
 }
 
 // covers: R-0792
+// The stub `apt-get` fails while any source still goes through the Azure mirror,
+// so in `mirror` mode only the switch to archive.ubuntu.com lets the install through.
+#[test]
+fn pooler_installs_pgbouncer_from_another_source_when_the_mirror_fails() {
+    let ci = read(".github/workflows/ci.yml");
+    assert!(
+        has_line(
+            &step(&ci, "Start PgBouncer"),
+            "sudo bash .github/scripts/install_pgbouncer.sh"
+        ),
+        "the pooler job doesn't install PgBouncer through install_pgbouncer.sh"
+    );
+    let dir = scratch("install-pgbouncer");
+    let bin = dir.join("bin");
+    fs::create_dir_all(&bin).unwrap();
+    stub(
+        &bin,
+        "apt-get",
+        r#"echo "$*" >> "$STUB_DIR/calls"
+case "$STUB_MODE" in
+ok) exit 0 ;;
+flaky) [ ! -f "$STUB_DIR/failed" ] || exit 0; touch "$STUB_DIR/failed"; exit 100 ;;
+mirror) ! grep -rqE 'azure|mirror\+file' "$APT_DIR" ;;
+*) exit 100 ;;
+esac
+"#,
+    );
+    let sources =
+        "Types: deb\nURIs: mirror+file:/etc/apt/apt-mirrors.txt\nSuites: noble noble-updates\n";
+    let mirrors = "http://azure.archive.ubuntu.com/ubuntu/\tpriority:1\nhttps://archive.ubuntu.com/ubuntu/\tpriority:2\n";
+    let direct = "deb http://azure.archive.ubuntu.com/ubuntu noble universe\n";
+    let other = "deb https://packages.microsoft.com/ubuntu/24.04/prod noble main\n";
+    let run = |mode: &str, through_mirror: bool| {
+        let apt = scratch("install-pgbouncer/apt");
+        fs::create_dir_all(apt.join("sources.list.d")).unwrap();
+        fs::write(apt.join("sources.list.d/microsoft-prod.list"), other).unwrap();
+        if through_mirror {
+            fs::write(apt.join("sources.list.d/ubuntu.sources"), sources).unwrap();
+            fs::write(apt.join("apt-mirrors.txt"), mirrors).unwrap();
+            fs::write(apt.join("sources.list"), direct).unwrap();
+        }
+        let _ = fs::remove_file(dir.join("calls"));
+        let _ = fs::remove_file(dir.join("failed"));
+        let output = Command::new("bash")
+            .arg(root().join(".github/scripts/install_pgbouncer.sh"))
+            .env("PATH", path_with(&bin))
+            .env("APT_DIR", &apt)
+            .env("RETRY_DELAY", "0")
+            .env("STUB_DIR", &dir)
+            .env("STUB_MODE", mode)
+            .output()
+            .expect("bash should run");
+        let calls = fs::read_to_string(dir.join("calls")).unwrap_or_default();
+        let log = String::from_utf8(output.stdout.clone()).unwrap();
+        let read_apt = |name: &str| fs::read_to_string(apt.join(name)).unwrap_or_default();
+        let files = [
+            read_apt("sources.list.d/ubuntu.sources"),
+            read_apt("apt-mirrors.txt"),
+            read_apt("sources.list"),
+            read_apt("sources.list.d/microsoft-prod.list"),
+        ];
+        (output.status.success(), calls, log, files)
+    };
+
+    let (ok, calls, _, files) = run("ok", true);
+    assert!(ok);
+    assert_eq!(calls, "update\ninstall -y pgbouncer\n");
+    assert_eq!(
+        files,
+        [sources, mirrors, direct, other],
+        "a working mirror is left alone"
+    );
+
+    let (ok, calls, _, files) = run("flaky", true);
+    assert!(ok, "one failure is retried");
+    assert_eq!(calls, "update\nupdate\ninstall -y pgbouncer\n");
+    assert_eq!(files, [sources, mirrors, direct, other]);
+
+    let (ok, calls, log, files) = run("mirror", true);
+    assert!(ok, "two failures switch to archive.ubuntu.com: {log}");
+    assert_eq!(calls, "update\nupdate\nupdate\ninstall -y pgbouncer\n");
+    assert!(log.contains("::warning::"), "{log}");
+    assert_eq!(
+        files[0],
+        "Types: deb\nURIs: http://archive.ubuntu.com/ubuntu/\nSuites: noble noble-updates\n"
+    );
+    assert!(files[1].starts_with("http://archive.ubuntu.com/ubuntu/\tpriority:1\n"));
+    assert_eq!(
+        files[2],
+        "deb http://archive.ubuntu.com/ubuntu/ noble universe\n"
+    );
+    assert_eq!(files[3], other, "a source off the mirror is left alone");
+
+    let (ok, _, log, _) = run("down", true);
+    assert!(!ok, "every source failing fails the step");
+    assert!(log.contains("::error::"), "{log}");
+
+    let (ok, calls, log, _) = run("down", false);
+    assert!(!ok, "no source to switch fails the step");
+    assert_eq!(calls, "update\nupdate\n");
+    assert!(
+        log.contains("::error::") && log.contains("nothing to switch"),
+        "{log}"
+    );
+}
+
+// covers: R-0792
 #[test]
 fn trybuild_and_msrv_run_on_the_msrv() {
     let ci = read(".github/workflows/ci.yml");
