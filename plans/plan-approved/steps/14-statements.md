@@ -14,7 +14,7 @@ The two bounded caches, shape tracking, `query_typed` fallback, fragment renumbe
 
 ## Deliverables
 
-- `statement_cache`, `shape_cache`, prepare on second use, built-SQL map, 0A000 and stale type handling, the decoder choice per statement, `$n` renumbering, `.tag()` text, typed error mapping, with a key's shadow unique index mapped to the key's field
+- `statement_cache`, `shape_cache`, prepare on second use, built-SQL map, 0A000 and stale type handling, the decoder choice per statement, `$n` renumbering, `.tag()` text, typed error mapping, with an online swap's shadow unique index mapped to its field
 
 ## End-to-end check
 
@@ -35,7 +35,7 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 ### Reading and writing / Query safety
 
 - **R-0433** **`$n` in a fragment is local.** `comp`, `set_expr` and `.q()` fragments each count from `$1`, and morm renumbers them. The scan skips quoted strings and comments, so `'$1'` stays text. The scanner lives in `morm-core`.
-- **R-0434** Typed errors: `Unique { constraint, field }`, `ForeignKey`, `NotNull`, `Check`, `Serialization`, `Deadlock`, `LockTimeout`, `TransactionTimeout`, `TransactionAborted`, `CommitUnknown`, `NestedConnection`, `PoolerMode`, `NotFound`, `EmptyPatch`, `Conflict`, `Forbidden`, `Validation`, `PoolBusy`, `ConnectionLost`, `ReadOnly`, `OutOfRange`, `InvalidText`, `InvalidOrder`, `InvalidCursor`, `Decimal`. `Unique`'s `field` maps a unique index named `_morm_new_<name>`, made from a key's unique index name `<name>` through the 63-byte name function, to that key's field, as it maps `<name>`, because while step 60 changes a key's type online, a write can collide on that shadow index alone, such as one whose key equals another only once rounded.
+- **R-0434** Typed errors: `Unique { constraint, field }`, `ForeignKey`, `NotNull`, `Check`, `Serialization`, `Deadlock`, `LockTimeout`, `TransactionTimeout`, `TransactionAborted`, `CommitUnknown`, `NestedConnection`, `PoolerMode`, `NotFound`, `EmptyPatch`, `Conflict`, `Forbidden`, `Validation`, `PoolBusy`, `ConnectionLost`, `ReadOnly`, `OutOfRange`, `InvalidText`, `InvalidOrder`, `InvalidCursor`, `Decimal`. `Unique`'s `field` maps a unique index named `_morm_new_<name>`, made from a unique index's name `<name>` through the 63-byte name function, to the field it maps `<name>` to, because while an online swap in step 39, 52 or 60 changes a column, or step 39 rebuilds an index concurrently after a type change, a write can collide on that shadow index alone, such as one whose value equals another only once rounded, or an enum label a map turns into one another row holds.
 
 ### Performance and memory / `morm::Pool`
 

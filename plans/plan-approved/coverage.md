@@ -4,7 +4,7 @@ Generated from the frozen plan. Each requirement and test obligation lives in ex
 
 Kinds: `code` needs a tagged test, `doc` is checked in the README step, `info` is context with nothing to build.
 
-Totals: 1150 requirements, 242 test obligations.
+Totals: 1156 requirements, 246 test obligations.
 
 ## Requirements
 
@@ -1058,10 +1058,10 @@ Totals: 1150 requirements, 242 test obligations.
 | R-1046 | code | 52 | 0 | - **Online by default.** On an existing table a swap uses this form, and `--fast` uses the… |
 | R-1047 | code | 52 | 0 | - **The steps,** each with its own boundary: 1. `tx`: create the new type under a temporar… |
 | R-1048 | code | 52 | 0 | - **The copy walks by key up to a bound,** the highest key read once the sync trigger has … |
-| R-1049 | code | 52 | 0 | - **The cutover** is one short transaction across all affected tables, and it gives way… |
+| R-1049 | code | 52 | 0 | - **The cutover** is one short transaction across all affected tables, and it gives way to… |
 | R-1050 | code | 52 | 0 | - **Old values stay.** The retired column holds every old value and keeps the retired type… |
 | R-1051 | code | 52 | 0 | - **Text on the shadow column.** A partial index, an expression index, a CHECK or a materi… |
-| R-1052 | code | 52 | 0 | - **Refused in this form, allowed with `--fast`,** naming the cause: partitioned tables, b… |
+| R-1052 | code | 52 | 0 | - **Refused in this form, allowed with `--fast`,** naming the cause: a partitioned table o… |
 | R-1053 | code | 52 | 0 | - **Recovery.** Each step has a precondition, so `--resume` continues, the copy resumes fr… |
 | R-1054 | code | 52 | 0 | - **Column position.** The real column moves to the end of the table. Position isn't compa… |
 | R-1055 | code | 56 | 0 | - **`TextEnum` labels.** `#[derive(TextEnum)]` stores each variant's Rust spelling, so `Pe… |
@@ -1160,6 +1160,12 @@ Totals: 1150 requirements, 242 test obligations.
 | R-1148 | code | 60 | 0 | **The copy's key.** Each table's copy walks by its primary key. A table with none is walke… |
 | R-1149 | code | 60 | 0 | **Key values that change.** A key change that's one of step 41's silent narrowings, a lowe… |
 | R-1150 | code | 60 | 0 | **Checking that a value fits a narrower type.** R-1127's check covers every narrowing in t… |
+| R-1151 | code | 39 | 0 | **Partitioned and inherited tables.** R-0566's online swap, and so R-1134's collation chan… |
+| R-1152 | code | 39 | 0 | **Indexes after a type change.** `ALTER COLUMN ... TYPE` rebuilds a column's indexes from … |
+| R-1153 | code | 39 | 0 | **The swap's indexes.** R-0566's swap builds each index that holds the swapped column agai… |
+| R-1154 | code | 52 | 0 | - **Indexes after the one-transaction form.** The one-transaction form, under `--fast` and… |
+| R-1155 | doc | 50 | 0 | The README shows this notice loudly, beside the online swap: > **An online change refuses … |
+| R-1156 | doc | 50 | 0 | The README shows this notice loudly, beside the online swap: > **A type change rebuilds an… |
 
 ## Test obligations
 
@@ -1407,3 +1413,7 @@ Totals: 1150 requirements, 242 test obligations.
 | T-0240 | suite | 60 | **Key values that change, on Postgres 15–18:** a `numeric(20,4)` primary key on 300,000 ro… |
 | T-0241 | suite | 60 | **More refusals, on Postgres 15–18:** each of these stops `makemigrations`, `migrate` or `… |
 | T-0242 | suite | 60 | **`--fast` on a key, on Postgres 15–18:** `numeric(20,4)` to `numeric(20,2)`, `integer` to… |
+| T-0243 | suite | 39 | **Partitioned and inherited tables, on Postgres 15–18:** an online type change, and a coll… |
+| T-0244 | suite | 39 | **Indexes after a type change, on Postgres 15–18:** a change in place, one under `--fast`,… |
+| T-0245 | suite | 39 | **Shadow indexes, on Postgres 15–18:** an online swap of a column with a primary key, a un… |
+| T-0246 | suite | 52 | **Indexes and shadow names, on Postgres 15–18:** a swap under `--fast`, and its `down.sql`… |

@@ -42,6 +42,7 @@ Owned elsewhere, and quoted so this step needs no other file. Nothing here needs
 - Dependents that Postgres won't rebuild by itself, and refusals (step 53)
 - Domains and composite types built on the enum (step 54)
 - The online form (step 52). Until it exists, every swap uses the one-transaction form this step builds
+- Comparing indexes with the target schema after the swap's `ALTER COLUMN ... TYPE` (step 52, through step 39's check)
 
 ## Requirements
 
