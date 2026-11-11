@@ -361,11 +361,31 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 
 > **Adding an index or a unique key to a partitioned table needs `--fast`.** On an existing table, morm builds an index with `CREATE INDEX CONCURRENTLY` and turns a unique index into a unique key or a primary key with `USING INDEX`, so writes never wait. Postgres can do neither on a partitioned table. So adding an index, a unique key or a primary key to one, or rebuilding an index on one after a type change, stops `migrate` and `rollback` with exit code `2` before anything changes, naming the table. Your models can't declare a partitioned table, so this only happens on one made outside morm. A single partition is a plain table, so these run there with no long lock.
 >
-> **How to go on.** Write the migration with `makemigrations --fast` and run it in a maintenance window. A unique key or a primary key on a partitioned table must include every column of its partition key, so morm refuses one that doesn't, under `--fast` too, naming those columns.
+> **How to go on.** Write the migration with `makemigrations --fast` and run it in a maintenance window. A unique key or a primary key on a partitioned table must include every column of its partition key, so morm refuses one that doesn't, under `--fast` too, naming those columns. Under `--fast` the index reaches every partition, so each must be declared in your models, as the notice on changes that reach a child or a partition says.
 >
 > **When `--fast` is right.** Only with apps stopped, or on tables small enough that building the index under a lock doesn't matter.
 >
 > **What you give up.** `--fast` builds the index on every partition under a lock that blocks writes to the table until it's done.
+
+**R-1170** The README shows this notice loudly, beside the safe forms table:
+
+> **A foreign key from a partitioned table needs `--fast` on Postgres 15 to 17.** On an existing table, morm adds a foreign key `NOT VALID`, which checks no rows, then checks the rows already there with `VALIDATE` in a separate step, which doesn't block writes. Postgres 15 to 17 can't add a foreign key `NOT VALID` on a partitioned table, and Postgres 18 can. So on 15 to 17, adding a foreign key from a partitioned table, adding one back after an index rebuild, or restoring one in a `rollback` stops `migrate` or `rollback` with exit code `2` before anything changes, naming the table, the foreign key and the server's version. A foreign key from a single partition, or from a plain table to a partitioned one, runs as usual.
+>
+> **When it's right.** Always on those versions: otherwise Postgres would refuse the statement partway through the migration.
+>
+> **How to go on.** Write the migration with `makemigrations --fast`, or roll back with `rollback --fast`, and run it in a maintenance window, or upgrade the server to Postgres 18, where the usual form runs.
+>
+> **What you give up.** `--fast` adds the foreign key in one statement that checks every row of every partition while writes to those tables, and to the table it references, wait. A row that breaks it stops the statement, naming the partition, with nothing changed. In a `rollback` of a retire, keeping the foreign key `NOT VALID` isn't offered for such rows.
+
+**R-1171** The README shows this notice loudly, beside the safe forms table:
+
+> **A change that reaches a child or a partition needs every one declared.** On a partitioned table, or a table in old-style inheritance, Postgres carries most changes from the table to every child and partition: adding, dropping or renaming a column, `NOT NULL`, a default, a CHECK, and on a partitioned table also an index, a unique key, a foreign key, a trigger and identity. Dropping a partitioned table drops every partition. And Postgres refuses most of these on a child or a partition alone when it holds the column or the constraint from its parent. So `migrate`, `rollback` and `purge` run such a change once, on the top parent, and only when your models declare every child and partition it reaches, each making the same change to its columns. Otherwise they stop with exit code `2` before anything changes, naming the change, the table, its top parent and every child and partition it reaches: a change that would reach a child or a partition your models don't declare, or declare without that change, and a change to what a child or a partition holds from its parent, made without its top parent. `--fast` doesn't change this. Retiring a table with children or partitions retires every one of them in the same migration, or none.
+>
+> **When it's right.** Always: morm never changes a table your models don't declare, and Postgres would change such a child with no model asking for it.
+>
+> **How to go on.** Declare every child and partition in your models with the same change, make the change on the top parent too, and run `makemigrations` again.
+>
+> **What you give up.** A child or a partition you'd rather leave out of your models has to be declared before its parent can change. A child created by hand after a column is retired stops that column's `purge` until it's declared.
 
 **R-1106** The README says this plainly, beside the `Decimal` and `Numeric` rows. `Decimal` holds up to 28 significant digits. The limit comes from `rust_decimal`, which keeps every value in a fixed 16 bytes, as a 96-bit whole number and a scale, so it needs no heap and is `Copy`. A `Decimal` on a `numeric(p,s)` with `p` or `s` above 28 is a compile error. A `numeric` with no precision compiles with `Decimal`, because existing tables have it, and a value that doesn't fit fails at read with `Error::Decimal`. So does a value past 28 digits in a column a migration has widened. A `Decimal` field also reads `smallint`, `integer` and `bigint`, because every one of their values fits in 28 digits, so a column changed from `numeric` to an integer type doesn't stop a running app built for `numeric`. When that change drops a scale, Postgres would round what such an app writes, so `migrate` holds it for `contract`, and an app built for that scale that starts after it fails the schema check morm runs when a pool starts, rather than rounding what it writes. `morm::Numeric` reads `smallint`, `integer` and `bigint` the same way. morm never rounds a `Decimal`, on read or on write. Use `morm::Numeric` when values can exceed 28 digits, or be `NaN` or `Infinity`, or when you don't know a column's range.
 

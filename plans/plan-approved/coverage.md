@@ -4,7 +4,7 @@ Generated from the frozen plan. Each requirement and test obligation lives in ex
 
 Kinds: `code` needs a tagged test, `doc` is checked in the README step, `info` is context with nothing to build.
 
-Totals: 1166 requirements, 252 test obligations.
+Totals: 1171 requirements, 257 test obligations.
 
 ## Requirements
 
@@ -1176,6 +1176,11 @@ Totals: 1166 requirements, 252 test obligations.
 | R-1164 | doc | 50 | 0 | The README shows this notice loudly, beside the online swap: > **A type change drops and a… |
 | R-1165 | doc | 50 | 0 | The README shows this notice loudly, beside the online swap: > **An online change refuses … |
 | R-1166 | doc | 50 | 0 | The README shows this notice loudly, beside the safe forms table: > **Adding an index or a… |
+| R-1167 | code | 39 | 0 | **`NOT VALID` foreign keys from a partitioned table.** Postgres 15 to 17 can't add a forei… |
+| R-1168 | code | 39 | 0 | **Changes that reach a child or a partition.** Postgres carries many statements from a tab… |
+| R-1169 | code | 41 | 0 | **Children and partitions in a rolling deploy.** The expand step that drops a `deprecated`… |
+| R-1170 | doc | 50 | 0 | The README shows this notice loudly, beside the safe forms table: > **A foreign key from a… |
+| R-1171 | doc | 50 | 0 | The README shows this notice loudly, beside the safe forms table: > **A change that reache… |
 
 ## Test obligations
 
@@ -1433,3 +1438,8 @@ Totals: 1166 requirements, 252 test obligations.
 | T-0250 | suite | 39 | **Partitioned tables in the other safe forms, on Postgres 15–18:** on a partitioned table,… |
 | T-0251 | suite | 52 | **Inherited columns, foreign keys and labels that merge, on Postgres 15–18:** under `--fas… |
 | T-0252 | suite | 60 | **Inherited columns, foreign keys on a rebuilt index, and unique columns that merge, on Po… |
+| T-0253 | suite | 39 | **`NOT VALID` foreign keys from a partitioned table, on Postgres 15–18:** on Postgres 15, … |
+| T-0254 | suite | 39 | **Changes that reach a child or a partition, on Postgres 15–18:** on a three-level inherit… |
+| T-0255 | suite | 52 | **The rest of the one-transaction form on children and partitions, on Postgres 15–18:** un… |
+| T-0256 | suite | 60 | **Foreign keys and index rebuilds on partitions under `--fast`, on Postgres 15–18:** under… |
+| T-0257 | integration | 41 | **Rolling forms on children and partitions, on Postgres 15–18:** on a three-level inherita… |
