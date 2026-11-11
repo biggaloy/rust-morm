@@ -1,7 +1,7 @@
 # Step 40: Production mode, revert and squash
 
 - **Phase:** Migrations
-- **Depends on:** 52
+- **Depends on:** 60
 - **Can run beside:** 08, 09, 19, 20, 21, 22, 23, 24, 25, 26, 27, 43, 44, 45, 46, 47, 48
 - **Crates:** `morm-migrate`, `morm-admin`
 - **PR approval:** CI and an independent review
@@ -35,6 +35,8 @@ Owned elsewhere, and quoted so this step needs no other file. Nothing here needs
 > ```
 >
 > Step 33 owns `_morm.decisions` and the rules for `--decide`. An answer stands only for the same migration id, checksum, direction and decision ID. It's committed with a history row as soon as its decision opens, an answer that refuses exits with code `2`, an unused ID is reported and recorded nowhere, and an option the decision doesn't offer exits with code `1`. Preflight runs before each migration, an op can add its own checks to it, and step 33's tests use a test-only op whose preflight opens a decision about a function. Step 59 comes before this step: a change to a column's type, length or precision opens one decision in preflight, listing everything its walk finds on that database, including unmanaged functions using `EXECUTE`. `rehearse` gets that by running the same preflight.
+>
+> Step 60 comes before this step. A type change within one family on a key that foreign keys reference runs online in either direction, with every referencing column and the identity sequence, and its inverse is refused with exit code `2` once a value doesn't fit the old type.
 >
 > Update the earlier tests this changes: a test that runs `rollback` or `rehearse` marks its database with `mode development --confirm NAME` first, including the `full-chain` test `nightly.yml` runs, which CI doesn't.
 >
@@ -83,3 +85,4 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 | T-0217 | suite | **`--decide` on `rehearse`:** on a restored backup marked `development`, with no row in `_morm.decisions` for the pending migration, through step 33's test-only op, `rehearse` exits with code `3`, printing the ID, evidence and options, with nothing run, and `rehearse --decide` with that ID lets it through, with a row for direction `up` and a history row. A decision that opens only in the `down` pass stops it there with exit code `3` and the `up` pass applied. A rerun with no answer stops the same way and doesn't report a pass, and a rerun with the answer carries on from that pass, runs nothing twice and finishes the last pass, with a row for direction `down`. An ID open in both directions, given once, is answered for both, with a row for each. An answer that refuses exits with code `2`, an ID no migration opened is reported and recorded nowhere, and an option the decision doesn't offer exits with code `1`. A killed `rehearse` keeps its answers. With an unmanaged function using `EXECUTE` on the database, a column type change stops `rehearse` on step 59's one list until it's answered, for each direction. `migrate` of the same migration on another database still stops with code `3`, so an answer stays where it was given. On a database in production mode, `rehearse --decide` exits with code `2` and records nothing. |
 | T-0126 | suite | **Squash:** a squashed chain gives the same schema as the full chain, and a database partway through is refused. |
 | T-0157 | suite | **Enum revert:** `revert` of an add runs the online swap and stops on rows holding the value unless a map is decided, `revert` of a remove restores retired rows, and `rollback` on a production database is refused. |
+| T-0236 | suite | **Reverting a key widening, on Postgres 15–18:** on a database in production mode, `revert` of a migration that widened an `integer` identity primary key referenced by two tables to `bigint` writes a forward migration that runs online in step 60's form under live writers, with no failed app transaction and no lost write. It ends on the catalog the widening started from, apart from retired columns `purge` drops, with the original columns back at their positions and the identity's position carried. Once a key value or the sequence's position passes `2^31 - 1`, `migrate` of that forward migration is refused with exit code `2` before its first step, naming the table, the column and the value, with nothing changed. |

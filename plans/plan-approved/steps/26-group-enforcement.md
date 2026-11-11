@@ -2,7 +2,7 @@
 
 - **Phase:** Runtime
 - **Depends on:** 23, 25, 08
-- **Can run beside:** 27, 29, 30, 31, 32, 33, 34, 37, 38, 39, 40, 42, 43, 44, 46, 47, 51, 52, 53, 54, 57, 58, 59
+- **Can run beside:** 27, 29, 30, 31, 32, 33, 34, 37, 38, 39, 40, 42, 43, 44, 46, 47, 51, 52, 53, 54, 57, 58, 59, 60
 - **Crates:** `morm`, `morm-macros`
 - **PR approval:** CI and an independent review
 

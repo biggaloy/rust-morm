@@ -55,7 +55,7 @@ The frozen plan was split word for word into requirements (`R-nnnn`) and test ob
 | 37 | [Managed objects: dependencies](steps/37-managed-deps.md) | Migrations | 36, 57 | todo |
 | 38 | [Retire, purge and down with data](steps/38-retire.md) | Migrations | 37 | todo |
 | 39 | [Safe forms](steps/39-safe-forms.md) | Migrations | 38 | todo |
-| 40 | [Production mode, revert and squash](steps/40-live-modes.md) | Migrations | 52 | todo |
+| 40 | [Production mode, revert and squash](steps/40-live-modes.md) | Migrations | 60 | todo |
 | 41 | [Rolling deploys](steps/41-rolling.md) | Migrations | 40, 15 | todo |
 | 42 | [`morm-admin init` and project setup](steps/42-admin-init.md) | Tools | 38, 27, 17, 16 | todo |
 | 43 | [`morm-admin doctor`](steps/43-doctor.md) | Tools | 42 | todo |
@@ -75,6 +75,7 @@ The frozen plan was split word for word into requirements (`R-nnnn`) and test ob
 | 57 | [Managed objects: enums, domains, composite types and sequences](steps/57-managed-types.md) | Migrations | 36 | todo |
 | 58 | [Managed enums: removing values and inverses](steps/58-enum-remove.md) | Migrations | 51 | todo |
 | 59 | [Managed enums: stale functions and standbys](steps/59-enum-stale.md) | Migrations | 53, 12, 39 | todo |
+| 60 | [Online widening of a referenced key](steps/60-key-widening.md) | Migrations | 52 | todo |
 
 Status is one of `todo`, `in progress`, `in review` or `done`. Only the coordinator changes it.
 
@@ -105,10 +106,11 @@ Each wave below needs only earlier waves. Each step file's "Can run beside" line
 21. 46, 48, 53
 22. 54, 59
 23. 52
-24. 40
-25. 41
-26. 49
-27. 50
+24. 60
+25. 40
+26. 41
+27. 49
+28. 50
 
 Steps run in parallel only when `contracts.md` covers what they share. Each gets its own worktree and branch. When a parallel step needs something shared that isn't in `contracts.md`, it stops, and the contract is updated first.
 
@@ -163,7 +165,7 @@ Superseded milestones, later work and build decisions, kept for traceability. No
 
 ### Risks, open items and later work / Confirmed for after 0.1
 
-**R-0922** Features we will build are in `later-defo-build.plan`: automatic read routing and online key type changes across foreign keys.
+**R-0922** Features we will build are in `later-defo-build.plan`: automatic read routing.
 
 ### Risks, open items and later work / Not carried over from python-morm
 

@@ -36,7 +36,7 @@ Owned elsewhere, and quoted so this step needs no other file. Nothing here needs
 >
 > Step 39's online column swap changes a column's type by adding a new column and renaming it in a short cutover transaction, where it recreates managed views and swaps materialized views by rename. Each of those gets a new OID, so the op reports it as replaced. That cutover is the transaction for that op. With `--fast`, the op is a plain `ALTER COLUMN`.
 >
-> R-1038 is a rule about what an op does, not a list of ops. Build it as one check that reads what each op reports it changes, so a new op can't miss it. Step 52's cutover comes after this step and uses the same check.
+> R-1038 is a rule about what an op does, not a list of ops. Build it as one check that reads what each op reports it changes, so a new op can't miss it. Step 52's cutover comes after this step and uses the same check. So does step 60's, whose op is a column type change on every column of a referenced key's group: the key, every column referencing it and their indexes and constraints.
 >
 > On Postgres 18 and 17, a session that compiled `DECLARE v x[]` and `v := '{}'` failed on every call with `cache lookup failed for type` once `x` was dropped and recreated: a view, a materialized view, a domain, a composite type or an enum, whether by a column type change, an `ALTER TYPE`, its own shape change or by itself. New sessions worked, and a refresh in the same transaction cleared it.
 >

@@ -4,7 +4,7 @@ Generated from the frozen plan. Each requirement and test obligation lives in ex
 
 Kinds: `code` needs a tagged test, `doc` is checked in the README step, `info` is context with nothing to build.
 
-Totals: 1120 requirements, 229 test obligations.
+Totals: 1130 requirements, 236 test obligations.
 
 ## Requirements
 
@@ -576,7 +576,7 @@ Totals: 1120 requirements, 229 test obligations.
 | R-0564 | code | 39 | 1224 | \| Add NOT NULL column \| Add nullable, batched backfill, then as above \| |
 | R-0565 | code | 39 | 1225 | \| Add column with a volatile default, such as `gen_random_uuid()` \| Add with no default,… |
 | R-0566 | code | 39 | 1226 | \| Type change that is lossy or rewrites the table, such as `int` to `bigint` \| New colum… |
-| R-0567 | code | 39 | 1227 | \| Type change on a key referenced by foreign keys \| Refused with guidance on a live tabl… |
+| R-0567 | code | 39 | 1227 | \| Type change on a key referenced by foreign keys \| Every referencing column and the ide… |
 | R-0568 | code | 39 | 1228 | \| Widening type change \| In place when no rewrite is needed \| |
 | R-0569 | code | 39 | 1230 | New tables use plain DDL in one transaction. `--fast` allows the simple forms for small ta… |
 | R-0570 | code | 38 | 1234 | - **Retire instead of drop.** A dropped column is renamed `_morm_retired_<migration>_<col>… |
@@ -931,7 +931,7 @@ Totals: 1120 requirements, 229 test obligations.
 | R-0919 | info | index | 1806 | - **Scope:** migrations alone outweigh the runtime. |
 | R-0920 | code | 50 | 1810 | - All six names (`morm`, `morm-core`, `morm-macros`, `morm-migrate`, `morm-admin`, `morm-m… |
 | R-0921 | info | index | 1814 | Shared reads: a small opt-in lane that pipelines primary-key reads on a few connections, a… |
-| R-0922 | info | index | 1818 | Features we will build are in `later-defo-build.plan`: automatic read routing and online k… |
+| R-0922 | info | index | 1818 | Features we will build are in `later-defo-build.plan`: automatic read routing. |
 | R-0923 | code | 05 | 1822 | Encrypted columns, including per-user keys and rotation, are not designed yet. Nothing in … |
 | R-0924 | code | 05 | 1824 | - `F` columns carry capability markers checked by the query API, so a column can refuse `.… |
 | R-0925 | code | 05 | 1825 | - Encode and decode go through one per-column conversion layer, so a column's Rust type ca… |
@@ -1057,7 +1057,7 @@ Totals: 1120 requirements, 229 test obligations.
 | R-1045 | code | 54 | 0 | - These types keep their owner, comment and grants the way the enum does, and their invers… |
 | R-1046 | code | 52 | 0 | - **Online by default.** On an existing table a swap uses this form, and `--fast` uses the… |
 | R-1047 | code | 52 | 0 | - **The steps,** each with its own boundary: 1. `tx`: create the new type under a temporar… |
-| R-1048 | code | 52 | 0 | - **The copy walks by key until nothing is left,** and reads each batch after the sync tri… |
+| R-1048 | code | 52 | 0 | - **The copy walks by key up to a bound,** the highest key read once the sync trigger has … |
 | R-1049 | code | 52 | 0 | - **The cutover** is one short transaction across all affected tables, and it gives way… |
 | R-1050 | code | 52 | 0 | - **Old values stay.** The retired column holds every old value and keeps the retired type… |
 | R-1051 | code | 52 | 0 | - **Text on the shadow column.** A partial index, an expression index, a CHECK or a materi… |
@@ -1130,6 +1130,16 @@ Totals: 1120 requirements, 229 test obligations.
 | R-1118 | code | 10 | 0 | \| `MORM_POOL_CHECK_SCHEMA` \| `check_schema` \| |
 | R-1119 | doc | 50 | 0 | The README shows this notice loudly, beside the rolling deploy rows: > **Turning off the s… |
 | R-1120 | doc | 50 | 0 | \| `check_schema = "off"` \| A pool's database isn't meant to hold this binary's models, s… |
+| R-1121 | code | 60 | 0 | **What changes together.** A type change on a column that a foreign key references, where … |
+| R-1122 | code | 60 | 0 | **The steps,** each with its own boundary, and each brief lock taken under `lock_timeout` … |
+| R-1123 | code | 60 | 0 | **The cutover** is one short transaction across every table in the group, and it gives way… |
+| R-1124 | code | 60 | 0 | **The sequence.** An identity key keeps its sequence's name and position. Once the shadow … |
+| R-1125 | code | 60 | 0 | **Refused online, with the evidence.** Each of these is refused with exit code `2` before … |
+| R-1126 | code | 60 | 0 | **`--fast` on a referenced key.** With `--fast`, a type change on a key that foreign keys … |
+| R-1127 | code | 60 | 0 | **The inverse, for `rollback` and `revert`,** runs this form in the other direction, onlin… |
+| R-1128 | code | 60 | 0 | **Recovery.** Each step has a precondition, so `--resume` carries on from the boundary whe… |
+| R-1129 | doc | 50 | 0 | The README shows this notice loudly, beside the online swap: > **Changing a key other tabl… |
+| R-1130 | doc | 50 | 0 | The README says this plainly, beside that notice. When an identity key's type changes onli… |
 
 ## Test obligations
 
@@ -1313,7 +1323,7 @@ Totals: 1120 requirements, 229 test obligations.
 | T-0176 | suite | 52 | **Proof, killed mid-run:** kill the process at every step boundary, and during the copy an… |
 | T-0177 | suite | 52 | **Proof, foreign keys and domains:** each refused layout is refused before anything change… |
 | T-0178 | suite | 52 | **Proof, definitions from scratch:** on Postgres 15–18, a partial index, a unique partial … |
-| T-0179 | suite | 52 | **Copy edges:** rows inserted just before the trigger attached are copied, a missed row fa… |
+| T-0179 | suite | 52 | **Copy edges:** rows inserted just before the trigger attached are copied, under nonstop i… |
 | T-0180 | integration | 56 | **`TextEnum` labels:** variants such as `Pending` and `AwaitingPayment` are stored as thos… |
 | T-0181 | integration | 56 | **`TextEnum` fallback:** `#[text_enum(unknown)]` decodes a stored value the binary doesn't… |
 | T-0182 | trybuild | 56 | a `TextEnum` with two `#[text_enum(unknown)]` variants, or a variant that isn't a unit var… |
@@ -1364,3 +1374,10 @@ Totals: 1120 requirements, 229 test obligations.
 | T-0227 | integration | 41 | **Counting the rows a silent narrowing would change, on Postgres 15–18:** for each of thes… |
 | T-0228 | integration | 41 | **Rows a narrowing would change, at `rollback` and `migrate`, on Postgres 15–18:** on a da… |
 | T-0229 | integration | 41 | **`check_schema` when a pool starts, on Postgres 15–18:** a binary whose model names a col… |
+| T-0230 | suite | 60 | **Live traffic, on Postgres 15–18:** an `integer` identity primary key on 1,000,000 rows, … |
+| T-0231 | suite | 60 | **Fault injection, on Postgres 15–18:** under the same traffic, kill the backend at every … |
+| T-0232 | suite | 60 | **Refusals, on Postgres 15–18:** each of R-1125's layouts stops `makemigrations`, `migrate… |
+| T-0233 | suite | 60 | **Up, down and up, on Postgres 15–18:** under live writers, a widening from `integer` to `… |
+| T-0234 | suite | 60 | **One decision for the group, on Postgres 15–18:** with a managed function, a view and a t… |
+| T-0235 | suite | 60 | **The cutover gives way, on Postgres 15–18:** under nonstop transactions that write a pare… |
+| T-0236 | suite | 40 | **Reverting a key widening, on Postgres 15–18:** on a database in production mode, `revert… |
