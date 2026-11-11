@@ -35,30 +35,6 @@ Writes and transactions always go to the primary.
 - All queries go through `db`, so routing can be added without changing application code.
 - Named pools and `read_only` stay as they are.
 
-## Online key type changes across foreign keys
-
-0.1 refuses this on live tables, with guidance, and `--fast` does it in one rewrite. This step does it with no long lock, for the common case of `int` to `bigint` on a primary key.
-
-**What changes together:** the key column, every column referencing it, its identity sequence, and the indexes and constraints on all of them.
-
-**Shape of the migration**
-
-- Add a new column to the key table and to each referencing table, each with a sync trigger.
-- Backfill in batches, resumable from a cursor.
-- Build the new unique and referencing indexes concurrently.
-- Add the new foreign keys `NOT VALID`, then `VALIDATE` them in separate transactions.
-- Swap every table in one short transaction, under `lock_timeout` with retries, in a fixed table order.
-- Retire the old columns, so `rollback` and `revert` still work.
-
-**To design**
-
-- How the swap handles a primary key's `NOT NULL` and identity without a scan.
-- Reversing the swap once new rows have values that don't fit the old type.
-- Referencing tables outside the managed models, which must block the migration with evidence.
-- Fault injection at every step boundary, with live writes on all tables.
-
-**What 0.1 must keep possible:** steps per table in one migration, sync triggers as managed objects, and batch cursors per table.
-
 ## Repo tooling
 
 CI and release checks, not part of morm itself. 0.1 doesn't wait for them.

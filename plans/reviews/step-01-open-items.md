@@ -139,3 +139,10 @@ Decisions still to add on `main`: R-0608, R-1081, T-0208, T-0209.
 - **BC.** `db.check_schema()` is opt-in, so an older build that doesn't call it, brought back after `contract`, still rounds writes. Recommended: run it automatically at pool start, with an explicit opt-out that the README covers loudly.
 - **BD.** The `lossy` decision is a plain accept or refuse. Recommended: in `migrate` preflight it also shows how many live rows would change.
 - **Decisions still to add on `main`:** R-0612, R-0615, R-0951, R-1103, R-1106, R-1107, R-1110 to R-1112, T-0223, T-0225, T-0226, and arrays in R-1108.
+
+## From the edit at `ae0498f`, waiting on the owner
+
+- **BE. Which families step 60 covers.** The design says "same family", but only `smallint`, `integer` and `bigint` were tested, and other families raise three problems: identity works only on integer types, a narrowing key can never pass the `new = old` check, and fitting the old type isn't defined for non-integers. Recommended: step 60 covers `smallint`, `integer` and `bigint` only in 0.1; other rewriting key changes keep the refusal plus `--fast`.
+- **BF. A group table with no primary key.** The copy walks by its own primary key; steps 39 and 52 have the same gap. Recommended: walk by a unique `NOT NULL` key when there is one, otherwise refuse online, with `--fast`.
+- **BG. A group table in old-style inheritance.** `ADD COLUMN` spreads to child tables. Recommended: refuse online, as for partitioned tables, with `--fast`.
+- **BH. README for the scaled-wait refusal.** When the scaled lock wait falls under 1 ms, preflight refuses with exit 2. Recommended: a loud README notice saying what it does, why, and how to go on (raise `deadlock_timeout` or `cutover_lock_timeout`, or `--fast`).
