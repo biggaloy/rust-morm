@@ -132,3 +132,10 @@ Decisions still to add on `main`: R-0608, R-1081, T-0208, T-0209.
 - **BA.** Lowering a scale rounds rows already stored: `1.0051` becomes `1.01`. Recommended: any silent narrowing of stored data is a `lossy` change, so it opens a decision.
 - **Decisions still to add on `main`:** R-0424, R-0893, R-1108, R-1109, T-0224.
 - **After these:** design online widening of a referenced key, then the short check, then PR #1.
+
+## From the edit at `124c49c`, waiting on the owner
+
+- **BB.** Rolling back a widening rounds rows written since it ran, so it's lossy. Options: a decision at `makemigrations` for every widening's `down`; `rollback` preflight; or `--accept-data-loss`. Recommended: `rollback` preflight counts the live rows that wouldn't fit. With none, there's no decision. With some, a decision opens showing the count, answered with `rollback --decide`.
+- **BC.** `db.check_schema()` is opt-in, so an older build that doesn't call it, brought back after `contract`, still rounds writes. Recommended: run it automatically at pool start, with an explicit opt-out that the README covers loudly.
+- **BD.** The `lossy` decision is a plain accept or refuse. Recommended: in `migrate` preflight it also shows how many live rows would change.
+- **Decisions still to add on `main`:** R-0612, R-0615, R-0951, R-1103, R-1106, R-1107, R-1110 to R-1112, T-0223, T-0225, T-0226, and arrays in R-1108.
