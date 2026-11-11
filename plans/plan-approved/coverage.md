@@ -4,7 +4,7 @@ Generated from the frozen plan. Each requirement and test obligation lives in ex
 
 Kinds: `code` needs a tagged test, `doc` is checked in the README step, `info` is context with nothing to build.
 
-Totals: 1156 requirements, 246 test obligations.
+Totals: 1166 requirements, 252 test obligations.
 
 ## Requirements
 
@@ -1166,6 +1166,16 @@ Totals: 1156 requirements, 246 test obligations.
 | R-1154 | code | 52 | 0 | - **Indexes after the one-transaction form.** The one-transaction form, under `--fast` and… |
 | R-1155 | doc | 50 | 0 | The README shows this notice loudly, beside the online swap: > **An online change refuses … |
 | R-1156 | doc | 50 | 0 | The README shows this notice loudly, beside the online swap: > **A type change rebuilds an… |
+| R-1157 | code | 39 | 0 | **Inherited columns.** Postgres changes an inherited column only through the table it come… |
+| R-1158 | code | 39 | 0 | **Foreign keys on a rebuilt index.** A foreign key depends on the unique index it referenc… |
+| R-1159 | code | 39 | 0 | **Values that would merge on a unique index.** A swap's conversion can make two values equ… |
+| R-1160 | code | 39 | 0 | **Partitioned tables in the other safe forms.** Postgres can't build an index concurrently… |
+| R-1161 | code | 52 | 0 | - **Inherited columns in the one-transaction form.** The one-transaction form, under `--fa… |
+| R-1162 | code | 52 | 0 | - **Labels that would merge.** A map that sends two labels to one, such as `pending` to `a… |
+| R-1163 | doc | 50 | 0 | The README shows this notice loudly, beside the online swap: > **An inherited column chang… |
+| R-1164 | doc | 50 | 0 | The README shows this notice loudly, beside the online swap: > **A type change drops and a… |
+| R-1165 | doc | 50 | 0 | The README shows this notice loudly, beside the online swap: > **An online change refuses … |
+| R-1166 | doc | 50 | 0 | The README shows this notice loudly, beside the safe forms table: > **Adding an index or a… |
 
 ## Test obligations
 
@@ -1417,3 +1427,9 @@ Totals: 1156 requirements, 246 test obligations.
 | T-0244 | suite | 39 | **Indexes after a type change, on Postgres 15–18:** a change in place, one under `--fast`,… |
 | T-0245 | suite | 39 | **Shadow indexes, on Postgres 15–18:** an online swap of a column with a primary key, a un… |
 | T-0246 | suite | 52 | **Indexes and shadow names, on Postgres 15–18:** a swap under `--fast`, and its `down.sql`… |
+| T-0247 | suite | 39 | **Inherited columns, on Postgres 15–18:** a three-level inheritance tree and a partitioned… |
+| T-0248 | suite | 39 | **Foreign keys on a rebuilt index, on Postgres 15–18:** a `varchar(10)` key with a unique … |
+| T-0249 | suite | 39 | **Values that would merge, on Postgres 15–18:** an online swap of a unique column from `nu… |
+| T-0250 | suite | 39 | **Partitioned tables in the other safe forms, on Postgres 15–18:** on a partitioned table,… |
+| T-0251 | suite | 52 | **Inherited columns, foreign keys and labels that merge, on Postgres 15–18:** under `--fas… |
+| T-0252 | suite | 60 | **Inherited columns, foreign keys on a rebuilt index, and unique columns that merge, on Po… |

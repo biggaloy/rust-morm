@@ -222,7 +222,7 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 > **What it refuses, and how to go on.** In these cases morm stops the migration with exit code `2`, naming the cause, before it changes anything:
 >
 > - **A foreign key your models don't declare,** on a table they don't declare or on one they do. morm can't change a column it doesn't manage, and if that column stayed narrow, its foreign key would fail once an id passed the old limit. `--fast` refuses it too. Declare the table in your models, or drop that foreign key first.
-> - **A partitioned table, a partition, a table in old-style inheritance, or a table in a publication or a subscription.** Postgres can't swap a partitioned table's key without a scan, a new column on an inheritance parent lands on every child, and the new columns would stop replication. Run `makemigrations --fast` instead.
+> - **A partitioned table, a partition, a table in old-style inheritance, or a table in a publication or a subscription.** Postgres can't swap a partitioned table's key without a scan, a new column on an inheritance parent lands on every child, and the new columns would stop replication. Run `makemigrations --fast` instead. On a partitioned or inherited table, `--fast` needs every partition and child declared in your models with the same change, as the notice on inherited columns says.
 > - **A table with no primary key and no unique key on `NOT NULL` columns.** The copy has no key to walk by. Add one first, or run `makemigrations --fast` instead.
 > - **An exclusion constraint, extended statistics, a stored generated column, a domain or composite type, or a view such as `SELECT *`, on a column in the change, or a view your models don't declare.** morm can't move these with no lock. Run `makemigrations --fast` instead.
 > - **A change to another kind of type,** such as `integer` to `uuid`, or `timestamp` to `timestamptz`. Run `makemigrations --fast` instead.
@@ -311,7 +311,7 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 
 > **An online change refuses partitioned and inherited tables.** When morm changes a column's type or collation online, swaps an enum online, or changes a key other tables reference, it adds a new column beside the old one, copies the rows, builds the indexes with no long lock, and renames them at cutover. Postgres can't do that on a partitioned table or a partition: it can't build an index concurrently on a partitioned table, or add a column to a partition. On a table in old-style inheritance, a new column on a parent lands on every child, and an inherited column's type can't change on a child alone. So `migrate` and `rollback` stop with exit code `2` before anything changes, naming the table and its partitions, parent or children.
 >
-> **How to go on.** Write the migration with `makemigrations --fast` and run it in a maintenance window. On a partitioned table or an inheritance parent, Postgres changes the column on every partition and child with it.
+> **How to go on.** Write the migration with `makemigrations --fast` and run it in a maintenance window. On a partitioned table or an inheritance parent, Postgres changes the column on every partition and child with it, so morm runs it only when your models declare every one of them with the same change, as the notice on inherited columns says.
 >
 > **When `--fast` is right.** Only with apps stopped, or on tables small enough that a full lock for their rewrite doesn't matter.
 >
@@ -326,6 +326,46 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 > **How to go on.** Change that index's `ops` in your model to one for the new type, or remove it to use the type's default class, then run `makemigrations` again.
 >
 > **What you give up.** Under `--fast`, a rebuild adds to the time every read and write on that table waits. In place, the new index is built beside the old one, so it takes the time and space of a fresh index. While it builds, and while an online swap runs, a write whose value matches another row's only once converted, such as `1.0051` and `1.0149` both becoming `1.01`, fails with `Error::Unique` on the column's field.
+
+**R-1163** The README shows this notice loudly, beside the online swap:
+
+> **An inherited column changes only through its top parent.** On a partitioned table, or a table in old-style inheritance, a column the children inherit can only be changed on the table at the top. Postgres refuses to change it on a child or a partition alone, with `cannot alter inherited column`, and a change on the top parent changes it on every child and partition with it. So when a migration changes such a column's type or collation, `migrate` and `rollback` run one `ALTER` on the top parent, and only when your models declare every child and partition it reaches, each with the same change. Otherwise they stop with exit code `2` before anything changes, naming the column, its top parent and every child and partition: a change to a child's or a partition's column without its top parent, a change that would reach a child or a partition your models don't declare, or declare with the old type, and a change to a column a child inherits from two parents, which no one `ALTER` can make.
+>
+> **When it's right.** Always: morm never changes a table your models don't declare, and Postgres can't change a child's inherited column on its own.
+>
+> **How to go on.** Declare every child and partition in your models with the same change, make it on the top parent too, and run `makemigrations` again. A column a child inherits from two parents can't be changed by morm, so change it by hand outside morm, then let your models follow.
+>
+> **What you give up.** A child or a partition you'd rather leave out of your models has to be declared before its inherited column can change.
+
+**R-1164** The README shows this notice loudly, beside the online swap:
+
+> **A type change drops and adds back the foreign keys on an index it rebuilds.** When morm rebuilds an index after a type change, as the notice above says, and a foreign key references that index, Postgres won't drop the index while the foreign key is there, and has no way to move the foreign key to a new index. So morm drops the foreign key and adds it back with the same name and rules. In place on a live table, it builds the new index first with no long lock, swaps the index and the foreign keys in one short transaction that gives way to your app, as a cutover does, and then checks the existing rows with `VALIDATE`, which doesn't block writes. Every write is checked by the old foreign key or the new one, so no row that breaks it can get in. Under `--fast`, all of it runs in the one transaction. A foreign key your models don't declare on that index stops the migration with exit code `2` before anything changes, naming it.
+>
+> **When it's right.** Always: the index can't be rebuilt any other way.
+>
+> **How to go on.** For a foreign key your models don't declare, declare its table in your models, or drop that foreign key first.
+>
+> **What you give up.** The short transaction takes a full lock on the key table and every table that references it, for a few milliseconds. Until `VALIDATE` finishes, Postgres marks the foreign key `NOT VALID`, although it checks every write, so the planner can't use it to leave out a join.
+
+**R-1165** The README shows this notice loudly, beside the online swap:
+
+> **An online change refuses values that would become one on a unique index.** A type change, a collation change or an enum's map can make two different values equal: `1.0051` and `1.0149` both become `1.01` in `numeric(10,2)`, `'01'` and `'1'` both become `1` as an `integer`, `'abc'` and `'ABC'` become equal under a case-insensitive collation, and mapping `pending` to `active` puts two rows on `UNIQUE (uid) WHERE status = 'active'`. Before an online change touches a table, morm looks for such values on every unique index that holds the column, and stops `migrate` or `rollback` with exit code `2`, naming the table, the index, the values and how many rows hold each. When the new type comes from the same migration, as an enum swap's does, it looks in the change's first step, once that type exists, and the migration stops as `failed` before the change touches a table.
+>
+> **When it's right.** Always: no answer can make two rows one on a unique index.
+>
+> **How to go on.** Change or remove the rows that would merge, or drop the unique index first if equal values are what you want, then run it again.
+>
+> **What you give up.** The check reads the whole table once. A row that would merge, written after the check, stops the migration as `failed` when the new unique index is built, and `rollback --failed` cleans up. While the change runs, such a write fails with `Error::Unique` on the column's field.
+
+**R-1166** The README shows this notice loudly, beside the safe forms table:
+
+> **Adding an index or a unique key to a partitioned table needs `--fast`.** On an existing table, morm builds an index with `CREATE INDEX CONCURRENTLY` and turns a unique index into a unique key or a primary key with `USING INDEX`, so writes never wait. Postgres can do neither on a partitioned table. So adding an index, a unique key or a primary key to one, or rebuilding an index on one after a type change, stops `migrate` and `rollback` with exit code `2` before anything changes, naming the table. Your models can't declare a partitioned table, so this only happens on one made outside morm. A single partition is a plain table, so these run there with no long lock.
+>
+> **How to go on.** Write the migration with `makemigrations --fast` and run it in a maintenance window. A unique key or a primary key on a partitioned table must include every column of its partition key, so morm refuses one that doesn't, under `--fast` too, naming those columns.
+>
+> **When `--fast` is right.** Only with apps stopped, or on tables small enough that building the index under a lock doesn't matter.
+>
+> **What you give up.** `--fast` builds the index on every partition under a lock that blocks writes to the table until it's done.
 
 **R-1106** The README says this plainly, beside the `Decimal` and `Numeric` rows. `Decimal` holds up to 28 significant digits. The limit comes from `rust_decimal`, which keeps every value in a fixed 16 bytes, as a 96-bit whole number and a scale, so it needs no heap and is `Copy`. A `Decimal` on a `numeric(p,s)` with `p` or `s` above 28 is a compile error. A `numeric` with no precision compiles with `Decimal`, because existing tables have it, and a value that doesn't fit fails at read with `Error::Decimal`. So does a value past 28 digits in a column a migration has widened. A `Decimal` field also reads `smallint`, `integer` and `bigint`, because every one of their values fits in 28 digits, so a column changed from `numeric` to an integer type doesn't stop a running app built for `numeric`. When that change drops a scale, Postgres would round what such an app writes, so `migrate` holds it for `contract`, and an app built for that scale that starts after it fails the schema check morm runs when a pool starts, rather than rounding what it writes. `morm::Numeric` reads `smallint`, `integer` and `bigint` the same way. morm never rounds a `Decimal`, on read or on write. Use `morm::Numeric` when values can exceed 28 digits, or be `NaN` or `Infinity`, or when you don't know a column's range.
 
