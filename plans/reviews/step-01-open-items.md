@@ -168,3 +168,9 @@ Decisions still to add on `main`: R-0608, R-1081, T-0208, T-0209.
 - **BX. Values that would merge on a unique non-key column** in step 39's value-changing swap and step 52's map of two labels to one have no preflight refusal, only a failed concurrent index build. Recommended: step 60's `GROUP BY` preflight refusal for every unique index on a swapped column whose values change.
 - **BY. Other step 39 safe forms on partitioned tables** (R-0560, R-0562 build concurrently and use `USING INDEX`, both fail there; only from changes outside morm). Recommended: refuse in preflight, with `--fast`.
 - **Answered:** BV, BX, BY as recommended; BW: drop and re-add the foreign key in every form, online included.
+
+## From the edit at `a98aa45`, waiting on the owner
+
+- **BZ. `NOT VALID` foreign keys from a partitioned table on Postgres 15 to 17** (R-0559) fail: `cannot add NOT VALID foreign key on partitioned table`; 18 allows it. Options: (a) refuse at preflight on 15 to 17, with `--fast` (recommended); (b) on 15 to 17 add it validated in one step, scanning under a lock on both tables; (c) let Postgres's error stop the run partway.
+- **CA. Other changes reaching undeclared children.** BV covers type and collation changes only. A `--fast` index on a partitioned table, and `ADD COLUMN`, `DROP COLUMN`, `SET NOT NULL` or a CHECK on a parent, also reach children no model declares. Options: (a) refuse any change that reaches one (recommended); (b) allow and list the affected tables; (c) keep BV to type changes only.
+- **CI:** `pooler`'s `apt-get` can't resolve `azure.archive.ubuntu.com`, on every run since about 14:00 UTC on 2026-11-11, seven attempts.
