@@ -27,7 +27,7 @@ The 30-minute wake-up lived only in the session, so a restart removes it. After 
 - Step 01's code is reviewed and fixed. PR #1 now also carries the plan redesign that came out of the reviews: managed enums, steps 51 to 59, the general walk, `plpgsql_check`, `--decide`, and type changes that never break a running app.
 - Every owner decision is in `INDEX.md` under "Decisions since the split". `reviews/step-01-open-items.md` has every open item, A to AV, each answered.
 
-**Latest:** step 02 is `in review`: PR #2 head `632ab63` (DG1 to DG4 written in; spikes deleted, last commit with them `65dec85`), CI green, checker 1211 R / 278 T, 0 problems; IDs in Decisions. The second review is done (`5d5a199`, `reviews/step-02-review-2.md`): DF1 to DF10 fixed; new DH1 to DH9, DH1 blocking; The owner answered DH1 (UTC with no override) and added wall-clock time to 0.1, to be designed first; the owner answered DH2, DH3 and DH5. Wall-clock time moved to `later-defo-build.plan` by owner decision. DH2's parameter-typing design is done (`0e11bd5`, `reviews/param-typing-design.md`): the owner took every recommendation, A to K. One fix agent writes DH1 to DH9 and that design into PR #2, then the review repeats. Then one fix agent writes DH1 to DH9 and that design into PR #2, and the review repeats. Next free IDs: R-1212, T-0279.
+**Latest:** step 02 is `in review`: PR #2 head `e78b970` (DH1 to DH9 and A to K written in; matrix re-run on Postgres 15 to 18 at `ca3747b`, spikes deleted again), CI green, checker 1233 R / 296 T, 0 problems; IDs in Decisions. DI1 and DI2 in `reviews/step-02-open-items.md` are with the owner; then the third independent review. Next free IDs: R-1234, T-0297.
 
 ## What comes next
 
