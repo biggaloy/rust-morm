@@ -27,7 +27,7 @@ The 30-minute wake-up lived only in the session, so a restart removes it. After 
 - Step 01's code is reviewed and fixed. PR #1 now also carries the plan redesign that came out of the reviews: managed enums, steps 51 to 59, the general walk, `plpgsql_check`, `--decide`, and type changes that never break a running app.
 - Every owner decision is in `INDEX.md` under "Decisions since the split". `reviews/step-01-open-items.md` has every open item, A to AV, each answered.
 
-**Latest:** the owner approved PR #1 on 2026-11-12; it's merged as `ccd4413` (merge commit), and step 01 is `done`. `INDEX.md` on `main` keeps its Decisions and the branch's rows and order. Step 02 is next. Next free IDs: R-1205, T-0278.
+**Latest:** the owner approved PR #1 on 2026-11-12; it's merged as `ccd4413` (merge commit), and step 01 is `done`. `INDEX.md` on `main` keeps its Decisions and the branch's rows and order. Step 02 is `in progress` with a fresh agent on branch `step-02-proofs`. Next free IDs: R-1205, T-0278.
 
 ## What comes next
 
@@ -45,6 +45,5 @@ Moved to "Repo tooling" in `later-defo-build.plan`, by owner decision.
 
 ## Housekeeping
 
-- Agent worktrees under `.claude/worktrees/`, about a dozen and some locked, hold only finished scratch work, including 1.4 GB from the `plpgsql_check` builds. Once no agent is running, list them and ask the owner before removing any.
-- `.claude/` and `target/` show as untracked on `main` until PR #1 brings `.gitignore`. Don't commit them.
-- The rust-morm repo's `.claude/scratch/session-scratchpad/` holds copies of the first session's scratch files. They're not needed to resume.
+- Every agent worktree and its local branch was removed on 2026-11-12 with the owner's go-ahead, after checking each had no uncommitted or unpushed work.
+- Still on disk: `target/` in the main checkout (1.2 GB build output, ignored by git), and older files in `.claude/scratch/` (the first session's `session-scratchpad/` copies and a few review scripts), none needed to resume. The remote branch `step-01-bootstrap` is merged and still on GitHub. Ask the owner before removing any of these.
