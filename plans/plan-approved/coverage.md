@@ -4,7 +4,7 @@ Generated from the frozen plan. Each requirement and test obligation lives in ex
 
 Kinds: `code` needs a tagged test, `doc` is checked in the README step, `info` is context with nothing to build.
 
-Totals: 1204 requirements, 277 test obligations.
+Totals: 1211 requirements, 278 test obligations.
 
 ## Requirements
 
@@ -1214,6 +1214,13 @@ Totals: 1204 requirements, 277 test obligations.
 | R-1202 | code | 17 | 0 | - **Chosen keys through `insert_stream`.** `db.insert_stream::<T>(stream).explicit_ids()` … |
 | R-1203 | code | 19 | 0 | - **Chosen keys through `upsert`.** `db.upsert(&mut p, target).explicit_ids()` and `db.ups… |
 | R-1204 | doc | 50 | 0 | The README shows this notice loudly, beside the `.explicit_ids()` row: > **`.explicit_ids(… |
+| R-1205 | code | 10 | 0 | **`timezone`** is set on every connection as a startup parameter, `UTC` unless `morm.toml`… |
+| R-1206 | code | 10 | 0 | \| `MORM_DB_TIMEZONE` \| `timezone` \| |
+| R-1207 | code | 13 | 0 | - **A parameter goes as its column's type.** Where morm knows the column a parameter is bo… |
+| R-1208 | code | 13 | 0 | - **An explicit `sql` morm can't convert to is a compile error.** `#[model]` refuses a fie… |
+| R-1209 | code | 13 | 0 | - **Raw parameters.** Where no column is known, as in `db.sql()`, a `String`, a `&str` and… |
+| R-1210 | doc | 50 | 0 | The README says this plainly, beside the `morm.toml` settings: morm's connections start wi… |
+| R-1211 | doc | 50 | 0 | The README says this plainly, beside raw SQL with `db.sql()`: a raw `String` or `&str` par… |
 
 ## Test obligations
 
@@ -1496,3 +1503,4 @@ Totals: 1204 requirements, 277 test obligations.
 | T-0275 | integration | 17 | **Chosen keys through `insert_stream`, on Postgres 15–18:** under each identity kind, on a… |
 | T-0276 | integration | 17 | **The sequence under concurrent writes, on Postgres 15–18:** with normal inserts running b… |
 | T-0277 | integration | 19 | **Chosen keys through `upsert` and `upsert_many`, on Postgres 15–18:** under each identity… |
+| T-0278 | integration | 13 | **The parameter matrix, on Postgres 15–18:** with the session's `TimeZone` not UTC, every … |

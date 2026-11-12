@@ -39,6 +39,7 @@ Owned elsewhere, and quoted so this step needs no other file. Nothing here needs
 > connect_timeout = "5s"
 > application_name = "auto"        # the binary's name; shows in pg_stat_activity
 > search_path = "public"           # pinned, so another role can't shadow objects
+> timezone = "UTC"                 # the session's TimeZone, in which raw SQL converts times
 > pooler = "none"                  # "transaction" when connecting through PgBouncer in that mode
 >
 > [database.migration]             # owner role, so the app can run with fewer privileges

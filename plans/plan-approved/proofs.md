@@ -6,7 +6,7 @@ What the proof steps found: for each proof, the result, the final shape of the A
 
 The spikes were built on stable Rust 1.99.1 with no nightly features, in their own workspace under `spikes/`, and run on Postgres 15.19, 16.15, 17.11 and 18.6 in CI, and on 17.11 and 18.6 locally. Timings below are from release builds, on the CI runners and locally. A pass below means every listed check ran green.
 
-The owner decided DA to DE on the first results and DF1 to DF10 on the independent review (`INDEX.md`, Decisions). Each entry below says where a decision changed the design.
+The owner decided DA to DE on the first results, DF1 to DF10 on the independent review, and DG1 to DG4 on proof 9's questions (`INDEX.md`, Decisions). Each entry below says where a decision changed the design.
 
 Spelling note: the spikes couldn't see the frozen plan, so attribute spellings such as `#[view(Name, hide(..))]`, `#[unique(..)]`, `#[col(group = ..)]` and `#[model(borrowed)]` are the spikes' own. What's proven is the mechanism and the generated shape. The step that builds each feature uses its own step file's spelling.
 
@@ -22,7 +22,7 @@ How to rerun: `spikes/` and `.github/workflows/spikes.yml` were deleted by PR #2
 | 6 | Borrowed `ProductRef<'r>` | Pass |
 | 7 | `NestedConnection` for stream loops | Pass, with two refinements |
 | 8 | Upsert conflict-target markers | Pass, with a refinement |
-| 9 | `morm::Param` with `query_typed` | Pass with the declared type from the column (DF1). Four questions for the owner |
+| 9 | `morm::Param` with `query_typed` | Pass with the declared type from the column (DF1), and DG1 to DG4 |
 | 10 | Registration behind `cfg(morm_mgr)` | Pass, with two refinements |
 | 11 | The loop detector | Detection and cost pass. The exclusions are proven in step 45 (DD) |
 | 12 | `deadpool` with our own manager | Pass |
@@ -105,7 +105,7 @@ Each column's `Column<M, T, C>` has its own zero-sized marker type `C`, generate
 - On Postgres 15 to 18, each of the four targets is accepted as the arbiter of `INSERT .. ON CONFLICT .. DO UPDATE`, with a row that conflicts on that key only.
 - **Refinement:** the contract's `Cap` parameter becomes the per-column marker type, and capabilities such as refusing `.set()` become traits implemented on the marker, rather than a shared capability type.
 
-### 9. `morm::Param` with `query_typed`: pass with the declared type from the column (DF1), four questions
+### 9. `morm::Param` with `query_typed`: pass with the declared type from the column (DF1), and DG1 to DG4
 
 **The risk the first spike missed.** It took each parameter's declared type from the Rust value, so `String` was always `text`. When the declared type differs from the column's, Postgres casts the column, not the parameter, and the comparison changes meaning with no error. Sent as `text`, `'alice'` found 0 rows in a `citext` column holding `'Alice'`, and `'ab '` found 0 in a `char(5)` holding `'ab'`.
 
@@ -136,21 +136,12 @@ Each column's `Column<M, T, C>` has its own zero-sized marker type `C`, generate
 
 Raw SQL with a `String`, as R sends it: `SELECT $1`, `lower($1)`, `length($1)`, `$1 || 'x'`, `coalesce($1, 'd')`, `$1::int`, `LIKE $1`, and comparisons with `citext`, `char(5)`, `jsonb`, `timestamptz`, `int4` and `int8` are right. `$1 IS NULL` and `concat($1, 'x')` fail with `42P18` (`could not determine data type of parameter $1`), where `text` worked: Postgres can't infer a type there, and `$1::text` fixes it. Sent as `text`, the `citext` and `char(5)` comparisons are wrong, and those with `jsonb`, `timestamptz`, `int4` and `int8` fail with `42883`.
 
-With DF1, no known-column pair gives a wrong answer. These need the owner:
+With DF1, no known-column pair gives a wrong answer. The owner decided the four cases that were left (DG1 to DG4):
 
-- **Question 1: a value whose encoder refuses its column's type.** An explicit `sql` can give a field a column its Rust type's encoder doesn't take: the "refused" pairs above. Options:
-  - **A (recommended):** the conversion layer (step 03, contracts) encodes the value as its column's type where the two have a conversion: wider integers, `f32` to `double precision`, an instant to `timestamp` as its UTC wall time and a `NaiveDateTime` to `timestamptz` as UTC (the same bytes, as `SystemTime` on `timestamp` already shows), `IpAddr` to `cidr`, and `String` to `json` or `jsonb` as `UNKNOWN` text. `#[model]` refuses at compile time an explicit `sql` it has no conversion for. Right answers everywhere, and none depends on the session's time zone.
-  - **B:** fall back to the value's own type when its encoder refuses, and let Postgres convert. Right for integers, floats and `cidr`; wrong for the three time pairs whenever the session's time zone isn't UTC; `42804` for `String` on `json`.
-  - **C:** refuse every such pair at compile time. Safe, but `sql = "bigint"` on an `i32` field stops compiling.
-- **Question 2: instants against `timestamp`, and naive times against `timestamptz`, in raw SQL.** With no column known, Postgres converts in the session's `TimeZone`, so the answer moves with it: wrong under `Asia/Dhaka`, right under UTC. Options:
-  - **A (recommended):** morm's connections start with `TimeZone = 'UTC'`, overridable in `morm.toml`, so raw SQL converts the way the known-column paths do. The README says so, because raw SQL that formats or truncates times then works in UTC unless it says `AT TIME ZONE`.
-  - **B:** keep the server's `TimeZone`, and the README says raw SQL comparing an instant with a `timestamp` column, or a naive time with `timestamptz`, converts in the session's time zone.
-- **Question 3: a raw `Vec<String>` against `citext` or `char(n)`, and a raw `Value` into `json`.** A list goes as `text[]`, so `citext_col = ANY($1)` compares case-sensitively and finds 0 rows, and `char(5)` with `'ab '` the same. A raw `Value` goes as `jsonb`, so a `json` column stores jsonb's normalized text. Sent as an `UNKNOWN` text array literal, the list is right against `citext` and `char(5)`, but `array_length($1, 1)` fails with `42804` and `unnest($1)` with `42725` until written `$1::text[]`. Options:
-  - **A (recommended):** a raw text list goes as an `UNKNOWN` text literal, like a raw `String`: the silent wrong answers become right, and the places that can't infer a type fail loudly with a fix the message points to. A raw `Value` stays `jsonb`: a `json` column keeps the same JSON value, normalized, and morm's known-column paths keep the text as given. The README says both.
-  - **B:** lists stay `text[]`, and the README says raw SQL against `citext` or `char(n)` casts the list, `= ANY($1::citext[])`.
-- **Question 4: R-1104's wording.** R-1104 (step 14) says every statement is prepared "with each parameter's type from `Param`". With DF1, a parameter bound to a known column is declared as the column's type, which `Param::pg_type` doesn't give. Options:
-  - **A (recommended):** reword it to "with each parameter's declared type, as `query_typed` sends it: the column's where morm knows the column, otherwise `Param`'s", and update the manifest and `coverage.md`.
-  - **B:** leave it, and let `contracts.md` carry the rule.
+- **DG1: a value whose encoder refuses its column's type.** An explicit `sql` can give a field a column its Rust type's encoder doesn't take: the "refused" pairs above. The conversion layer (`contracts.md`) encodes the value as its column's type: a narrower integer as the wider one, `f32` as `double precision`, an instant on `timestamp` as its UTC wall time and a `NaiveDateTime` on `timestamptz` as UTC (the same bytes, as `SystemTime` on `timestamp` already shows), `IpAddr` on `cidr`, `String` on `json` or `jsonb` as `UNKNOWN` text, and each element of a list or an array alike. `#[model]` refuses at compile time an explicit `sql` it has no conversion for. No answer then depends on the session's time zone. Step 13 builds both (R-1207, R-1208) and runs this matrix through morm's own paths (T-0278).
+- **DG2: instants against `timestamp`, and naive times against `timestamptz`, in raw SQL.** With no column known, Postgres converts in the session's `TimeZone`, so the answer moved with it. morm's connections start with `TimeZone = 'UTC'`, overridable with `timezone` in `morm.toml` (step 10, R-0060, R-1205, R-1206), and the README says so (step 50, R-1210). Behind PgBouncer in transaction mode no startup parameter is sent, so `timezone` joins the settings set on the role (step 12, R-0670). Checked with `psql` on 18.6 and 17.11, on servers whose own `TimeZone` was `Asia/Dhaka`: with `-c TimeZone=UTC` as a startup option, `'2026-01-01 00:00:00+00'::timestamptz::timestamp` is `2026-01-01 00:00:00` and `'2026-01-01 00:00:00'::timestamp::timestamptz` is `2026-01-01 00:00:00+00`, where the server's zone gave `06:00:00` and `+06`. A role with `ALTER ROLE .. SET timezone = 'UTC'` starts in UTC, a startup option wins over it (`Europe/Berlin` over the role's `UTC`), and an unknown zone fails the connection with `invalid value for parameter "TimeZone"`.
+- **DG3: raw text lists and a raw `Value`.** A raw text list goes as an `UNKNOWN` text literal, like a raw `String`, so the silent wrong answers against `citext` and `char(n)` become right. `array_length($1, 1)` and `unnest($1)` then can't infer a type and need `$1::text[]`. A raw `Value` stays `jsonb`: a `json` column written from raw SQL keeps the same JSON value, normalized (`{"b":1, "a":2, "b":3}` comes back `{"a": 2, "b": 3}`), and morm's known-column paths keep the text as given. Step 13 builds it (R-1209), and the README says both (step 50, R-1211). Checked with `psql`'s `\bind`, which sends untyped parameters in text format, on 18.6 and 17.11: `'{alice,x}'` against `citext` `'Alice'` with `= ANY($1)` finds 1 row, `'{"ab "}'` against `char(5)` `'ab'` finds 1, `array_length($1, 1)` fails with `42804` and `unnest($1)` with `42725`, the same as through `query_typed` above, and with `$1::text[]` they give `2` and `a,b`.
+- **DG4: R-1104's wording.** R-1104 (step 14) now says every statement is prepared "with each parameter's declared type, as `query_typed` sends it: the column's type where morm knows the column, otherwise `Param`'s".
 
 ### 10. Registration: pass, with two refinements
 
@@ -185,3 +176,4 @@ Each worker thread keeps eight slots keyed by (task, statement), where a stateme
 - **DF1:** a parameter's declared type comes from its column where morm knows it, and raw `String` and `&str` go as `Type::UNKNOWN`; proof 9's matrix (proof 9).
 - **DF2:** every transaction option goes before the closure on the same prefix builder as retry, the closure always last (proof 4). R-0435, R-0442, R-0453 and R-0767 are rewritten to match.
 - **DF3 to DF10:** fixed as the review recommends: the hook rules (proof 5), the stream check measured with streams open (proof 7), the `G` mechanism (proof 3), proof 9's claims, every hook compiled (proof 5), the rerun line above, the open-items summary on `main`, and what `.retry` costs and misses (proof 4, and R-0865's README line).
+- **DG1 to DG4:** encode a value as its column's type, times as UTC, and refuse at compile time a `sql` morm can't convert to; connections start with `TimeZone = 'UTC'`, overridable in `morm.toml`; raw text lists go as `UNKNOWN` text and a raw `Value` stays `jsonb`; R-1104 reworded (proof 9).

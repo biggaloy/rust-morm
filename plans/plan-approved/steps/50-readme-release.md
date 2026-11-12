@@ -180,6 +180,10 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 - **R-0902** Migrations: workflow, every command in one table, safety rules, production being forward only with `revert`, running as a deploy step, triggers and functions.
 - **R-0903** Security: TLS settings, encrypting disks and backups (outside morm's job, but expected in production), and password hashing with `clean`.
 
+**R-1210** The README says this plainly, beside the `morm.toml` settings: morm's connections start with `TimeZone = 'UTC'` unless `timezone` in `morm.toml`, or `MORM_DB_TIMEZONE`, sets another zone, so raw SQL that converts between `timestamp` and `timestamptz`, formats a time or truncates one to a day works in that zone unless it says `AT TIME ZONE`. Behind PgBouncer in transaction mode, set `timezone` on the role instead, with `ALTER ROLE`.
+
+**R-1211** The README says this plainly, beside raw SQL with `db.sql()`: a raw `String` or `&str` parameter, and a list of them, goes untyped, so Postgres reads it as it reads a quoted literal and compares it right with `citext`, `char(n)`, `jsonb`, a time or a number. Where Postgres can't tell the type, as in `$1 IS NULL`, `array_length($1, 1)` or `unnest($1)`, the query fails, and `$1::text` or `$1::text[]` fixes it. A raw `serde_json::Value` goes as `jsonb`, so a `json` column written from raw SQL keeps the same JSON value but not its text: key order and spacing change, and a duplicate key keeps only its last value.
+
 **R-1008** The README shows this notice loudly, beside the enum rows:
 
 > **Use `TextEnum` unless you have a reason not to.** Changing a `TextEnum` is an ordinary migration. Postgres can't remove or reorder an enum value, so morm has to replace the whole type, including everything that depends on it. On a big table that means a long online copy or a table rewrite under a full lock. Adding a value is cheap, but its down is not. morm does all of this safely, but `TextEnum` never needs it.

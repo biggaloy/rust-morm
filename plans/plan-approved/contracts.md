@@ -59,8 +59,9 @@ pub enum ParamType {
 
 // A parameter: ToSql plus the type it's declared as when no column is known (raw SQL),
 // because query_typed needs a type. String and &str return Type::UNKNOWN, so Postgres
-// infers the type from the SQL; PgEnum returns Type::UNKNOWN too, so no OID is ever sent
-// and a type swap can't leave one stale. Every other type returns its own type.
+// infers the type from the SQL, and so does a list of them, Vec<String> or &[&str] (DG3);
+// PgEnum returns Type::UNKNOWN too, so no OID is ever sent and a type swap can't leave one
+// stale. Every other type returns its own type; serde_json::Value stays jsonb (DG3).
 // A parameter declared Type::UNKNOWN that has a text form is sent in text format, so
 // Postgres reads it as it reads a quoted literal: in binary, "1234" compared with an
 // int4 reads as 825373492 (proof 9). The parameters go from &[&dyn Param] into
@@ -72,9 +73,16 @@ pub trait Param: tokio_postgres::types::ToSql + Sync {
     fn encode_text(&self, out: &mut bytes::BytesMut);   // the text form, for UNKNOWN
     fn is_null(&self) -> bool;
 }
-// Where an explicit `sql` gives a field a column its type's encoder doesn't take, such as
-// sql = "bigint" on an i32 or "timestamp" on a DateTime<Utc>, is an open question to the
-// owner (proofs.md, proof 9, question 1); step 03 freezes the answer
+// The conversion layer (Defined in step 03, below) encodes a value bound to a known column
+// as that column's type where the value's own encoder doesn't take it (DG1): a narrower
+// integer as the wider column's, f32 as double precision, an instant (DateTime<Utc>,
+// Timestamp) on timestamp as its UTC wall time, a NaiveDateTime on timestamptz as UTC,
+// IpAddr on cidr, String on json or jsonb as Type::UNKNOWN text, each element alike for a
+// list or an array. No answer depends on the session's TimeZone. #[model] refuses at
+// compile time an explicit `sql` with no such conversion. Step 03 freezes the layer's
+// shape; step 13 builds the conversions and the refusal (R-1207, R-1208, T-0278).
+// Connections start with TimeZone = 'UTC', overridable with `timezone` in morm.toml (DG2,
+// step 10), so raw SQL converts times the same way
 
 // Product::UK.<name>, and columns that are unique keys. Implemented for a unique
 // column's Column type and for Key<M, K>, one per expression, partial or composite key
