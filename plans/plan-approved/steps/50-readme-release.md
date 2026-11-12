@@ -137,6 +137,8 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 | R-0866 | `.isolation(...)` | You read rows and write based on them, and nothing may change them in between |
 | R-0867 | `.lock_timeout(...)` | A transaction will wait on locks for longer than 5s, such as a large batch |
 | R-0868 | `.transaction_timeout(...)` | A transaction will run for longer than 30s, such as a large batch |
+| R-1217 | `.statement_timeout(...)` | A statement in this transaction must be stopped if it runs too long, such as one serving a user's request; the pool's own `statement_timeout` is off by default |
+| R-1219 | `tx.transaction(..)` | Part of a transaction may fail and the rest must go on, such as an optional insert that can hit a unique key |
 | R-0869 | `tx.lock(&ids)` | You will change several rows that other requests also change, such as a money transfer |
 | R-0870 | `.lock_ordered()` | You run bulk updates or deletes that can touch the same rows at the same time |
 | R-0871 | `.skip_locked()` | Your workers take jobs from a queue and shouldn't wait for each other |
@@ -161,6 +163,7 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 | R-0887 | `db.pool("jobs")` | You run heavy jobs in the web app's process, and they must not take its connections |
 | R-0888 | `db.groups(mask)`, `db.sudo()` | Your callers may see or change different fields |
 | R-0889 | `Numeric` | Your values can exceed 28 digits, or be `NaN` or `Infinity` |
+| R-1218 | `impl morm::SqlType` | A field or a free parameter has a Rust type morm doesn't map, and you declare the SQL type it's sent as and the column types it carries without loss |
 | R-0890 | `q_unchecked`, `sql_unchecked` | You must build SQL at runtime, and you will handle injection safety yourself |
 | R-0891 | `recycle_when` | You need your own rule for replacing connections |
 | R-0892 | `no_default` | You want a compile error when a required field is missed |
@@ -180,9 +183,27 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 - **R-0902** Migrations: workflow, every command in one table, safety rules, production being forward only with `revert`, running as a deploy step, triggers and functions.
 - **R-0903** Security: TLS settings, encrypting disks and backups (outside morm's job, but expected in production), and password hashing with `clean`.
 
-**R-1210** The README says this plainly, beside the `morm.toml` settings: morm's connections start with `TimeZone = 'UTC'` unless `timezone` in `morm.toml`, or `MORM_DB_TIMEZONE`, sets another zone, so raw SQL that converts between `timestamp` and `timestamptz`, formats a time or truncates one to a day works in that zone unless it says `AT TIME ZONE`. Behind PgBouncer in transaction mode, set `timezone` on the role instead, with `ALTER ROLE`.
+**R-1210** The README shows this notice loudly, beside the `morm.toml` settings:
 
-**R-1211** The README says this plainly, beside raw SQL with `db.sql()`: a raw `String` or `&str` parameter, and a list of them, goes untyped, so Postgres reads it as it reads a quoted literal and compares it right with `citext`, `char(n)`, `jsonb`, a time or a number. Where Postgres can't tell the type, as in `$1 IS NULL`, `array_length($1, 1)` or `unnest($1)`, the query fails, and `$1::text` or `$1::text[]` fixes it. A raw `serde_json::Value` goes as `jsonb`, so a `json` column written from raw SQL keeps the same JSON value but not its text: key order and spacing change, and a duplicate key keeps only its last value.
+> **morm's sessions always run in UTC.** Every connection starts with `TimeZone = 'UTC'`, whatever the server's or the role's zone, and no setting changes it. Postgres converts between `timestamp` and `timestamptz`, formats a time and truncates one to a day in the session's zone, so if the zone varied by host or by role, the same query would give different rows on different machines, and raw SQL would disagree with what morm writes for a field. In UTC there is one answer everywhere. Store instants in `timestamptz`. When code needs a user's local day or wall time, pass the zone in the SQL, as in `date_trunc('day', {Order::F.at}, ${zone: String})` or `{Order::F.at} AT TIME ZONE ${zone: String}`. Behind PgBouncer in transaction mode morm can't send the zone, so set it on the role: `ALTER ROLE app SET timezone = 'UTC'`.
+
+**R-1211** The README shows this notice loudly, beside raw SQL with `db.sql()`:
+
+> **Bind a value through its field whenever it meets a column.** morm writes every parameter's type into the SQL. A value bound through a field, as `${email: User::F.email}`, `.by(F.email, ..)` or `.qc(F.email, ..)`, gets the column's own type and can't mismatch. A free value, as `${email: String}`, `.q()` or `set_expr`, gets its Rust type's type, here `text`. If it's compared with a column of another type, Postgres converts one side, and the answer can be silently wrong: `text` against a `citext` column is case-sensitive, and `text` against `char(n)` minds trailing spaces. `sql!` refuses a free value beside a column it can see. `check-sql` and `#[morm::test]` report every other mismatch in the SQL morm sends. They can't see five places, so bind through the field there:
+>
+> - comparisons inside your functions, procedures, triggers and views, and dynamic SQL run inside the database;
+> - runtime-built SQL that no `#[morm::test]` runs;
+> - code that's left out of the build `check-sql` makes and out of your tests;
+> - values compared inside JSON;
+> - your own explicit casts.
+
+**R-1215** The README shows this notice loudly, beside `sql_unchecked`:
+
+> **`sql_unchecked` skips every check morm has for SQL.** It takes a `String` built at runtime, so `sql!`'s compile-time refusals can't see it, `check-sql` never sees it, and nothing stops a value from a request being pasted into the text, which is SQL injection. morm still writes each parameter's type, so a wrong shape is a Postgres error, but a free value compared with a column of another type, such as a `String` against a `citext` column, is silently case-sensitive, and only a `#[morm::test]` that runs that exact text reports it. Use it only for SQL that `sql!` and the builders can't write. Pass every value as a parameter, never in the text, name a runtime table or column through `morm::quote_ident`, and run each shape it builds in a `#[morm::test]`.
+
+**R-1216** The README shows this notice loudly, beside transactions:
+
+> **Inside a transaction, a setting lasts until the transaction ends.** On `db`, `.lock_timeout(d)`, `.statement_timeout(d)` and `.transaction_timeout(d)` go before `.transaction(..)` and cover that transaction. On `tx`, `tx.lock_timeout(d).await?` takes effect at once and holds for the rest of the transaction, inside and after `tx.transaction(..)`, which is a savepoint, so set it back yourself if only one statement needs it. A setting changed inside a savepoint that then fails is undone with it. `tx` has no `.isolation(..)` or `.retry(n)`: the isolation level is fixed before a transaction's first query, and a savepoint can't retry a deadlock or a serialization failure, so set both on `db`, before `.transaction(..)`.
 
 **R-1008** The README shows this notice loudly, beside the enum rows:
 

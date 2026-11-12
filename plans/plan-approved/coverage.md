@@ -4,7 +4,7 @@ Generated from the frozen plan. Each requirement and test obligation lives in ex
 
 Kinds: `code` needs a tagged test, `doc` is checked in the README step, `info` is context with nothing to build.
 
-Totals: 1211 requirements, 278 test obligations.
+Totals: 1219 requirements, 280 test obligations.
 
 ## Requirements
 
@@ -69,7 +69,7 @@ Totals: 1211 requirements, 278 test obligations.
 | R-0057 | info | 42 | 101 | ``` morm-admin init [path] [--axum] # create a project morm-admin doctor # check Postgres,… |
 | R-0058 | code | 42 | 111 | `init` creates the `morm-mgr` package, `morm-migrations/`, `morm.toml`, `.env.example`, a … |
 | R-0059 | code | 10 | 115 | TOML is the Rust standard, with comments, real types and sections, and no indentation trap… |
-| R-0060 | code | 10 | 117 | ```toml [database] # Either a URL, or the separate fields below. Separate fields override … |
+| R-0060 | code | 10 | 117 | ```toml [database] # Either a URL, or the separate fields below. Separate fields override… |
 | R-0061 | code | 10 | 194 | A missing `morm.toml` isn't an error unless `MORM_CONFIG` names it, so a deployment can us… |
 | R-0062 | code | 10 | 196 | Precedence: defaults, then `morm.toml`, then environment variables, then code. There is on… |
 | R-0063 | info | 10 | 198 | **Environment variables:** |
@@ -1214,13 +1214,21 @@ Totals: 1211 requirements, 278 test obligations.
 | R-1202 | code | 17 | 0 | - **Chosen keys through `insert_stream`.** `db.insert_stream::<T>(stream).explicit_ids()` … |
 | R-1203 | code | 19 | 0 | - **Chosen keys through `upsert`.** `db.upsert(&mut p, target).explicit_ids()` and `db.ups… |
 | R-1204 | doc | 50 | 0 | The README shows this notice loudly, beside the `.explicit_ids()` row: > **`.explicit_ids(… |
-| R-1205 | code | 10 | 0 | **`timezone`** is set on every connection as a startup parameter, `UTC` unless `morm.toml`… |
-| R-1206 | code | 10 | 0 | \| `MORM_DB_TIMEZONE` \| `timezone` \| |
-| R-1207 | code | 13 | 0 | - **A parameter goes as its column's type.** Where morm knows the column a parameter is bo… |
-| R-1208 | code | 13 | 0 | - **An explicit `sql` morm can't convert to is a compile error.** `#[model]` refuses a fie… |
-| R-1209 | code | 13 | 0 | - **Raw parameters.** Where no column is known, as in `db.sql()`, a `String`, a `&str` and… |
-| R-1210 | doc | 50 | 0 | The README says this plainly, beside the `morm.toml` settings: morm's connections start wi… |
-| R-1211 | doc | 50 | 0 | The README says this plainly, beside raw SQL with `db.sql()`: a raw `String` or `&str` par… |
+| R-1205 | code | 10 | 0 | **Sessions always run in UTC.** Every connection sends `TimeZone = 'UTC'` as a startup par… |
+| R-1206 | info | 10 | 0 | No setting or environment variable changes the session's zone: `morm.toml` has no `timezon… |
+| R-1207 | code | 13 | 0 | - **A parameter bound through a field is cast to its column's type.** Where a parameter is… |
+| R-1208 | code | 13 | 0 | - **A field's column type is checked through `SqlType`.** `#[model]` accepts a field's col… |
+| R-1209 | code | 13 | 0 | - **Free parameters.** A value that isn't bound through a field, a `${v: T}` in `sql!`, a… |
+| R-1210 | doc | 50 | 0 | The README shows this notice loudly, beside the `morm.toml` settings: > **morm's sessions… |
+| R-1211 | doc | 50 | 0 | The README shows this notice loudly, beside raw SQL with `db.sql()`: > **Bind a value thro… |
+| R-1212 | code | 13 | 0 | - **The cast-name function.** `morm-core` turns a column type into the cast morm writes, w… |
+| R-1213 | code | 13 | 0 | - **`SqlType` for every type morm maps.** Each gives its cast and carrier as `const`s, and… |
+| R-1214 | code | 13 | 0 | - **A value bound through a field must fit it.** `Fits<T>` says a value fits a field of ty… |
+| R-1215 | doc | 50 | 0 | The README shows this notice loudly, beside `sql_unchecked`: > **`sql_unchecked` skips eve… |
+| R-1216 | doc | 50 | 0 | The README shows this notice loudly, beside transactions: > **Inside a transaction, a sett… |
+| R-1217 | doc | 50 | 0 | \| `.statement_timeout(...)` \| A statement in this transaction must be stopped if it runs t… |
+| R-1218 | doc | 50 | 0 | \| `impl morm::SqlType` \| A field or a free parameter has a Rust type morm doesn't map, and… |
+| R-1219 | doc | 50 | 0 | \| `tx.transaction(..)` \| Part of a transaction may fail and the rest must go on, such as a… |
 
 ## Test obligations
 
@@ -1503,4 +1511,6 @@ Totals: 1211 requirements, 278 test obligations.
 | T-0275 | integration | 17 | **Chosen keys through `insert_stream`, on Postgres 15–18:** under each identity kind, on a… |
 | T-0276 | integration | 17 | **The sequence under concurrent writes, on Postgres 15–18:** with normal inserts running b… |
 | T-0277 | integration | 19 | **Chosen keys through `upsert` and `upsert_many`, on Postgres 15–18:** under each identity… |
-| T-0278 | integration | 13 | **The parameter matrix, on Postgres 15–18:** with the session's `TimeZone` not UTC, every … |
+| T-0278 | integration | 13 | **The parameter matrix, on Postgres 15–18:** with the session's `TimeZone` not UTC, straig… |
+| T-0279 | suite | 13 | **Unit: the cast-name function** on every form R-1212 lists, at least 28, including quoted… |
+| T-0280 | trybuild | 13 | **Fields that don't fit:** an `i64` bound through an `i32` field, an `Option` value throug… |

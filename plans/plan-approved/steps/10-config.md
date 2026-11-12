@@ -54,7 +54,6 @@ target_session_attrs = "any"     # "read-write" finds the primary among several 
 connect_timeout = "5s"
 application_name = "auto"        # the binary's name; shows in pg_stat_activity
 search_path = "public"           # pinned, so another role can't shadow objects
-timezone = "UTC"                 # the session's TimeZone, in which raw SQL converts times
 pooler = "none"                  # "transaction" when connecting through PgBouncer in that mode
 
 [database.migration]             # owner role, so the app can run with fewer privileges
@@ -140,7 +139,6 @@ scratch_url = "${MORM_SCRATCH_URL}"
 | R-0074 | `MORM_DB_TARGET_SESSION_ATTRS`, `MORM_DB_CONNECT_TIMEOUT` | `target_session_attrs`, `connect_timeout` |
 | R-0075 | `MORM_DB_APPLICATION_NAME`, `MORM_DB_SEARCH_PATH` | `application_name`, `search_path` |
 | R-0076 | `MORM_DB_POOLER` | `pooler` |
-| R-1206 | `MORM_DB_TIMEZONE` | `timezone` |
 | R-0077 | `MORM_MIGRATION_URL` | Full owner-role URL for migrations |
 | R-0078 | `MORM_MIGRATION_USER`, `MORM_MIGRATION_PASSWORD` | Owner-role login, using the same host and database |
 | R-0079 | `MORM_MIGRATION_PASSWORD_FILE` | File holding the owner-role password |
@@ -173,7 +171,9 @@ scratch_url = "${MORM_SCRATCH_URL}"
 
 **R-0109** **`search_path`** is set on every connection, so another role can't shadow a table or function through a schema earlier in the path.
 
-**R-1205** **`timezone`** is set on every connection as a startup parameter, `UTC` unless `morm.toml` or `MORM_DB_TIMEZONE` sets another zone, so it adds no round trip. Raw SQL that compares or converts an instant with a `timestamp` column, or a naive time with `timestamptz`, then works in that zone, which is the one morm's own encodings use, whatever the server's or the role's `TimeZone`: a startup parameter wins over `ALTER ROLE ... SET timezone`. A zone Postgres doesn't know fails the connection with `invalid value for parameter "TimeZone"`, and morm's error names the `timezone` setting. With `pooler = "transaction"` it isn't sent, and the role carries it, as the pooler rules say. Owner decision DG2; `proofs.md`, proof 9.
+**R-1205** **Sessions always run in UTC.** Every connection sends `TimeZone = 'UTC'` as a startup parameter, so it adds no round trip, and it wins over the server's and the role's `TimeZone`, because a startup parameter wins over `ALTER ROLE ... SET timezone`. Nothing overrides it. So raw SQL that converts between `timestamp` and `timestamptz`, formats a time or truncates one to a day works in UTC, the zone in which morm's own encodings of a time bound through a field always work, and the two never disagree. Instants belong in `timestamptz`. Code that needs a user's local day or wall time passes the zone in its SQL, as in `date_trunc('day', {Order::F.at}, ${zone: String})` or `{Order::F.at} AT TIME ZONE ${zone: String}`. With `pooler = "transaction"` the parameter isn't sent, and the role carries `timezone = 'UTC'`, as the pooler rules say. Owner decisions DG2 and DH1; `proofs.md`, proof 9.
+
+**R-1206** No setting or environment variable changes the session's zone: `morm.toml` has no `timezone`, and there's no `MORM_DB_TIMEZONE`. Owner decision DH1.
 
 **R-0111** **Credentials:** `MORM_DB_*` values override the matching parts of `DATABASE_URL`, so a URL can hold the address while the password comes from `MORM_DB_PASSWORD_FILE`. Setting both `MORM_DB_PASSWORD` and `MORM_DB_PASSWORD_FILE` is an error. `sslmode` values other than `disable` and `prefer` need the `tls` feature, and morm refuses to start without it. `prefer` without `tls` can only connect unencrypted, so morm warns at startup, and it never connects unencrypted silently. Passwords are never logged, and they're masked in `Debug` output and error messages.
 

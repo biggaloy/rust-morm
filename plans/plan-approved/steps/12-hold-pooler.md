@@ -38,7 +38,6 @@ Owned elsewhere, and quoted so this step needs no other file. Nothing here needs
 > connect_timeout = "5s"
 > application_name = "auto"        # the binary's name; shows in pg_stat_activity
 > search_path = "public"           # pinned, so another role can't shadow objects
-> timezone = "UTC"                 # the session's TimeZone, in which raw SQL converts times
 > pooler = "none"                  # "transaction" when connecting through PgBouncer in that mode
 >
 > [database.migration]             # owner role, so the app can run with fewer privileges
@@ -134,7 +133,7 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 
 **R-0669** `morm::Pool` makes a pooler unnecessary for one process, but large fleets and managed Postgres often have PgBouncer in front. `pooler = "transaction"` says so:
 
-- **R-0670** **No startup parameters.** PgBouncer rejects unknown ones by default. Falling back to session `SET` isn't safe here, because in transaction mode that setting stays on a server connection other clients will share. So set `lock_timeout`, `idle_in_transaction_session_timeout`, `client_connection_check_interval`, `search_path` and `timezone` on the role with `ALTER ROLE`.
+- **R-0670** **No startup parameters.** PgBouncer rejects unknown ones by default. Falling back to session `SET` isn't safe here, because in transaction mode that setting stays on a server connection other clients will share. So set `lock_timeout`, `idle_in_transaction_session_timeout`, `client_connection_check_interval` and `search_path` on the role with `ALTER ROLE`, and `timezone` to `UTC`, because morm's sessions always run in UTC.
 - **R-0673** **Session features refuse.** `db.hold()` returns `PoolerMode`, since a session can't be kept.
 - **R-0675** **Connection limits:** `SHOW max_connections` reports Postgres's limit, but the real ones are PgBouncer's `max_client_conn` and pool size, which morm can't see. So the startup adjustment are skipped, and `max` must be set explicitly: `auto` is refused.
 - **R-0678** **Migrations must bypass the pooler.** The migrator holds a session advisory lock, so `MORM_MIGRATION_URL` has to point at Postgres directly.
