@@ -211,3 +211,4 @@ Decisions still to add on `main`: R-0608, R-1081, T-0208, T-0209.
 ## From the edit at `9be17e7`, waiting on the owner
 
 - **CN. Chosen keys through `insert_stream` and `upsert`.** Under CL, `.explicit_ids()` exists only on `insert` and `insert_many`, so there's no way to stream or upsert chosen keys into an identity column. Options: (a) give both `.explicit_ids()`: `COPY` then move the sequence past the keys in the same transaction, and `OVERRIDING SYSTEM VALUE` on the upsert's `INSERT` (recommended); (b) `insert_stream` only; (c) leave it, so such writes go through `insert_many`.
+- **Answered:** CN (a).
