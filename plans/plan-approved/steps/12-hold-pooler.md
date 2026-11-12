@@ -2,7 +2,7 @@
 
 - **Phase:** Runtime
 - **Depends on:** 11
-- **Can run beside:** 04, 05, 06, 07, 08, 09, 13, 14, 15, 16, 17, 18, 19, 20, 23, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41
+- **Can run beside:** 04, 05, 06, 07, 08, 09, 13, 28, 29, 30, 31, 32, 33, 34, 35, 56
 - **Crates:** `morm`
 - **PR approval:** CI and an independent review
 
@@ -68,6 +68,7 @@ Owned elsewhere, and quoted so this step needs no other file. Nothing here needs
 > idle_in_transaction_session_timeout = "1m"
 > client_connection_check_interval = "5s"
 > tx_warn_after = "1s"
+> check_schema = "on"              # "off" starts against a schema that may not match: read the README first
 >
 > [pools.replica]                  # a read replica
 > host = "db-replica.internal"

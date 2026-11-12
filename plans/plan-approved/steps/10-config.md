@@ -2,7 +2,7 @@
 
 - **Phase:** Runtime
 - **Depends on:** 03
-- **Can run beside:** 04, 05, 06, 07, 08, 09, 13, 28
+- **Can run beside:** 04, 05, 06, 07, 08, 09, 13, 28, 56
 - **Crates:** `morm-core`, `morm`
 - **PR approval:** CI and an independent review
 
@@ -84,6 +84,7 @@ transaction_timeout = "30s"      # longest db.transaction
 idle_in_transaction_session_timeout = "1m"
 client_connection_check_interval = "5s"
 tx_warn_after = "1s"
+check_schema = "on"              # "off" starts against a schema that may not match: read the README first
 
 [pools.replica]                  # a read replica
 host = "db-replica.internal"
@@ -162,6 +163,7 @@ scratch_url = "${MORM_SCRATCH_URL}"
 | R-0098 | `MORM_POOL_STATEMENT_TIMEOUT`, `MORM_POOL_PLAN_CACHE_MODE` | `statement_timeout`, `plan_cache_mode` |
 | R-0099 | `MORM_POOL_STATEMENT_CACHE`, `MORM_POOL_SHAPE_CACHE` | `statement_cache`, `shape_cache` |
 | R-0100 | `MORM_POOL_SHUTDOWN_TIMEOUT` | `shutdown_timeout` |
+| R-1118 | `MORM_POOL_CHECK_SCHEMA` | `check_schema` |
 
 **R-0101** `MORM_POOL_*` variables apply to the pool this process opens at startup.
 

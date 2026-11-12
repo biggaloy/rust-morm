@@ -2,7 +2,7 @@
 
 - **Phase:** Runtime
 - **Depends on:** 10
-- **Can run beside:** 04, 05, 06, 07, 08, 09, 13, 28, 29, 30, 31, 32, 33, 34, 35
+- **Can run beside:** 04, 05, 06, 07, 08, 09, 13, 28, 29, 30, 31, 32, 33, 34, 35, 56
 - **Crates:** `morm`
 - **PR approval:** CI and an independent review
 
@@ -68,6 +68,7 @@ Owned elsewhere, and quoted so this step needs no other file. Nothing here needs
 > idle_in_transaction_session_timeout = "1m"
 > client_connection_check_interval = "5s"
 > tx_warn_after = "1s"
+> check_schema = "on"              # "off" starts against a schema that may not match: read the README first
 >
 > [pools.replica]                  # a read replica
 > host = "db-replica.internal"
@@ -184,6 +185,10 @@ morm: pool max 160 lowered to 92 (max_connections=100, reserved=3, margin=5)
 
 **R-0653** The default `max` is deliberately generous. On a larger server, raise `max_connections` in Postgres to match, and `morm-admin size` suggests the value. morm can't see other apps on the same server, which is what the margin is for, and `processes` is set by hand. When several separate processes share a server, Postgres is the real limit: on "too many clients", morm retries with a short backoff before returning the error.
 
+### Managed enums
+
+- **R-0975** **Stale generation.** The pool holds a generation counter for connections, in one atomic word, and each connection remembers the value it started with. A checkout compares them with one atomic read and no lock, and replaces a connection that's behind. Step 14 raises the counter when a connection reports stale server state, so after an enum swap the other connections don't each have to fail first. `pool_stats()` counts these replacements.
+
 ## Test obligations
 
 | ID | Type | Obligation |
@@ -192,3 +197,4 @@ morm: pool max 160 lowered to 92 (max_connections=100, reserved=3, margin=5)
 | T-0044 | integration | `max_connections` adjustment |
 | T-0065 | integration | connections discarded on `25006` |
 | T-0086 | integration | two pools sharing the connection budget |
+| T-0147 | integration | **Stale generation:** raising the counter replaces every older connection at its next checkout, once each, and a checkout with no change does no extra round trip. |

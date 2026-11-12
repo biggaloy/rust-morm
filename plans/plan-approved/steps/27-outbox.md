@@ -2,7 +2,7 @@
 
 - **Phase:** Runtime
 - **Depends on:** 25
-- **Can run beside:** 08, 23, 26, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 47
+- **Can run beside:** 08, 23, 26, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 47, 51, 52, 53, 54, 57, 58, 59, 60
 - **Crates:** `morm`
 - **PR approval:** CI and an independent review
 
@@ -68,6 +68,7 @@ Owned elsewhere, and quoted so this step needs no other file. Nothing here needs
 > idle_in_transaction_session_timeout = "1m"
 > client_connection_check_interval = "5s"
 > tx_warn_after = "1s"
+> check_schema = "on"              # "off" starts against a schema that may not match: read the README first
 >
 > [pools.replica]                  # a read replica
 > host = "db-replica.internal"
@@ -152,3 +153,4 @@ morm::outbox::worker(&db)                              // in the app, or its own
 | T-0129 | suite | **Fault injection:** kill the process and the worker at every point: before commit (no event), after commit (delivered), and after send before recording (delivered twice, same `e.id`). |
 | T-0130 | suite | **Concurrency:** rival workers never hold one event at once while a lease is valid, expired leases return, and keyed events stay in order. |
 | T-0131 | suite | **Failures:** backoff, `max_attempts`, `failed` events kept, and cleanup after `retention` |
+| T-0134 | suite | **Fault injection runs in CI:** `ci.yml`'s `integration` job runs the T-0129 tests, and the PR links that job's log showing them pass. A run of zero tests doesn't count. These tests need Postgres, so they live in `tests/` (package `morm-tests`). The job runs that package with `cargo test --locked -p morm-tests`, which doesn't turn on `morm`'s `outbox` feature, so turn it on for that package. |

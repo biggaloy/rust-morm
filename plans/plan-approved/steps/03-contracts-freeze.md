@@ -1,7 +1,7 @@
 # Step 03: Freeze the contracts
 
 - **Phase:** Foundation
-- **Depends on:** 02
+- **Depends on:** 55
 - **Can run beside:** nothing
 - **Crates:** `morm`, `morm-core`, `morm-macros`: traits and types only
 - **PR approval:** the owner approves the PR
@@ -15,7 +15,7 @@ Turn `contracts.md` into compiling Rust: the shared traits, types and error enum
 ## Deliverables
 
 - Everything listed in `contracts.md`, compiled, with signatures only where a later step fills in behaviour, including the items marked "defined in this step"
-- `contracts.md` matching that code exactly
+- `contracts.md` matching that code exactly, including `Error::SchemaChanged` and `Error::UnknownEnumValue`, with the design proofs 13 to 18 confirmed
 - The parallel groups in `INDEX.md` confirmed against what `contracts.md` covers
 
 ## End-to-end check

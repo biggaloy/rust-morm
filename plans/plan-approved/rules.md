@@ -50,11 +50,13 @@ The session that wrote a step never approves it. A fresh agent reads `rules.md`,
 - Does each tagged test really prove it?
 - What did the step skip, weaken or add?
 
+Run `git diff origin/main -- plans/plan-approved/tools/manifest.json`, and confirm each changed ID is covered by an entry in INDEX's Decisions.
+
 It reports each finding with the requirement ID and evidence. The writing session fixes them, and the review repeats until none remain.
 
 ## PRs
 
-- The owner approves the PRs of steps 01, 02, 03 and 50.
+- The owner approves the PRs of steps 01, 02, 55, 03 and 50.
 - Other PRs merge once CI and the independent review both pass.
 - The PR body lists the requirements covered, the end-to-end result, and any owner decisions.
 - Never publish crates, force-push or change repository settings without the owner's go-ahead.
@@ -73,3 +75,5 @@ It reports each finding with the requirement ID and evidence. The writing sessio
 ## Keeping sessions small
 
 One step is one fresh session, sized to stay under about 30% of the context window. If a step can't fit, stop at a clean commit and ask the coordinator to split it. Don't read the frozen plan or other step files to fill in gaps. If a gap exists, that's a plan problem: stop and ask.
+
+Keep working files on disk, in the repo's `.claude/scratch/` or your worktree, never in `/tmp`: a power cut must not lose them. Commit and push in small steps during long work.

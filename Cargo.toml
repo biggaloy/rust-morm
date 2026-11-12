@@ -1,0 +1,18 @@
+[workspace]
+resolver = "3"
+members = ["crates/*", "examples/app", "tests"]
+exclude = ["fuzz"]
+
+[workspace.package]
+version = "0.1.0-alpha"
+edition = "2024"
+rust-version = "1.99.1"
+license = "BSD-3-Clause"
+repository = "https://github.com/biggaloy/rust-morm"
+
+[workspace.dependencies]
+morm = { path = "crates/morm", version = "0.1.0-alpha" }
+morm-admin = { path = "crates/morm-admin", version = "0.1.0-alpha" }
+morm-core = { path = "crates/morm-core", version = "0.1.0-alpha" }
+morm-macros = { path = "crates/morm-macros", version = "0.1.0-alpha" }
+morm-migrate = { path = "crates/morm-migrate", version = "0.1.0-alpha" }

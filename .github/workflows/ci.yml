@@ -1,0 +1,182 @@
+# covers: R-0792, R-0797, R-0957
+name: ci
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+  MSRV: "1.99.1"
+
+jobs:
+  coverage:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - run: python3 plans/plan-approved/tools/check_coverage.py --code crates tests benches fuzz .github
+
+  fmt:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-rust
+        with:
+          components: rustfmt
+      - run: cargo fmt --all --check
+
+  clippy:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-rust
+        with:
+          components: clippy
+      - run: cargo clippy --locked --workspace --all-targets --all-features -- -D warnings
+
+  unit:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-rust
+      - run: cargo test --locked --workspace --exclude morm-tests --all-targets
+      # covers: R-0042
+      - name: Install morm-admin
+        run: |
+          cargo install --locked --path crates/morm-admin --root "$RUNNER_TEMP/install"
+          "$RUNNER_TEMP/install/bin/morm-admin"
+
+  trybuild:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-rust
+        with:
+          toolchain: ${{ env.MSRV }}
+      - run: cargo test --locked -p morm-tests --features ui --test ui
+
+  doc:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-rust
+      - run: cargo test --locked --workspace --doc
+
+  integration:
+    name: integration (pg ${{ matrix.pg }}, ${{ matrix.transport }})
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        pg: [15, 16, 17, 18]
+        transport: [tcp, unix]
+        include:
+          - transport: tcp
+            host: 127.0.0.1
+          - transport: unix
+            host: /tmp/morm-pg
+    services:
+      postgres:
+        image: postgres:${{ matrix.pg }}
+        env:
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        volumes:
+          - /tmp/morm-pg:/var/run/postgresql
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 2s
+          --health-timeout 5s
+          --health-retries 30
+    env:
+      MORM_TEST_TRANSPORT: ${{ matrix.transport }}
+      MORM_TEST_PG_MAJOR: ${{ matrix.pg }}
+      MORM_TEST_DSN: host=${{ matrix.host }} port=5432 user=postgres dbname=postgres
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-rust
+      - run: cargo test --locked -p morm-tests
+      - name: Migration suite
+        run: cargo test --locked -p morm-migrate --all-features
+
+  pooler:
+    runs-on: ubuntu-24.04
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 2s
+          --health-timeout 5s
+          --health-retries 30
+    env:
+      MORM_TEST_TRANSPORT: pgbouncer
+      MORM_TEST_PG_MAJOR: 18
+      MORM_TEST_DSN: host=127.0.0.1 port=6432 user=postgres dbname=postgres
+      MORM_TEST_PGBOUNCER_ADMIN_DSN: host=127.0.0.1 port=6432 user=postgres dbname=pgbouncer
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-rust
+      - name: Start PgBouncer
+        run: bash .github/scripts/start_pgbouncer.sh
+      - run: cargo test --locked -p morm-tests --features pooler --test smoke --test pooler
+
+  msrv:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-rust
+        with:
+          toolchain: ${{ env.MSRV }}
+      - run: cargo build --locked --workspace --all-targets
+
+  features:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-rust
+      - run: python3 .github/scripts/feature_combos.py
+
+  # The one check `main` requires. It runs even after a failure, because a
+  # skipped required check counts as passing.
+  # covers: R-0796
+  ci:
+    if: always()
+    needs: [coverage, fmt, clippy, unit, trybuild, doc, integration, pooler, msrv, features]
+    runs-on: ubuntu-24.04
+    steps:
+      - env:
+          RESULTS: ${{ join(needs.*.result, ' ') }}
+        run: |
+          echo "$RESULTS"
+          for result in $RESULTS; do
+            [ "$result" = success ] || exit 1
+          done

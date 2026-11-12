@@ -1,0 +1,22 @@
+short                   time:   [52.558 µs 52.689 µs 52.852 µs]
+                        change: [+298.74% +303.18% +310.79%] (p = 0.00 < 0.05)
+                        Performance has regressed.
+Found 2 outliers among 10 measurements (20.00%)
+  1 (10.00%) high mild
+  1 (10.00%) high severe
+
+a_group_of_benches/with_a_really_quite_long_name_that_wraps/1000
+                        time:   [52.611 µs 52.784 µs 53.189 µs]
+                        change: [+302.64% +305.40% +308.17%] (p = 0.00 < 0.05)
+                        Performance has regressed.
+
+tp/bytes                time:   [52.683 µs 52.816 µs 52.942 µs]
+                        thrpt:  [18.446 MiB/s 18.490 MiB/s 18.537 MiB/s]
+                 change:
+                        time:   [+301.54% +302.66% +303.83%] (p = 0.00 < 0.05)
+                        thrpt:  [−75.237% −75.165% −75.096%]
+                        Performance has regressed.
+Found 2 outliers among 10 measurements (20.00%)
+  1 (10.00%) low mild
+  1 (10.00%) high severe
+

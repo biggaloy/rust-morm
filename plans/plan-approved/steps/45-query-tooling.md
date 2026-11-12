@@ -2,7 +2,7 @@
 
 - **Phase:** Tools
 - **Depends on:** 42
-- **Can run beside:** 23, 39, 40, 43, 44
+- **Can run beside:** 23, 39, 40, 43, 44, 51, 52, 53, 54, 58, 59, 60
 - **Crates:** `morm`, `morm-macros`, `morm-admin`
 - **PR approval:** CI and an independent review
 

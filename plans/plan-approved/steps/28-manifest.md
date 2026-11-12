@@ -2,7 +2,7 @@
 
 - **Phase:** Migrations
 - **Depends on:** 06, 05
-- **Can run beside:** 10, 11, 12, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 27, 47
+- **Can run beside:** 10, 11, 12
 - **Crates:** `morm-macros`, `morm-core`, `morm-admin`
 - **PR approval:** CI and an independent review
 

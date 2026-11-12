@@ -2,7 +2,7 @@
 
 - **Phase:** Migrations
 - **Depends on:** 35, 18
-- **Can run beside:** 12, 19, 20, 21, 22, 23, 24, 25, 27, 47
+- **Can run beside:** 19, 20, 21, 22, 23, 24, 25, 27, 47
 - **Crates:** `morm-migrate`, `morm-macros`, `morm`
 - **PR approval:** CI and an independent review
 
@@ -14,7 +14,7 @@ Read each object kind from the catalog, diff it, and apply it with an exact inve
 
 ## Deliverables
 
-- IR, catalog reading, diff and `Op` with inverse for each kind: functions, procedures, triggers, policies, grants, views, materialized views, enums, domains, composite types, sequences
+- IR, catalog reading, diff and `Op` with inverse for each kind: functions, procedures, triggers, policies, grants, views, materialized views
 - Running `.sql` definitions on scratch
 - Placeholder roles on scratch
 - Read-only view models, `db.call`, `db.refresh`
@@ -26,6 +26,7 @@ Each object kind goes from a declaration to a real database and back through the
 ## Out of scope
 
 - Dependency recreation (step 37)
+- Enums, domains, composite types and sequences (step 57)
 
 ## Requirements
 
@@ -37,6 +38,8 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 - **R-0538** **Models over views are read-only.** `#[pg_view]` and `#[pg_view(materialized)]` models have no insert, update or delete, so a write is a compile error. `db.refresh::<T>()` refreshes a materialized view, concurrently when it has a unique index.
 - **R-0539** Macros also generate a typed caller where the signature allows, for example `db.call(archive_users, &days)`.
 - **R-0540** Roles are cluster-wide, so they aren't created. `morm-admin scratch` makes placeholder roles so policies and grants can run on scratch.
+
+**R-1178** **Triggers on partitions.** A row trigger on a partitioned table sits on every partition under the same name. On Postgres 18.6 and 17.11, `CREATE TRIGGER p_t BEFORE INSERT ON p FOR EACH ROW` put `p_t` on partition `p1` with `tgparentid` pointing at the parent's trigger, while one on an inheritance parent stayed on the parent alone. So the catalog reader reads a trigger with `tgparentid <> 0` as its parent's, as it reads a constraint or an index a partition holds from its parent in step 29, and a partition's managed triggers are only its own.
 
 ## Test obligations
 
