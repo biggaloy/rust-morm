@@ -78,7 +78,7 @@ db.update::<Product>(42).set_expr(F.stock, "stock - $1", &n).run().await?;  // a
 - **R-0348** `insert_many` is atomic on every path: all rows or none, in one transaction.
 - **R-0349** **`.returning()` doesn't promise input order,** because rows are sorted by key and grouped by pattern, so match returned rows by a key.
 - **R-0350** **Array columns:** `UNNEST` flattens nested arrays, so two rows holding `text[]` values would become four. A `Vec<T>` column is sent as a `text[]` of array literals and cast back per row (`x::text[]`), which keeps one statement and works with `.returning()`. These columns use the text format, so the escaping must be exact, and property tests cover quoted `"NULL"` strings, real NULLs, quotes, commas and empty arrays. `COPY` handles arrays directly.
-- **R-0352** **Explicit ids:** a normal insert always leaves an identity column to Postgres, whatever the field holds. `.explicit_ids()` on `insert` and `insert_many` writes the ids you give, adds `OVERRIDING SYSTEM VALUE` for `GENERATED ALWAYS`, and moves the sequence past them in the same transaction.
+- **R-0352** **Explicit ids:** a normal insert always leaves an identity column to Postgres, whatever the field holds. `.explicit_ids()` on `insert` and `insert_many` writes the ids you give, adds `OVERRIDING SYSTEM VALUE` whenever it sends an identity column, and moves the sequence past them in the same transaction. Postgres needs it for `GENERATED ALWAYS` and accepts it under `BY DEFAULT`, where it changes nothing: on Postgres 18.6 and 17.11 an insert with it stored the given id in a `BY DEFAULT` column. So it's sent under either kind, whichever the model was built with, and a build made while a column was `BY DEFAULT` keeps writing chosen ids after a migration makes it `GENERATED ALWAYS`.
 - **R-0353** It takes the two-argument `pg_advisory_xact_lock(<morm namespace>, <sequence oid>)`, which can't collide with the hashed keys of `tx.advisory_lock`, so two imports can't overwrite each other's position, then calls `setval(seq, max(id))` only when `max(id) >= last_value`. It's `>=` because a sequence that was never used has `last_value = 1` with nothing taken, and the condition means a stale read can't move the sequence backwards.
 - **R-0354** It needs `SELECT` and `UPDATE` on the sequence, unlike normal identity inserts, so give those grants only to the role that imports.
 - **R-0355** A normal insert can still collide with an imported id above the sequence until that transaction finishes, and the advisory lock doesn't stop normal inserts. Run imports while the table is quiet.
@@ -106,6 +106,6 @@ db.update::<Product>(42).set_expr(F.stock, "stock - $1", &n).run().await?;  // a
 | T-0032 | integration | insert |
 | T-0060 | integration | every `insert_many` path at a million rows |
 | T-0095 | integration | concurrent `.explicit_ids()` runs and fresh sequences |
-| T-0097 | integration | `.explicit_ids()` with both identity kinds and with sequences ahead of the data |
+| T-0097 | integration | `.explicit_ids()` with both identity kinds and with sequences ahead of the data, sending `OVERRIDING SYSTEM VALUE` under both, and from a binary whose model was built with `BY DEFAULT` after `ALTER COLUMN ... SET GENERATED ALWAYS` |
 | T-0098 | integration | changed defaults reaching old binaries |
 | T-0099 | integration | `OrDefault` |

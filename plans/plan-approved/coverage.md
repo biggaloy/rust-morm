@@ -4,7 +4,7 @@ Generated from the frozen plan. Each requirement and test obligation lives in ex
 
 Kinds: `code` needs a tagged test, `doc` is checked in the README step, `info` is context with nothing to build.
 
-Totals: 1193 requirements, 270 test obligations.
+Totals: 1197 requirements, 272 test obligations.
 
 ## Requirements
 
@@ -1203,6 +1203,10 @@ Totals: 1193 requirements, 270 test obligations.
 | R-1191 | code | 34 | 0 | **`rollback --fast` runs the down's one-transaction forms.** `--fast` means one thing on b… |
 | R-1192 | code | 39 | 0 | **The safe forms in a down, under `rollback --fast`.** Wherever a down runs one of this st… |
 | R-1193 | doc | 50 | 0 | \| `rollback --fast` \| You roll back with apps stopped and want each step in its one-tran… |
+| R-1194 | code | 41 | 0 | **A model that sends a `GENERATED ALWAYS` identity column.** A model's inserts send every … |
+| R-1195 | code | 41 | 0 | **Adding identity in a rolling deploy.** A build made before a migration that adds identit… |
+| R-1196 | doc | 50 | 0 | The README shows this notice loudly, beside the rolling deploy rows: > **A build whose ins… |
+| R-1197 | doc | 50 | 0 | The README says this plainly, beside that notice. Adding identity to a column that already… |
 
 ## Test obligations
 
@@ -1304,7 +1308,7 @@ Totals: 1193 requirements, 270 test obligations.
 | T-0094 | integration | 19 | `upsert` with nothing to update, including the row deleted between its two statements |
 | T-0095 | integration | 17 | concurrent `.explicit_ids()` runs and fresh sequences |
 | T-0096 | integration | 21 | `NestedConnection` with `join!` and with a stream moved between tasks |
-| T-0097 | integration | 17 | `.explicit_ids()` with both identity kinds and with sequences ahead of the data |
+| T-0097 | integration | 17 | `.explicit_ids()` with both identity kinds and with sequences ahead of the data, sending `… |
 | T-0098 | integration | 17 | changed defaults reaching old binaries |
 | T-0099 | integration | 17 | `OrDefault` |
 | T-0100 | integration | 22 | `tx.lock` with and without `.for_key_change()` against child inserts |
@@ -1478,3 +1482,5 @@ Totals: 1193 requirements, 270 test obligations.
 | T-0268 | integration | 41 | **A partition's model that sends its parent's identity, on Postgres 15–18:** on a partitio… |
 | T-0269 | suite | 34 | **`rollback --fast` runs the down's one-transaction forms:** through step 33's test-only o… |
 | T-0270 | suite | 39 | **The safe forms under `rollback --fast`, on Postgres 15–18:** for migrations whose downs … |
+| T-0271 | integration | 41 | **A model that sends a `GENERATED ALWAYS` identity column, on Postgres 15–18:** on a plain… |
+| T-0272 | integration | 41 | **Adding identity in a rolling deploy, on Postgres 15–18:** on a plain table whose `NOT NU… |
