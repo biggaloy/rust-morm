@@ -10,6 +10,8 @@ publish.workspace = true
 morm-macros.workspace = true
 deadpool = { version = "0.13.1", default-features = false, features = ["managed", "rt_tokio_1"] }
 futures-util = "0.3"
+bytes = "1"
+chrono.workspace = true
 inventory = "0.3.25"
 rust_decimal = { version = "1.43", features = ["db-postgres"] }
 serde = "1"

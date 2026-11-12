@@ -98,7 +98,14 @@ async fn every_type_round_trips_through_dyn_param() {
     let rows = db.query(sql, &params).await.unwrap();
     let r = &rows[0];
     let cols: Vec<Type> = r.columns().iter().map(|c| c.type_().clone()).collect();
-    let want: Vec<Type> = params.iter().map(|p| p.pg_type()).collect();
+    // Raw `String` and `&str` go as `UNKNOWN` (DF1), and Postgres resolves an
+    // unknown in a select list to `text`; every other type is as declared.
+    let declared: Vec<Type> = params.iter().map(|p| p.pg_type()).collect();
+    assert_eq!(
+        (&declared[6], &declared[7], &declared[15]),
+        (&Type::UNKNOWN, &Type::UNKNOWN, &Type::UNKNOWN)
+    );
+    let want: Vec<Type> = params.iter().map(|p| p.value_type()).collect();
     assert_eq!(
         cols[..26],
         want[..26],
@@ -151,7 +158,7 @@ async fn params_bind_to_columns_and_enum_labels_need_no_oid() {
         .batch_execute(
             "DROP TABLE IF EXISTS spike_param; DROP TYPE IF EXISTS spike_mood;
              CREATE TYPE spike_mood AS ENUM ('happy', 'sad');
-             CREATE TABLE spike_param (n int8, t text, j jsonb, d numeric, a int4[], m spike_mood, mm spike_mood[])",
+             CREATE TABLE spike_param (n int8, t text, j jsonb, d numeric, a int4[], m spike_mood)",
         )
         .await
         .unwrap();
