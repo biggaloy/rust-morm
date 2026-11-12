@@ -118,8 +118,8 @@ impl Db {
 pub struct TxOptions<'d, R> { /* db, isolation, settings, R */ }
 pub struct Once;                 // no retry: the closure runs once and may move or mutate captures
 pub struct Retry(/* n */);       // with retry: the closure must be Clone
-impl TxOptions<'_, Once> {
-    pub fn retry(self, n: u32) -> TxOptions<'_, Retry>;
+impl<'d> TxOptions<'d, Once> {
+    pub fn retry(self, n: u32) -> TxOptions<'d, Retry>;
     pub async fn transaction<F, T>(self, f: F) -> Result<T> where F: AsyncFnOnce(&Tx) -> Result<T>;
 }
 impl TxOptions<'_, Retry> {
