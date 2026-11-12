@@ -182,3 +182,8 @@ Decisions still to add on `main`: R-0608, R-1081, T-0208, T-0209.
 - **CC. How a child's or partition's model accounts for what it inherits.** Postgres names inherited foreign keys and CHECKs after the parent's, and indexes with its own names (such as `p1_a_idx`), so they can't match morm's per-table names. Options: (a) the catalog reader treats inherited objects as the parent's, and a child's model declares only its own (recommended); (b) each child's model declares them under the parent's names; (c) refuse these statements on partitioned tables.
 - **CD. `bench.yml` also installs a package with `apt-get`** and can hit the same mirror outage. Recommended: the same fallback pattern (retry with a cut-off, then a pinned image or a cached download), failing loudly if all fail.
 - **Answered:** CB to CD as recommended, and the edit's choices approved.
+
+## From the edit at `fd59d00` and `f45bb28`, waiting on the owner
+
+- **CE. Can a partition's model declare `pk`?** Under CC a partition's primary key is the parent's, so the edit made a partition's model use `base = "bare"`, reached by key through the parent's model, and refused a declared `pk` at preflight with exit `2`. Alternative: allow `pk` as an exception, since Postgres names a partition's key `<partition>_pkey`, which matches morm's name. Recommended: keep it strict.
+- **PR body:** "Not exercised yet" still says `bench.yml` can't be dispatched until it's on `main`; it can now. The final check fixes it.

@@ -27,11 +27,11 @@ The 30-minute wake-up lived only in the session, so a restart removes it. After 
 - Step 01's code is reviewed and fixed. PR #1 now also carries the plan redesign that came out of the reviews: managed enums, steps 51 to 59, the general walk, `plpgsql_check`, `--decide`, and type changes that never break a running app.
 - Every owner decision is in `INDEX.md` under "Decisions since the split". `reviews/step-01-open-items.md` has every open item, A to AV, each answered.
 
-**Latest:** BZ, CA and the `pooler` fallback are in at `b38e532`: every CI job green, PR #1 CLEAN, checker 1171 R / 257 T, 0 problems; IDs in Decisions. The owner answered CB to CD as recommended; one edit agent writes them in. Next free IDs: R-1172, T-0258.
+**Latest:** CB to CD are in at `fd59d00` and `f45bb28`: every CI job green, bench dispatched and its fallback proven, PR #1 CLEAN, checker 1182 R / 261 T, 0 problems; IDs in Decisions. CE, in `reviews/step-01-open-items.md`, is with the owner. Next free IDs: R-1183, T-0262.
 
 ## What comes next
 
-1. Finish the CB to CD edit, confirm CI green, and add its IDs to Decisions.
+1. Get the owner's answer to CE and record it; if it changes the plan, the final check's agent writes it in.
 2. Run a short check of the changes since `09338c2`, the checker and CI, with one fresh reviewer. By owner decision, this is the last round.
 3. Bring PR #1 to the owner, who approves it. No agent merges without that.
 4. Merge, mark step 01 `done`, pull, and check `INDEX.md` on `main` keeps both its Decisions and the branch's rows and order.
