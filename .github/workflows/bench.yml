@@ -27,10 +27,10 @@ jobs:
       - name: Run the benchmarks
         shell: bash
         run: cargo bench --locked --workspace --exclude morm-tests | tee bench-results/cargo-bench.txt
+      - name: Install GNU time
+        run: bash .github/scripts/install_time.sh
       - name: Measure binary size and RSS
         run: |
-          sudo apt-get update
-          sudo apt-get install -y time
           cargo build --locked --release -p morm-admin
           /usr/bin/time -f %M -o bench-results/rss.txt target/release/morm-admin --version > /dev/null
       - name: Collect the measurements

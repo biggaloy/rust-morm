@@ -696,6 +696,7 @@ fn bench_runs_weekly_and_on_demand_and_compares_with_the_last_run() {
         "bench",
         &[
             "cargo bench --locked --workspace --exclude morm-tests | tee bench-results/cargo-bench.txt",
+            "bash .github/scripts/install_time.sh",
             "cargo build --locked --release -p morm-admin",
             "/usr/bin/time -f %M -o bench-results/rss.txt target/release/morm-admin --version > /dev/null",
             "python3 .github/scripts/bench_metrics.py target/release/morm-admin bench-results/rss.txt bench-results/cargo-bench.txt bench-results/metrics.json",
@@ -712,6 +713,176 @@ fn bench_runs_weekly_and_on_demand_and_compares_with_the_last_run() {
     ] {
         assert!(has_line(&job, line), "bench lacks {line}");
     }
+}
+
+// covers: R-0794
+// Stubs stand in for `sudo`, `apt-get`, `curl`, `sha256sum`, `dpkg-deb` and
+// `install`, and record each call, so every path of the script runs here.
+#[test]
+fn bench_installs_gnu_time_from_another_source_when_apt_fails() {
+    let bench = read(".github/workflows/bench.yml");
+    let install_step = step(&bench, "Install GNU time");
+    assert!(
+        has_line(&install_step, "run: bash .github/scripts/install_time.sh"),
+        "the bench job doesn't install GNU time through install_time.sh"
+    );
+    assert!(
+        !commands(&job(&bench, "bench"))
+            .iter()
+            .any(|command| command.contains("apt-get")),
+        "the bench job runs apt-get outside install_time.sh"
+    );
+    let script = read(".github/scripts/install_time.sh");
+    let sha = script
+        .lines()
+        .find_map(|line| line.strip_prefix("deb_sha256="))
+        .expect("install_time.sh pins no SHA-256");
+    assert!(
+        sha.len() == 64 && sha.bytes().all(|b| b.is_ascii_hexdigit()),
+        "the fallback package isn't pinned by SHA-256: {sha}"
+    );
+    let urls: Vec<&str> = script
+        .lines()
+        .skip_while(|line| *line != "urls=(")
+        .skip(1)
+        .take_while(|line| *line != ")")
+        .map(str::trim)
+        .collect();
+    assert_eq!(urls.len(), 2, "install_time.sh needs two download sources");
+    assert!(
+        urls.iter().all(|url| url.starts_with("https://")),
+        "{urls:?}"
+    );
+
+    let dir = scratch("install-time");
+    let bin = dir.join("bin");
+    let tmp = dir.join("tmp");
+    fs::create_dir_all(&bin).unwrap();
+    fs::create_dir_all(&tmp).unwrap();
+    let record = r#"echo "$(basename "$0") $*" >> "$STUB_DIR/calls""#;
+    let last = r#"for a in "$@"; do last=$a; done"#;
+    stub(&bin, "sudo", "exec \"$@\"\n");
+    stub(
+        &bin,
+        "apt-get",
+        &format!(
+            r#"{record}
+case "$STUB_MODE" in
+flaky) [ ! -f "$STUB_DIR/failed" ] || exit 0; touch "$STUB_DIR/failed"; exit 100 ;;
+ok) ;;
+*) exit 100 ;;
+esac
+"#
+        ),
+    );
+    stub(
+        &bin,
+        "curl",
+        &format!(
+            r#"{last}
+echo "curl $last" >> "$STUB_DIR/calls"
+case "$STUB_MODE" in
+all-down) exit 6 ;;
+mirror-down) case "$last" in https://deb.debian.org/*) exit 6 ;; esac ;;
+esac
+"#
+        ),
+    );
+    stub(
+        &bin,
+        "sha256sum",
+        r#"read -r sum file
+echo "sha256sum $sum" >> "$STUB_DIR/calls"
+[ "$STUB_MODE" != bad-sha ] || exit 1
+"#,
+    );
+    stub(
+        &bin,
+        "dpkg-deb",
+        r#"echo "dpkg-deb $1" >> "$STUB_DIR/calls"
+mkdir -p "$3/usr/bin" && touch "$3/usr/bin/time"
+"#,
+    );
+    stub(
+        &bin,
+        "install",
+        &format!("{last}\necho \"install $last\" >> \"$STUB_DIR/calls\"\n"),
+    );
+    let run = |mode: &str| {
+        let _ = fs::remove_file(dir.join("calls"));
+        let _ = fs::remove_file(dir.join("failed"));
+        let output = Command::new("bash")
+            .arg(root().join(".github/scripts/install_time.sh"))
+            .current_dir(root())
+            .env("PATH", path_with(&bin))
+            .env("RETRY_DELAY", "0")
+            .env("TMPDIR", &tmp)
+            .env("STUB_DIR", &dir)
+            .env("STUB_MODE", mode)
+            .output()
+            .expect("bash should run");
+        let calls = fs::read_to_string(dir.join("calls")).unwrap_or_default();
+        let log = String::from_utf8(output.stdout.clone()).unwrap();
+        (output.status.success(), calls, log)
+    };
+    let update = "apt-get update\n";
+    let apt = "apt-get install -y time\n";
+    let fetch = |url: &str| format!("curl {url}\nsha256sum {sha}\n");
+    let unpack = "dpkg-deb -x\ninstall /usr/bin/time\n";
+
+    let (ok, calls, _) = run("ok");
+    assert!(ok);
+    assert_eq!(calls, format!("{update}{apt}"));
+
+    let (ok, calls, _) = run("flaky");
+    assert!(ok, "one failure is retried");
+    assert_eq!(calls, format!("{update}{update}{apt}"));
+
+    let (ok, calls, log) = run("down");
+    assert!(ok, "two failures install the pinned package: {log}");
+    assert_eq!(calls, format!("{update}{update}{}{unpack}", fetch(urls[0])));
+    assert!(log.contains("::warning::"), "{log}");
+
+    let (ok, calls, log) = run("mirror-down");
+    assert!(ok, "a failed download tries the other source: {log}");
+    assert_eq!(
+        calls,
+        format!(
+            "{update}{update}curl {}\n{}{unpack}",
+            urls[0],
+            fetch(urls[1])
+        )
+    );
+
+    let (ok, calls, log) = run("bad-sha");
+    assert!(
+        !ok,
+        "a package that doesn't match the pin is never installed"
+    );
+    assert_eq!(
+        calls,
+        format!("{update}{update}{}{}", fetch(urls[0]), fetch(urls[1]))
+    );
+    assert!(log.contains("::error::"), "{log}");
+
+    let (ok, calls, log) = run("all-down");
+    assert!(!ok, "every source failing fails the step");
+    assert_eq!(
+        calls,
+        format!("{update}{update}curl {}\ncurl {}\n", urls[0], urls[1])
+    );
+    assert!(log.contains("::error::"), "{log}");
+
+    assert!(
+        script.contains(
+            "sudo timeout 300 apt-get update && sudo timeout 300 apt-get install -y time"
+        ),
+        "each apt command must be cut off, so a hung mirror counts as a failure"
+    );
+    assert!(
+        script.contains("curl -fsSL --max-time 120 "),
+        "each download must be cut off, so a hung source counts as a failure"
+    );
 }
 
 // The stub runs each `--jq` filter with real `jq` on sample JSON, so a wrong filter
