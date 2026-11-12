@@ -1,0 +1,12 @@
+[package]
+name = "models-a"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+# Depends on bases-b only: bases-a's fields reach it through bases-b's base.
+[dependencies]
+morm.workspace = true
+bases-b.workspace = true

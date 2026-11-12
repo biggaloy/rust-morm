@@ -1,0 +1,19 @@
+error: future cannot be sent between threads safely
+  --> tests/ui/p05_hook_not_send.rs:12:66
+   |
+12 |     async fn pre_insert(_: &mut [Self], db: &impl morm::Conn) -> morm::Result<()> {
+   |                                                                  ^^^^^^^^^^^^^^^^ future returned by `pre_insert` is not `Send`
+   |
+   = help: within `impl Future<Output = Result<(), morm::Error>>`, the trait `Send` is not implemented for `Rc<i32>`
+note: future is not `Send` as this value is used across an await
+  --> tests/ui/p05_hook_not_send.rs:14:35
+   |
+13 |         let local = Rc::new(1);
+   |             ----- has type `Rc<i32>` which is not `Send`
+14 |         db.query("SELECT 1", &[]).await?;
+   |                                   ^^^^^ await occurs here, with `local` maybe used later
+note: required by a bound in `Hooks::pre_insert::{anon_assoc#0}`
+  --> $WORKSPACE/morm/src/hooks.rs
+   |
+   |     fn pre_insert(rows: &mut [Self], db: &impl Conn) -> impl Future<Output = Result<()>> + Send {
+   |                                                                                            ^^^^ required by this bound in `Hooks::pre_insert::{anon_assoc#0}`

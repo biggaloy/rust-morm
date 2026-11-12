@@ -1,0 +1,7 @@
+error[E0046]: not all trait items implemented, missing: `OVERRIDES`
+ --> tests/ui/p05_hooks_without_macro.rs:8:1
+  |
+8 | impl morm::Hooks for Plain {
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^ missing `OVERRIDES` in implementation
+  |
+  = help: implement the missing item: `const OVERRIDES: Overrides<Self> = /* value */;`

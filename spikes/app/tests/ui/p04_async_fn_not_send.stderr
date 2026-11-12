@@ -1,0 +1,24 @@
+error: implementation of `Send` is not general enough
+  --> tests/ui/p04_async_fn_not_send.rs:11:5
+   |
+11 | /     tokio::spawn(async move {
+12 | |         db.retry(3)
+13 | |             .transaction_async_fn(async |tx| {
+14 | |                 tx.query("SELECT 1", &[&row.id]).await?;
+...  |
+17 | |             .await
+18 | |     });
+   | |______^ implementation of `Send` is not general enough
+   |
+  ::: $WORKSPACE/morm/src/tx.rs
+   |
+   | /     {
+   | |         let begin = self.begin();
+   | |         let mut left = self.retry.0;
+   | |         loop {
+...  |
+   | |     }
+   | |_____- this async fn captures a value whose type is not `Send`
+   |
+   = note: `Send` would have to be implemented for the type `&'0 i64`, for any lifetime `'0`...
+   = note: ...but `Send` is actually implemented for the type `&'1 i64`, for some specific lifetime `'1`
