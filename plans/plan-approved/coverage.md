@@ -4,7 +4,7 @@ Generated from the frozen plan. Each requirement and test obligation lives in ex
 
 Kinds: `code` needs a tagged test, `doc` is checked in the README step, `info` is context with nothing to build.
 
-Totals: 1201 requirements, 274 test obligations.
+Totals: 1203 requirements, 277 test obligations.
 
 ## Requirements
 
@@ -362,9 +362,9 @@ Totals: 1201 requirements, 274 test obligations.
 | R-0350 | code | 17 | 763 | - **Array columns:** `UNNEST` flattens nested arrays, so two rows holding `text[]` values … |
 | R-0351 | code | 18 | 763 | - Array columns work through `update_each` the same way. |
 | R-0352 | code | 17 | 764 | - **Explicit ids:** a normal insert always leaves an identity column to Postgres, whatever… |
-| R-0353 | code | 17 | 765 | - It takes the two-argument `pg_advisory_xact_lock(<morm namespace>, <sequence oid>)`, whi… |
-| R-0354 | code | 17 | 766 | - It needs `SELECT` and `UPDATE` on the sequence, unlike normal identity inserts, so give … |
-| R-0355 | code | 17 | 767 | - A normal insert can still collide with an imported id above the sequence until that tran… |
+| R-0353 | code | 17 | 765 | - **Moving the sequence.** It finds the identity's sequence through `pg_depend`, as the on… |
+| R-0354 | code | 17 | 766 | - It needs `SELECT` and `UPDATE` on the sequence, and `UPDATE` on the table for the lock, … |
+| R-0355 | code | 17 | 767 | - **What the move costs, and what it doesn't stop.** The lock waits for writes already run… |
 | R-0356 | code | 17 | 768 | - An id set without `.explicit_ids()` is ignored, which is almost always a mistake, so deb… |
 | R-0357 | code | 17 | 769 | - `.in_batches(n)` on `insert_many` commits every `n` rows, for bulk loads that shouldn't … |
 | R-0358 | code | 17 | 770 | - `db.insert_stream::<T>(stream)` takes rows from a `Stream`, through `COPY`, so 100 milli… |
@@ -841,7 +841,7 @@ Totals: 1201 requirements, 274 test obligations.
 | R-0829 | doc | 50 | 1703 | \| `morm::sample_scope` \| A traced request must keep all of its query spans \| |
 | R-0830 | doc | 50 | 1704 | \| `slow_query` \| You want slow queries reported from the app, including time waiting for… |
 | R-0831 | doc | 50 | 1705 | \| `metrics_interval` \| Your graphs need finer detail, or your platform bill needs to com… |
-| R-0832 | doc | 50 | 1706 | \| `.explicit_ids()` \| You insert rows with ids you already have, such as an import \| |
+| R-0832 | doc | 50 | 1706 | \| `.explicit_ids()` \| You insert, stream or upsert rows with ids you already have, such … |
 | R-0833 | doc | 50 | 1707 | \| `morm::OrDefault` \| A nullable column has a default, and you sometimes need a real NUL… |
 | R-0834 | doc | 50 | 1708 | \| `.for_key_change()` \| You will delete locked rows or change their keys, and other requ… |
 | R-0835 | doc | 50 | 1709 | \| `blocking` \| A `clean` function is slow, such as password hashing \| |
@@ -1211,6 +1211,8 @@ Totals: 1201 requirements, 274 test obligations.
 | R-1199 | code | 30 | 0 | **Adding identity to a column that already has a default.** Postgres refuses `ADD GENERATE… |
 | R-1200 | code | 30 | 0 | **A sequence something else uses.** Postgres drops a sequence only when nothing else depen… |
 | R-1201 | doc | 50 | 0 | The README shows this notice loudly, beside the safe forms table: > **A sequence something… |
+| R-1202 | code | 17 | 0 | - **Chosen keys through `insert_stream`.** `db.insert_stream::<T>(stream).explicit_ids()` … |
+| R-1203 | code | 19 | 0 | - **Chosen keys through `upsert`.** `db.upsert(&mut p, target).explicit_ids()` and `db.ups… |
 
 ## Test obligations
 
@@ -1490,3 +1492,6 @@ Totals: 1201 requirements, 274 test obligations.
 | T-0272 | integration | 41 | **Adding identity in a rolling deploy, on Postgres 15–18:** on a plain table whose `NOT NU… |
 | T-0273 | integration | 41 | **A model that sends a `BY DEFAULT` identity column, on Postgres 15–18:** on a plain table… |
 | T-0274 | integration | 30 | **Adding identity to a column that has a default, on Postgres 15–18:** on a `serial` key h… |
+| T-0275 | integration | 17 | **Chosen keys through `insert_stream`, on Postgres 15–18:** under each identity kind, on a… |
+| T-0276 | integration | 17 | **The sequence under concurrent writes, on Postgres 15–18:** with normal inserts running b… |
+| T-0277 | integration | 19 | **Chosen keys through `upsert` and `upsert_many`, on Postgres 15–18:** under each identity… |

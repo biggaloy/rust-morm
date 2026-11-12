@@ -14,7 +14,7 @@ Read `../rules.md`, `../contracts.md` and, once it exists, `../proofs.md` first.
 
 ## Deliverables
 
-- `db.upsert`, `db.upsert_many`, conflict targets by field, tuple and `UK`, partial index filters, `SET` list rules, `.update_only`, the empty-`SET` path, outcome reporting on every Postgres version
+- `db.upsert`, `db.upsert_many`, conflict targets by field, tuple and `UK`, partial index filters, `SET` list rules, `.update_only`, the empty-`SET` path, `.explicit_ids()` on both, outcome reporting on every Postgres version
 
 ## End-to-end check
 
@@ -34,6 +34,8 @@ Owned elsewhere, and quoted so this step needs no other file. Nothing here needs
 > db.update_each::<Product>(&rows, &[F.price]).await?;                // per-row values, one statement
 > db.update::<Product>(42).set_expr(F.stock, "stock - $1", &n).run().await?;  // atomic math in SQL
 > ```
+>
+> **Inserts' `.explicit_ids()` moves the sequence first.** On `insert` and `insert_many`, `.explicit_ids()` finds the identity's sequence through `pg_depend`, as the one the identity owns, and takes the two-argument `pg_advisory_xact_lock(<morm namespace>, <sequence oid>)`. Then, inside a savepoint, it takes `LOCK TABLE <table> IN SHARE MODE`, reads the sequence's `last_value`, calls `setval(seq, max(id))` only when `max(id) >= last_value`, where `max(id)` is the highest key the call sends, and rolls back to the savepoint, which releases the table lock and keeps the `setval`. It does this before sending any row, in the call's transaction. The role needs `SELECT` and `UPDATE` on the sequence and `UPDATE` on the table.
 >
 
 ## Out of scope
@@ -61,6 +63,7 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 - **R-0380** **An upsert with nothing to update still returns the row.** When the `SET` list is empty, it runs `DO NOTHING`, which writes nothing but returns no row on a conflict, then `SELECT`s by the conflict target, including any `filter`. That's a second round trip only on a conflict. If the row was deleted between the two, the upsert retries once. This path takes no row lock, unlike an upsert with a `SET` list, so inside a transaction use `tx.get_for_update` if you need one. A no-op `SET` was rejected, because it locks the row and writes a new row version on every call.
 - **R-0947** `db.upsert_many(&mut rows, target)` is the batch form of `upsert`, taking the same conflict targets. It's the call the plan's "batch upsert" and "`upsert` batches" mean.
 - **R-0948** Array columns work through `upsert` and `upsert_many` the same way as `insert_many`.
+- **R-1203** **Chosen keys through `upsert`.** `db.upsert(&mut p, target).explicit_ids()` and `db.upsert_many(&mut rows, target).explicit_ids()` write the keys you give into an identity column, under either kind: every `INSERT` they send, on every path, including the chunked one and `DO NOTHING`, carries `OVERRIDING SYSTEM VALUE`, which Postgres takes with `ON CONFLICT`. On Postgres 18.6 and 17.11, `INSERT ... OVERRIDING SYSTEM VALUE ... ON CONFLICT (id) DO UPDATE` stored a new row under its given key and updated the existing one, through `VALUES` and through `UNNEST`, `DO NOTHING` took the clause the same way, and without it a sent key failed with `428C9` before any conflict was checked. The identity column is never in the `DO UPDATE SET` list, though the row supplies it: under `GENERATED ALWAYS` Postgres refused `SET id = EXCLUDED.id` with `column "id" can only be updated to DEFAULT`, and under `BY DEFAULT` it changed the existing row's key. So a row that conflicts on another target keeps the key it has, and the row Postgres returns fills the field with it. An upsert with a chosen key takes no value from the sequence and doesn't move it: after one stored 10, the next insert leaving the key out was given 3, so the sequence would give 10 again. So it moves the sequence past the highest key it sends, before sending any row, in the same transaction, the way inserts' `.explicit_ids()` does, and a single `upsert` with `.explicit_ids()` runs in the internal transaction with confirmed commit. A key left unused, because its row conflicted on another target, leaves a gap in the sequence, which is harmless.
 
 ### Hard to misuse
 
@@ -87,3 +90,4 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 | T-0091 | integration | `upsert` on expression unique indexes through `UK` |
 | T-0092 | integration | `upsert` outcomes on models with no primary key and with a NULL key under `NULLS NOT DISTINCT` |
 | T-0094 | integration | `upsert` with nothing to update, including the row deleted between its two statements |
+| T-0277 | integration | **Chosen keys through `upsert` and `upsert_many`, on Postgres 15–18:** under each identity kind, with the key as the conflict target and with another unique key, new rows keep their chosen keys, a conflicting row keeps its own and the field is filled with it, the identity column is never in `DO UPDATE SET`, every `INSERT` carries `OVERRIDING SYSTEM VALUE`, on the chunked and `DO NOTHING` paths too, and the sequence ends past the highest key sent, moved before any row, with normal inserts running beside it never given a key twice |
