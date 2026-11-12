@@ -31,7 +31,7 @@ The 30-minute wake-up lived only in the session, so a restart removes it. After 
 
 ## What comes next
 
-1. Finish the CO README edit, confirm CI green, add any IDs to Decisions. By owner decision the final check was the last review round.
+By owner decision the final check was the last review round.
 1. Bring PR #1 to the owner, who approves it. No agent merges without that.
 2. Merge, mark step 01 `done`, pull, and check `INDEX.md` on `main` keeps both its Decisions and the branch's rows and order.
 3. Start step 02 as a fresh agent, then an independent review. The owner approves the PRs of steps 01, 02, 03, 50 and 55.
