@@ -1,0 +1,106 @@
+//! Proof 4: `async |tx|` closures, with and without retry.
+
+use crate::param::Param;
+use crate::pool::{Conn, Object, run};
+use crate::{Db, Result};
+use tokio_postgres::Row;
+
+/// An open transaction. Closures receive `&Tx`.
+pub struct Tx {
+    conn: Object,
+}
+
+impl Conn for Tx {
+    fn tx(&self) -> Option<&Tx> {
+        Some(self)
+    }
+    async fn query(&self, sql: &'static str, params: &[&dyn Param]) -> Result<Vec<Row>> {
+        run(&self.conn, sql, params).await
+    }
+}
+
+/// `40001` and `40P01`: the errors a retry is for.
+fn retryable(e: &crate::Error) -> bool {
+    matches!(e.code(), Some("40001" | "40P01"))
+}
+
+async fn attempt<F, T>(db: &Db, begin: &str, f: F) -> Result<T>
+where
+    F: AsyncFnOnce(&Tx) -> Result<T>,
+{
+    let conn = db.checkout().await?;
+    conn.batch_execute(begin).await?;
+    let tx = Tx { conn };
+    match f(&tx).await {
+        Ok(v) => {
+            tx.conn.batch_execute("COMMIT").await?;
+            Ok(v)
+        }
+        Err(e) => {
+            let _ = tx.conn.batch_execute("ROLLBACK").await;
+            Err(e)
+        }
+    }
+}
+
+impl Db {
+    /// The plain form: any `async` closure, run once. It may move or mutate
+    /// what it captures.
+    pub async fn transaction<F, T>(&self, f: F) -> Result<T>
+    where
+        F: AsyncFnOnce(&Tx) -> Result<T>,
+    {
+        attempt(self, "BEGIN", f).await
+    }
+
+    /// `db.retry(n)`: rerun the closure on a serialization failure or deadlock.
+    pub fn retry(&self, n: u32) -> Retrying<'_> {
+        Retrying { db: self, n }
+    }
+}
+
+pub struct Retrying<'d> {
+    db: &'d Db,
+    n: u32,
+}
+
+/// What `.retry(n)` takes: a closure it can call again, so it can't mutate
+/// what it captures. Each attempt runs a fresh copy (`Clone`), so a closure
+/// that captures by shared reference costs nothing to copy.
+#[diagnostic::on_unimplemented(
+    message = "a closure passed to `.retry()` runs again on each attempt, so it can't mutate what it captures",
+    label = "this closure mutates something it captures, or captures something that isn't `Clone`",
+    note = "capture by shared reference, or `move` in a value that is `Clone`; use the plain `db.transaction(..)` to run once"
+)]
+pub trait RetryBody<T>: AsyncFnOnce(&Tx) -> Result<T> + Clone {}
+impl<F, T> RetryBody<T> for F where F: AsyncFnOnce(&Tx) -> Result<T> + Clone {}
+
+impl Retrying<'_> {
+    pub async fn transaction<F, T>(&self, f: F) -> Result<T>
+    where
+        F: RetryBody<T>,
+    {
+        let mut left = self.n;
+        loop {
+            match attempt(self.db, "BEGIN ISOLATION LEVEL SERIALIZABLE", f.clone()).await {
+                Err(e) if left > 0 && retryable(&e) => left -= 1,
+                other => return other,
+            }
+        }
+    }
+
+    /// The form the plan first named, `AsyncFn`, kept to show where it fails:
+    /// a closure capturing by reference isn't `Send` under `tokio::spawn`.
+    pub async fn transaction_async_fn<F, T>(&self, f: F) -> Result<T>
+    where
+        F: AsyncFn(&Tx) -> Result<T>,
+    {
+        let mut left = self.n;
+        loop {
+            match attempt(self.db, "BEGIN ISOLATION LEVEL SERIALIZABLE", async |tx: &Tx| f(tx).await).await {
+                Err(e) if left > 0 && retryable(&e) => left -= 1,
+                other => return other,
+            }
+        }
+    }
+}
