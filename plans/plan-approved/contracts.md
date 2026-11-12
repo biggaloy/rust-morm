@@ -170,7 +170,8 @@ impl Tx {
     pub async fn transaction<F, T>(&self, f: F) -> Result<T> where F: AsyncFnOnce(&Tx) -> Result<T>;
     // Each setting is immediate, one SET LOCAL, and holds for the rest of the transaction,
     // through savepoints that are released; rolling back to a savepoint opened before it
-    // undoes it, as Postgres does: tx.lock_timeout(d).await?
+    // undoes it, as Postgres does: tx.lock_timeout(d).await?. On 15 and 16,
+    // transaction_timeout moves morm's client-side timer instead (R-0471)
     pub async fn statement_timeout(&self, d: Duration) -> Result<()>;
     pub async fn lock_timeout(&self, d: Duration) -> Result<()>;
     pub async fn transaction_timeout(&self, d: Duration) -> Result<()>;

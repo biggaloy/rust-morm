@@ -1535,7 +1535,7 @@ Totals: 1233 requirements, 296 test obligations.
 | T-0285 | integration | 16 | **`sql!` on Postgres 15–18:** queries with `citext`, `char(5)`, an `i32` on a `bigint` fie… |
 | T-0286 | integration | 18 | **The parameter matrix through morm's own paths, on Postgres 15–18:** with the session's `… |
 | T-0287 | trybuild | 20 | `tx.isolation(..)` and `tx.retry(n)` don't compile |
-| T-0288 | integration | 20 | **Settings and savepoints on `tx`, on Postgres 15–18:** `tx.lock_timeout(d).await?` and `t… |
+| T-0288 | integration | 20 | **Settings and savepoints on `tx`, on Postgres 15–18:** `tx.lock_timeout(d).await?`, `tx.s… |
 | T-0289 | integration | 20 | **Retry pauses are random:** the pause between attempts comes from a real random source, n… |
 | T-0290 | integration | 21 | **The stream check with streams open:** with 1, 100 and 1,000 streams open on other tasks,… |
 | T-0291 | trybuild | 24 | **`#[morm::hooks]` refuses a macro call** among the impl's items, with the message that ho… |
