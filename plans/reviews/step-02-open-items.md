@@ -41,3 +41,4 @@ PR #2 (`step-02-proofs`), head `f50823e` when the step agent reported. CI green 
 
 - **DI1. A PgBouncer role not set to UTC** isn't caught at startup. Options: (a) add `current_setting('TimeZone')` to the startup check's existing statement and refuse the pool (recommended); (b) leave it to `doctor`, and the README says so.
 - **DI2. A stray `timezone` key in `morm.toml`.** Options: (a) refuse it with `Error::Config` (recommended); (b) ignore it. The plan doesn't say how unknown keys are treated in general.
+- **Answered:** DI1 (a) and DI2 (a).
