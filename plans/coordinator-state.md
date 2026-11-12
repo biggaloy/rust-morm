@@ -27,11 +27,11 @@ The 30-minute wake-up lived only in the session, so a restart removes it. After 
 - Step 01's code is reviewed and fixed. PR #1 now also carries the plan redesign that came out of the reviews: managed enums, steps 51 to 59, the general walk, `plpgsql_check`, `--decide`, and type changes that never break a running app.
 - Every owner decision is in `INDEX.md` under "Decisions since the split". `reviews/step-01-open-items.md` has every open item, A to AV, each answered.
 
-**Latest:** CF to CI are in at `28b0c68`: all 18 CI jobs green, PR #1 CLEAN, checker 1189 R / 267 T, 0 problems; IDs in Decisions; no open questions. The short final check of the changes since `09338c2` is running with one fresh reviewer; its findings go to `reviews/step-01-final-check.md`. Next free IDs: R-1190, T-0268.
+**Latest:** the final check is done (`2fff63b`, `reviews/step-01-final-check.md`): checker 1189 R / 267 T, 0 problems; CI all green; PR #1 CLEAN. Findings CJ1 to CJ8: CJ2, CJ3 and CJ4 are with the owner; then one edit agent fixes all eight on the branch. Next free IDs: R-1190, T-0268.
 
 ## What comes next
 
-1. Finish the short check of the changes since `09338c2`, the checker and CI, with one fresh reviewer. By owner decision, this is the last round.
+1. Get the owner's answers to CJ2 to CJ4, record them, and have one edit agent fix CJ1 to CJ8. By owner decision the final check was the last review round.
 2. Bring PR #1 to the owner, who approves it. No agent merges without that.
 3. Merge, mark step 01 `done`, pull, and check `INDEX.md` on `main` keeps both its Decisions and the branch's rows and order.
 4. Start step 02 as a fresh agent, then an independent review. The owner approves the PRs of steps 01, 02, 03, 50 and 55.
