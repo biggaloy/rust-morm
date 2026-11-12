@@ -293,3 +293,170 @@ The loud README notice, in R-1008's form, beside raw SQL:
 > - code that's left out of the build `check-sql` makes and out of your tests;
 > - values compared inside JSON;
 > - your own explicit casts.
+
+## 9. Choices for the owner
+
+**A. `sql!` syntax (recommend A).**
+
+- *A: values inline,* `${v: M::F.field}`, `${v: M::F.field[]}` and `${v: Type}`, with `db.sql(sql!(..))`. A value sits where it's used, so it can't be misnumbered. The macro sees each value beside its neighbours, which M4 needs. This changes R-0412's example from `db.sql(q, &[&vendor_id])` to `db.sql(q)`. `db.sql()` takes a `Sql` or a reference to one, so one `q` can run several times.
+- *B: keep `$n`, and declare each parameter after the string,* as `sql!("... = $1 AND day >= $2", $1: Order::F.vendor_id, $2: NaiveDate)`, with typed tuples, `db.sql(q, (&vendor_id, &since))`. The SQL inside stays valid Postgres that you can paste into `psql`, and R-0412's shape stays. But the order of values is only checked by type, and the slice form `&[&x]` becomes a tuple anyway, so each value's type can be checked.
+
+**B. Plain strings in `db.sql()` and `db.raw()` (recommend A).**
+
+- *A: only `sql!`,* so every fixed raw query is registered and check-sql sees it. A string built at runtime goes through `sql_unchecked(String, &[&dyn Param])`, with the scanner's casts. It has R-0890's "use this when" line already.
+- *B: also keep `db.sql("literal", &[..])`,* with the scanner's casts. Such a query isn't registered, so only `#[morm::test]` checks it, like runtime SQL.
+
+**C. Types with no fixed OID (recommend A).**
+
+- *A: a built-in carrier, cast by name* (section 2). A cached statement that touches the type's table survives a swap. Every parameter goes in binary.
+- *B: `Type::UNKNOWN`, cast by name.* Every cached statement with such a parameter fails after a swap until it's prepared again: `XX000` or `22P02` at Bind, or `42846`.
+
+**D. M4's scope (recommend A).**
+
+- *A: refuse any free value beside a column named through `F`,* even of the same type. Binding through the field tracks the model and adds the compile-time fit check.
+- *B: refuse only when the free value's SQL type differs from the column's,* through a generated trait check at each site. Same-type free values then compile.
+
+**E. How CI checks (recommend A).**
+
+- *A: the analyzed parse tree* (section 6). It sees subqueries, CTEs, functions, `CASE`, `VALUES` and column-to-column comparisons. It costs about 0.35 ms a query, and depends on the tree's node and field names, which step 45 pins on 15 to 18.
+- *B: describe with inference.* It's simpler, but blind to the six inner-scope cases in section 6, and noisy wherever Postgres has no context.
+
+**F. Runtime fragments (recommend A).**
+
+- *A: the scanner writes casts* (section 7). The fragment APIs don't change, and R-0433's scanner is already there.
+- *B: a fragment macro* gives M1 to M7 at compile time, but every fragment API changes shape.
+
+**G. `comp` parameters in `get_where` and `delete_where` (recommend A).**
+
+- *A: bound through the comp's field,* typed `&[&dyn Fits<T>]`. Every example in the plan compares the column (`BETWEEN $1 AND $2`, `< $1`), and binding them gets the column's type. A comp whose value has another type, such as `> now() - $1` with an interval, is a compile error. It moves to `.q()`, with a free value.
+- *B: free,* as `.q()` is. Then `get_where(F.email, "= $1", ..)` on `citext` compares as `text`, which only `#[morm::test]` reports.
+
+**H. Checking runtime SQL (recommend A).**
+
+- *A: in `#[morm::test]`.* It checks every runtime-built shape and every `sql!` query a test runs, once per test process, on one extra connection to the test database, at about 0.35 ms per new shape.
+- *B: in debug builds too.* That's an extra connection and round trip per new shape against development databases.
+- *C: not at all.* Runtime SQL is then checked only by Postgres errors, and item 2 in section 8 grows to every shape.
+
+**I. Stale casts in a statement that touches no table of the type (recommend A).** This changes R-0718.
+
+- *A: retry any error once.* Outside a transaction, any error from a cached statement that casts a parameter to a non-built-in type evicts it, prepares it again and retries once, and a retry that fails again returns its error. Postgres rolled the failed statement back, so the retry is safe, as R-0983 says for the others. R-0981's connection replacement still comes first for `XX000` `cache lookup failed for type`. Inside a transaction, two errors return `Error::SchemaChanged`: that `XX000`, and a `22P02` naming an enum other than the one cast to. Any other error returns as it is.
+- *B: only the two errors seen here.* `22P02` naming another enum, and the `XX000`. A domain's or composite's counterpart would return its error as it is.
+
+**J. Proof 9 in PR #2 (recommend A).**
+
+- *A: rerun the pinned matrix in PR #2 before it merges,* with carriers and casts. C becomes "bound through the field", and R becomes "free, cast to its own type", with each R mismatch pinned as a finding of the rules in section 6. PR #2 is still open, and proof 9 is this design's evidence.
+- *B: leave PR #2's matrix,* and have step 13 pin the new one under the rewritten T-0278.
+
+**K. `NULL` through a field (recommend A).**
+
+- *A: an `Option` value fits only an `Option` field.* A `NULL` bound to a `NOT NULL` column's comparison matches nothing.
+- *B: `Option` fits any field.*
+
+## 10. Plan changes (item 7)
+
+**`contracts.md`.**
+
+- `Column<M, T, Cap>`: replace `ParamType` with constants the macro writes:
+  - `cast` and `cast_list`, the column's type with no modifier and with `[]`;
+  - `carrier` and `list_carrier`, built-in `Type`s;
+  - with `const fn` accessors, so `sql!` can concatenate them.
+- Replace `Param`'s comment and methods:
+
+  ```rust
+  // A value's own SQL type, for a free parameter (DH2): the cast morm writes into the SQL and the
+  // built-in carrier it's declared and encoded as. Enums, composites, citext and unknown types
+  // travel as text and a domain as its base type's carrier, each cast to its name, so no OID is
+  // looked up or sent. DH3's column-type trait.
+  pub trait SqlType { const CAST: &'static str; const CARRIER: Type; }
+  // Object safe, for &dyn Param in runtime fragments; a blanket impl from SqlType
+  pub trait Param: ToSql + Sync { fn cast(&self) -> &'static str; fn carrier(&self) -> Type; fn is_null(&self) -> bool; }
+  // A value fits a field of type T without loss (the conversion layer encodes it as the column's
+  // carrier); an Option value fits only an Option field. FitsList for Vec, slices and arrays.
+  pub trait Fits<T> { /* encode as the column's carrier */ }
+  pub trait FitsList<T> { /* the same, element by element */ }
+  // What sql! returns: the static text and its registration, and the borrowed values
+  pub struct Sql<'a> { /* private */ }
+  ```
+
+- Delete `has_text`, `encode_text`, the `UNKNOWN` text-format rule and the per-parameter format wrapper.
+- In the conversion-layer comment, `String` on `json` or `jsonb` becomes "a `text` carrier cast to `json` or `jsonb`".
+- Add to "Defined in step 03": `SqlType`, `Fits`, `FitsList`, `Sql`, and the cast-name function, which lives in `morm-core` and is used by `morm-macros`. Extend the SQL text scanner's row: it places casts.
+- In "Between `morm-mgr` and `morm-admin`": a registered query carries its text, file and line, and for each parameter its number, kind, cast, model and column, and its `${..}` source.
+
+**`proofs.md`, proof 9.**
+
+- Rewrite the design bullets: carrier and cast, in place of "the declared type is the column's" and "`UNKNOWN`".
+- Remove "Choice made here: an `UNKNOWN` text value is sent in text format", which no longer applies.
+- Replace DG3 with DH2, with section 2's swap and index results.
+- Redo the matrix as choice J says.
+
+**Requirements rewritten.** Draft text, for the owner to approve:
+
+- **R-1207** (step 13): "... the parameter is cast in the SQL to the column's type, an explicit `sql` included, with no length, precision or scale, and declared as that type's built-in carrier. The conversion layer encodes the value as the carrier: ... `String` on `json` or `jsonb` as `text` cast to the column's type. An `Option` value binds only through a nullable field." The rest stays.
+- **R-1209** (step 13): "**Free parameters.** A value that isn't bound through a field, a `${v: T}` in `sql!`, a `.q()` or `set_expr` value, or a `sql_unchecked` value, is cast to its Rust type's own SQL type, through `SqlType`, and declared as that type's built-in carrier:
+  - `String` and `&str` as `text`, and a list as its element's array;
+  - `serde_json::Value` as `jsonb`;
+  - an enum or composite as `text`, cast to its name, and a domain as its base type, cast to its name.
+
+  Postgres infers no type. So `$1 IS NULL`, `concat`, `array_length` and `unnest` need no cast of your own, and a list where one value is expected fails with `42883`. A free value compared with a column of another type is compared as Postgres compares those two types, such as `text` against `citext`, which is case-sensitive. check-sql and `#[morm::test]` report it. Owner decisions DF1 and DH2."
+- **R-1211** (step 50): the notice in section 8, loud in R-1008's form. That also covers DH8 for R-1211.
+- **T-0278** (step 13): "... every type `#[model]` maps, against its default column and each column an explicit `sql` gives it, is bound through the field, inserted, and compared with `=` and `= ANY`. It gives the right answer through a prepared statement and through `query_typed`. Each free value of the same Rust type against the same columns gets Postgres's answer for its own cast. Every pair where that differs from the field's answer is reported by the rules in section 6:
+  - `text` against `citext` or `char(n)`;
+  - an instant against `timestamp`;
+  - a naive time against `timestamptz`;
+  - `jsonb` against `json`.
+
+  `$1 IS NULL`, `concat`, `array_length` and `unnest` work free, and a list where one value is expected fails with `42883`."
+- **R-1104** (step 14), last sentence: "Every statement is prepared with each parameter's built-in carrier, as `query_typed` sends it. Its SQL casts the parameter to the column type the binary was built against where it's bound through a field, and otherwise to the value's own type. So Postgres converts it when it's written: ..." The rest stays. T-0222's two cases still hold, since an `int4` cast goes into `bigint`, and an `int8` of `2^40` into `integer` gets `22003`.
+- **R-0718** (step 14): add choice I's retry. T-0151 and proof 14 (step 55) run with carriers and casts. A statement on the swapped table succeeds with no error. A statement that touches no table of the type gets `XX000`, or `22P02` while the old type is kept, and recovers by choice I.
+- **R-0978** (step 56): "A `PgEnum` parameter is declared as `text` and cast to the enum's name, so no OID is looked up or sent, and a swap can't leave one stale. A list goes as `text[]`, cast to the enum's array type." This replaces `Type::UNKNOWN` and the text-format arrays.
+- **R-0961** (step 56): "Each is declared as its carrier, `text` for a composite and the base type's for a domain, and cast to its name." This replaces `Type::UNKNOWN` and the text format.
+- **R-0412** (step 16, info): the examples become `let q = sql!("... WHERE {Order::F.vendor_id} = ${vendor_id: Order::F.vendor_id} GROUP BY day");`, then `db.sql(&q)`, plus `db.sql(sql!("SELECT count(*) FROM orders"))` and `db.sql(sql!("UPDATE orders SET seen = true WHERE {Order::F.id} = ${id: Order::F.id}"))`.
+- **R-0415** (step 16): "`db.sql()` and `db.raw()` take only what `sql!` returns. `sql_unchecked(String, &[&dyn Param])` is the visible escape hatch, with the scanner's casts."
+- **R-0431** (step 45): add "and checks every parameter's type in the analyzed parse tree", detailed by a new requirement.
+- **R-0433** (step 14): add "and writes each parameter's cast, as `($n::type)`".
+- **R-0716** (step 14): "a trait that adds the cast and the built-in carrier".
+- **R-1208** (step 13) stays. Its trait is `SqlType`, with DH3's rules.
+- **T-0021** (step 15): "non-static `q()`, and `db.sql()` given anything but `sql!`".
+
+**New requirements and tests,** by step. IDs are assigned when they're written in:
+
+| Step | Requirement | Test |
+|---|---|---|
+| 13 | The cast-name function (section 2) and the carriers; a cast never carries a length, precision or scale; `SqlType` for every R-0186 type plus `Decimal`, `Numeric`, `Timestamp` and `TextEnum`; `Fits` and `FitsList`, with choice K | Unit: the 28 cast forms. trybuild: `i64` into an `i32` field, and `Option` into a `NOT NULL` field |
+| 14 | Every statement declares built-in carriers and casts every parameter as `($n::cast)`; the scanner places casts in fragments; built text is cached with its casts; R-0718 per choice I | Unit: the 16 hiding cases. Integration on 15 to 18: the 17 positions in section 2, and choice I's two table-free cases |
+| 15, 17, 18, 19 | Builders take casts from the `F` constants (choice G for `comp`) | DH4's step-18 obligation runs with casts, through a prepared statement and the cache |
+| 16 | `sql!`'s syntax, `Sql`, `db.sql()` and `db.raw()` taking only `sql!` (choice B), and M1 to M7. `sql!` is built here, because step 16 builds `db.sql()`. Step 45 adds its registration and check-sql | trybuild: the 18 refusals and the generic `E0401` |
+| 20 | `tx.set_local` casts its value to its own type, then `::text` | Integration |
+| 41 | `check_schema` resolves every cast name with `to_regtype` in its existing statement (section 4) | Integration on 15 to 18: a name resolving to nothing, and one resolving to another schema's type of the same name, both refused at startup |
+| 45 | check-sql's typing pass: T1 to T4, the failure output, feature pass-through, and `log_min_messages` when it can; `#[morm::test]`'s check (choice H) | Integration on 15 to 18: the 57 queries in section 6 with their expected findings, which pins the tree fields on each version; a `#[morm::test]` failing on a free `String` against `citext` in `.q()`, and passing bound through the field; the cost per query recorded |
+| 50 | The notice in section 8 (R-1211) | — |
+| 55, 56 | Proof 14 and T-0151 with carriers. `PgEnum`, `PgDomain` and `PgComposite` carriers and casts (R-0978, R-0961) | T-0148 runs with casts |
+
+Step 16 already depends on 15, 14 and 13, so nothing in the order changes.
+
+## 11. What I ran
+
+All on Postgres 18.6 and 17.11, with identical results apart from OIDs, and stable rustc 1.99.1:
+
+- **Casts and comparisons:**
+  - what type a cast gives an untyped parameter;
+  - silent cuts and rounding from casts with modifiers;
+  - typmod-free writes into `varchar(5)`, `char(5)`, `numeric(12,2)`, `bit(8)` and a domain;
+  - 28 comparisons, right and wrong, across `citext`, `char(5)`, `varchar`, `bit`, arrays, enums, a quoted mixed-case enum, domains, a composite, `timestamp`, `jsonb` and integers;
+  - 12 wrong shapes with their codes;
+  - the former `42P18` cases.
+- **Inference without a cast:** 35 contexts, the evidence for choice E's alternative.
+- **Type swaps under cached statements,** with `UNKNOWN`, inference and `text` carriers: the old type dropped and kept, enum arrays, inserts, a recreated domain and composite, and table-free statements.
+- **Index plans** under `force_generic_plan`, on 20,000 rows.
+- **Name resolution** with `to_regtype`, extension types through a `text` carrier, and `json` against `jsonb` text.
+- **`debug_print_parse`** as an ordinary role and as a superuser, with `log_min_messages`.
+- **The prototype**, in a scratch workspace with `tokio-postgres` 0.7.18, on rustc 1.99.1:
+  - the scanner, 6 unit tests;
+  - `sql!`, with 13 queries run both ways;
+  - 22 compile cases: 18 refusals, 3 that compile, and the generic `E0401`;
+  - 17 runtime cast positions prepared;
+  - the check-sql prototype: 57 queries matching their expected findings, plus the wrong-shape error;
+  - the cost measurement.
+
+The Postgres servers are stopped, and the scratch workspace, data directories and logs are deleted.
