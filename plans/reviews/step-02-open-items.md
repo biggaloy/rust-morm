@@ -15,3 +15,5 @@ PR #2 (`step-02-proofs`), head `f50823e` when the step agent reported. CI green 
 - Attribute spellings in the spikes are its own; what's proven is the mechanism.
 - Retry needed a 20 ms pause between attempts in the spike; step 20 checks its own retry rules.
 - Refinements written into `contracts.md`: `groups!` masks are newtypes; `NestedConnection` falls back to the thread id when there's no task id; each upsert column has its own marker type; `#[model]` reads `cfg(morm_mgr)` inside `morm`; the generated `morm-mgr` does `use <crate> as _;` per model crate.
+
+- **Answered:** DA to DE as recommended.

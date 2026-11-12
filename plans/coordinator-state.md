@@ -27,11 +27,11 @@ The 30-minute wake-up lived only in the session, so a restart removes it. After 
 - Step 01's code is reviewed and fixed. PR #1 now also carries the plan redesign that came out of the reviews: managed enums, steps 51 to 59, the general walk, `plpgsql_check`, `--decide`, and type changes that never break a running app.
 - Every owner decision is in `INDEX.md` under "Decisions since the split". `reviews/step-01-open-items.md` has every open item, A to AV, each answered.
 
-**Latest:** step 02 is `in review`: PR #2 (`step-02-proofs`), head `f50823e`, CI green on Postgres 15 to 18, checker 0 problems. Questions DA to DE in `reviews/step-02-open-items.md` are with the owner, and the independent review runs in parallel. Next free IDs: R-1205, T-0278.
+**Latest:** step 02 is `in review`: PR #2 (`step-02-proofs`), head `f50823e`, CI green on Postgres 15 to 18, checker 0 problems. The owner answered DA to DE as recommended; the independent review is running, findings to `reviews/step-02-review.md`. Next free IDs: R-1205, T-0278.
 
 ## What comes next
 
-1. Step 02: get the owner's answers to DA to DE and the independent review's findings, have one agent fix both on the PR, then bring PR #2 to the owner. The owner approves the PRs of steps 01, 02, 03, 50 and 55.
+1. Step 02: when the review reports, one agent writes DA to DE in and fixes the findings on PR #2; review repeats until clean; then the spikes-deletion commit and PR #2 to the owner. The owner approves the PRs of steps 01, 02, 03, 50 and 55.
 2. Then follow the order in `INDEX.md`.
 
 ## Open with the owner
