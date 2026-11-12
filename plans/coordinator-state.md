@@ -27,14 +27,14 @@ The 30-minute wake-up lived only in the session, so a restart removes it. After 
 - Step 01's code is reviewed and fixed. PR #1 now also carries the plan redesign that came out of the reviews: managed enums, steps 51 to 59, the general walk, `plpgsql_check`, `--decide`, and type changes that never break a running app.
 - Every owner decision is in `INDEX.md` under "Decisions since the split". `reviews/step-01-open-items.md` has every open item, A to AV, each answered.
 
-**Latest:** CN is in at `028c63e`: all 18 CI jobs green, PR #1 CLEAN, checker 1203 R / 277 T, 0 problems; IDs in Decisions. The owner answered CO: keep it, with the README stating every cost and limit loudly; a small edit agent checks and fills the README. Next free IDs: R-1204, T-0278.
+**Latest:** CO is in at `b1cbe4d`: all CI jobs green, PR #1 CLEAN, checker 1204 R / 277 T, 0 problems; IDs in Decisions; PR body's stale CO question replaced. Nothing is open: PR #1 is with the owner for approval. Next free IDs: R-1205, T-0278.
 
 ## What comes next
 
 1. Finish the CO README edit, confirm CI green, add any IDs to Decisions. By owner decision the final check was the last review round.
-2. Bring PR #1 to the owner, who approves it. No agent merges without that.
-3. Merge, mark step 01 `done`, pull, and check `INDEX.md` on `main` keeps both its Decisions and the branch's rows and order.
-4. Start step 02 as a fresh agent, then an independent review. The owner approves the PRs of steps 01, 02, 03, 50 and 55.
+1. Bring PR #1 to the owner, who approves it. No agent merges without that.
+2. Merge, mark step 01 `done`, pull, and check `INDEX.md` on `main` keeps both its Decisions and the branch's rows and order.
+3. Start step 02 as a fresh agent, then an independent review. The owner approves the PRs of steps 01, 02, 03, 50 and 55.
 
 ## Open with the owner
 
