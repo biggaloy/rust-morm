@@ -52,3 +52,9 @@ fn bases_work_inside_their_own_crate() {
     assert!(d.flag && d.owner == 1 && d.id == 2);
     assert_eq!(Doc::COLUMNS, ["owner", "flag", "id"]);
 }
+
+#[test]
+fn two_bases_may_share_a_name() {
+    assert_eq!(app::LeftTagged::COLUMNS, ["left", "id"]);
+    assert_eq!(app::RightTagged::COLUMNS, ["right", "id"]);
+}

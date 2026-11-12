@@ -138,7 +138,13 @@ fn base_impl(args: TokenStream, item: TokenStream) -> syn::Result<Ts> {
     let mut fields = args.base_fields;
     fields.extend(named_fields(&st)?);
     let name = &st.ident;
-    let mac = format_ident!("__morm_base_{}", name);
+    // `#[macro_export]` puts every base macro at the crate root, so the name
+    // carries where the base is written: two bases may share a name.
+    let at = proc_macro::Span::call_site();
+    let place: u32 = at.file().bytes().fold(at.line() as u32, |h, b| {
+        h.wrapping_mul(31).wrapping_add(b as u32)
+    });
+    let mac = format_ident!("__morm_base_{}_{:08x}", name, place);
     // The plain struct, for docs: field attributes stripped.
     let mut plain = fields.clone();
     for f in &mut plain {

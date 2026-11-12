@@ -54,6 +54,31 @@ pub mod inner {
     }
 }
 
+/// Two bases with the same name in one crate: each macro's name carries
+/// where its base is written, so they don't collide at the crate root.
+pub mod left {
+    #[morm::base]
+    pub struct Tag {
+        pub left: i64,
+    }
+}
+pub mod right {
+    #[morm::base]
+    pub struct Tag {
+        pub right: i64,
+    }
+}
+
+#[morm::model(table = "spike_left", base = crate::left::Tag)]
+pub struct LeftTagged {
+    pub id: i64,
+}
+
+#[morm::model(table = "spike_right", base = crate::right::Tag)]
+pub struct RightTagged {
+    pub id: i64,
+}
+
 #[morm::model(table = "spike_doc", base = crate::inner::Flagged)]
 pub struct Doc {
     pub id: i64,

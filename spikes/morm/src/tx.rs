@@ -110,3 +110,79 @@ impl Retrying<'_> {
         }
     }
 }
+
+/// The postfix shape, `db.transaction_postfix(f).retry(n).await`, kept to show
+/// why it isn't the design. `.await` on a builder needs `IntoFuture`, whose
+/// future must be a named type; on stable that means a boxed `dyn Future +
+/// Send`, and proving the closure's future `Send` for that box needs a bound
+/// over every lifetime, which forces the closure's captures to be `'static`.
+pub mod postfix {
+    use super::{Tx, attempt, retryable};
+    use crate::{Db, Result};
+    use std::future::{Future, IntoFuture};
+    use std::marker::PhantomData;
+    use std::pin::Pin;
+
+    pub trait Body<'a, T>: Send {
+        type Fut: Future<Output = Result<T>> + Send + 'a;
+        fn call(self, tx: &'a Tx) -> Self::Fut;
+    }
+    impl<'a, T, F, Fut> Body<'a, T> for F
+    where
+        F: FnOnce(&'a Tx) -> Fut + Send,
+        Fut: Future<Output = Result<T>> + Send + 'a,
+    {
+        type Fut = Fut;
+        fn call(self, tx: &'a Tx) -> Fut {
+            self(tx)
+        }
+    }
+
+    pub struct Builder<'d, F, T> {
+        db: &'d Db,
+        f: F,
+        n: u32,
+        _t: PhantomData<fn() -> T>,
+    }
+
+    impl Db {
+        pub fn transaction_postfix<F, T>(&self, f: F) -> Builder<'_, F, T>
+        where
+            F: for<'a> Body<'a, T>,
+        {
+            Builder {
+                db: self,
+                f,
+                n: 0,
+                _t: PhantomData,
+            }
+        }
+    }
+
+    impl<F, T> Builder<'_, F, T> {
+        pub fn retry(self, n: u32) -> Self {
+            Self { n, ..self }
+        }
+    }
+
+    impl<'d, F, T> IntoFuture for Builder<'d, F, T>
+    where
+        F: for<'a> Body<'a, T> + Clone + Sync + 'd,
+        T: Send + 'd,
+    {
+        type Output = Result<T>;
+        type IntoFuture = Pin<Box<dyn Future<Output = Result<T>> + Send + 'd>>;
+        fn into_future(self) -> Self::IntoFuture {
+            Box::pin(async move {
+                let mut left = self.n;
+                loop {
+                    let f = self.f.clone();
+                    match attempt(self.db, "BEGIN", async |tx: &Tx| f.call(tx).await).await {
+                        Err(e) if left > 0 && retryable(&e) => left -= 1,
+                        other => return other,
+                    }
+                }
+            })
+        }
+    }
+}
