@@ -51,7 +51,7 @@ That's why `char(n)` casts to `bpchar` and `bit(n)` to `varbit`. Without the mod
 
 The macro takes the cast from the field's `sql` with a small table: `char(n)`, `character(n)` and `nchar` go to `bpchar`; `varchar(n)` and `character varying(n)` to `varchar`; `bit(n)` and `bit varying(n)` to `varbit`; `numeric(p,s)` and `decimal` to `numeric`; `timestamp(p) with time zone` to `timestamptz`; `time(p)` and `timetz(p)` to `time` and `timetz`; any `interval ...` to `interval`; `float(1..24)` to `float4`, and other `float(p)` to `float8`. Any other name keeps its spelling, quoted parts included, with its parenthesised modifier dropped, so `vector(3)` casts to `vector`. A bare name with no modifier gets typmod `-1` in Postgres's grammar, unlimited, except the SQL-standard `char` and `bit`, which the table handles. The table is in the scratch prototype's tests, 28 cases.
 
-**Why `(...)` around the cast.** A bare `$1::int8[]` before a subscript would parse `[1]` as part of the type name, and `$1::pair.n` as a schema-qualified type. With parentheses, every position I tried prepared and ran on 17.11 and 18.6:
+**Why `(...)` around the cast.** Without them, a user's `$1[1]` would become `$1::int8[][1]`, which Postgres reads as the type `int8[][1]`: it returned the whole array `{7,8}`, silently, where `($1::int8[])[1]` returned `7`. And `$1.n` would become `$1::pt.pair.n`, which failed with `0A000`, where `($1::pt.pair).n` returned `1`. With parentheses, every position I tried prepared and ran on 17.11 and 18.6:
 
 - `($1::int8[])[1]` and `(($1::pt.pair).n)`
 - `-($1::int8)`, and `($1::int8)::int4` after a cast of the user's own
@@ -107,7 +107,7 @@ The text sent is `... WHERE "vendor_id" = ($1::int8) AND "day" >= ($2::date) AND
 
 - **Where the value goes.** Each value sits at its place in the SQL, so values can't be misnumbered. The prototype ran 13 such queries through a prepared statement and through `query_typed`, on 17.11 and 18.6, with the right answer each time. They covered `citext`, `char(5)`, an `i32` on a `bigint` field, `= ANY` lists, an enum and an enum list, a `citext[]` column, a free enum, `Option<i64>` as `NULL`, a free `Vec<String>` in `array_length`, and `&str` in `concat`.
 - **Lists.** `[]` after the field binds a list, cast to the column's type plus `[]`, for `= ANY(..)`, `<> ALL(..)` and `unnest(..)`. An array column, such as `tags: Vec<String>` on `citext[]`, binds a whole array with `${tags: M::F.tags}`. `[]` on an array column is a compile error, because a list of arrays isn't supported (prototype: a const panic naming it).
-- **`Option` and `NULL`.** An `Option` value fits only a field whose type is an `Option`, so `NULL` is bound only through a nullable field, and a `NOT NULL` column can't be compared with a `NULL` that matches nothing. A non-`Option` value fits an `Option` field. A free `Option<T>` is cast as `T`.
+- **`Option` and `NULL`.** An `Option` value fits only a field whose type is an `Option`, so `NULL` is bound only through a nullable field. A comparison with a `NOT NULL` column can't be handed a `NULL`, which would match nothing. A non-`Option` value fits an `Option` field. A free `Option<T>` is cast as `T`.
 - **Expressions.** Bind through the field when the expression keeps the column's type: `date_trunc('day', {O::F.at}) = ${t: O::F.at}`, or `{U::F.email} = ${e: U::F.email}` on `citext`. Use a free value with the expression's own type when it doesn't, as in `length({U::F.name}) > ${n: i32}`. check-sql reports either if it's in the wrong place. On `citext`, `lower(c) = $1::citext` found 0 rows for `'ALICE'`: `lower` returns `text`, so Postgres compared `text` with the value turned into `text`, and rule T2 reports it. `lower(c) = $1::text` is right, and passes.
 - **A cast of your own** after a parameter is kept, as in `${s: String}::citext`, which morm writes as `($1::text)::citext`. An explicit cast states intent, so nothing reports it, except one with a length, precision or scale (sections 5 and 6).
 - **Why every parameter's type is written.** `sql!` registers each query for check-sql in a static (R-0046). A static can't use a type that's only inferred from a local value, so the free value's SQL type has to be named in the macro. The prototype shows the limit: `${v: T}` inside a generic `fn f<T>` fails with `E0401` `can't use generic parameters from outer item`. A free parameter's type must be concrete, and the README says so. It also makes the text a compile-time constant: `const` concatenation of the literal pieces, the `F` names, the field casts and `SqlType::CAST`, on stable.
@@ -195,18 +195,18 @@ The type system refuses the rest at compile time:
 - **T3, a free value converted on its way somewhere.** A free value goes through an implicit conversion that changes the value or what it means: one in a function (`FuncExpr` or `CoerceViaIO`) other than the safe widenings, or one that applies a precision or scale (`numeric`, `timestamp[tz]`, `time[tz]`, `interval`). This covers writes: a `NaiveDateTime` into `timestamptz`, `f64` into `numeric`, an `i64` into `integer`, and a `Decimal` that `numeric(12,2)` would round. A relabel, such as `text` into a `citext` column, keeps the value, and a length check on `varchar(n)` or `char(n)` raises `22001` instead of cutting. Neither is reported.
 - **T4, a cast that cuts or rounds.** An explicit cast with a length, precision or scale (a `FuncExpr` with explicit-cast format and a typmod argument) over a parameter. It's M5 again, for casts the macro's patterns miss.
 
-**The evidence.** 57 queries, as morm would write them, with their carriers, each with the expected result, gave exactly that on 17.11 and 18.6. 36 were reported:
+**The evidence.** 57 queries, as morm would write them, with their carriers, each with the expected result, gave exactly that on 17.11 and 18.6. 35 were reported:
 
-- `citext = text`, through a subquery, a CTE, `trim()`, `coalesce`, `CASE WHEN`, a `VALUES` join, `= ANY(text[])`, `IN`, `HAVING` after `GROUP BY` (Postgres 18's group RTE), a row `=` and a row `>`, `IS DISTINCT FROM`, `NULLIF`, `CASE c WHEN`, `text = ANY(citext[])` and `array_position`;
+- `citext = text`, plainly and through a subquery, `= ANY(SELECT ..)`, a CTE, `trim()`, `coalesce`, `CASE WHEN`, a `VALUES` join, `= ANY(text[])`, `IN`, `GREATEST`, `HAVING` after `GROUP BY` (Postgres 18's group RTE), a row `=` and a row `>`, `IS DISTINCT FROM`, `NULLIF`, `CASE c WHEN`, `text = ANY(citext[])` and `array_position`;
 - `char(5) = text`, `bigint = numeric`, `timestamp = timestamptz` both ways, `date = timestamp`, a domain over `citext` against `text`, and `float8 = int8`;
 - column against column, `citext = text`, in a `WHERE` and in a `JOIN .. ON`;
 - `lower(citext) = citext value` (T2);
 - free writes of `timestamp` into `timestamptz`, `numeric` and `float8` into `numeric(12,2)`, and `int8` into `integer` (T3);
 - `::varchar(3)` and `::char` on a parameter (T4).
 
-21 weren't reported, all of them right:
+22 weren't reported, all of them right:
 
-- `citext`, `char(5)`, an enum, a domain and `citext[]` each against their own cast;
+- `citext`, `char(5)`, an enum, a domain and `citext[]` each against their own cast, and `citext` through `CASE c WHEN` and `= ANY` of a `citext[]` column;
 - `varchar = text`, `int8 = int4`, `int4 = int8` and `numeric = int8`;
 - `lower(c) = text`, `jsonb ? text`, `citext LIKE text` and `citext SIMILAR TO text`;
 - `now() - interval`, a domain against its base type, and `text` into `citext` and into `varchar(5)`;
@@ -221,7 +221,7 @@ The type system refuses the rest at compile time:
 - A wrong shape gives the Postgres code and message instead.
 - Every finding prints before the exit, not just the first.
 
-**The cost.** On local TCP, a five-parameter join cost 50 to 58 µs to Parse alone, and 313 to 413 µs per query with the tree and the rules. So 1,000 queries take about 0.4 s, on top of R-0620's `PREPARE` and `EXPLAIN`.
+**The cost.** On local TCP, a five-parameter join cost 49 to 58 µs to Parse alone, and 313 to 413 µs per query with the tree and the rules. So 1,000 queries take about 0.4 s, on top of R-0620's `PREPARE` and `EXPLAIN`.
 
 **Keeping the server log clean.** Postgres also writes each tree to its server log, about 5 KB per query here. When the scratch role is a superuser, check-sql sets `log_min_messages = panic` for its session. The trees still reached the client, and none reached the log. An ordinary role gets `42501` for that setting, so check-sql skips it, and the log grows by that much.
 
@@ -449,6 +449,7 @@ All on Postgres 18.6 and 17.11, with identical results apart from OIDs, and stab
 - **Inference without a cast:** 35 contexts, the evidence for choice E's alternative.
 - **Type swaps under cached statements,** with `UNKNOWN`, inference and `text` carriers: the old type dropped and kept, enum arrays, inserts, a recreated domain and composite, and table-free statements.
 - **Index plans** under `force_generic_plan`, on 20,000 rows.
+- **Casts without parentheses:** a subscript and a field selection after a cast.
 - **Name resolution** with `to_regtype`, extension types through a `text` carrier, and `json` against `jsonb` text.
 - **`debug_print_parse`** as an ordinary role and as a superuser, with `log_min_messages`.
 - **The prototype**, in a scratch workspace with `tokio-postgres` 0.7.18, on rustc 1.99.1:
