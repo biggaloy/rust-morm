@@ -29,3 +29,8 @@ PR #2 (`step-02-proofs`), head `f50823e` when the step agent reported. CI green 
 - **DG3. A raw `Vec<String>` against `citext` or `char(n)`** finds 0 rows, and **a raw `Value` into a `json` column** stores jsonb's normalised text. Options: (a) raw text lists go as `UNKNOWN` text like raw strings (`array_length($1, 1)` and `unnest($1)` then need `$1::text[]`), `Value` stays `jsonb`, and the README says both (recommended); (b) keep lists as `text[]` and tell users to cast.
 - **DG4. R-1104 says "each parameter's type from `Param`",** which no longer holds for known columns. Options: (a) reword to "the column's type where morm knows the column, otherwise `Param`'s" (recommended); (b) leave it and let `contracts.md` carry the rule.
 - **Answered:** DG1 to DG4 as recommended.
+
+## From the second review at `5d5a199`, waiting on the owner
+
+- **DH1:** answered: UTC session with no override (option C), and first-class wall-clock time in 0.1, designed first. See Decisions.
+- **DH2, DH3, DH5:** see `reviews/step-02-review-2.md`; with the owner.
