@@ -21,3 +21,10 @@ PR #2 (`step-02-proofs`), head `f50823e` when the step agent reported. CI green 
 ## From the review at `0137bb0`
 
 - **DF1 and DF2:** answered as recommended; DF3 to DF10 fixed as recommended. See Decisions.
+
+## From the fix at `8301619`, waiting on the owner
+
+- **DG1. A field whose `sql` gives a column its type's encoder refuses** (e.g. `bigint` on an `i32`, `timestamp` on a `DateTime<Utc>`). Options: (a) the conversion layer encodes the value as the column's type, times as UTC, and `#[model]` refuses at compile time a `sql` it can't convert (recommended); (b) fall back to the value's type, still wrong for time pairs unless the session is UTC; (c) refuse every such pair at compile time.
+- **DG2. Instants against `timestamp`, and naive times against `timestamptz`, in raw SQL** depend on the session time zone. Options: (a) morm's connections start with `TimeZone = 'UTC'`, overridable in `morm.toml`, and the README says so (recommended); (b) keep the server's time zone and document it.
+- **DG3. A raw `Vec<String>` against `citext` or `char(n)`** finds 0 rows, and **a raw `Value` into a `json` column** stores jsonb's normalised text. Options: (a) raw text lists go as `UNKNOWN` text like raw strings (`array_length($1, 1)` and `unnest($1)` then need `$1::text[]`), `Value` stays `jsonb`, and the README says both (recommended); (b) keep lists as `text[]` and tell users to cast.
+- **DG4. R-1104 says "each parameter's type from `Param`",** which no longer holds for known columns. Options: (a) reword to "the column's type where morm knows the column, otherwise `Param`'s" (recommended); (b) leave it and let `contracts.md` carry the rule.
