@@ -49,3 +49,4 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 | ID | Type | Obligation |
 |---|---|---|
 | T-0096 | integration | `NestedConnection` with `join!` and with a stream moved between tasks |
+| T-0290 | integration | **The stream check with streams open:** with 1, 100 and 1,000 streams open on other tasks, a checkout's stream check, timed from one thread and from eight at once, stays within a few times its cost with one stream open, as the sharded registry in `proofs.md`, proof 7, measured, and never grows with the number of open streams the way one process-wide lock did; the PR states the numbers |

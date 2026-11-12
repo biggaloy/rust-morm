@@ -4,7 +4,7 @@ Generated from the frozen plan. Each requirement and test obligation lives in ex
 
 Kinds: `code` needs a tagged test, `doc` is checked in the README step, `info` is context with nothing to build.
 
-Totals: 1228 requirements, 286 test obligations.
+Totals: 1233 requirements, 296 test obligations.
 
 ## Requirements
 
@@ -440,12 +440,12 @@ Totals: 1228 requirements, 286 test obligations.
 | R-0428 | code | 44 | 927 | - `import` writes `Decimal` for bounded columns that fit, and `Decimal` with an explicit `… |
 | R-0429 | code | 23 | 928 | - **JSON:** always a string, such as `"34.50"`, because a JSON number would lose digits in… |
 | R-0430 | code | 13 | 929 | - **Speed:** `numeric` decoding is slower than integer decoding. When a column holds a fix… |
-| R-0431 | code | 45 | 933 | - `sql!` builds a `&'static str` from `F` constants and registers it. `morm-admin mgr chec… |
+| R-0431 | code | 45 | 933 | - `sql!` registers each query it builds, with its text, file and line, and each parameter'… |
 | R-0432 | code | 15 | 934 | - `.q()` accepts only `&'static str`, so `format!`-ed input won't compile. `q_unchecked(St… |
 | R-0433 | code | 14 | 935 | - **`$n` in a fragment is local.** `comp`, `set_expr` and `.q()` fragments each count from… |
 | R-0434 | code | 14 | 936 | - Typed errors: `Unique { constraint, field }`, `ForeignKey`, `NotNull`, `Check`, `Seriali… |
 | R-0435 | code | 20 | 940 | ```rust db.transaction(async \|tx\| { tx.insert(&mut p).await?; Ok(()) }).await?; db.isola… |
-| R-0436 | code | 20 | 953 | Same API as `db`, with savepoints and per-transaction settings (`statement_timeout`, `lock… |
+| R-0436 | code | 20 | 953 | `tx` has every query call `db` has, and `contracts.md` lists its other methods. `tx.transa… |
 | R-0437 | code | 20 | 955 | **A commit is confirmed, never assumed.** After a failed statement, Postgres turns `COMMIT… |
 | R-0438 | code | 20 | 957 | - Any Postgres error marks the transaction as failed. Further use returns that error, and … |
 | R-0439 | code | 20 | 958 | - `COMMIT` is sent as `SELECT 1; COMMIT` in one message. In a failed transaction the `SELE… |
@@ -1238,6 +1238,11 @@ Totals: 1228 requirements, 286 test obligations.
 | R-1226 | code | 17 | 0 | - **Inserts bind through the field.** `insert`, `insert_many` on its `UNNEST` paths and `.… |
 | R-1227 | code | 18 | 0 | **Updates and deletes bind through the field.** `.set()`, `.apply()`, `update_each`, `.ver… |
 | R-1228 | code | 19 | 0 | - **Upserts bind through the field.** `upsert` and `upsert_many` cast each value, and each… |
+| R-1229 | code | 20 | 0 | **`set_local`'s value is cast.** `set_config` takes `text`, so `tx.set_local` casts its va… |
+| R-1230 | code | 41 | 0 | **The startup check also checks the casts.** `check_schema`'s one catalog statement adds o… |
+| R-1231 | code | 45 | 0 | - **check-sql's typing pass.** Connected to the scratch database the chain migrated, `chec… |
+| R-1232 | code | 45 | 0 | - **`#[morm::test]` checks the SQL a test runs.** The first time a test process sees a run… |
+| R-1233 | code | 56 | 0 | - **`SqlType` for these types.** `TextEnum` is cast as `text`, with a `text` carrier, as a… |
 
 ## Test obligations
 
@@ -1529,3 +1534,13 @@ Totals: 1228 requirements, 286 test obligations.
 | T-0284 | trybuild | 16 | **`sql!` refusals:** each form R-1224 lists, 18 cases in all, among them a positional `$1`… |
 | T-0285 | integration | 16 | **`sql!` on Postgres 15–18:** queries with `citext`, `char(5)`, an `i32` on a `bigint` fie… |
 | T-0286 | integration | 18 | **The parameter matrix through morm's own paths, on Postgres 15–18:** with the session's `… |
+| T-0287 | trybuild | 20 | `tx.isolation(..)` and `tx.retry(n)` don't compile |
+| T-0288 | integration | 20 | **Settings and savepoints on `tx`, on Postgres 15–18:** `tx.lock_timeout(d).await?` and `t… |
+| T-0289 | integration | 20 | **Retry pauses are random:** the pause between attempts comes from a real random source, n… |
+| T-0290 | integration | 21 | **The stream check with streams open:** with 1, 100 and 1,000 streams open on other tasks,… |
+| T-0291 | trybuild | 24 | **`#[morm::hooks]` refuses a macro call** among the impl's items, with the message that ho… |
+| T-0292 | trybuild | 24 | **`Overrides` can't be written by hand:** an `impl Hooks` without `#[morm::hooks]` fails w… |
+| T-0293 | integration | 41 | **Casts checked at startup, on Postgres 15–18:** a model whose enum cast resolves to nothi… |
+| T-0294 | integration | 45 | **The typing pass, on Postgres 15–18:** at least 57 queries, as morm writes them with thei… |
+| T-0295 | integration | 45 | **`#[morm::test]`'s check:** a test that runs `.q("email = $1")` with a free `String` agai… |
+| T-0296 | integration | 45 | **The parameter matrix's free values are reported, on Postgres 15–18:** each free value fr… |
