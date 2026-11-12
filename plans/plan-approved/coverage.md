@@ -4,7 +4,7 @@ Generated from the frozen plan. Each requirement and test obligation lives in ex
 
 Kinds: `code` needs a tagged test, `doc` is checked in the README step, `info` is context with nothing to build.
 
-Totals: 1184 requirements, 262 test obligations.
+Totals: 1189 requirements, 267 test obligations.
 
 ## Requirements
 
@@ -1194,6 +1194,11 @@ Totals: 1184 requirements, 262 test obligations.
 | R-1182 | doc | 50 | 0 | The README says this plainly, beside the notice on changes that reach a child or a partiti… |
 | R-1183 | code | 29 | 0 | **A partition's primary key.** Postgres names the key a partition holds from its partition… |
 | R-1184 | code | 39 | 0 | **A partition's `pk` in a migration.** Under step 29's rule for a partition's key, a parti… |
+| R-1185 | code | 33 | 0 | **A partition's `pk` that can't match its parent's key.** On Postgres 18.6 and 17.11, drop… |
+| R-1186 | code | 33 | 0 | **Identity on a partition's model.** A partition takes its parent's identity, under step 2… |
+| R-1187 | code | 29 | 0 | **A partition's identity.** Postgres gives a partition its parent's identity, with no sequ… |
+| R-1188 | doc | 50 | 0 | The README shows this notice loudly, beside the safe forms table: > **A partition's `pk` m… |
+| R-1189 | doc | 50 | 0 | The README shows this notice loudly, beside the safe forms table: > **A partition's model … |
 
 ## Test obligations
 
@@ -1461,3 +1466,8 @@ Totals: 1184 requirements, 262 test obligations.
 | T-0260 | suite | 39 | **The index check on children and partitions, on Postgres 15–18:** under `--fast`, a type … |
 | T-0261 | suite | 33 | **Fingerprints of children and partitions, on Postgres 15–18:** on a partitioned table and… |
 | T-0262 | suite | 39 | **A partition's `pk` in a migration, on Postgres 15–18:** on a partitioned table with a ke… |
+| T-0263 | suite | 33 | **A partition's `pk` that can't match its parent's key, on Postgres 15–18:** on a partitio… |
+| T-0264 | suite | 33 | **Identity on a partition's model, on Postgres 15–18:** on a partitioned table whose key c… |
+| T-0265 | integration | 29 | **A partition's identity, on Postgres 15–18:** on a partitioned table whose key column is … |
+| T-0266 | integration | 34 | **`verify` on a partition's key and identity, on Postgres 15–18:** on a partitioned table … |
+| T-0267 | integration | 44 | **`import` on a partition's key and identity, on Postgres 15–18:** on a partitioned table … |
