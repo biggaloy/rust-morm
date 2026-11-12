@@ -27,7 +27,7 @@ The 30-minute wake-up lived only in the session, so a restart removes it. After 
 - Step 01's code is reviewed and fixed. PR #1 now also carries the plan redesign that came out of the reviews: managed enums, steps 51 to 59, the general walk, `plpgsql_check`, `--decide`, and type changes that never break a running app.
 - Every owner decision is in `INDEX.md` under "Decisions since the split". `reviews/step-01-open-items.md` has every open item, A to AV, each answered.
 
-**Latest:** step 02 is `in review`: PR #2 head `1a2d31d` (DI3 written in), CI green, checker 1235 R / 298 T, 0 problems; IDs in Decisions. DI4 (`UTC0`) is with the owner; then the third independent review. Next free IDs: R-1236, T-0299.
+**Latest:** step 02 is `in review`: PR #2 head `1a2d31d` (DI3 written in), CI green, checker 1235 R / 298 T, 0 problems; IDs in Decisions. The owner answered DI4: accept `UTC0` alone; the fix agent writes it in, then the third independent review. Next free IDs: R-1236, T-0299.
 
 ## What comes next
 
