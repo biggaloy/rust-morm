@@ -212,3 +212,7 @@ Decisions still to add on `main`: R-0608, R-1081, T-0208, T-0209.
 
 - **CN. Chosen keys through `insert_stream` and `upsert`.** Under CL, `.explicit_ids()` exists only on `insert` and `insert_many`, so there's no way to stream or upsert chosen keys into an identity column. Options: (a) give both `.explicit_ids()`: `COPY` then move the sequence past the keys in the same transaction, and `OVERRIDING SYSTEM VALUE` on the upsert's `INSERT` (recommended); (b) `insert_stream` only; (c) leave it, so such writes go through `insert_many`.
 - **Answered:** CN (a).
+
+## From the edit at `028c63e`, waiting on the owner
+
+- **CO. The cost of the safe sequence move.** (1) The importing role needs `UPDATE` on the table (or `MAINTAIN` on 17+); (2) each move holds the table's other writes back while it waits for running ones, up to `lock_timeout`; (3) a normal insert waiting on a streamed row deadlocks with the stream's lock, and Postgres fails the stream. Also left: with sequence `CACHE` above 1 a cached value can still collide, and a direct `nextval` isn't held back. Options: (a) keep it as written (recommended); (b) move the sequence before each chunk of a stream: stops normal inserts taking streamed keys but still deadlocks over other unique columns, adds a statement per chunk, and changes CN's "COPY, then move" order; (c) drop the table lock: no grant or waiting, but the sequence can move backwards.
