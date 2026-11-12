@@ -150,8 +150,14 @@ impl TxOptions<'_, Retry> {
         for _ in 0..self.retry.0 {
             match attempt(self.db, &begin, f.clone()).await {
                 Err(e) if retryable(&e) => {
-                    // Give the transaction that won time to commit.
-                    tokio::time::sleep(Duration::from_millis(20)).await;
+                    // Give the transaction that won time to commit, with jitter:
+                    // a fixed pause let two transactions that both lost retry in
+                    // step and collide again, every time, on Postgres 16 in CI.
+                    let nanos = std::time::SystemTime::now()
+                        .duration_since(std::time::UNIX_EPOCH)
+                        .map_or(0, |d| d.subsec_nanos());
+                    let pause = 10 + u64::from(nanos % 40);
+                    tokio::time::sleep(Duration::from_millis(pause)).await;
                 }
                 other => return other,
             }
