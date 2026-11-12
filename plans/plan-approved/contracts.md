@@ -29,8 +29,8 @@ pub type Result<T, E = Error> = std::result::Result<T, E>;
 
 pub trait Model: Sized + Send + Sync + 'static {
     type Pk: PkValue;                 // () for a model with no primary key
-    type Global;                      // the app's global mask, from morm::groups!
-    type Scoped;                      // scoped group mask, () when the model has none
+    type Global: MaskBits;            // the app's global mask, from morm::groups!
+    type Scoped: MaskBits;            // scoped group mask, () when the model has none
     const TABLE: &'static str;
     const SELECT: &'static str;
     fn from_row(row: &tokio_postgres::Row) -> Result<Self>;
@@ -45,21 +45,29 @@ pub struct Decoders<M: Model> { /* private */ }
 pub trait HasPk: Model {}             // absent on models with no primary key
 pub trait PkValue: Send + Sync + 'static {}   // one Param, or a tuple for a composite key
 
-// Product::F.<field>. Capability markers let a column refuse .set(), .by() or set_expr
+// Product::F.<field>. Cap is a zero-sized marker type generated for that one column, so
+// every column is its own type (proof 8). Capability traits implemented on the marker
+// let a column refuse .set(), .by() or set_expr
 pub struct Column<M, T, Cap> { /* name, marker data */ }
 
 // A parameter: ToSql plus its Postgres type, because query_typed needs the type
 // PgEnum returns Type::UNKNOWN, so no OID is ever sent and a type swap can't leave one stale
 pub trait Param: tokio_postgres::types::ToSql + Sync { fn pg_type(&self) -> tokio_postgres::types::Type; }
 
-// Product::UK.<name>, and columns that are unique keys
+// Product::UK.<name>, and columns that are unique keys. Implemented for a unique
+// column's Column type and for Key<M, K>, one per expression, partial or composite key
 pub trait UniqueKey<M> { const CONFLICT: &'static str; }
+pub struct Key<M, K>(/* marker */);
 
 pub enum Patch<T> { Missing, Set(T) }
 pub enum OrDefault<T> { Default, Set(T) }
 pub struct WriteOnly<T>(/* private */);
 
 pub struct Bits<const N: usize>([u64; N]);
+// What generic code needs from a mask of any size: implemented for every Bits<N> and ().
+// morm::groups! emits its mask as its own newtype over Bits<N>, not an alias, so a group
+// from another groups! is a type error (proof 3)
+pub trait MaskBits: Copy + Send + Sync + 'static { const EMPTY: Self; fn set(&mut self, bit: u16); fn has(&self, bit: u16) -> bool; }
 pub struct Mask<M: Model> { global: M::Global, scoped: M::Scoped }
 
 // Connection-like: db, a held connection, or tx
@@ -131,6 +139,8 @@ These are shared by steps that can run side by side, so each is written and froz
 `Op`, the typed migration operation, is defined in step 30. Migration steps run one at a time, so it needs no earlier freeze.
 
 ## Between `morm-mgr` and `morm-admin`
+
+Registration is proven in `proofs.md`, proof 10: `#[model]` calls a `macro_rules!` that `morm` defines under `cfg(morm_mgr)` and `cfg(not(morm_mgr))`, so user crates never see the cfg, and the generated `morm-mgr` names each crate with models as `use <crate> as _;`, because a crate only listed in `Cargo.toml` is dropped with its models.
 
 `morm-mgr` prints one JSON manifest: `format`, then models (table, schema, columns, types, nullability, defaults, flags, indexes, constraints, enum labels, `was` hints, comments), managed objects, extensions, and registered `sql!` queries. Step 28 defines it, in `morm-core`. Everything else reads it, and it's versioned by `format`.
 
