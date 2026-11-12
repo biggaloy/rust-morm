@@ -153,10 +153,13 @@ impl TxOptions<'_, Retry> {
                     // Give the transaction that won time to commit, with jitter:
                     // a fixed pause let two transactions that both lost retry in
                     // step and collide again, every time, on Postgres 16 in CI.
-                    let nanos = std::time::SystemTime::now()
-                        .duration_since(std::time::UNIX_EPOCH)
-                        .map_or(0, |d| d.subsec_nanos());
-                    let pause = 10 + u64::from(nanos % 40);
+                    // `RandomState` is freshly keyed per call, so its hash of
+                    // nothing is a cheap random number. The clock's nanoseconds
+                    // aren't a safe source: where the clock steps in microseconds
+                    // they're a multiple of 1,000, and `% 40` is always 0.
+                    use std::hash::BuildHasher;
+                    let r = std::collections::hash_map::RandomState::new().hash_one(());
+                    let pause = 10 + r % 40;
                     tokio::time::sleep(Duration::from_millis(pause)).await;
                 }
                 other => return other,
