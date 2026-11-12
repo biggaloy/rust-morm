@@ -2798,8 +2798,8 @@
 "kind": "code",
 "step": "inserts",
 "line": 763,
-"text": "- **Array columns:** `UNNEST` flattens nested arrays, so two rows holding `text[]` values would become four. A `Vec<T>` column is sent as a `text[]` of array literals and cast back per row (`x::text[]`), which keeps one statement and works with `.returning()`. These columns use the text format, so the escaping must be exact, and property tests cover quoted `\"NULL\"` strings, real NULLs, quotes, commas and empty arrays. `COPY` handles arrays directly.",
-"block": "- **R-0350** **Array columns:** `UNNEST` flattens nested arrays, so two rows holding `text[]` values would become four. A `Vec<T>` column is sent as a `text[]` of array literals and cast back per row (`x::text[]`), which keeps one statement and works with `.returning()`. These columns use the text format, so the escaping must be exact, and property tests cover quoted `\"NULL\"` strings, real NULLs, quotes, commas and empty arrays. `COPY` handles arrays directly."
+"text": "- **Array columns:** `UNNEST` flattens nested arrays, so two rows holding `text[]` values would become four. A `Vec<T>` column is sent as a `text[]` of array literals and cast back per row to the column's array type with no modifier (`x::text[]` on `text[]`, `x::citext[]` on `citext[]`), which keeps one statement and works with `.returning()`. These columns use the text format, so the escaping must be exact, and property tests cover quoted `\"NULL\"` strings, real NULLs, quotes, commas and empty arrays. `COPY` handles arrays directly.",
+"block": "- **R-0350** **Array columns:** `UNNEST` flattens nested arrays, so two rows holding `text[]` values would become four. A `Vec<T>` column is sent as a `text[]` of array literals and cast back per row to the column's array type with no modifier (`x::text[]` on `text[]`, `x::citext[]` on `citext[]`), which keeps one statement and works with `.returning()`. These columns use the text format, so the escaping must be exact, and property tests cover quoted `\"NULL\"` strings, real NULLs, quotes, commas and empty arrays. `COPY` handles arrays directly."
 },
 {
 "id": "R-0351",
@@ -3094,8 +3094,8 @@
 "kind": "code",
 "step": "reads",
 "line": 809,
-"text": "```rust\nlet rows = db.select::<Product>()\n    .filter()\n    .qc(F.vendor_id, \"=\", &vendor_id)\n    .q(\" AND \").qc(F.price, \"<\", &max_price)\n    .order()                         // model's default ordering\n    .limit(50)\n    .fetch_ref().await?;\n\n// only some columns; the row type comes from the columns\nlet rows: Vec<(i64, String)> = db.select::<Product>()\n    .filter_cols((F.id, F.name))\n    .qc(F.vendor_id, \"=\", &vendor_id)\n    .limit(50)\n    .fetch().await?;\n\nlet products: Vec<Product> = db.raw::<Product>(\"SELECT * FROM products WHERE attrs ? $1\", &[&\"color\"])\n    .limit(50).fetch().await?;\n```",
-"block": "**R-0387**\n\n```rust\nlet rows = db.select::<Product>()\n    .filter()\n    .qc(F.vendor_id, \"=\", &vendor_id)\n    .q(\" AND \").qc(F.price, \"<\", &max_price)\n    .order()                         // model's default ordering\n    .limit(50)\n    .fetch_ref().await?;\n\n// only some columns; the row type comes from the columns\nlet rows: Vec<(i64, String)> = db.select::<Product>()\n    .filter_cols((F.id, F.name))\n    .qc(F.vendor_id, \"=\", &vendor_id)\n    .limit(50)\n    .fetch().await?;\n\nlet products: Vec<Product> = db.raw::<Product>(\"SELECT * FROM products WHERE attrs ? $1\", &[&\"color\"])\n    .limit(50).fetch().await?;\n```"
+"text": "```rust\nlet rows = db.select::<Product>()\n    .filter()\n    .qc(F.vendor_id, \"=\", &vendor_id)\n    .q(\" AND \").qc(F.price, \"<\", &max_price)\n    .order()                         // model's default ordering\n    .limit(50)\n    .fetch_ref().await?;\n\n// only some columns; the row type comes from the columns\nlet rows: Vec<(i64, String)> = db.select::<Product>()\n    .filter_cols((F.id, F.name))\n    .qc(F.vendor_id, \"=\", &vendor_id)\n    .limit(50)\n    .fetch().await?;\n\nlet key = \"color\";\nlet products: Vec<Product> = db.raw::<Product>(sql!(\"SELECT * FROM products WHERE attrs ? ${key: &str}\"))\n    .limit(50).fetch().await?;\n```",
+"block": "**R-0387**\n\n```rust\nlet rows = db.select::<Product>()\n    .filter()\n    .qc(F.vendor_id, \"=\", &vendor_id)\n    .q(\" AND \").qc(F.price, \"<\", &max_price)\n    .order()                         // model's default ordering\n    .limit(50)\n    .fetch_ref().await?;\n\n// only some columns; the row type comes from the columns\nlet rows: Vec<(i64, String)> = db.select::<Product>()\n    .filter_cols((F.id, F.name))\n    .qc(F.vendor_id, \"=\", &vendor_id)\n    .limit(50)\n    .fetch().await?;\n\nlet key = \"color\";\nlet products: Vec<Product> = db.raw::<Product>(sql!(\"SELECT * FROM products WHERE attrs ? ${key: &str}\"))\n    .limit(50).fetch().await?;\n```"
 },
 {
 "id": "R-0388",
@@ -3294,8 +3294,8 @@
 "kind": "info",
 "step": "reads-more",
 "line": 890,
-"text": "```rust\n#[derive(morm::Row)]\nstruct Sale { day: NaiveDate, total: Decimal }\n\nlet q = sql!(\"SELECT day, sum(total) AS total FROM orders WHERE vendor_id = $1 GROUP BY day\");\n\nlet rows: Vec<Sale> = db.sql(q, &[&vendor_id]).limit(30).fetch().await?;     // named struct\nlet rows: Vec<(NaiveDate, Decimal)> = db.sql(q, &[&vendor_id]).limit(30).fetch().await?;  // tuple\nlet body = db.sql(q, &[&vendor_id]).limit(30).fetch_json().await?;           // JSON bytes\nlet rows = db.sql(q, &[&vendor_id]).limit(30).fetch_raw().await?;            // rows as sent\nlet n: i64 = db.sql(\"SELECT count(*) FROM orders\", &[]).fetch_val().await?;  // one value\nlet changed = db.sql(\"UPDATE orders SET seen = true WHERE id = $1\", &[&id]).run().await?;  // row count\n```",
-"block": "**R-0412**\n\n```rust\n#[derive(morm::Row)]\nstruct Sale { day: NaiveDate, total: Decimal }\n\nlet q = sql!(\"SELECT day, sum(total) AS total FROM orders WHERE vendor_id = $1 GROUP BY day\");\n\nlet rows: Vec<Sale> = db.sql(q, &[&vendor_id]).limit(30).fetch().await?;     // named struct\nlet rows: Vec<(NaiveDate, Decimal)> = db.sql(q, &[&vendor_id]).limit(30).fetch().await?;  // tuple\nlet body = db.sql(q, &[&vendor_id]).limit(30).fetch_json().await?;           // JSON bytes\nlet rows = db.sql(q, &[&vendor_id]).limit(30).fetch_raw().await?;            // rows as sent\nlet n: i64 = db.sql(\"SELECT count(*) FROM orders\", &[]).fetch_val().await?;  // one value\nlet changed = db.sql(\"UPDATE orders SET seen = true WHERE id = $1\", &[&id]).run().await?;  // row count\n```"
+"text": "```rust\n#[derive(morm::Row)]\nstruct Sale { day: NaiveDate, total: Decimal }\n\nlet q = sql!(\"SELECT day, sum(total) AS total FROM orders\n              WHERE {Order::F.vendor_id} = ${vendor_id: Order::F.vendor_id} GROUP BY day\");\n\nlet rows: Vec<Sale> = db.sql(&q).limit(30).fetch().await?;                   // named struct\nlet rows: Vec<(NaiveDate, Decimal)> = db.sql(&q).limit(30).fetch().await?;   // tuple\nlet body = db.sql(&q).limit(30).fetch_json().await?;                         // JSON bytes\nlet rows = db.sql(&q).limit(30).fetch_raw().await?;                          // rows as sent\nlet n: i64 = db.sql(sql!(\"SELECT count(*) FROM orders\")).fetch_val().await?; // one value\nlet changed = db.sql(sql!(\"UPDATE orders SET seen = true WHERE {Order::F.id} = ${id: Order::F.id}\")).run().await?;  // row count\n```",
+"block": "**R-0412**\n\n```rust\n#[derive(morm::Row)]\nstruct Sale { day: NaiveDate, total: Decimal }\n\nlet q = sql!(\"SELECT day, sum(total) AS total FROM orders\n              WHERE {Order::F.vendor_id} = ${vendor_id: Order::F.vendor_id} GROUP BY day\");\n\nlet rows: Vec<Sale> = db.sql(&q).limit(30).fetch().await?;                   // named struct\nlet rows: Vec<(NaiveDate, Decimal)> = db.sql(&q).limit(30).fetch().await?;   // tuple\nlet body = db.sql(&q).limit(30).fetch_json().await?;                         // JSON bytes\nlet rows = db.sql(&q).limit(30).fetch_raw().await?;                          // rows as sent\nlet n: i64 = db.sql(sql!(\"SELECT count(*) FROM orders\")).fetch_val().await?; // one value\nlet changed = db.sql(sql!(\"UPDATE orders SET seen = true WHERE {Order::F.id} = ${id: Order::F.id}\")).run().await?;  // row count\n```"
 },
 {
 "id": "R-0413",
@@ -3318,8 +3318,8 @@
 "kind": "code",
 "step": "reads-more",
 "line": 906,
-"text": "- The SQL must be `&'static str`, as with `.q()`, and `sql_unchecked(String)` is the visible escape hatch.",
-"block": "- **R-0415** The SQL must be `&'static str`, as with `.q()`, and `sql_unchecked(String)` is the visible escape hatch."
+"text": "- `db.sql()` and `db.raw()` take only what `sql!` returns, or a reference to it. `sql_unchecked(String, &[&dyn Param])` is the visible escape hatch, with the scanner's casts. Owner decision DH2, choice B.",
+"block": "- **R-0415** `db.sql()` and `db.raw()` take only what `sql!` returns, or a reference to it. `sql_unchecked(String, &[&dyn Param])` is the visible escape hatch, with the scanner's casts. Owner decision DH2, choice B."
 },
 {
 "id": "R-0416",
@@ -3462,8 +3462,8 @@
 "kind": "code",
 "step": "statements",
 "line": 935,
-"text": "- **`$n` in a fragment is local.** `comp`, `set_expr` and `.q()` fragments each count from `$1`, and morm renumbers them. The scan skips quoted strings and comments, so `'$1'` stays text. The scanner lives in `morm-core`.",
-"block": "- **R-0433** **`$n` in a fragment is local.** `comp`, `set_expr` and `.q()` fragments each count from `$1`, and morm renumbers them. The scan skips quoted strings and comments, so `'$1'` stays text. The scanner lives in `morm-core`."
+"text": "- **`$n` in a fragment is local.** `comp`, `set_expr` and `.q()` fragments each count from `$1`, and morm renumbers them. The scan skips quoted strings and comments, so `'$1'` stays text. The scanner lives in `morm-core`, and it writes each parameter's cast, as `($n::type)`.",
+"block": "- **R-0433** **`$n` in a fragment is local.** `comp`, `set_expr` and `.q()` fragments each count from `$1`, and morm renumbers them. The scan skips quoted strings and comments, so `'$1'` stays text. The scanner lives in `morm-core`, and it writes each parameter's cast, as `($n::type)`."
 },
 {
 "id": "R-0434",
@@ -5726,8 +5726,8 @@
 "kind": "code",
 "step": "statements",
 "line": 1517,
-"text": "- Other dynamic SQL and overflow go through `query_typed`, which needs no prepare round trips. It needs each parameter's Postgres type, and `ToSql` doesn't give that, so parameters are `&dyn morm::Param`, a trait that adds the type. Builder code knows the type from `F`.",
-"block": "- **R-0716** Other dynamic SQL and overflow go through `query_typed`, which needs no prepare round trips. It needs each parameter's Postgres type, and `ToSql` doesn't give that, so parameters are `&dyn morm::Param`, a trait that adds the type. Builder code knows the type from `F`."
+"text": "- Other dynamic SQL and overflow go through `query_typed`, which needs no prepare round trips. It needs each parameter's Postgres type, and `ToSql` doesn't give that, so parameters are `&dyn morm::Param`, a trait that adds the cast and the built-in carrier. Builder code knows both from `F`.",
+"block": "- **R-0716** Other dynamic SQL and overflow go through `query_typed`, which needs no prepare round trips. It needs each parameter's Postgres type, and `ToSql` doesn't give that, so parameters are `&dyn morm::Param`, a trait that adds the cast and the built-in carrier. Builder code knows both from `F`."
 },
 {
 "id": "R-0717",
@@ -5742,8 +5742,8 @@
 "kind": "code",
 "step": "statements",
 "line": 1519,
-"text": "- A cached statement can go stale when a migration changes something under it, and it then fails every time until it's re-prepared. On `cached plan must not change result type` (0A000), evict, re-prepare and retry once, outside a transaction. Do the same on `42883` or `42804` from a cached statement with a parameter of a non-built-in type, which is what an enum parameter returns when a swap keeps the old type: that statement parsed once, so this is a schema change and not a typo.",
-"block": "- **R-0718** A cached statement can go stale when a migration changes something under it, and it then fails every time until it's re-prepared. On `cached plan must not change result type` (0A000), evict, re-prepare and retry once, outside a transaction. Do the same on `42883` or `42804` from a cached statement with a parameter of a non-built-in type, which is what an enum parameter returns when a swap keeps the old type: that statement parsed once, so this is a schema change and not a typo."
+"text": "- A cached statement can go stale when a migration changes something under it, and it then fails every time until it's re-prepared. On `cached plan must not change result type` (0A000), evict, re-prepare and retry once, outside a transaction. A statement that casts a parameter to a non-built-in type, such as an enum, a domain or a composite, survives a swap of that type when it touches a table holding it, because Postgres parses it again and resolves the name again. One that touches no such table, such as `SELECT ($1::st)::text`, gets `XX000` `cache lookup failed for type` once the old type is dropped, or `22P02` naming the old type while it's kept. So outside a transaction, any error from a cached statement that casts a parameter to a non-built-in type evicts it, prepares it again and retries once, and a retry that fails again returns its error: that statement parsed once, so the error comes from a schema change and not a typo, and Postgres rolled the failed statement back, so the retry is safe. R-0981's connection replacement still comes first for `XX000` `cache lookup failed for type`. Owner decision DH2, choice I.",
+"block": "- **R-0718** A cached statement can go stale when a migration changes something under it, and it then fails every time until it's re-prepared. On `cached plan must not change result type` (0A000), evict, re-prepare and retry once, outside a transaction. A statement that casts a parameter to a non-built-in type, such as an enum, a domain or a composite, survives a swap of that type when it touches a table holding it, because Postgres parses it again and resolves the name again. One that touches no such table, such as `SELECT ($1::st)::text`, gets `XX000` `cache lookup failed for type` once the old type is dropped, or `22P02` naming the old type while it's kept. So outside a transaction, any error from a cached statement that casts a parameter to a non-built-in type evicts it, prepares it again and retries once, and a retry that fails again returns its error: that statement parsed once, so the error comes from a schema change and not a typo, and Postgres rolled the failed statement back, so the retry is safe. R-0981's connection replacement still comes first for `XX000` `cache lookup failed for type`. Owner decision DH2, choice I."
 },
 {
 "id": "R-0719",
@@ -8830,8 +8830,8 @@
 "kind": "code",
 "step": "statements",
 "line": 0,
-"text": "- **Decoding follows the column's real type.** When a statement is prepared, morm reads each result column's type from the row description Postgres returns, chooses each field's decoder from it once, and keeps that choice with the statement in its cache entry. A `query_typed` call, which has no cache entry, chooses once from its own result's row description. The internal query entry point then reads all of that statement's rows through `from_row` when every column has the type the binary was built against, so that path is unchanged, and through `from_row_as` with the statement's choice otherwise, deciding once before the first row and never per row. A re-prepare after a migration, on `0A000` as R-0718 says, chooses again, so a statement cached before a cutover picks the new column type's decoder. Every statement is prepared with each parameter's declared type, as `query_typed` sends it: the column's type where morm knows the column, otherwise `Param`'s, so a parameter goes as the column type the binary was built against and Postgres converts it when it's written: a widened column takes every value the binary writes, and a value a narrowed one can't hold gets the database's error for that write.",
-"block": "- **R-1104** **Decoding follows the column's real type.** When a statement is prepared, morm reads each result column's type from the row description Postgres returns, chooses each field's decoder from it once, and keeps that choice with the statement in its cache entry. A `query_typed` call, which has no cache entry, chooses once from its own result's row description. The internal query entry point then reads all of that statement's rows through `from_row` when every column has the type the binary was built against, so that path is unchanged, and through `from_row_as` with the statement's choice otherwise, deciding once before the first row and never per row. A re-prepare after a migration, on `0A000` as R-0718 says, chooses again, so a statement cached before a cutover picks the new column type's decoder. Every statement is prepared with each parameter's declared type, as `query_typed` sends it: the column's type where morm knows the column, otherwise `Param`'s, so a parameter goes as the column type the binary was built against and Postgres converts it when it's written: a widened column takes every value the binary writes, and a value a narrowed one can't hold gets the database's error for that write."
+"text": "- **Decoding follows the column's real type.** When a statement is prepared, morm reads each result column's type from the row description Postgres returns, chooses each field's decoder from it once, and keeps that choice with the statement in its cache entry. A `query_typed` call, which has no cache entry, chooses once from its own result's row description. The internal query entry point then reads all of that statement's rows through `from_row` when every column has the type the binary was built against, so that path is unchanged, and through `from_row_as` with the statement's choice otherwise, deciding once before the first row and never per row. A re-prepare after a migration, on `0A000` as R-0718 says, chooses again, so a statement cached before a cutover picks the new column type's decoder. Every statement is prepared with each parameter's built-in carrier, as `query_typed` sends it. Its SQL casts the parameter to the column type the binary was built against where it's bound through a field, and otherwise to the value's own type. So Postgres converts it when it's written: a widened column takes every value the binary writes, and a value a narrowed one can't hold gets the database's error for that write.",
+"block": "- **R-1104** **Decoding follows the column's real type.** When a statement is prepared, morm reads each result column's type from the row description Postgres returns, chooses each field's decoder from it once, and keeps that choice with the statement in its cache entry. A `query_typed` call, which has no cache entry, chooses once from its own result's row description. The internal query entry point then reads all of that statement's rows through `from_row` when every column has the type the binary was built against, so that path is unchanged, and through `from_row_as` with the statement's choice otherwise, deciding once before the first row and never per row. A re-prepare after a migration, on `0A000` as R-0718 says, chooses again, so a statement cached before a cutover picks the new column type's decoder. Every statement is prepared with each parameter's built-in carrier, as `query_typed` sends it. Its SQL casts the parameter to the column type the binary was built against where it's bound through a field, and otherwise to the value's own type. So Postgres converts it when it's written: a widened column takes every value the binary writes, and a value a narrowed one can't hold gets the database's error for that write."
 },
 {
 "id": "R-1105",
@@ -9752,6 +9752,78 @@
 "line": 0,
 "block": "| R-1219 | `tx.transaction(..)` | Part of a transaction may fail and the rest must go on, such as an optional insert that can hit a unique key |",
 "text": "| `tx.transaction(..)` | Part of a transaction may fail and the rest must go on, such as an optional insert that can hit a unique key |"
+},
+{
+"id": "R-1220",
+"kind": "code",
+"step": "statements",
+"line": 0,
+"block": "- **R-1220** **Every parameter has a built-in carrier and a cast.** Every statement morm sends declares each parameter in Parse as its built-in carrier and casts it in the SQL as `($n::cast)`, so Postgres never infers a parameter's type: in `sql!`, every builder, model inserts and updates, `UNNEST`, keyset pages, runtime fragments, `.limit(n)` and morm's own advisory locks, the last two as `int8`. The parentheses are needed: without them, `$1[1]` would become `$1::int8[][1]`, which Postgres reads as the type `int8[][1]` and so returns the whole array, and `$1.n` would fail with `0A000`. A non-built-in type is cast by name, so no OID is looked up or sent. Built text is cached, in R-0715's map and in `shape_cache`, with its casts, and nothing about typing costs a round trip. Owner decision DH2, choices A and C.",
+"text": "- **Every parameter has a built-in carrier and a cast.** Every statement morm sends declares each parameter in Parse as its built-in carrier and casts it in the SQL as `($n::cast)`, so Postgres never infers a parameter's type: in `sql!`, every builder, model inserts and updates, `UNNEST`, keyset pages, runtime fragments, `.limit(n)` and morm's own advisory locks, the last two as `int8`. The parentheses are needed: without them, `$1[1]` would become `$1::int8[][1]`, which Postgres reads as the type `int8[][1]` and so returns the whole array, and `$1.n` would fail with `0A000`. A non-built-in type is cast by name, so no OID is looked up or sent. Built text is cached, in R-0715's map and in `shape_cache`, with its casts, and nothing about typing costs a round trip. Owner decision DH2, choices A and C."
+},
+{
+"id": "R-1221",
+"kind": "code",
+"step": "statements",
+"line": 0,
+"block": "- **R-1221** **The scanner places the casts.** It follows Postgres's `scan.l` for everything that can hide a `$n`: standard strings with `''`, escape strings `E'..'` with backslashes, and `B'..'`, `X'..'`, `N'..'` and `U&'..'`; quoted identifiers with `\"\"`, and `U&\"..\"`; `--` comments and nested `/* */` comments; dollar quotes `$$..$$` and `$tag$..$tag$`; identifiers that hold `$`, such as `a$1`; and operator splitting, including the rule on a trailing `+` or `-`. It refuses an unterminated quote or comment. In the pass that renumbers each `$n`, it writes the cast for that parameter's slot: the column's cast for a value bound through a field, as in `comp` (choice G), and each value's own `Param` cast for a free one, in `set_expr`, `.q()`, `q_unchecked` and `sql_unchecked`. So `price < $1 AND tag = '$1' AND x = ANY($2) -- $1`, numbered from 3, becomes `price < ($3::numeric) AND tag = '$1' AND x = ANY(($4::text[])) -- $1`. A call site's value types are fixed, so its casts are too, and the scanner runs once per shape. Owner decision DH2, choice F.",
+"text": "- **The scanner places the casts.** It follows Postgres's `scan.l` for everything that can hide a `$n`: standard strings with `''`, escape strings `E'..'` with backslashes, and `B'..'`, `X'..'`, `N'..'` and `U&'..'`; quoted identifiers with `\"\"`, and `U&\"..\"`; `--` comments and nested `/* */` comments; dollar quotes `$$..$$` and `$tag$..$tag$`; identifiers that hold `$`, such as `a$1`; and operator splitting, including the rule on a trailing `+` or `-`. It refuses an unterminated quote or comment. In the pass that renumbers each `$n`, it writes the cast for that parameter's slot: the column's cast for a value bound through a field, as in `comp` (choice G), and each value's own `Param` cast for a free one, in `set_expr`, `.q()`, `q_unchecked` and `sql_unchecked`. So `price < $1 AND tag = '$1' AND x = ANY($2) -- $1`, numbered from 3, becomes `price < ($3::numeric) AND tag = '$1' AND x = ANY(($4::text[])) -- $1`. A call site's value types are fixed, so its casts are too, and the scanner runs once per shape. Owner decision DH2, choice F."
+},
+{
+"id": "R-1222",
+"kind": "code",
+"step": "reads",
+"line": 0,
+"block": "- **R-1222** **Reads bind through the field.** `get`, `get_by`, `get_all_by`, `.by`, `.any`, `.qc` and a composite key's tuple bind each value through its column: the SQL casts it to the column's type from the `F` constant, it's declared as the column's carrier, and it must fit the field at compile time. `comp` in `get_where` is bound through the comp's field too, so its values are `&[&dyn Fits<T>]` for the field's type `T`, and a list in the comp, as in `<> ALL($1)`, gets the column's list cast. A comp whose value has another type, such as `> now() - $1` with an interval, is a compile error, and belongs in `.q()` with a free value. A `.q()` value is free: it's cast to its own type. Owner decision DH2, choice G.",
+"text": "- **Reads bind through the field.** `get`, `get_by`, `get_all_by`, `.by`, `.any`, `.qc` and a composite key's tuple bind each value through its column: the SQL casts it to the column's type from the `F` constant, it's declared as the column's carrier, and it must fit the field at compile time. `comp` in `get_where` is bound through the comp's field too, so its values are `&[&dyn Fits<T>]` for the field's type `T`, and a list in the comp, as in `<> ALL($1)`, gets the column's list cast. A comp whose value has another type, such as `> now() - $1` with an interval, is a compile error, and belongs in `.q()` with a free value. A `.q()` value is free: it's cast to its own type. Owner decision DH2, choice G."
+},
+{
+"id": "R-1223",
+"kind": "code",
+"step": "reads-more",
+"line": 0,
+"block": "- **R-1223** **`sql!`'s syntax.** `sql!` takes one string literal. Outside strings, quoted identifiers, comments and dollar quotes, which the `morm-core` scanner skips, it reads three forms, and neither `{` nor `${` is valid SQL there:\n\n  | Form | Writes | Checked at compile time |\n  |---|---|---|\n  | `{Order::F.vendor_id}` | The quoted column name, `\"vendor_id\"`, from the `F` constant | \u2014 |\n  | `${vendor_id: Order::F.vendor_id}` | `($n::int8)`, the column's cast | The value fits the field's Rust type without loss |\n  | `${ids: Order::F.id[]}` | `($n::int8[])`, the column's list cast | A `Vec`, slice or array whose elements fit |\n  | `${since: NaiveDate}` | `($n::date)`, the type's `SqlType` cast | The value is that type, or a reference to it |\n\n  Each value sits where it's used, so values can't be misnumbered. `[]` binds a list for `= ANY(..)`, `<> ALL(..)` and `unnest(..)`; an array column binds a whole array without `[]`, and `[]` on one is a compile error. An `Option` value fits only a nullable field, and a free `Option<T>` is cast as `T`. A cast of your own after a value is kept, so `${s: String}::citext` is written as `($1::text)::citext`. A free value's type must be concrete, because the query is registered in a static, so `${v: T}` inside a generic `fn` fails with `E0401`. The text is a compile-time constant, built by `const` concatenation of the literal's pieces, the `F` names and the casts. `sql!` returns a `morm::Sql<'a>`: the text, its registration, and the borrowed values, each as its carrier, in a tuple with no boxing. Owner decision DH2, choice A.",
+"text": "- **`sql!`'s syntax.** `sql!` takes one string literal. Outside strings, quoted identifiers, comments and dollar quotes, which the `morm-core` scanner skips, it reads three forms, and neither `{` nor `${` is valid SQL there:\n\n  | Form | Writes | Checked at compile time |\n  |---|---|---|\n  | `{Order::F.vendor_id}` | The quoted column name, `\"vendor_id\"`, from the `F` constant | \u2014 |\n  | `${vendor_id: Order::F.vendor_id}` | `($n::int8)`, the column's cast | The value fits the field's Rust type without loss |\n  | `${ids: Order::F.id[]}` | `($n::int8[])`, the column's list cast | A `Vec`, slice or array whose elements fit |\n  | `${since: NaiveDate}` | `($n::date)`, the type's `SqlType` cast | The value is that type, or a reference to it |\n\n  Each value sits where it's used, so values can't be misnumbered. `[]` binds a list for `= ANY(..)`, `<> ALL(..)` and `unnest(..)`; an array column binds a whole array without `[]`, and `[]` on one is a compile error. An `Option` value fits only a nullable field, and a free `Option<T>` is cast as `T`. A cast of your own after a value is kept, so `${s: String}::citext` is written as `($1::text)::citext`. A free value's type must be concrete, because the query is registered in a static, so `${v: T}` inside a generic `fn` fails with `E0401`. The text is a compile-time constant, built by `const` concatenation of the literal's pieces, the `F` names and the casts. `sql!` returns a `morm::Sql<'a>`: the text, its registration, and the borrowed values, each as its carrier, in a tuple with no boxing. Owner decision DH2, choice A."
+},
+{
+"id": "R-1224",
+"kind": "code",
+"step": "reads-more",
+"line": 0,
+"block": "- **R-1224** **What `sql!` refuses.** It runs the scanner and looks at the tokens beside each `${..}`, with no SQL parser, and each refusal is a compile error naming the `${..}` and the fix:\n  - a positional `$1` outside strings and comments;\n  - a `${v}` with no `: field` or `: Type`;\n  - a `${..}` inside a string, quoted identifier or dollar quote, such as `LIKE '%${q: String}%'`, whose fix is `'%' || ${q: String} || '%'`;\n  - a free value beside a column named through `F`, even of the column's own type (choice D): `{M::F.c} op ${v: T}` or the reverse, for `=`, `<>`, `!=`, `<`, `<=`, `>` and `>=`, `IS [NOT] DISTINCT FROM`, `[NOT] BETWEEN`, `[NOT] IN (..)`, `op ANY|ALL|SOME(..)`, `SET {M::F.c} = ${v}`, and the matching position in `INSERT .. ({M::F.a}, ..) VALUES (.., ${v}, ..)`;\n  - a cast that cuts or rounds after a value: `::` or `CAST(.. AS` followed by `varchar`, `character [varying]`, `char`, `bpchar`, `bit [varying]`, `varbit`, `numeric`, `decimal`, `timestamp[tz]`, `time[tz]`, `interval` or `float` with `(`, or a bare `char`, `character` or `bit`;\n  - a field-bound scalar inside `ANY(..)`, `ALL(..)` or `SOME(..)`;\n  - a field-bound list beside a comparison operator, outside `ANY(..)`.\n\n  The type system refuses the rest: a value that doesn't fit its field, a free value of another type than the one named, a list of an array column, a field that doesn't exist, and a generic free type. Owner decision DH2, choice D.",
+"text": "- **What `sql!` refuses.** It runs the scanner and looks at the tokens beside each `${..}`, with no SQL parser, and each refusal is a compile error naming the `${..}` and the fix:\n  - a positional `$1` outside strings and comments;\n  - a `${v}` with no `: field` or `: Type`;\n  - a `${..}` inside a string, quoted identifier or dollar quote, such as `LIKE '%${q: String}%'`, whose fix is `'%' || ${q: String} || '%'`;\n  - a free value beside a column named through `F`, even of the column's own type (choice D): `{M::F.c} op ${v: T}` or the reverse, for `=`, `<>`, `!=`, `<`, `<=`, `>` and `>=`, `IS [NOT] DISTINCT FROM`, `[NOT] BETWEEN`, `[NOT] IN (..)`, `op ANY|ALL|SOME(..)`, `SET {M::F.c} = ${v}`, and the matching position in `INSERT .. ({M::F.a}, ..) VALUES (.., ${v}, ..)`;\n  - a cast that cuts or rounds after a value: `::` or `CAST(.. AS` followed by `varchar`, `character [varying]`, `char`, `bpchar`, `bit [varying]`, `varbit`, `numeric`, `decimal`, `timestamp[tz]`, `time[tz]`, `interval` or `float` with `(`, or a bare `char`, `character` or `bit`;\n  - a field-bound scalar inside `ANY(..)`, `ALL(..)` or `SOME(..)`;\n  - a field-bound list beside a comparison operator, outside `ANY(..)`.\n\n  The type system refuses the rest: a value that doesn't fit its field, a free value of another type than the one named, a list of an array column, a field that doesn't exist, and a generic free type. Owner decision DH2, choice D."
+},
+{
+"id": "R-1225",
+"kind": "code",
+"step": "reads-more",
+"line": 0,
+"block": "- **R-1225** **Related rows and pages bind through the field.** `load_related`'s `= ANY($1)` takes the parent keys through the related field, cast to its list type, and keyset bounds and decoded cursors bind through their key columns, cast to each column's type. `.limit(n)` is cast as `int8`. Owner decision DH2.",
+"text": "- **Related rows and pages bind through the field.** `load_related`'s `= ANY($1)` takes the parent keys through the related field, cast to its list type, and keyset bounds and decoded cursors bind through their key columns, cast to each column's type. `.limit(n)` is cast as `int8`. Owner decision DH2."
+},
+{
+"id": "R-1226",
+"kind": "code",
+"step": "inserts",
+"line": 0,
+"block": "- **R-1226** **Inserts bind through the field.** `insert`, `insert_many` on its `UNNEST` paths and `.explicit_ids()` bind every value through its column: each `VALUES` entry is cast to the column's type, as `($1::citext)`, each `UNNEST` array to the column's list type, as `($1::citext[])`, and R-0350's array literals to the column's array type per row, each declared as its built-in carrier and encoded by the conversion layer, so a value whose type differs from the column's, such as an `i32` on `bigint` or an instant on `timestamp`, is converted the same way on every path. `COPY` sends no parameters, so it needs no cast. Owner decision DH2.",
+"text": "- **Inserts bind through the field.** `insert`, `insert_many` on its `UNNEST` paths and `.explicit_ids()` bind every value through its column: each `VALUES` entry is cast to the column's type, as `($1::citext)`, each `UNNEST` array to the column's list type, as `($1::citext[])`, and R-0350's array literals to the column's array type per row, each declared as its built-in carrier and encoded by the conversion layer, so a value whose type differs from the column's, such as an `i32` on `bigint` or an instant on `timestamp`, is converted the same way on every path. `COPY` sends no parameters, so it needs no cast. Owner decision DH2."
+},
+{
+"id": "R-1227",
+"kind": "code",
+"step": "updates",
+"line": 0,
+"block": "**R-1227** **Updates and deletes bind through the field.** `.set()`, `.apply()`, `update_each`, `.version()`, `delete_ids`, `delete_by` and the `by`/`any` builder on `update_q` and `delete_q` bind each value through its column, cast to the column's type and declared as its carrier. `comp` in `delete_where` is bound through the comp's field, with values of `&[&dyn Fits<T>]`, as `get_where`'s is, and a list in it gets the column's list cast. `set_expr`'s value is free, cast to its own type, as in `stock - ($1::int4)`. Owner decision DH2, choice G.",
+"text": "**Updates and deletes bind through the field.** `.set()`, `.apply()`, `update_each`, `.version()`, `delete_ids`, `delete_by` and the `by`/`any` builder on `update_q` and `delete_q` bind each value through its column, cast to the column's type and declared as its carrier. `comp` in `delete_where` is bound through the comp's field, with values of `&[&dyn Fits<T>]`, as `get_where`'s is, and a list in it gets the column's list cast. `set_expr`'s value is free, cast to its own type, as in `stock - ($1::int4)`. Owner decision DH2, choice G."
+},
+{
+"id": "R-1228",
+"kind": "code",
+"step": "upsert",
+"line": 0,
+"block": "- **R-1228** **Upserts bind through the field.** `upsert` and `upsert_many` cast each value, and each `UNNEST` array, to its column's type and declare it as the column's carrier, as inserts do, and `.update_only` and the version increment write no parameter of their own. Owner decision DH2.",
+"text": "- **Upserts bind through the field.** `upsert` and `upsert_many` cast each value, and each `UNNEST` array, to its column's type and declare it as the column's carrier, as inserts do, and `.update_only` and the version increment write no parameter of their own. Owner decision DH2."
 }
 ],
 "tests": [
@@ -9900,7 +9972,7 @@
 "step": "reads",
 "kind": "trybuild",
 "line": 1623,
-"text": "non-static `q()` and `sql()`"
+"text": "non-static `q()`, and `db.sql()` given anything but `sql!`"
 },
 {
 "id": "T-0022",
@@ -10810,7 +10882,7 @@
 "step": "statements",
 "kind": "integration",
 "line": 0,
-"text": "**Stale statements on Postgres 15\u201318:** after a hand-run enum swap, with the old type dropped and with it kept, a select, a filter, an insert, an update and an `= ANY` on a cached statement all succeed with no error reaching the caller, and the same SQL runs clean a second time. The codes match what proof 14 recorded. If they differ from this design on any version, stop and ask the owner with the evidence and options."
+"text": "**Stale statements on Postgres 15\u201318:** with each parameter declared as its carrier and cast to its type, after a hand-run enum swap, with the old type dropped and with it kept, a select, a filter, an insert, an update and an `= ANY` on a cached statement on the swapped table all succeed with no error reaching the caller, and the same SQL runs clean a second time. A cached statement that touches no table of the type, such as `SELECT ($1::st)::text`, gets `XX000` with the old type dropped and `22P02` while it's kept, and recovers outside a transaction by R-0718's retry, once. The codes match what proof 14 recorded. If they differ from this design on any version, stop and ask the owner with the evidence and options."
 },
 {
 "id": "T-0152",
@@ -11307,7 +11379,7 @@
 "step": "statements",
 "kind": "integration",
 "line": 0,
-"text": "**Decoding follows the column's real type, on Postgres 15\u201318:** a cached statement on an `integer` column reads through `from_row`. After a hand-run change to `bigint`, its next run gets `0A000`, re-prepares and reads through `from_row_as` with the `bigint` decoder, and after the change back it reads through `from_row` again. A test build counts one choice per prepare and per `query_typed` call, and none per row, over a statement returning 10,000 rows, and a `query_typed` call on the changed column chooses from its own result. Every statement is prepared with its parameters' `Param` types: after `integer` becomes `bigint`, a cached insert of an `i32` succeeds, and after `bigint` becomes `integer`, a cached insert of `2^40` from an `i64` field gets the database's `22003`, while one that fits succeeds."
+"text": "**Decoding follows the column's real type, on Postgres 15\u201318:** a cached statement on an `integer` column reads through `from_row`. After a hand-run change to `bigint`, its next run gets `0A000`, re-prepares and reads through `from_row_as` with the `bigint` decoder, and after the change back it reads through `from_row` again. A test build counts one choice per prepare and per `query_typed` call, and none per row, over a statement returning 10,000 rows, and a `query_typed` call on the changed column chooses from its own result. Every statement is prepared with its parameters' carriers and casts: after `integer` becomes `bigint`, a cached insert of an `i32` cast as `($1::int4)` succeeds, and after `bigint` becomes `integer`, a cached insert of `2^40` from an `i64` field cast as `($1::int8)` gets the database's `22003`, while one that fits succeeds."
 },
 {
 "id": "T-0223",
@@ -11714,6 +11786,48 @@
 "kind": "trybuild",
 "line": 0,
 "text": "**Fields that don't fit:** an `i64` bound through an `i32` field, an `Option` value through a non-`Option` field, a field whose `sql` its type doesn't carry (`i32` on `text`, and `Vec<f32>` on `vector(3)`, an unknown type with no text form), the same through a type alias, and a field of a type with no `SqlType`, each a compile error naming the field"
+},
+{
+"id": "T-0281",
+"step": "statements",
+"kind": "suite",
+"line": 0,
+"text": "**Unit: the scanner's casts:** each of the 16 ways R-1221 lists that a `$n` can hide stays untouched, operators split as Postgres splits them, an unterminated quote or comment is refused, and a fragment is renumbered from any start with each slot's cast written as `($n::cast)`"
+},
+{
+"id": "T-0282",
+"step": "statements",
+"kind": "integration",
+"line": 0,
+"text": "**Casts in every position, on Postgres 15\u201318:** a parameter written as `($n::cast)` prepares and runs, through a prepared statement and through `query_typed`, with the right answer, after a subscript `($1::int8[])[1]` and a field selection `(($1::pt.pair).n)`, under unary minus, before a cast of the user's own, in `LIMIT`, `OFFSET` and `FETCH FIRST`, in `IN (..)`, `BETWEEN`, `ARRAY[..]` and `ROW(..)`, and with `COLLATE \"C\"`, `CAST(.. AS int4)`, `VARIADIC`, `AT TIME ZONE`, `NOT` and `IS NULL`; and with `plan_cache_mode = force_generic_plan`, `c = ($1::citext)` with a `text` carrier, `($1::bpchar)`, an enum, a domain and `= ANY(($1::citext[]))` each use an index"
+},
+{
+"id": "T-0283",
+"step": "reads",
+"kind": "trybuild",
+"line": 0,
+"text": "**Values that don't fit their field:** a `.by`, `.any` or `.qc` value of another type, an `i64` for an `i32` field, and a `get_where` comp value of another type, such as an interval for a `timestamptz` field, each a compile error"
+},
+{
+"id": "T-0284",
+"step": "reads-more",
+"kind": "trybuild",
+"line": 0,
+"text": "**`sql!` refusals:** each form R-1224 lists, 18 cases in all, among them a positional `$1`, `${v}` with no type, `LIKE '%${q: String}%'`, a free value beside an `F` column with `=`, `<>`, `BETWEEN`, `IN`, `= ANY`, `IS NOT DISTINCT FROM` and in a `VALUES` position, `::varchar(3)` and `CAST(.. AS char)` after a value, a field-bound scalar in `ANY(..)`, a field-bound list beside `=`, a value that doesn't fit its field, a free value of another type, `[]` on an array column and a missing field, plus `${v: T}` in a generic `fn` failing with `E0401`; and three that compile"
+},
+{
+"id": "T-0285",
+"step": "reads-more",
+"kind": "integration",
+"line": 0,
+"text": "**`sql!` on Postgres 15\u201318:** queries with `citext`, `char(5)`, an `i32` on a `bigint` field, `= ANY` lists, an enum and an enum list, a `citext[]` column, a free enum, `Option<i64>` as `NULL`, a free `Vec<String>` in `array_length` and `&str` in `concat` give the right answer through a prepared statement and through `query_typed`, and the text sent holds each cast in its place"
+},
+{
+"id": "T-0286",
+"step": "updates",
+"kind": "integration",
+"line": 0,
+"text": "**The parameter matrix through morm's own paths, on Postgres 15\u201318:** with the session's `TimeZone` not UTC, every Rust type against its default column and each column an explicit `sql` gives it (`citext`, `varchar(n)`, `char(n)`, `json`, `jsonb`, `timestamp` from an instant, `timestamptz` from a naive time, wider integers, `double precision` from `f32`, `cidr`, arrays, an enum and a domain) is bound through the field by `.by`, `.any`, `.qc`, `get_where`, `insert`, `insert_many` on its `UNNEST` path, `update().set()`, `update_each`, `delete_where` and `sql!`'s `${v: M::F.field}` and `${v: M::F.field[]}` through `db.sql()`, and each gives the same right answer as straight binding. The same values free, through `sql!`'s `${v: T}`, `.q()` and `set_expr`, get Postgres's answer for their own cast. Each call runs at least twice, so a later run goes through a cached statement, and once on its first use through `query_typed`, with the same answer each time, and the SQL sent holds each parameter's cast. Array values include an element with `\\`, an empty string, the string `{}`, the string `NULL`, a quote and a real `NULL`"
 }
 ],
 "frame": {

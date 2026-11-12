@@ -4,7 +4,7 @@ Generated from the frozen plan. Each requirement and test obligation lives in ex
 
 Kinds: `code` needs a tagged test, `doc` is checked in the README step, `info` is context with nothing to build.
 
-Totals: 1219 requirements, 280 test obligations.
+Totals: 1228 requirements, 286 test obligations.
 
 ## Requirements
 
@@ -359,7 +359,7 @@ Totals: 1219 requirements, 280 test obligations.
 | R-0347 | code | 17 | 759 | \| Large, with `None` on some rows of a defaulted column \| `UNNEST` in chunks, one per pa… |
 | R-0348 | code | 17 | 761 | - `insert_many` is atomic on every path: all rows or none, in one transaction. |
 | R-0349 | code | 17 | 762 | - **`.returning()` doesn't promise input order,** because rows are sorted by key and group… |
-| R-0350 | code | 17 | 763 | - **Array columns:** `UNNEST` flattens nested arrays, so two rows holding `text[]` values … |
+| R-0350 | code | 17 | 763 | - **Array columns:** `UNNEST` flattens nested arrays, so two rows holding `text[]` values… |
 | R-0351 | code | 18 | 763 | - Array columns work through `update_each` the same way. |
 | R-0352 | code | 17 | 764 | - **Explicit ids:** a normal insert always leaves an identity column to Postgres, whatever… |
 | R-0353 | code | 17 | 765 | - **Moving the sequence.** It finds the identity's sequence through `pg_depend`, as the on… |
@@ -424,7 +424,7 @@ Totals: 1219 requirements, 280 test obligations.
 | R-0412 | info | 16 | 890 | ```rust #[derive(morm::Row)] struct Sale { day: NaiveDate, total: Decimal } let q = sql!("… |
 | R-0413 | code | 16 | 904 | - Every list and single-result call works here, including `fetch_ref`, `stream` and `strea… |
 | R-0414 | code | 16 | 905 | - `#[derive(morm::Row)]` decodes by column name, for any plain struct. Columns the struct … |
-| R-0415 | code | 16 | 906 | - The SQL must be `&'static str`, as with `.q()`, and `sql_unchecked(String)` is the visib… |
+| R-0415 | code | 16 | 906 | - `db.sql()` and `db.raw()` take only what `sql!` returns, or a reference to it. `sql_unch… |
 | R-0416 | code | 45 | 906 | - `sql!` also registers it for `check-sql`. |
 | R-0417 | code | 16 | 907 | - **The list rule still applies.** `.limit(n)` appends a `LIMIT` on a new line, so a trail… |
 | R-0418 | code | 16 | 908 | - It uses the same bounded statement cache, and `db.raw::<T>()` remains for raw SQL decodi… |
@@ -1229,6 +1229,15 @@ Totals: 1219 requirements, 280 test obligations.
 | R-1217 | doc | 50 | 0 | \| `.statement_timeout(...)` \| A statement in this transaction must be stopped if it runs t… |
 | R-1218 | doc | 50 | 0 | \| `impl morm::SqlType` \| A field or a free parameter has a Rust type morm doesn't map, and… |
 | R-1219 | doc | 50 | 0 | \| `tx.transaction(..)` \| Part of a transaction may fail and the rest must go on, such as a… |
+| R-1221 | code | 14 | 0 | - **The scanner places the casts.** It follows Postgres's `scan.l` for everything that can… |
+| R-1220 | code | 14 | 0 | - **Every parameter has a built-in carrier and a cast.** Every statement morm sends declar… |
+| R-1222 | code | 15 | 0 | - **Reads bind through the field.** `get`, `get_by`, `get_all_by`, `.by`, `.any`, `.qc` an… |
+| R-1223 | code | 16 | 0 | - **`sql!`'s syntax.** `sql!` takes one string literal. Outside strings, quoted identifier… |
+| R-1224 | code | 16 | 0 | - **What `sql!` refuses.** It runs the scanner and looks at the tokens beside each `${..}`… |
+| R-1225 | code | 16 | 0 | - **Related rows and pages bind through the field.** `load_related`'s `= ANY($1)` takes th… |
+| R-1226 | code | 17 | 0 | - **Inserts bind through the field.** `insert`, `insert_many` on its `UNNEST` paths and `.… |
+| R-1227 | code | 18 | 0 | **Updates and deletes bind through the field.** `.set()`, `.apply()`, `update_each`, `.ver… |
+| R-1228 | code | 19 | 0 | - **Upserts bind through the field.** `upsert` and `upsert_many` cast each value, and each… |
 
 ## Test obligations
 
@@ -1254,7 +1263,7 @@ Totals: 1219 requirements, 280 test obligations.
 | T-0018 | trybuild | 07 | `Deserialize` on models and on views without `input` or `patch` |
 | T-0019 | trybuild | 07 | protected columns in `input` and `patch` |
 | T-0020 | trybuild | 07 | a derived `Serialize` or `Debug` on a model |
-| T-0021 | trybuild | 15 | non-static `q()` and `sql()` |
+| T-0021 | trybuild | 15 | non-static `q()`, and `db.sql()` given anything but `sql!` |
 | T-0022 | trybuild | 04 | uppercase names without `keep_case` |
 | T-0023 | trybuild | 05 | columns narrower than their Rust type |
 | T-0024 | trybuild | 05 | `usize` and `isize` |
@@ -1384,7 +1393,7 @@ Totals: 1219 requirements, 280 test obligations.
 | T-0148 | integration | 56 | **Enum binding survives type changes:** on an open connection and on one opened afterwards… |
 | T-0149 | integration | 56 | **Names and labels:** a bare derive binds to the snake_case name, `#[pg_type(name = "...")… |
 | T-0150 | trybuild | 56 | a `PgEnum` with duplicate labels, an empty label, a label over 63 bytes, a variant that is… |
-| T-0151 | integration | 14 | **Stale statements on Postgres 15–18:** after a hand-run enum swap, with the old type drop… |
+| T-0151 | integration | 14 | **Stale statements on Postgres 15–18:** with each parameter declared as its carrier and ca… |
 | T-0152 | integration | 14 | **Stale sessions:** a plpgsql trigger compiled before a hand-run swap fails with `XX000`, … |
 | T-0153 | integration | 14 | **No false recovery:** a `42883` from SQL that was never cached isn't retried, a retried w… |
 | T-0154 | trybuild | 35 | `#[pg_type]` on a type that also has `#[pg_enum(name = "...")]`, `#[pg_domain]` or `#[pg_c… |
@@ -1514,3 +1523,9 @@ Totals: 1219 requirements, 280 test obligations.
 | T-0278 | integration | 13 | **The parameter matrix, on Postgres 15–18:** with the session's `TimeZone` not UTC, straig… |
 | T-0279 | suite | 13 | **Unit: the cast-name function** on every form R-1212 lists, at least 28, including quoted… |
 | T-0280 | trybuild | 13 | **Fields that don't fit:** an `i64` bound through an `i32` field, an `Option` value throug… |
+| T-0281 | suite | 14 | **Unit: the scanner's casts:** each of the 16 ways R-1221 lists that a `$n` can hide stays… |
+| T-0282 | integration | 14 | **Casts in every position, on Postgres 15–18:** a parameter written as `($n::cast)` prepar… |
+| T-0283 | trybuild | 15 | **Values that don't fit their field:** a `.by`, `.any` or `.qc` value of another type, an… |
+| T-0284 | trybuild | 16 | **`sql!` refusals:** each form R-1224 lists, 18 cases in all, among them a positional `$1`… |
+| T-0285 | integration | 16 | **`sql!` on Postgres 15–18:** queries with `citext`, `char(5)`, an `i32` on a `bigint` fie… |
+| T-0286 | integration | 18 | **The parameter matrix through morm's own paths, on Postgres 15–18:** with the session's `… |

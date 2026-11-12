@@ -105,6 +105,8 @@ db.delete_where::<Log>(F.created_at, "< $1", &[&cutoff]).in_batches(5000).pause_
 
 **R-0385** Each batch is its own statement and commits on its own, so the whole operation isn't atomic, it can stop partway, and running it again continues. It needs a primary key, and it exists only on `db`, not `tx`. It returns the total count.
 
+**R-1227** **Updates and deletes bind through the field.** `.set()`, `.apply()`, `update_each`, `.version()`, `delete_ids`, `delete_by` and the `by`/`any` builder on `update_q` and `delete_q` bind each value through its column, cast to the column's type and declared as its carrier. `comp` in `delete_where` is bound through the comp's field, with values of `&[&dyn Fits<T>]`, as `get_where`'s is, and a list in it gets the column's list cast. `set_expr`'s value is free, cast to its own type, as in `stock - ($1::int4)`. Owner decision DH2, choice G.
+
 ### Performance and memory / Query path
 
 - **R-0721** `= ANY($1)` instead of `IN` lists, so list length doesn't create statement variants.
@@ -135,3 +137,4 @@ db.delete_where::<Log>(F.created_at, "< $1", &[&cutoff]).in_batches(5000).pause_
 | T-0071 | integration | `.set()` winning over `.apply()` |
 | T-0082 | integration | `.version()` conflicts |
 | T-0087 | integration | array columns on every `insert_many` and `update_each` path with property tests on escaping for each element type |
+| T-0286 | integration | **The parameter matrix through morm's own paths, on Postgres 15–18:** with the session's `TimeZone` not UTC, every Rust type against its default column and each column an explicit `sql` gives it (`citext`, `varchar(n)`, `char(n)`, `json`, `jsonb`, `timestamp` from an instant, `timestamptz` from a naive time, wider integers, `double precision` from `f32`, `cidr`, arrays, an enum and a domain) is bound through the field by `.by`, `.any`, `.qc`, `get_where`, `insert`, `insert_many` on its `UNNEST` path, `update().set()`, `update_each`, `delete_where` and `sql!`'s `${v: M::F.field}` and `${v: M::F.field[]}` through `db.sql()`, and each gives the same right answer as straight binding. The same values free, through `sql!`'s `${v: T}`, `.q()` and `set_expr`, get Postgres's answer for their own cast. Each call runs at least twice, so a later run goes through a cached statement, and once on its first use through `query_typed`, with the same answer each time, and the SQL sent holds each parameter's cast. Array values include an element with `\`, an empty string, the string `{}`, the string `NULL`, a quote and a real `NULL` |

@@ -14,7 +14,7 @@ The read paths beyond a model's own table.
 
 ## Deliverables
 
-- `db.sql`, `db.raw`, `#[derive(morm::Row)]`, `load_related`, `keyset`, `.limit` on raw statements
+- `sql!`'s syntax, casts and compile-time refusals, `morm::Sql`, `db.sql` and `db.raw` taking only `sql!` output, `sql_unchecked`, `#[derive(morm::Row)]`, `load_related`, `keyset`, `.limit` on raw statements
 
 ## End-to-end check
 
@@ -22,7 +22,7 @@ Raw SQL, related rows and keyset pages return correct rows on real Postgres, inc
 
 ## Out of scope
 
-- `sql!` (step 45)
+- `sql!`'s registration and `check-sql` (step 45)
 - `fetch_json` formats (step 23)
 
 ## Requirements
@@ -79,19 +79,41 @@ page.next;                                       // opaque cursor, None on the l
 #[derive(morm::Row)]
 struct Sale { day: NaiveDate, total: Decimal }
 
-let q = sql!("SELECT day, sum(total) AS total FROM orders WHERE vendor_id = $1 GROUP BY day");
+let q = sql!("SELECT day, sum(total) AS total FROM orders
+              WHERE {Order::F.vendor_id} = ${vendor_id: Order::F.vendor_id} GROUP BY day");
 
-let rows: Vec<Sale> = db.sql(q, &[&vendor_id]).limit(30).fetch().await?;     // named struct
-let rows: Vec<(NaiveDate, Decimal)> = db.sql(q, &[&vendor_id]).limit(30).fetch().await?;  // tuple
-let body = db.sql(q, &[&vendor_id]).limit(30).fetch_json().await?;           // JSON bytes
-let rows = db.sql(q, &[&vendor_id]).limit(30).fetch_raw().await?;            // rows as sent
-let n: i64 = db.sql("SELECT count(*) FROM orders", &[]).fetch_val().await?;  // one value
-let changed = db.sql("UPDATE orders SET seen = true WHERE id = $1", &[&id]).run().await?;  // row count
+let rows: Vec<Sale> = db.sql(&q).limit(30).fetch().await?;                   // named struct
+let rows: Vec<(NaiveDate, Decimal)> = db.sql(&q).limit(30).fetch().await?;   // tuple
+let body = db.sql(&q).limit(30).fetch_json().await?;                         // JSON bytes
+let rows = db.sql(&q).limit(30).fetch_raw().await?;                          // rows as sent
+let n: i64 = db.sql(sql!("SELECT count(*) FROM orders")).fetch_val().await?; // one value
+let changed = db.sql(sql!("UPDATE orders SET seen = true WHERE {Order::F.id} = ${id: Order::F.id}")).run().await?;  // row count
 ```
 
 - **R-0413** Every list and single-result call works here, including `fetch_ref`, `stream` and `stream_json`.
 - **R-0414** `#[derive(morm::Row)]` decodes by column name, for any plain struct. Columns the struct lacks are ignored, and a missing column is an error.
-- **R-0415** The SQL must be `&'static str`, as with `.q()`, and `sql_unchecked(String)` is the visible escape hatch.
+- **R-0415** `db.sql()` and `db.raw()` take only what `sql!` returns, or a reference to it. `sql_unchecked(String, &[&dyn Param])` is the visible escape hatch, with the scanner's casts. Owner decision DH2, choice B.
+- **R-1223** **`sql!`'s syntax.** `sql!` takes one string literal. Outside strings, quoted identifiers, comments and dollar quotes, which the `morm-core` scanner skips, it reads three forms, and neither `{` nor `${` is valid SQL there:
+
+  | Form | Writes | Checked at compile time |
+  |---|---|---|
+  | `{Order::F.vendor_id}` | The quoted column name, `"vendor_id"`, from the `F` constant | — |
+  | `${vendor_id: Order::F.vendor_id}` | `($n::int8)`, the column's cast | The value fits the field's Rust type without loss |
+  | `${ids: Order::F.id[]}` | `($n::int8[])`, the column's list cast | A `Vec`, slice or array whose elements fit |
+  | `${since: NaiveDate}` | `($n::date)`, the type's `SqlType` cast | The value is that type, or a reference to it |
+
+  Each value sits where it's used, so values can't be misnumbered. `[]` binds a list for `= ANY(..)`, `<> ALL(..)` and `unnest(..)`; an array column binds a whole array without `[]`, and `[]` on one is a compile error. An `Option` value fits only a nullable field, and a free `Option<T>` is cast as `T`. A cast of your own after a value is kept, so `${s: String}::citext` is written as `($1::text)::citext`. A free value's type must be concrete, because the query is registered in a static, so `${v: T}` inside a generic `fn` fails with `E0401`. The text is a compile-time constant, built by `const` concatenation of the literal's pieces, the `F` names and the casts. `sql!` returns a `morm::Sql<'a>`: the text, its registration, and the borrowed values, each as its carrier, in a tuple with no boxing. Owner decision DH2, choice A.
+- **R-1224** **What `sql!` refuses.** It runs the scanner and looks at the tokens beside each `${..}`, with no SQL parser, and each refusal is a compile error naming the `${..}` and the fix:
+  - a positional `$1` outside strings and comments;
+  - a `${v}` with no `: field` or `: Type`;
+  - a `${..}` inside a string, quoted identifier or dollar quote, such as `LIKE '%${q: String}%'`, whose fix is `'%' || ${q: String} || '%'`;
+  - a free value beside a column named through `F`, even of the column's own type (choice D): `{M::F.c} op ${v: T}` or the reverse, for `=`, `<>`, `!=`, `<`, `<=`, `>` and `>=`, `IS [NOT] DISTINCT FROM`, `[NOT] BETWEEN`, `[NOT] IN (..)`, `op ANY|ALL|SOME(..)`, `SET {M::F.c} = ${v}`, and the matching position in `INSERT .. ({M::F.a}, ..) VALUES (.., ${v}, ..)`;
+  - a cast that cuts or rounds after a value: `::` or `CAST(.. AS` followed by `varchar`, `character [varying]`, `char`, `bpchar`, `bit [varying]`, `varbit`, `numeric`, `decimal`, `timestamp[tz]`, `time[tz]`, `interval` or `float` with `(`, or a bare `char`, `character` or `bit`;
+  - a field-bound scalar inside `ANY(..)`, `ALL(..)` or `SOME(..)`;
+  - a field-bound list beside a comparison operator, outside `ANY(..)`.
+
+  The type system refuses the rest: a value that doesn't fit its field, a free value of another type than the one named, a list of an array column, a field that doesn't exist, and a generic free type. Owner decision DH2, choice D.
+- **R-1225** **Related rows and pages bind through the field.** `load_related`'s `= ANY($1)` takes the parent keys through the related field, cast to its list type, and keyset bounds and decoded cursors bind through their key columns, cast to each column's type. `.limit(n)` is cast as `int8`. Owner decision DH2.
 - **R-0417** **The list rule still applies.** `.limit(n)` appends a `LIMIT` on a new line, so a trailing `--` comment can't swallow it, and as a parameter, so different limits share one statement, and `.all()` runs it as written. `run()`, `fetch_val()`, `fetch_one()` and `fetch_opt()` don't need either.
 - **R-0418** It uses the same bounded statement cache, and `db.raw::<T>()` remains for raw SQL decoding into a model or view.
 
@@ -110,3 +132,5 @@ let changed = db.sql("UPDATE orders SET seen = true WHERE id = $1", &[&id]).run(
 | T-0061 | integration | keyset pages under concurrent writes and with mixed sort directions |
 | T-0062 | integration | tampered cursors |
 | T-0066 | integration | `load_related` with `.limit_each` |
+| T-0284 | trybuild | **`sql!` refusals:** each form R-1224 lists, 18 cases in all, among them a positional `$1`, `${v}` with no type, `LIKE '%${q: String}%'`, a free value beside an `F` column with `=`, `<>`, `BETWEEN`, `IN`, `= ANY`, `IS NOT DISTINCT FROM` and in a `VALUES` position, `::varchar(3)` and `CAST(.. AS char)` after a value, a field-bound scalar in `ANY(..)`, a field-bound list beside `=`, a value that doesn't fit its field, a free value of another type, `[]` on an array column and a missing field, plus `${v: T}` in a generic `fn` failing with `E0401`; and three that compile |
+| T-0285 | integration | **`sql!` on Postgres 15–18:** queries with `citext`, `char(5)`, an `i32` on a `bigint` field, `= ANY` lists, an enum and an enum list, a `citext[]` column, a free enum, `Option<i64>` as `NULL`, a free `Vec<String>` in `array_length` and `&str` in `concat` give the right answer through a prepared statement and through `query_typed`, and the text sent holds each cast in its place |
