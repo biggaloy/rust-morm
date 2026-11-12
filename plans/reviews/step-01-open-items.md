@@ -195,3 +195,4 @@ Decisions still to add on `main`: R-0608, R-1081, T-0208, T-0209.
 - **CG. Should `import` write `pk` on a partition's model?** R-1181 writes none. Recommended: write `pk` when the partition's key is named `<partition>_pkey`.
 - **CH. Identity columns on partitions.** A partition takes its parent's identity with no sequence of its own, and `ATTACH PARTITION` of a table with its own identity fails; scratch would build one from a partition model with `base = "common"` or `"pk_only"`. Recommended: refuse an identity column on a partition's model at preflight with exit `2`, pointing to `base = "bare"` with `pk`. Alternative: treat identity as held from the parent, like the key.
 - **CI. What "matching" means for a partition's `pk`.** The edit requires both the parent's key columns and the `<partition>_pkey` name, so a key kept as `p3_other` or `p5_pkey1` is drift. Alternative: columns alone.
+- **Answered:** CF to CI as recommended.
