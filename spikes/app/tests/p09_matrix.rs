@@ -74,9 +74,9 @@ fn any(what: &'static str, slot: Slot, value: P, want: i64) -> Probe {
 }
 
 const fn col(t: &'static Type) -> Slot {
-    Slot::Column(t)
+    Slot::Builtin(t)
 }
-const UNK: Slot = Slot::ColumnUnknown;
+const UNK: Slot = Slot::NoOid;
 
 fn utc() -> DateTime<Utc> {
     Utc.with_ymd_and_hms(2026, 1, 1, 0, 0, 0).unwrap()

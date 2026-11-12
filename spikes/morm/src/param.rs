@@ -191,9 +191,9 @@ pub enum Slot {
     /// Raw SQL: the parameter's own `pg_type`.
     Raw,
     /// A column whose type is built in, with a fixed OID.
-    Column(&'static Type),
+    Builtin(&'static Type),
     /// A column whose type has no fixed OID (`citext`, an enum): `UNKNOWN`.
-    ColumnUnknown,
+    NoOid,
     /// The value's own type, as the spike first did everywhere.
     Value,
 }
@@ -239,8 +239,8 @@ impl ToSql for Bound<'_> {
 pub fn bind(p: &dyn Param, slot: Slot) -> (Bound<'_>, Type) {
     let ty = match slot {
         Slot::Raw => p.pg_type(),
-        Slot::Column(t) => t.clone(),
-        Slot::ColumnUnknown => Type::UNKNOWN,
+        Slot::Builtin(t) => t.clone(),
+        Slot::NoOid => Type::UNKNOWN,
         Slot::Value => p.value_type(),
     };
     let text = ty == Type::UNKNOWN && p.has_text();
