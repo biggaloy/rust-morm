@@ -43,3 +43,4 @@ PR #2 (`step-02-proofs`), head `f50823e` when the step agent reported. CI green 
 - **DI2. A stray `timezone` key in `morm.toml`.** Options: (a) refuse it with `Error::Config` (recommended); (b) ignore it. The plan doesn't say how unknown keys are treated in general.
 - **Answered:** DI1 (a) and DI2 (a).
 - **DI3. Which zone names pass DI1's check.** On 17.11 and 18.6, `UTC` and `utc` read back as `UTC`, but `Etc/UTC`, `UTC0`, `Etc/Universal`, `Universal`, `Zulu`, `GMT` and `UTC+0` read back as written, and `+00` as `<+00>-00`. Options: (a) only exact `UTC`, the value morm sends, the error naming what it saw (recommended); (b) also a fixed list of aliases; (c) any zone `pg_timezone_names` shows at offset zero with no DST, which goes by today's date, so `Europe/London` passes in winter.
+- **Answered:** DI3 (b), UTC plus a fixed list of proven aliases; and the `check_schema = "off"` notice states the zone isn't checked.
