@@ -407,7 +407,7 @@ fn pooler_starts_pgbouncer_from_another_source_when_apt_fails() {
             r#"{record}
 case "$STUB_MODE" in
 flaky) [ ! -f "$STUB_DIR/failed" ] || exit 0; touch "$STUB_DIR/failed"; exit 100 ;;
-down|docker-fails) exit 100 ;;
+down|docker-fails|image-not-ready) exit 100 ;;
 esac
 "#
         ),
@@ -417,12 +417,15 @@ esac
     stub(
         &bin,
         "docker",
-        &format!("{record}\n[ \"$STUB_MODE\" != docker-fails ] || exit 125\n"),
+        &format!(
+            "{record}\n[ \"$STUB_MODE\" != docker-fails ] || exit 125\n\
+             [ \"$1\" != logs ] || echo 'FATAL cannot load config file'\n"
+        ),
     );
     stub(
         &bin,
         "pg_isready",
-        &format!("{record}\n[ \"$STUB_MODE\" != not-ready ] || exit 2\n"),
+        &format!("{record}\ncase \"$STUB_MODE\" in *not-ready) exit 2 ;; esac\n"),
     );
     let run = |mode: &str| {
         let _ = fs::remove_file(dir.join("calls"));
@@ -468,8 +471,20 @@ esac
     assert_eq!(calls, format!("{update}{update}{docker}"));
     assert!(log.contains("::error::"), "{log}");
 
-    let (ok, _, _) = run("not-ready");
+    let (ok, calls, log) = run("not-ready");
     assert!(!ok, "a PgBouncer that doesn't answer fails the step");
+    assert_eq!(calls, format!("{update}{install}{from_apt}{ready}"));
+    assert!(log.contains("::error::"), "{log}");
+
+    let (ok, calls, log) = run("image-not-ready");
+    assert!(!ok, "the image's PgBouncer not answering fails the step");
+    assert_eq!(
+        calls,
+        format!("{update}{update}{docker}{ready}docker logs morm-pgbouncer\n"),
+        "the container's log is printed before the step fails"
+    );
+    assert!(log.contains("::error::"), "{log}");
+    assert!(log.contains("FATAL cannot load config file"), "{log}");
 
     assert!(
         script.contains(

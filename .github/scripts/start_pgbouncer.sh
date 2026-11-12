@@ -8,8 +8,10 @@
 # list, failed to resolve for hours. So a failed install is tried once more,
 # and then PgBouncer runs from CloudNativePG's image on ghcr.io instead, pinned
 # by digest, with the same pgbouncer.ini. If that fails too, the step fails:
-# the pooler tests never run without PgBouncer. Each apt command is cut off
-# after 5 minutes, so a mirror that hangs counts as a failure.
+# the pooler tests never run without PgBouncer. When the image's PgBouncer
+# doesn't answer, the container's log is printed before the step fails. Each
+# apt command is cut off after 5 minutes, so a mirror that hangs counts as a
+# failure.
 #
 # RETRY_DELAY exists for tests/tests/repo_policy.rs.
 # covers: R-0792
@@ -44,4 +46,14 @@ else
     exit 1
   fi
 fi
-pg_isready -h 127.0.0.1 -p 6432 -t 30
+if ! pg_isready -h 127.0.0.1 -p 6432 -t 30; then
+  if [ "$installed" = yes ]; then
+    echo "::error::PgBouncer from the runner's apt sources didn't answer on 127.0.0.1:6432."
+  else
+    # docker run -d succeeds once the container starts, so a PgBouncer that
+    # exits at once, say on a config error, shows only in the container's log.
+    echo "::error::PgBouncer from $image didn't answer on 127.0.0.1:6432. The container's log follows."
+    docker logs morm-pgbouncer 2>&1
+  fi
+  exit 1
+fi

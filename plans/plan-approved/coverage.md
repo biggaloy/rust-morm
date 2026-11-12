@@ -4,7 +4,7 @@ Generated from the frozen plan. Each requirement and test obligation lives in ex
 
 Kinds: `code` needs a tagged test, `doc` is checked in the README step, `info` is context with nothing to build.
 
-Totals: 1189 requirements, 267 test obligations.
+Totals: 1193 requirements, 270 test obligations.
 
 ## Requirements
 
@@ -1199,6 +1199,10 @@ Totals: 1189 requirements, 267 test obligations.
 | R-1187 | code | 29 | 0 | **A partition's identity.** Postgres gives a partition its parent's identity, with no sequ… |
 | R-1188 | doc | 50 | 0 | The README shows this notice loudly, beside the safe forms table: > **A partition's `pk` m… |
 | R-1189 | doc | 50 | 0 | The README shows this notice loudly, beside the safe forms table: > **A partition's model … |
+| R-1190 | code | 41 | 0 | **A partition's model that sends its parent's identity.** A partition's column that holds … |
+| R-1191 | code | 34 | 0 | **`rollback --fast` runs the down's one-transaction forms.** `--fast` means one thing on b… |
+| R-1192 | code | 39 | 0 | **The safe forms in a down, under `rollback --fast`.** Wherever a down runs one of this st… |
+| R-1193 | doc | 50 | 0 | \| `rollback --fast` \| You roll back with apps stopped and want each step in its one-tran… |
 
 ## Test obligations
 
@@ -1471,3 +1475,6 @@ Totals: 1189 requirements, 267 test obligations.
 | T-0265 | integration | 29 | **A partition's identity, on Postgres 15–18:** on a partitioned table whose key column is … |
 | T-0266 | integration | 34 | **`verify` on a partition's key and identity, on Postgres 15–18:** on a partitioned table … |
 | T-0267 | integration | 44 | **`import` on a partition's key and identity, on Postgres 15–18:** on a partitioned table … |
+| T-0268 | integration | 41 | **A partition's model that sends its parent's identity, on Postgres 15–18:** on a partitio… |
+| T-0269 | suite | 34 | **`rollback --fast` runs the down's one-transaction forms:** through step 33's test-only o… |
+| T-0270 | suite | 39 | **The safe forms under `rollback --fast`, on Postgres 15–18:** for migrations whose downs … |
