@@ -4,7 +4,7 @@ What the proof steps found: for each proof, the result, the final shape of the A
 
 ## Step 02: proofs 1 to 12
 
-The spikes were built on stable Rust 1.99.1 with no nightly features, in their own workspace under `spikes/`, and run on Postgres 15, 16, 17 and 18. They're thrown away when the step ends; the PR that held them keeps them in its history. A pass below means every listed check ran green.
+The spikes were built on stable Rust 1.99.1 with no nightly features, in their own workspace under `spikes/`, and run on Postgres 15.19, 16.15, 17.11 and 18.6 in CI, and on 17.11 and 18.6 locally. Timings below are from release builds, on the CI runners and locally. They're thrown away when the step ends; the PR that held them keeps them in its history. A pass below means every listed check ran green.
 
 Spelling note: the spikes couldn't see the frozen plan, so attribute spellings such as `#[view(Name, hide(..))]`, `#[unique(..)]`, `#[col(group = ..)]`, `#[model(borrowed)]` and `#[model(global = ..)]` are the spikes' own. What's proven is the mechanism and the generated shape. The step that builds each feature uses its own step file's spelling.
 
@@ -84,7 +84,7 @@ Also seen: rerunning at once after a serialization failure lost again while the 
 
 ### 7. `NestedConnection`: pass, with a refinement
 
-A stream checks out nothing until first polled. On its first poll it registers the polling task, then checks out and runs its query; on each later poll, if the task changed, the registration moves. A checkout reads one relaxed atomic, the count of open streams, and only when it's non-zero looks up the current task. Tested: a query inside a stream loop on a pool of one is refused at once instead of waiting forever; a nested stream is refused; another task may query meanwhile; `join!` of the loop and a query on one task refuses the query; a stream made on one task and polled on another belongs to the second, and moves back when polled on the first; a finished or dropped stream frees the task. The check with no stream open took 0.93 ns in a release build.
+A stream checks out nothing until first polled. On its first poll it registers the polling task, then checks out and runs its query; on each later poll, if the task changed, the registration moves. A checkout reads one relaxed atomic, the count of open streams, and only when it's non-zero looks up the current task. Tested: a query inside a stream loop on a pool of one is refused at once instead of waiting forever; a nested stream is refused; another task may query meanwhile; `join!` of the loop and a query on one task refuses the query; a stream made on one task and polled on another belongs to the second, and moves back when polled on the first; a finished or dropped stream frees the task. The check with no stream open took 0.55 to 1.41 ns.
 
 - **Refinement:** a future driven by `block_on`, including the body of `#[tokio::main]` and `#[tokio::test]`, has no Tokio task id, so the registry keys by task id, or by thread id when there's none. Keyed by task id alone, the loop in `main` deadlocked in the test.
 
@@ -113,7 +113,7 @@ Models in three crates were all found by a stand-in `morm-mgr` built with `--cfg
 
 ### 11. The loop detector: detection and cost pass, exclusions not proven
 
-Each worker thread keeps eight slots keyed by (task, statement), where a statement is its `&'static str`'s address, so there's no hashing or string compare. The same statement reaching the threshold inside the window on one task is reported once. Nine runs under a threshold of ten, slow repeats outside the window, and one run on each of many tasks are not reported. A task that moves thread starts counting again, which can miss a loop but never invents one. Every query through `Db` passes the detector, and an N+1 loop of twelve queries was reported. The cost was 28 to 36 ns per statement in a release build.
+Each worker thread keeps eight slots keyed by (task, statement), where a statement is its `&'static str`'s address, so there's no hashing or string compare. The same statement reaching the threshold inside the window on one task is reported once. Nine runs under a threshold of ten, slow repeats outside the window, and one run on each of many tasks are not reported. A task that moves thread starts counting again, which can miss a loop but never invents one. Every query through `Db` passes the detector, and an N+1 loop of twelve queries was reported. The cost was 27 to 47 ns per statement.
 
 **Question for the owner:** the pass condition says "the listed exclusions work", but the list isn't in this step's files, `rules.md` or `contracts.md`, and the rules forbid reading other step files or the frozen plan to fill a gap. So the exclusions aren't built or proven here. Options:
 
@@ -125,7 +125,7 @@ Each worker thread keeps eight slots keyed by (task, statement), where a stateme
 `deadpool`'s `managed` core with our `Manager` for `tokio_postgres::Client`. `recycle` runs no query; it only checks `is_closed()`. Tested on Postgres 15 to 18:
 
 - Nothing opens until needed, and three concurrent checkouts open three.
-- A hundred checkouts opened nothing new and ran nothing on the server: each backend's `state_change` and last query in `pg_stat_activity` were unchanged. A checkout took about 0.35 µs, against 40 to 90 µs for an empty round trip.
+- A hundred checkouts opened nothing new and ran nothing on the server: each backend's `state_change` and last query in `pg_stat_activity` were unchanged. A checkout took 0.33 to 0.52 µs, against 40 to 166 µs for an empty round trip.
 - `resize` while running: down while idle closes the extra connections at once, down while busy closes them as they come back, and up lets more open.
 - Idle shrinking: `retain` on `last_used` closed every connection idle past the limit, on demand and from a timer task, and the pool opened again afterwards.
 - Noted for step 11: `retain` allocates a `Vec` per call, so it belongs on the reaper's timer, never on a checkout.
