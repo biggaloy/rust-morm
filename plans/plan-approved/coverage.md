@@ -4,7 +4,7 @@ Generated from the frozen plan. Each requirement and test obligation lives in ex
 
 Kinds: `code` needs a tagged test, `doc` is checked in the README step, `info` is context with nothing to build.
 
-Totals: 1171 requirements, 257 test obligations.
+Totals: 1182 requirements, 261 test obligations.
 
 ## Requirements
 
@@ -1181,6 +1181,17 @@ Totals: 1171 requirements, 257 test obligations.
 | R-1169 | code | 41 | 0 | **Children and partitions in a rolling deploy.** The expand step that drops a `deprecated`… |
 | R-1170 | doc | 50 | 0 | The README shows this notice loudly, beside the safe forms table: > **A foreign key from a… |
 | R-1171 | doc | 50 | 0 | The README shows this notice loudly, beside the safe forms table: > **A change that reache… |
+| R-1172 | code | 38 | 0 | **Retiring a child or a partition while its parent stays.** Moving a table to the `_morm_r… |
+| R-1173 | doc | 50 | 0 | The README shows this notice loudly, beside the safe forms table: > **Retiring a partition… |
+| R-1174 | code | 29 | 0 | **What a child or a partition holds from its parent.** Postgres puts some of a parent's ob… |
+| R-1175 | code | 30 | 0 | **Children and partitions in the diff.** The diff compares the reader's `Schema` IR, where… |
+| R-1176 | code | 33 | 0 | **Fingerprints of children and partitions.** Fingerprints are built from the reader's IR, … |
+| R-1177 | code | 34 | 0 | **`verify` on children and partitions.** `verify` reads the live schema through the reader… |
+| R-1178 | code | 36 | 0 | **Triggers on partitions.** A row trigger on a partitioned table sits on every partition u… |
+| R-1179 | code | 39 | 0 | **The index check on children and partitions.** R-1152's check compares only a table's own… |
+| R-1180 | code | 41 | 0 | **`check_schema` on children and partitions.** `check_schema` reads only columns, and in t… |
+| R-1181 | code | 44 | 0 | **`import` on children and partitions.** `import` writes a child's or a partition's model … |
+| R-1182 | doc | 50 | 0 | The README says this plainly, beside the notice on changes that reach a child or a partiti… |
 
 ## Test obligations
 
@@ -1443,3 +1454,7 @@ Totals: 1171 requirements, 257 test obligations.
 | T-0255 | suite | 52 | **The rest of the one-transaction form on children and partitions, on Postgres 15–18:** un… |
 | T-0256 | suite | 60 | **Foreign keys and index rebuilds on partitions under `--fast`, on Postgres 15–18:** under… |
 | T-0257 | integration | 41 | **Rolling forms on children and partitions, on Postgres 15–18:** on a three-level inherita… |
+| T-0258 | suite | 38 | **Retiring a child or a partition, on Postgres 15–18:** a migration that retires a partiti… |
+| T-0259 | integration | 29 | **What a child or a partition holds, on Postgres 15–18:** on a three-level inheritance tre… |
+| T-0260 | suite | 39 | **The index check on children and partitions, on Postgres 15–18:** under `--fast`, a type … |
+| T-0261 | suite | 33 | **Fingerprints of children and partitions, on Postgres 15–18:** on a partitioned table and… |

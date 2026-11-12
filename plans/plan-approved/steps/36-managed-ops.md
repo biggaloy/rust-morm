@@ -39,6 +39,8 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 - **R-0539** Macros also generate a typed caller where the signature allows, for example `db.call(archive_users, &days)`.
 - **R-0540** Roles are cluster-wide, so they aren't created. `morm-admin scratch` makes placeholder roles so policies and grants can run on scratch.
 
+**R-1178** **Triggers on partitions.** A row trigger on a partitioned table sits on every partition under the same name. On Postgres 18.6 and 17.11, `CREATE TRIGGER p_t BEFORE INSERT ON p FOR EACH ROW` put `p_t` on partition `p1` with `tgparentid` pointing at the parent's trigger, while one on an inheritance parent stayed on the parent alone. So the catalog reader reads a trigger with `tgparentid <> 0` as its parent's, as it reads a constraint or an index a partition holds from its parent in step 29, and a partition's managed triggers are only its own.
+
 ## Test obligations
 
 None beyond one tagged test per requirement.

@@ -59,6 +59,8 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 
 - **R-1001** `import` writes bare `#[derive(PgEnum)]`, `#[derive(PgDomain)]` and `#[derive(PgComposite)]`, and never `#[pg_enum(name = "...")]`, `#[pg_domain]` or `#[pg_composite]`, so nothing becomes managed by accident. It adds `#[pg_type(name = "...")]` and `#[pg_enum(value = "...")]` where snake_case wouldn't give the existing name. A `text` column with a CHECK stays `String` with `checks(...)`, and `import` never writes `TextEnum`.
 
+**R-1181** **`import` on children and partitions.** `import` writes a child's or a partition's model with every column and only its own constraints and indexes, and what the table holds from its parent only in the parent's model, under step 29's rule. A partition whose primary key is its parent's gets a model with no `pk`.
+
 ## Test obligations
 
 None beyond one tagged test per requirement.

@@ -71,6 +71,8 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 
 - **R-0987** **Step boundaries.** An op can declare that its step ends after it, so the planner puts whatever follows in a new transaction. Step 51 needs this for `ALTER TYPE ... ADD VALUE`, because nothing can use a new value until the transaction that added it commits.
 
+**R-1175** **Children and partitions in the diff.** The diff compares the reader's `Schema` IR, where what a child or a partition holds from its parent sits only on the parent, as step 29 says. So a parent's CHECK, foreign key, primary key, unique key or index is one object and yields one op, on the parent, never one on each child or partition, and what a child's or a partition's model declares is its own, compared as on any table. An op on a parent that Postgres carries to children and partitions runs under step 39's rule for such statements.
+
 ## Test obligations
 
 | ID | Type | Obligation |
