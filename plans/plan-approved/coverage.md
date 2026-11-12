@@ -4,7 +4,7 @@ Generated from the frozen plan. Each requirement and test obligation lives in ex
 
 Kinds: `code` needs a tagged test, `doc` is checked in the README step, `info` is context with nothing to build.
 
-Totals: 1182 requirements, 261 test obligations.
+Totals: 1184 requirements, 262 test obligations.
 
 ## Requirements
 
@@ -1192,6 +1192,8 @@ Totals: 1182 requirements, 261 test obligations.
 | R-1180 | code | 41 | 0 | **`check_schema` on children and partitions.** `check_schema` reads only columns, and in t… |
 | R-1181 | code | 44 | 0 | **`import` on children and partitions.** `import` writes a child's or a partition's model … |
 | R-1182 | doc | 50 | 0 | The README says this plainly, beside the notice on changes that reach a child or a partiti… |
+| R-1183 | code | 29 | 0 | **A partition's primary key.** Postgres names the key a partition holds from its partition… |
+| R-1184 | code | 39 | 0 | **A partition's `pk` in a migration.** Under step 29's rule for a partition's key, a parti… |
 
 ## Test obligations
 
@@ -1458,3 +1460,4 @@ Totals: 1182 requirements, 261 test obligations.
 | T-0259 | integration | 29 | **What a child or a partition holds, on Postgres 15–18:** on a three-level inheritance tre… |
 | T-0260 | suite | 39 | **The index check on children and partitions, on Postgres 15–18:** under `--fast`, a type … |
 | T-0261 | suite | 33 | **Fingerprints of children and partitions, on Postgres 15–18:** on a partitioned table and… |
+| T-0262 | suite | 39 | **A partition's `pk` in a migration, on Postgres 15–18:** on a partitioned table with a ke… |
