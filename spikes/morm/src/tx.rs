@@ -66,12 +66,8 @@ pub struct Retrying<'d> {
 
 /// What `.retry(n)` takes: a closure it can call again, so it can't mutate
 /// what it captures. Each attempt runs a fresh copy (`Clone`), so a closure
-/// that captures by shared reference costs nothing to copy.
-#[diagnostic::on_unimplemented(
-    message = "a closure passed to `.retry()` runs again on each attempt, so it can't mutate what it captures",
-    label = "this closure mutates something it captures, or captures something that isn't `Clone`",
-    note = "capture by shared reference, or `move` in a value that is `Clone`; use the plain `db.transaction(..)` to run once"
-)]
+/// that captures by shared reference costs nothing to copy. A closure that
+/// mutates a capture holds a `&mut`, which isn't `Clone`, so it's refused.
 pub trait RetryBody<T>: AsyncFnOnce(&Tx) -> Result<T> + Clone {}
 impl<F, T> RetryBody<T> for F where F: AsyncFnOnce(&Tx) -> Result<T> + Clone {}
 
@@ -83,7 +79,11 @@ impl Retrying<'_> {
         let mut left = self.n;
         loop {
             match attempt(self.db, "BEGIN ISOLATION LEVEL SERIALIZABLE", f.clone()).await {
-                Err(e) if left > 0 && retryable(&e) => left -= 1,
+                Err(e) if left > 0 && retryable(&e) => {
+                    left -= 1;
+                    // Give the transaction that won time to commit.
+                    tokio::time::sleep(std::time::Duration::from_millis(20)).await;
+                }
                 other => return other,
             }
         }
@@ -97,7 +97,13 @@ impl Retrying<'_> {
     {
         let mut left = self.n;
         loop {
-            match attempt(self.db, "BEGIN ISOLATION LEVEL SERIALIZABLE", async |tx: &Tx| f(tx).await).await {
+            match attempt(
+                self.db,
+                "BEGIN ISOLATION LEVEL SERIALIZABLE",
+                async |tx: &Tx| f(tx).await,
+            )
+            .await
+            {
                 Err(e) if left > 0 && retryable(&e) => left -= 1,
                 other => return other,
             }

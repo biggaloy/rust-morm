@@ -34,7 +34,11 @@ impl managed::Manager for Manager {
 
     /// No `SELECT 1`: a dead connection shows as closed, and a query on one
     /// that died since fails like any other network error.
-    async fn recycle(&self, client: &mut Client, _: &Metrics) -> RecycleResult<tokio_postgres::Error> {
+    async fn recycle(
+        &self,
+        client: &mut Client,
+        _: &Metrics,
+    ) -> RecycleResult<tokio_postgres::Error> {
         self.recycled.fetch_add(1, Ordering::Relaxed);
         if client.is_closed() {
             return Err(RecycleError::message("connection closed"));
@@ -72,7 +76,7 @@ impl Db {
         Ok(Db(Arc::new(Inner {
             pool,
             checkouts: AtomicU64::new(0),
-            loops: loops::Detector::new(Duration::from_millis(100), 10),
+            loops: loops::Detector::new(Duration::from_secs(1), 10),
         })))
     }
 
@@ -83,7 +87,12 @@ impl Db {
     }
 
     pub(crate) async fn checkout_unchecked(&self) -> Result<Object> {
-        let obj = self.0.pool.get().await.map_err(|e| Error::Pool(e.to_string()))?;
+        let obj = self
+            .0
+            .pool
+            .get()
+            .await
+            .map_err(|e| Error::Pool(e.to_string()))?;
         self.0.checkouts.fetch_add(1, Ordering::Relaxed);
         Ok(obj)
     }
@@ -103,7 +112,11 @@ impl Db {
     }
     /// Close idle connections unused for `idle`. Returns how many closed.
     pub fn shrink_idle(&self, idle: Duration) -> usize {
-        self.0.pool.retain(|_, m| m.last_used() < idle).removed.len()
+        self.0
+            .pool
+            .retain(|_, m| m.last_used() < idle)
+            .removed
+            .len()
     }
     /// Shrinks on a timer, as the real pool's idle reaper would.
     pub fn spawn_reaper(&self, every: Duration, idle: Duration) -> tokio::task::JoinHandle<()> {
@@ -129,13 +142,20 @@ impl Db {
 }
 
 pub(crate) async fn run(c: &Client, sql: &str, params: &[&dyn Param]) -> Result<Vec<Row>> {
-    Ok(c.query_typed_raw(sql, typed(params)).await?.try_collect().await?)
+    Ok(c.query_typed_raw(sql, typed(params))
+        .await?
+        .try_collect()
+        .await?)
 }
 
 /// Connection-like: `db`, a lazy or held connection, or `tx`.
 pub trait Conn: Send + Sync {
     fn tx(&self) -> Option<&Tx>;
-    fn query(&self, sql: &'static str, params: &[&dyn Param]) -> impl Future<Output = Result<Vec<Row>>> + Send;
+    fn query(
+        &self,
+        sql: &'static str,
+        params: &[&dyn Param],
+    ) -> impl Future<Output = Result<Vec<Row>>> + Send;
 }
 
 impl Conn for Db {

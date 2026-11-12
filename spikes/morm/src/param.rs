@@ -72,5 +72,7 @@ impl<T: PgType> PgType for &[T] {
 pub(crate) fn typed<'a>(
     params: &'a [&'a dyn Param],
 ) -> impl ExactSizeIterator<Item = (&'a (dyn ToSql + Sync), Type)> + 'a {
-    params.iter().map(|p| (*p as &(dyn ToSql + Sync), p.pg_type()))
+    params
+        .iter()
+        .map(|p| (*p as &(dyn ToSql + Sync), p.pg_type()))
 }

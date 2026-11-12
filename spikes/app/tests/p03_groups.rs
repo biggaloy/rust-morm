@@ -11,7 +11,7 @@ fn the_macros_count_the_mask_size() {
     assert_eq!(size_of::<groups::Mask>(), 8);
     assert_eq!(big::COUNT, 65);
     assert_eq!(size_of::<big::Mask>(), 16);
-    let _: Bits<2> = <big::Mask as MaskBits>::EMPTY;
+    let _: Bits<2> = <big::Mask as MaskBits>::EMPTY.0;
     // Scoped masks are counted per model; a model with none has `()`.
     assert_eq!(size_of::<<Product as Model>::Scoped>(), 8);
     assert_eq!(size_of::<<models_b::Customer as Model>::Scoped>(), 0);
@@ -21,7 +21,7 @@ fn the_macros_count_the_mask_size() {
     let mut m = <big::Mask as MaskBits>::EMPTY;
     m.set(big::GROUPS.g64.bit());
     assert!(m.has(64) && !m.has(0));
-    assert_eq!(m.0, [0, 1]);
+    assert_eq!(m.0.0, [0, 1]);
 }
 
 /// One generic function serves every model, whatever its mask sizes.
@@ -36,12 +36,21 @@ async fn db_groups_is_generic_over_the_mask() {
     let none = Mask::<Product>::new();
     assert_eq!(visible(&db, &none), ["id", "name", "photo", "tags"]);
     let admin = none.with(groups::GROUPS.admin);
-    assert_eq!(visible(&db, &admin), ["id", "name", "cost", "photo", "tags"]);
+    assert_eq!(
+        visible(&db, &admin),
+        ["id", "name", "cost", "photo", "tags"]
+    );
     let editor = none.with_scoped(Product::G.editor);
-    assert_eq!(visible(&db, &editor), ["id", "name", "supplier", "photo", "tags"]);
+    assert_eq!(
+        visible(&db, &editor),
+        ["id", "name", "supplier", "photo", "tags"]
+    );
     let sudo = none.with(groups::GROUPS.sudo);
     assert_eq!(visible(&db, &sudo), Product::COLUMNS);
     let owner = Mask::<Thing>::new().with_scoped(Thing::G.owner);
     assert_eq!(visible(&db, &owner), ["id", "secret"]);
-    assert_eq!(visible(&db, &Mask::<models_b::Customer>::new()), ["id", "name"]);
+    assert_eq!(
+        visible(&db, &Mask::<models_b::Customer>::new()),
+        ["id", "name"]
+    );
 }

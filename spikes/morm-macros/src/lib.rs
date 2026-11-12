@@ -49,7 +49,10 @@ fn parse_args(tokens: TokenStream) -> syn::Result<Args> {
 fn path_value(meta: &Meta) -> syn::Result<Path> {
     match &meta.require_name_value()?.value {
         Expr::Path(p) => Ok(p.path.clone()),
-        other => Err(err(Span::call_site(), format!("expected a path, found `{}`", quote!(#other)))),
+        other => Err(err(
+            Span::call_site(),
+            format!("expected a path, found `{}`", quote!(#other)),
+        )),
     }
 }
 
@@ -200,7 +203,11 @@ fn model_impl(args: TokenStream, item: TokenStream) -> syn::Result<Ts> {
         let p = m.path();
         if p.is_ident("base") {
             let base = path_value(m)?;
-            let others: Vec<&Meta> = args.metas.iter().filter(|x| !x.path().is_ident("base")).collect();
+            let others: Vec<&Meta> = args
+                .metas
+                .iter()
+                .filter(|x| !x.path().is_ident("base"))
+                .collect();
             // Ask the base for its fields; it calls `#[::morm::model(__base_fields ..)]` back.
             return Ok(quote! { #base! { @model [#(#others),*] #item_ts } });
         } else if p.is_ident("table") {
@@ -218,7 +225,10 @@ fn model_impl(args: TokenStream, item: TokenStream) -> syn::Result<Ts> {
         }
     }
     if let Some(m) = rest.first() {
-        return Err(err(Span::call_site(), format!("unknown `model` argument `{}`", quote!(#m))));
+        return Err(err(
+            Span::call_site(),
+            format!("unknown `model` argument `{}`", quote!(#m)),
+        ));
     }
 
     let name = st.ident.clone();
@@ -277,10 +287,16 @@ fn model_impl(args: TokenStream, item: TokenStream) -> syn::Result<Ts> {
                 chosen = idx;
                 chosen.sort();
             } else {
-                return Err(err(Span::call_site(), "a view takes `hide(..)` or `only(..)`"));
+                return Err(err(
+                    Span::call_site(),
+                    "a view takes `hide(..)` or `only(..)`",
+                ));
             }
         }
-        views.push(View { name: vname, cols: chosen });
+        views.push(View {
+            name: vname,
+            cols: chosen,
+        });
     }
 
     let mut uniques = Vec::new();
@@ -292,7 +308,8 @@ fn model_impl(args: TokenStream, item: TokenStream) -> syn::Result<Ts> {
             } else if m.path.is_ident("cols") {
                 let content;
                 syn::parenthesized!(content in m.input);
-                let ids: Punctuated<Ident, Token![,]> = content.parse_terminated(Ident::parse, Token![,])?;
+                let ids: Punctuated<Ident, Token![,]> =
+                    content.parse_terminated(Ident::parse, Token![,])?;
                 ucols = ids.into_iter().collect();
             } else if m.path.is_ident("expr") {
                 expr = Some(m.value()?.parse::<syn::LitStr>()?.value());
@@ -315,7 +332,10 @@ fn model_impl(args: TokenStream, item: TokenStream) -> syn::Result<Ts> {
         if let Some(f) = filter {
             conflict = format!("{conflict} WHERE {f}");
         }
-        uniques.push(UniqueDecl { name: uname, conflict });
+        uniques.push(UniqueDecl {
+            name: uname,
+            conflict,
+        });
     }
 
     // Groups: scoped names are this model's, anything else is a global group.
@@ -366,7 +386,10 @@ fn model_impl(args: TokenStream, item: TokenStream) -> syn::Result<Ts> {
 
     // One marker type per column, and per declared unique key.
     let markers = cols.iter().map(|c| &c.name);
-    let ukm: Vec<Ident> = uniques.iter().map(|u| format_ident!("__uk_{}", u.name)).collect();
+    let ukm: Vec<Ident> = uniques
+        .iter()
+        .map(|u| format_ident!("__uk_{}", u.name))
+        .collect();
     out.extend(quote! {
         #[doc(hidden)]
         #[allow(non_camel_case_types, non_snake_case, dead_code)]
@@ -382,14 +405,25 @@ fn model_impl(args: TokenStream, item: TokenStream) -> syn::Result<Ts> {
         let col_names: Vec<String> = names.iter().map(|n| n.to_string()).collect();
         let select = format!(
             "SELECT {} FROM {}",
-            col_names.iter().map(|c| q(c)).collect::<Vec<_>>().join(", "),
+            col_names
+                .iter()
+                .map(|c| q(c))
+                .collect::<Vec<_>>()
+                .join(", "),
             q(&table)
         );
         let insert = format!(
             "INSERT INTO {} ({}) VALUES ({})",
             q(&table),
-            col_names.iter().map(|c| q(c)).collect::<Vec<_>>().join(", "),
-            (1..=col_names.len()).map(|i| format!("${i}")).collect::<Vec<_>>().join(", ")
+            col_names
+                .iter()
+                .map(|c| q(c))
+                .collect::<Vec<_>>()
+                .join(", "),
+            (1..=col_names.len())
+                .map(|i| format!("${i}"))
+                .collect::<Vec<_>>()
+                .join(", ")
         );
         let reqs_v: Vec<&Ts> = idx.iter().map(|&i| &reqs[i]).collect();
         let pos: Vec<usize> = (0..idx.len()).collect();
@@ -527,8 +561,6 @@ fn model_impl(args: TokenStream, item: TokenStream) -> syn::Result<Ts> {
     Ok(out)
 }
 
-
-
 /// The borrowed form of a field type: text and bytes borrow, the rest stays.
 fn borrowed_ty(ty: &Type) -> Ts {
     let s = quote!(#ty).to_string().replace(' ', "");
@@ -589,14 +621,26 @@ pub fn groups(input: TokenStream) -> TokenStream {
         Err(e) => return e.to_compile_error().into(),
     };
     if let Some(s) = names.iter().find(|n| *n == "sudo") {
-        return err(s.span(), "`sudo` is built in").to_compile_error().into();
+        return err(s.span(), "`sudo` is built in")
+            .to_compile_error()
+            .into();
     }
     let count = names.len() + 1;
     let words = count.div_ceil(64);
     let bits: Vec<u16> = (1..count as u16).collect();
     quote! {
-        /// The app's global group mask.
-        pub type Mask = ::morm::Bits<#words>;
+        /// The app's global group mask: its own type, so a group from any
+        /// other `groups!` can't be mixed in, even one of the same size.
+        #[derive(Clone, Copy, PartialEq, Eq, Debug)]
+        pub struct Mask(pub ::morm::Bits<#words>);
+        impl ::morm::MaskBits for Mask {
+            const EMPTY: Self = Mask(<::morm::Bits<#words> as ::morm::MaskBits>::EMPTY);
+            const CAPACITY: usize = #words * 64;
+            #[inline]
+            fn set(&mut self, bit: u16) { ::morm::MaskBits::set(&mut self.0, bit) }
+            #[inline]
+            fn has(&self, bit: u16) -> bool { ::morm::MaskBits::has(&self.0, bit) }
+        }
         pub const COUNT: usize = #count;
         #[allow(dead_code)]
         pub struct Groups { pub sudo: ::morm::GlobalGroup<Mask>, #(pub #names: ::morm::GlobalGroup<Mask>),* }

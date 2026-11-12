@@ -23,7 +23,10 @@ fn views_hold_only_their_fields() {
         ProductPublic::SELECT,
         r#"SELECT "id", "name", "photo", "tags" FROM "spike_product""#
     );
-    assert_eq!(ProductCard::SELECT, r#"SELECT "id", "name" FROM "spike_product""#);
+    assert_eq!(
+        ProductCard::SELECT,
+        r#"SELECT "id", "name" FROM "spike_product""#
+    );
 }
 
 /// Each view's `F` is its own type, and its columns are typed by the view.

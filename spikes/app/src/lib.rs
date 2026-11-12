@@ -98,7 +98,9 @@ pub fn dsn() -> String {
 }
 
 pub async fn admin() -> tokio_postgres::Client {
-    let (c, conn) = tokio_postgres::connect(&dsn(), tokio_postgres::NoTls).await.unwrap();
+    let (c, conn) = tokio_postgres::connect(&dsn(), tokio_postgres::NoTls)
+        .await
+        .unwrap();
     tokio::spawn(async move {
         let _ = conn.await;
     });

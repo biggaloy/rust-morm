@@ -71,7 +71,10 @@ pub struct Column<M, T, C> {
 impl<M, T, C> Column<M, T, C> {
     #[doc(hidden)]
     pub const fn new(name: &'static str) -> Self {
-        Self { name, _p: PhantomData }
+        Self {
+            name,
+            _p: PhantomData,
+        }
     }
     pub const fn name(&self) -> &'static str {
         self.name
@@ -109,7 +112,10 @@ pub trait UniqueKey<M> {
 pub fn upsert_sql<M: Model, K: UniqueKey<M>>(_key: K, update: &[&str]) -> String {
     let cols: Vec<String> = M::COLUMNS.iter().map(|c| format!("\"{c}\"")).collect();
     let vals: Vec<String> = (1..=cols.len()).map(|i| format!("${i}")).collect();
-    let set: Vec<String> = update.iter().map(|c| format!("\"{c}\" = EXCLUDED.\"{c}\"")).collect();
+    let set: Vec<String> = update
+        .iter()
+        .map(|c| format!("\"{c}\" = EXCLUDED.\"{c}\""))
+        .collect();
     format!(
         "INSERT INTO \"{}\" ({}) VALUES ({}) ON CONFLICT {} DO UPDATE SET {}",
         M::TABLE,

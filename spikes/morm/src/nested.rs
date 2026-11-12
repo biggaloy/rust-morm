@@ -12,13 +12,30 @@ use std::pin::Pin;
 use std::sync::Mutex;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::task::{Context, Poll};
+use std::thread::ThreadId;
 use tokio::task::Id;
 use tokio_postgres::Row;
+
+/// Who is polling: a Tokio task, or, for a future driven by `block_on` (such
+/// as the body of `#[tokio::main]`), which has no task id, its thread.
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+enum Key {
+    Task(Id),
+    Thread(ThreadId),
+}
+
+#[inline]
+fn current() -> Key {
+    match tokio::task::try_id() {
+        Some(id) => Key::Task(id),
+        None => Key::Thread(std::thread::current().id()),
+    }
+}
 
 /// Streams registered to some task, anywhere in the process.
 static OPEN: AtomicUsize = AtomicUsize::new(0);
 /// Which tasks hold an open stream, with a count each.
-static TASKS: Mutex<Vec<(Id, usize)>> = Mutex::new(Vec::new());
+static TASKS: Mutex<Vec<(Key, usize)>> = Mutex::new(Vec::new());
 
 /// The check every checkout makes. With no stream open it is one relaxed load.
 #[inline]
@@ -31,9 +48,7 @@ pub fn check() -> Result<()> {
 
 #[cold]
 fn check_task() -> Result<()> {
-    let Some(id) = tokio::task::try_id() else {
-        return Ok(());
-    };
+    let id = current();
     if TASKS.lock().unwrap().iter().any(|(t, _)| *t == id) {
         return Err(Error::NestedConnection);
     }
@@ -44,7 +59,7 @@ pub fn open_streams() -> usize {
     OPEN.load(Ordering::Relaxed)
 }
 
-fn add(id: Id) {
+fn add(id: Key) {
     let mut t = TASKS.lock().unwrap();
     match t.iter_mut().find(|(x, _)| *x == id) {
         Some((_, n)) => *n += 1,
@@ -52,7 +67,7 @@ fn add(id: Id) {
     }
 }
 
-fn remove(id: Id) {
+fn remove(id: Key) {
     let mut t = TASKS.lock().unwrap();
     if let Some(i) = t.iter().position(|(x, _)| *x == id) {
         t[i].1 -= 1;
@@ -65,33 +80,23 @@ fn remove(id: Id) {
 /// One stream's registration.
 #[derive(Default)]
 struct Reg {
-    task: Option<Id>,
+    task: Option<Key>,
 }
 
 impl Reg {
     /// Called on every poll: registers on the first, moves on a task change.
     #[inline]
     fn on_poll(&mut self) {
-        let now = tokio::task::try_id();
-        if now == self.task {
-            return;
-        }
-        match (self.task, now) {
-            (None, Some(n)) => {
-                add(n);
+        let now = current();
+        match self.task {
+            Some(t) if t == now => return,
+            Some(t) => remove(t),
+            None => {
                 OPEN.fetch_add(1, Ordering::Relaxed);
             }
-            (Some(o), Some(n)) => {
-                remove(o);
-                add(n);
-            }
-            (Some(o), None) => {
-                remove(o);
-                OPEN.fetch_sub(1, Ordering::Relaxed);
-            }
-            (None, None) => {}
         }
-        self.task = now;
+        add(now);
+        self.task = Some(now);
     }
 }
 
@@ -109,7 +114,10 @@ type Opening = Pin<Box<dyn Future<Output = Result<(Object, tokio_postgres::RowSt
 enum State {
     Idle(Db, &'static str),
     Opening(Opening),
-    Rows(#[allow(dead_code)] Object, Pin<Box<tokio_postgres::RowStream>>),
+    Rows(
+        #[allow(dead_code)] Object,
+        Pin<Box<tokio_postgres::RowStream>>,
+    ),
     Done,
 }
 

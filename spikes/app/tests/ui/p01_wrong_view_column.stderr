@@ -1,0 +1,15 @@
+error[E0308]: mismatched types
+ --> tests/ui/p01_wrong_view_column.rs:8:16
+  |
+8 |     model_only(ProductPublic::F.name);
+  |     ---------- ^^^^^^^^^^^^^^^^^^^^^ expected `Column<Product, _, _>`, found `Column<ProductPublic, String, name>`
+  |     |
+  |     arguments to this function are incorrect
+  |
+  = note: expected struct `Column<app::Product, _, _>`
+             found struct `Column<ProductPublic, String, app::__morm_cols_Product::name>`
+note: function defined here
+ --> tests/ui/p01_wrong_view_column.rs:5:4
+  |
+5 | fn model_only<T, C>(_: Column<Product, T, C>) {}
+  |    ^^^^^^^^^^       ------------------------

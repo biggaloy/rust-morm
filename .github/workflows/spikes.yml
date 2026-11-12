@@ -1,0 +1,48 @@
+# Step 02's proofs on Postgres 15 to 18. Deleted with `spikes/` when the step ends.
+name: spikes
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  spikes:
+    name: spikes (pg ${{ matrix.pg }})
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        pg: [15, 16, 17, 18]
+    services:
+      postgres:
+        image: postgres:${{ matrix.pg }}
+        env:
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 2s
+          --health-timeout 5s
+          --health-retries 30
+    env:
+      SPIKE_DSN: host=127.0.0.1 port=5432 user=postgres dbname=postgres
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-rust
+        with:
+          toolchain: "1.99.1"
+      - name: Server version
+        run: psql "$SPIKE_DSN" -Atc "SHOW server_version"
+      - name: Proofs 1 to 9, 11 and 12
+        run: cargo test --locked --release --manifest-path spikes/Cargo.toml --workspace -- --nocapture
+      - name: Proof 10
+        run: bash spikes/proof10.sh
