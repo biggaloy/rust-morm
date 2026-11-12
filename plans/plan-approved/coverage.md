@@ -4,7 +4,7 @@ Generated from the frozen plan. Each requirement and test obligation lives in ex
 
 Kinds: `code` needs a tagged test, `doc` is checked in the README step, `info` is context with nothing to build.
 
-Totals: 1203 requirements, 277 test obligations.
+Totals: 1204 requirements, 277 test obligations.
 
 ## Requirements
 
@@ -1213,6 +1213,7 @@ Totals: 1203 requirements, 277 test obligations.
 | R-1201 | doc | 50 | 0 | The README shows this notice loudly, beside the safe forms table: > **A sequence something… |
 | R-1202 | code | 17 | 0 | - **Chosen keys through `insert_stream`.** `db.insert_stream::<T>(stream).explicit_ids()` … |
 | R-1203 | code | 19 | 0 | - **Chosen keys through `upsert`.** `db.upsert(&mut p, target).explicit_ids()` and `db.ups… |
+| R-1204 | doc | 50 | 0 | The README shows this notice loudly, beside the `.explicit_ids()` row: > **`.explicit_ids(… |
 
 ## Test obligations
 
