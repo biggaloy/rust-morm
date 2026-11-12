@@ -281,3 +281,37 @@ async fn retry_copies_the_closure_only_while_a_retry_is_left() {
     assert_eq!(clones(&db, 2, 2).await, (3, 2));
     assert_eq!(clones(&db, 3, 2).await, (3, 3));
 }
+
+/// A `move` closure that changes its own copy compiles with `.retry`, and is
+/// safe: each attempt starts from a fresh copy, so a change made by a failed
+/// attempt never reaches the next one.
+#[tokio::test]
+async fn a_move_closure_may_change_its_own_copy() {
+    let db = Db::connect(&app::dsn(), 1).unwrap();
+    let mut row = Customer {
+        id: 1,
+        name: "a".into(),
+    };
+    row.name.push('b');
+    let name = row.name;
+    let seen = std::sync::Mutex::new(Vec::new());
+    let (seen_ref, attempts) = (&seen, AtomicU32::new(0));
+    let attempts_ref = &attempts;
+    db.retry(2)
+        .transaction(async move |tx| {
+            let mut name = name;
+            name.push('!'); // changes this attempt's copy only
+            seen_ref.lock().unwrap().push(name);
+            if attempts_ref.fetch_add(1, Ordering::Relaxed) < 2 {
+                tx.query(
+                    "DO $$ BEGIN RAISE EXCEPTION 'spike' USING ERRCODE = '40001'; END $$",
+                    &[],
+                )
+                .await?;
+            }
+            Ok(())
+        })
+        .await
+        .unwrap();
+    assert_eq!(*seen.lock().unwrap(), ["ab!", "ab!", "ab!"]);
+}
