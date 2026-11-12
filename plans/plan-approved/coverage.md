@@ -4,7 +4,7 @@ Generated from the frozen plan. Each requirement and test obligation lives in ex
 
 Kinds: `code` needs a tagged test, `doc` is checked in the README step, `info` is context with nothing to build.
 
-Totals: 1197 requirements, 272 test obligations.
+Totals: 1201 requirements, 274 test obligations.
 
 ## Requirements
 
@@ -1207,6 +1207,10 @@ Totals: 1197 requirements, 272 test obligations.
 | R-1195 | code | 41 | 0 | **Adding identity in a rolling deploy.** A build made before a migration that adds identit… |
 | R-1196 | doc | 50 | 0 | The README shows this notice loudly, beside the rolling deploy rows: > **A build whose ins… |
 | R-1197 | doc | 50 | 0 | The README says this plainly, beside that notice. Adding identity to a column that already… |
+| R-1198 | code | 41 | 0 | **A model that sends a `BY DEFAULT` identity column.** Postgres takes a key an insert send… |
+| R-1199 | code | 30 | 0 | **Adding identity to a column that already has a default.** Postgres refuses `ADD GENERATE… |
+| R-1200 | code | 30 | 0 | **A sequence something else uses.** Postgres drops a sequence only when nothing else depen… |
+| R-1201 | doc | 50 | 0 | The README shows this notice loudly, beside the safe forms table: > **A sequence something… |
 
 ## Test obligations
 
@@ -1484,3 +1488,5 @@ Totals: 1197 requirements, 272 test obligations.
 | T-0270 | suite | 39 | **The safe forms under `rollback --fast`, on Postgres 15–18:** for migrations whose downs … |
 | T-0271 | integration | 41 | **A model that sends a `GENERATED ALWAYS` identity column, on Postgres 15–18:** on a plain… |
 | T-0272 | integration | 41 | **Adding identity in a rolling deploy, on Postgres 15–18:** on a plain table whose `NOT NU… |
+| T-0273 | integration | 41 | **A model that sends a `BY DEFAULT` identity column, on Postgres 15–18:** on a plain table… |
+| T-0274 | integration | 30 | **Adding identity to a column that has a default, on Postgres 15–18:** on a `serial` key h… |

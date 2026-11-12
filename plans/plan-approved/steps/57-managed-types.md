@@ -29,6 +29,8 @@ Owned elsewhere, and quoted so this step needs no other file. Nothing here needs
 >
 > Step 29 reads enum labels from `pg_enum`, ordered by `enumsortorder`. Step 32's with-data proof keeps its synthetic rows in a table keyed by column type. Step 33 lets an op add preflight checks.
 >
+> Step 30's op that gives identity to a column whose default calls a sequence the column owns, such as `serial`'s, drops that sequence and gives the identity's sequence its name and position in one transaction, and its inverse rebuilds that sequence and the default the same way.
+>
 > Step 33's ledger keeps each migration's exact up and down SQL and its `meta.json`, so `rollback`, from step 34, works when the migration's files are gone. Its check before an inverse that drops an attribute must read the live catalog and not rely on `meta.json`.
 >
 
@@ -44,7 +46,7 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 
 ### Migrations / Triggers, functions and other objects
 
-- **R-0966** **Sequences:** a sequence's catalog comparison uses its definition only (type, start, increment, minimum, maximum, cache and cycle) and never `last_value`, so a sequence in use shows no drift. A sequence that belongs to an identity column stays out of this kind, because it comes with its column.
+- **R-0966** **Sequences:** a sequence's catalog comparison uses its definition only (type, start, increment, minimum, maximum, cache and cycle) and never `last_value`, so a sequence in use shows no drift. A sequence that belongs to an identity column stays out of this kind, because it comes with its column. So does a sequence a column owns, found through `pg_depend` with `deptype = 'a'` as `serial` makes one, wherever step 30's op drops it to give that column identity or rebuilds it to take identity off: that op drops or rebuilds it and carries its position, so this kind's diff gives it no drop, no create and no `lossy`.
 - **R-0967** Dropping a sequence loses its position, because the inverse recreates it from its definition. That op's data effect is `lossy`, and its description says the position is lost.
 
 ### Managed enums
@@ -58,6 +60,6 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 
 | ID | Type | Obligation |
 |---|---|---|
-| T-0145 | integration | **Sequences:** a sequence shows no drift after `nextval` calls, an identity column's sequence isn't read as an object of this kind, and dropping a sequence reports `lossy`. |
+| T-0145 | integration | **Sequences:** a sequence shows no drift after `nextval` calls, an identity column's sequence isn't read as an object of this kind, and dropping a sequence reports `lossy`. A migration that gives a `serial` column identity, and one that takes it back to `serial`, give no op of this kind, no drop, no create and no `lossy`, and only step 30's op. |
 | T-0155 | integration | **Enum renames:** `was` and a decision each rename a value with rows holding it, the inverse restores it, two labels exchange, an open decision exits with code `3`, and adding a value exits with code `2` until step 51, which rewrites this case. |
 | T-0185 | integration | **Domain and composite changes:** with rows, a changed domain `check` replaces the constraint `NOT VALID` and validates it in a separate step, and a row that fails it stops at `VALIDATE`. On a composite no column uses, adding an attribute at the end, dropping the last attribute and changing an attribute's type each run `ALTER TYPE`, and a middle attribute, a new order and a rename each recreate the type in one transaction with its owner, comment and grants. Each ends on the exact attribute order, up and down. A changed base type exits with code `2` and changes nothing. So does every shape of change to a composite a column uses, with its rows unchanged, directly, through an array, through a range, through a domain, through another composite and on a materialized view. Postgres would run the add and the drop, so this proves morm's own check refuses them, and `migrate` preflight refuses the same change for a column no model declares, and `rollback` of an added attribute refuses the same way. A recreate with a function or another type depending on it, and `ALTER TYPE` on an attribute a `BEGIN ATOMIC` function names, exit with code `2` and change nothing until step 37, which rewrites these cases. The with-data proof leaves out a domain column whose `check` its rows fail. |
