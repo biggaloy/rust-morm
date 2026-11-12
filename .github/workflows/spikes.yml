@@ -40,6 +40,8 @@ jobs:
       - uses: ./.github/actions/setup-rust
         with:
           toolchain: "1.99.1"
+          # The pinned compile errors quote the standard library's source.
+          components: rust-src
       - name: Server version
         run: psql "$SPIKE_DSN" -Atc "SHOW server_version"
       - name: Proofs 1 to 9, 11 and 12
