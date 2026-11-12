@@ -5358,8 +5358,8 @@
 "kind": "code",
 "step": "hold-pooler",
 "line": 1442,
-"text": "- **No startup parameters.** PgBouncer rejects unknown ones by default. Falling back to session `SET` isn't safe here, because in transaction mode that setting stays on a server connection other clients will share. So set `lock_timeout`, `idle_in_transaction_session_timeout`, `client_connection_check_interval` and `search_path` on the role with `ALTER ROLE`, and `timezone` to `UTC`, because morm's sessions always run in UTC.",
-"block": "- **R-0670** **No startup parameters.** PgBouncer rejects unknown ones by default. Falling back to session `SET` isn't safe here, because in transaction mode that setting stays on a server connection other clients will share. So set `lock_timeout`, `idle_in_transaction_session_timeout`, `client_connection_check_interval` and `search_path` on the role with `ALTER ROLE`, and `timezone` to `UTC`, because morm's sessions always run in UTC."
+"text": "- **No startup parameters.** PgBouncer rejects unknown ones by default. Falling back to session `SET` isn't safe here, because in transaction mode that setting stays on a server connection other clients will share. So set `lock_timeout`, `idle_in_transaction_session_timeout`, `client_connection_check_interval` and `search_path` on the role with `ALTER ROLE`, and `timezone` to `UTC`, because morm's sessions always run in UTC: a pool whose sessions report another zone refuses to start, with an error naming the zone and this fix.",
+"block": "- **R-0670** **No startup parameters.** PgBouncer rejects unknown ones by default. Falling back to session `SET` isn't safe here, because in transaction mode that setting stays on a server connection other clients will share. So set `lock_timeout`, `idle_in_transaction_session_timeout`, `client_connection_check_interval` and `search_path` on the role with `ALTER ROLE`, and `timezone` to `UTC`, because morm's sessions always run in UTC: a pool whose sessions report another zone refuses to start, with an error naming the zone and this fix."
 },
 {
 "id": "R-0671",
@@ -9678,8 +9678,8 @@
 "kind": "doc",
 "step": "readme-release",
 "line": 0,
-"block": "**R-1210** The README shows this notice loudly, beside the `morm.toml` settings:\n\n> **morm's sessions always run in UTC.** Every connection starts with `TimeZone = 'UTC'`, whatever the server's or the role's zone, and no setting changes it. Postgres converts between `timestamp` and `timestamptz`, formats a time and truncates one to a day in the session's zone, so if the zone varied by host or by role, the same query would give different rows on different machines, and raw SQL would disagree with what morm writes for a field. In UTC there is one answer everywhere. Store instants in `timestamptz`. When code needs a user's local day or wall time, pass the zone in the SQL, as in `date_trunc('day', {Order::F.at}, ${zone: String})` or `{Order::F.at} AT TIME ZONE ${zone: String}`. Behind PgBouncer in transaction mode morm can't send the zone, so set it on the role: `ALTER ROLE app SET timezone = 'UTC'`.",
-"text": "The README shows this notice loudly, beside the `morm.toml` settings:\n\n> **morm's sessions always run in UTC.** Every connection starts with `TimeZone = 'UTC'`, whatever the server's or the role's zone, and no setting changes it. Postgres converts between `timestamp` and `timestamptz`, formats a time and truncates one to a day in the session's zone, so if the zone varied by host or by role, the same query would give different rows on different machines, and raw SQL would disagree with what morm writes for a field. In UTC there is one answer everywhere. Store instants in `timestamptz`. When code needs a user's local day or wall time, pass the zone in the SQL, as in `date_trunc('day', {Order::F.at}, ${zone: String})` or `{Order::F.at} AT TIME ZONE ${zone: String}`. Behind PgBouncer in transaction mode morm can't send the zone, so set it on the role: `ALTER ROLE app SET timezone = 'UTC'`."
+"block": "**R-1210** The README shows this notice loudly, beside the `morm.toml` settings:\n\n> **morm's sessions always run in UTC.** Every connection starts with `TimeZone = 'UTC'`, whatever the server's or the role's zone, and no setting changes it. Postgres converts between `timestamp` and `timestamptz`, formats a time and truncates one to a day in the session's zone, so if the zone varied by host or by role, the same query would give different rows on different machines, and raw SQL would disagree with what morm writes for a field. In UTC there is one answer everywhere. Store instants in `timestamptz`. When code needs a user's local day or wall time, pass the zone in the SQL, as in `date_trunc('day', {Order::F.at}, ${zone: String})` or `{Order::F.at} AT TIME ZONE ${zone: String}`. Behind PgBouncer in transaction mode morm can't send the zone, so set it on the role: `ALTER ROLE app SET timezone = 'UTC'`. If you don't, the pool refuses to start, with an error naming the zone the session reported, and a `timezone` key in `morm.toml` is refused too, because nothing can change the zone.",
+"text": "The README shows this notice loudly, beside the `morm.toml` settings:\n\n> **morm's sessions always run in UTC.** Every connection starts with `TimeZone = 'UTC'`, whatever the server's or the role's zone, and no setting changes it. Postgres converts between `timestamp` and `timestamptz`, formats a time and truncates one to a day in the session's zone, so if the zone varied by host or by role, the same query would give different rows on different machines, and raw SQL would disagree with what morm writes for a field. In UTC there is one answer everywhere. Store instants in `timestamptz`. When code needs a user's local day or wall time, pass the zone in the SQL, as in `date_trunc('day', {Order::F.at}, ${zone: String})` or `{Order::F.at} AT TIME ZONE ${zone: String}`. Behind PgBouncer in transaction mode morm can't send the zone, so set it on the role: `ALTER ROLE app SET timezone = 'UTC'`. If you don't, the pool refuses to start, with an error naming the zone the session reported, and a `timezone` key in `morm.toml` is refused too, because nothing can change the zone."
 },
 {
 "id": "R-1211",
@@ -9864,6 +9864,22 @@
 "line": 0,
 "block": "- **R-1233** **`SqlType` for these types.** `TextEnum` is cast as `text`, with a `text` carrier, as a `String` is. `PgEnum` and `PgComposite` are cast to their type's name, as R-0976 or `#[pg_type]` gives it, quoted as morm's DDL quotes it, such as `\"billing\".\"order_state\"`, with a `text` carrier and a text form, and carry only that type. `PgDomain` over `T` is cast to the domain's name, with `T`'s carrier, and carries only the domain. Each list is cast to the name with `[]`, with the carrier's array. Owner decisions DH2 and DH3.",
 "text": "- **`SqlType` for these types.** `TextEnum` is cast as `text`, with a `text` carrier, as a `String` is. `PgEnum` and `PgComposite` are cast to their type's name, as R-0976 or `#[pg_type]` gives it, quoted as morm's DDL quotes it, such as `\"billing\".\"order_state\"`, with a `text` carrier and a text form, and carry only that type. `PgDomain` over `T` is cast to the domain's name, with `T`'s carrier, and carries only the domain. Each list is cast to the name with `[]`, with the carrier's array. Owner decisions DH2 and DH3."
+},
+{
+"id": "R-1234",
+"kind": "code",
+"step": "rolling",
+"line": 0,
+"block": "**R-1234** **The startup check also checks the session's zone.** morm's sessions always run in UTC, and behind PgBouncer in transaction mode that rests on the role's `timezone`, because no startup parameter is sent. So `check_schema`'s one catalog statement also reads `current_setting('TimeZone')`, with no extra round trip, and when it isn't `UTC` the pool doesn't start: `Db::connect`, `connect_as`, `connect_to` and a pool `db.pool(name)` adds return `Error::Config`, naming the zone the session reported and saying to run `ALTER ROLE <role> SET timezone = 'UTC'`, before any of the app's queries has run. While it fails, every call through that pool returns the same error and runs the check again, as for a schema finding. A session given `UTC` by the startup parameter or by the role reports `UTC`, so a direct connection always passes. With `check_schema = \"off\"` the statement isn't run, so the zone isn't checked either. Owner decision DI1.",
+"text": "**The startup check also checks the session's zone.** morm's sessions always run in UTC, and behind PgBouncer in transaction mode that rests on the role's `timezone`, because no startup parameter is sent. So `check_schema`'s one catalog statement also reads `current_setting('TimeZone')`, with no extra round trip, and when it isn't `UTC` the pool doesn't start: `Db::connect`, `connect_as`, `connect_to` and a pool `db.pool(name)` adds return `Error::Config`, naming the zone the session reported and saying to run `ALTER ROLE <role> SET timezone = 'UTC'`, before any of the app's queries has run. While it fails, every call through that pool returns the same error and runs the check again, as for a schema finding. A session given `UTC` by the startup parameter or by the role reports `UTC`, so a direct connection always passes. With `check_schema = \"off\"` the statement isn't run, so the zone isn't checked either. Owner decision DI1."
+},
+{
+"id": "R-1235",
+"kind": "code",
+"step": "config",
+"line": 0,
+"block": "**R-1235** **A `timezone` key is refused.** A `timezone` key in `[database]` or in any `[pools.<name>]` profile fails config loading with `Error::Config`, naming the key and the table it's in and saying morm's sessions always run in UTC, so a setting copied from another tool can't seem to work while it does nothing. `morm-core` loads the config, so `morm-admin` refuses it too. Owner decision DI2.",
+"text": "**A `timezone` key is refused.** A `timezone` key in `[database]` or in any `[pools.<name>]` profile fails config loading with `Error::Config`, naming the key and the table it's in and saying morm's sessions always run in UTC, so a setting copied from another tool can't seem to work while it does nothing. `morm-core` loads the config, so `morm-admin` refuses it too. Owner decision DI2."
 }
 ],
 "tests": [
@@ -11938,6 +11954,20 @@
 "kind": "integration",
 "line": 0,
 "text": "**The parameter matrix's free values are reported, on Postgres 15\u201318:** each free value from step 18's matrix whose answer differs from the field's, `text` against `citext` or `char(n)`, an instant against `timestamp`, a naive time against `timestamptz` and `jsonb` written into `json`, gets a finding from `check-sql` through `sql!`'s `${v: T}`, and from `#[morm::test]` through `.q()` and `set_expr`, while the same values bound through the field get none"
+},
+{
+"id": "T-0297",
+"step": "rolling",
+"kind": "integration",
+"line": 0,
+"text": "**The session's zone at startup, on Postgres 15\u201318:** a pool with `pooler = \"transaction\"` through PgBouncer, logging in as a role with `timezone = 'Europe/Berlin'`, fails to start with `Error::Config` naming `Europe/Berlin` and the `ALTER ROLE` fix, before any of the app's statements, and starts once the role has `timezone = 'UTC'`; a direct connection starts whatever the role's and the server's zone, and reports `UTC`; the check rides in the one statement the startup check already sends, as `log_statement = 'all'` shows; and with `check_schema = \"off\"` the Berlin role's pool starts"
+},
+{
+"id": "T-0298",
+"step": "config",
+"kind": "integration",
+"line": 0,
+"text": "**A `timezone` key is refused:** `timezone` in `[database]`, and in a `[pools.<name>]` profile, each make `Db::connect` and `connect_as` return `Error::Config` before any connection opens, naming the key and its table and saying sessions always run in UTC; `morm-admin` reading the same file stops with the same message; and a session opened with no such key reports `TimeZone` as `UTC` on a server whose own zone isn't UTC"
 }
 ],
 "frame": {

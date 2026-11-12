@@ -4,7 +4,7 @@ Generated from the frozen plan. Each requirement and test obligation lives in ex
 
 Kinds: `code` needs a tagged test, `doc` is checked in the README step, `info` is context with nothing to build.
 
-Totals: 1233 requirements, 296 test obligations.
+Totals: 1235 requirements, 298 test obligations.
 
 ## Requirements
 
@@ -1243,6 +1243,8 @@ Totals: 1233 requirements, 296 test obligations.
 | R-1231 | code | 45 | 0 | - **check-sql's typing pass.** Connected to the scratch database the chain migrated, `chec… |
 | R-1232 | code | 45 | 0 | - **`#[morm::test]` checks the SQL a test runs.** The first time a test process sees a run… |
 | R-1233 | code | 56 | 0 | - **`SqlType` for these types.** `TextEnum` is cast as `text`, with a `text` carrier, as a… |
+| R-1234 | code | 41 | 0 | **The startup check also checks the session's zone.** morm's sessions always run in UTC, a… |
+| R-1235 | code | 10 | 0 | **A `timezone` key is refused.** A `timezone` key in `[database]` or in any `[pools.<name>… |
 
 ## Test obligations
 
@@ -1544,3 +1546,5 @@ Totals: 1233 requirements, 296 test obligations.
 | T-0294 | integration | 45 | **The typing pass, on Postgres 15–18:** at least 57 queries, as morm writes them with thei… |
 | T-0295 | integration | 45 | **`#[morm::test]`'s check:** a test that runs `.q("email = $1")` with a free `String` agai… |
 | T-0296 | integration | 45 | **The parameter matrix's free values are reported, on Postgres 15–18:** each free value fr… |
+| T-0297 | integration | 41 | **The session's zone at startup, on Postgres 15–18:** a pool with `pooler = "transaction"`… |
+| T-0298 | integration | 10 | **A `timezone` key is refused:** `timezone` in `[database]`, and in a `[pools.<name>]` pro… |

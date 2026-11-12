@@ -175,6 +175,8 @@ scratch_url = "${MORM_SCRATCH_URL}"
 
 **R-1206** No setting or environment variable changes the session's zone: `morm.toml` has no `timezone`, and there's no `MORM_DB_TIMEZONE`. Owner decision DH1.
 
+**R-1235** **A `timezone` key is refused.** A `timezone` key in `[database]` or in any `[pools.<name>]` profile fails config loading with `Error::Config`, naming the key and the table it's in and saying morm's sessions always run in UTC, so a setting copied from another tool can't seem to work while it does nothing. `morm-core` loads the config, so `morm-admin` refuses it too. Owner decision DI2.
+
 **R-0111** **Credentials:** `MORM_DB_*` values override the matching parts of `DATABASE_URL`, so a URL can hold the address while the password comes from `MORM_DB_PASSWORD_FILE`. Setting both `MORM_DB_PASSWORD` and `MORM_DB_PASSWORD_FILE` is an error. `sslmode` values other than `disable` and `prefer` need the `tls` feature, and morm refuses to start without it. `prefer` without `tls` can only connect unencrypted, so morm warns at startup, and it never connects unencrypted silently. Passwords are never logged, and they're masked in `Debug` output and error messages.
 
 **R-0113** **Named pools** are full connection profiles. Any `[database]` field can be set in `[pools.<name>]`, so a job can log in as another role or reach another host. Unset connection fields come from `[database]`, and unset pool settings from `[pool]`, except `min`, which defaults to 1. A separate process can open only its own profile, so job settings live in the same file:
@@ -201,4 +203,6 @@ let db = morm::Db::connect_to(url).min(10).max(90).await?; // or set values in c
 
 ## Test obligations
 
-None beyond one tagged test per requirement.
+| ID | Type | Obligation |
+|---|---|---|
+| T-0298 | integration | **A `timezone` key is refused:** `timezone` in `[database]`, and in a `[pools.<name>]` profile, each make `Db::connect` and `connect_as` return `Error::Config` before any connection opens, naming the key and its table and saying sessions always run in UTC; `morm-admin` reading the same file stops with the same message; and a session opened with no such key reports `TimeZone` as `UTC` on a server whose own zone isn't UTC |

@@ -105,7 +105,9 @@ pub struct Sql<'a> { /* private */ }
 // timestamp as its UTC wall time, a NaiveDateTime on timestamptz as UTC, IpAddr on cidr,
 // String on json or jsonb as a text carrier cast to the column's type, each element alike
 // for a list or an array. Sessions always run with TimeZone = 'UTC', and nothing overrides
-// it (DH1, step 10), so raw SQL converts times as these encodings do. Step 03 freezes the
+// it (DH1, step 10; a `timezone` key is Error::Config, DI2), and the startup check refuses a
+// pool whose session reports another zone (DI1, step 41), so raw SQL converts times as
+// these encodings do. Step 03 freezes the
 // layer's shape; step 13 builds the conversions and the refusal (R-1207, R-1208, T-0278)
 
 // Product::UK.<name>, and columns that are unique keys. Implemented for a unique

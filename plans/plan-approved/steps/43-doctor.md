@@ -38,7 +38,7 @@ Owned elsewhere, and quoted so this step needs no other file. Nothing here needs
 >
 > Pools open in one process share the budget, so `db.pool("jobs")` beside the default pool can't double it. If `min` or `max` exceed the budget, including explicit values, morm lowers them and emits a warning, through `tracing` when enabled and stderr otherwise.
 >
-> - **No startup parameters.** PgBouncer rejects unknown ones by default. Falling back to session `SET` isn't safe here, because in transaction mode that setting stays on a server connection other clients will share. So set `lock_timeout`, `idle_in_transaction_session_timeout`, `client_connection_check_interval` and `search_path` on the role with `ALTER ROLE`, and `timezone` to `UTC`, because morm's sessions always run in UTC.
+> - **No startup parameters.** PgBouncer rejects unknown ones by default. Falling back to session `SET` isn't safe here, because in transaction mode that setting stays on a server connection other clients will share. So set `lock_timeout`, `idle_in_transaction_session_timeout`, `client_connection_check_interval` and `search_path` on the role with `ALTER ROLE`, and `timezone` to `UTC`, because morm's sessions always run in UTC: a pool whose sessions report another zone refuses to start, with an error naming the zone and this fix.
 >
 
 ## Out of scope
