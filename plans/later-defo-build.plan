@@ -35,6 +35,19 @@ Writes and transactions always go to the primary.
 - All queries go through `db`, so routing can be added without changing application code.
 - Named pools and `read_only` stay as they are.
 
+## Wall-clock time
+
+A field type holding a local date-time plus an IANA zone, for calendar events and schedules across regions, mapped to its columns with a computed `timestamptz` instant for queries and indexes. 0.1 leaves it to apps, which use a local `timestamp`, a zone name and a `timestamptz` instant they keep current.
+
+**To design**
+
+- The Rust type and which time library backs it (jiff, chrono with chrono-tz, or morm's own), and conversions to the others.
+- How the instant is kept: Postgres can't use `AT TIME ZONE` in a generated column or index expression, so morm computes it on write, in SQL from the server's tz data or in Rust.
+- Keeping the instant correct when time zone rules change, and detecting stale ones.
+- The policy for local times that DST skips or repeats.
+- Query and display helpers, zone validation, and behaviour behind PgBouncer.
+- Repeating events (RRULE): in or out.
+
 ## Repo tooling
 
 CI and release checks, not part of morm itself. 0.1 doesn't wait for them.
