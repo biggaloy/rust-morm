@@ -9,13 +9,13 @@ pub mod param;
 pub mod pool;
 pub mod tx;
 
-pub use groups::{Bits, GlobalGroup, Grouped, Mask, MaskBits, Req, ScopedGroup};
-pub use hooks::{Committed, Hooks, Overrides, insert};
+pub use groups::{Bits, GlobalGroup, GlobalGroups, Grouped, Mask, MaskBits, Req, ScopedGroup};
+pub use hooks::{Changes, Committed, Hook, Hooks, Overrides, Target, delete, insert, update};
 pub use morm_macros::{base, groups, hooks, model};
 pub use param::{Param, PgType};
 pub use pool::{Conn, Db, Lazy, Manager};
 pub use tokio_postgres::Row;
-pub use tx::{Retrying, Tx};
+pub use tx::{Isolation, Once, Retry, RetryBody, Tx, TxOptions};
 
 use std::marker::PhantomData;
 
@@ -128,6 +128,7 @@ pub fn upsert_sql<M: Model, K: UniqueKey<M>>(_key: K, update: &[&str]) -> String
 
 #[doc(hidden)]
 pub mod __private {
+    pub use crate::hooks::__private::overrides;
     pub use inventory;
     pub use serde;
 

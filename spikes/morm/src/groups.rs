@@ -40,7 +40,12 @@ impl MaskBits for () {
     }
 }
 
-/// A global group: `groups::GROUPS.<name>`. Typed by the app's mask.
+/// What `groups!` implements on its `G` type: the app's global mask.
+pub trait GlobalGroups {
+    type Mask: MaskBits;
+}
+
+/// A global group: `G.<name>`. Typed by the app's mask.
 pub struct GlobalGroup<G>(u16, PhantomData<fn() -> G>);
 impl<G> GlobalGroup<G> {
     #[doc(hidden)]

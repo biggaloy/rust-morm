@@ -8,3 +8,9 @@ pub struct Audit {
     #[col(unique)]
     pub external_id: String,
 }
+
+/// Proof 3: global groups in a crate every model crate depends on, as
+/// `models-a` does. Models there find them with `use bases_b::groups::G;`.
+pub mod groups {
+    morm::groups! { auditor }
+}

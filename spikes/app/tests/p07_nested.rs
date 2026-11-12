@@ -5,6 +5,7 @@
 use futures_util::StreamExt;
 use morm::nested::{check, open_streams};
 use morm::{Conn, Db, Error};
+use std::sync::Arc;
 use std::time::{Duration, Instant};
 use tokio::time::timeout;
 
@@ -130,4 +131,55 @@ async fn stream_loops_refuse_a_second_connection() {
     let per = start.elapsed().as_nanos() as f64 / n as f64;
     println!("check() with no stream open: {per:.2} ns");
     assert!(per < 5.0, "the fast path took {per:.2} ns");
+
+    // The cost while streams are open on other tasks: every checkout on every
+    // task takes the spike's one process-wide mutex and scans its list. Each
+    // count of open streams is measured from one thread, then from eight
+    // threads checking at once.
+    for open in [1usize, 10, 100, 1000] {
+        let (stop, _) = tokio::sync::broadcast::channel::<()>(1);
+        let ready = Arc::new(tokio::sync::Barrier::new(open + 1));
+        let mut held = Vec::new();
+        for _ in 0..open {
+            let (mut rx, ready) = (stop.subscribe(), ready.clone());
+            held.push(tokio::spawn(async move {
+                let _reg = morm::nested::register_current();
+                ready.wait().await;
+                let _ = rx.recv().await;
+            }));
+        }
+        ready.wait().await;
+        assert_eq!(open_streams(), open);
+        let n = (2_000_000 / open).max(20_000) as u32;
+        let alone = per_check(1, n);
+        let eight = per_check(8, n);
+        println!(
+            "check() with {open} streams open elsewhere: {alone:.1} ns from one thread, {eight:.1} ns each from eight at once"
+        );
+        drop(stop);
+        for h in held {
+            h.await.unwrap();
+        }
+        assert_eq!(open_streams(), 0);
+    }
+}
+
+/// Mean time of one `check()` on each of `threads` threads running at once,
+/// none of them streaming, so each check scans the whole list.
+fn per_check(threads: usize, n: u32) -> f64 {
+    let go = Arc::new(std::sync::Barrier::new(threads));
+    let hs: Vec<_> = (0..threads)
+        .map(|_| {
+            let go = go.clone();
+            std::thread::spawn(move || {
+                go.wait();
+                let start = Instant::now();
+                for _ in 0..n {
+                    std::hint::black_box(check()).unwrap();
+                }
+                start.elapsed().as_nanos() as f64 / n as f64
+            })
+        })
+        .collect();
+    hs.into_iter().map(|h| h.join().unwrap()).sum::<f64>() / threads as f64
 }

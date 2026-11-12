@@ -13,9 +13,9 @@ error: implementation of `Send` is not general enough
   ::: $WORKSPACE/morm/src/tx.rs
    |
    | /     {
-   | |         let mut left = self.n;
+   | |         let begin = self.begin();
+   | |         let mut left = self.retry.0;
    | |         loop {
-   | |             match attempt(
 ...  |
    | |     }
    | |_____- this async fn captures a value whose type is not `Send`

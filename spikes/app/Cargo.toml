@@ -10,6 +10,7 @@ publish.workspace = true
 morm.workspace = true
 models-a.workspace = true
 models-b.workspace = true
+bases-b.workspace = true
 axum = { version = "0.8.9", default-features = false, features = ["json", "tokio"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"

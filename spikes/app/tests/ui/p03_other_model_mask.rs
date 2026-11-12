@@ -9,5 +9,5 @@ fn main() {
     let thing = Mask::<Thing>::new();
     product_columns(db.groups(&thing));
     let _ = Mask::<Product>::new().with_scoped(Thing::G.owner);
-    let _ = Mask::<Product>::new().with(big::GROUPS.g01);
+    let _ = Mask::<Product>::new().with(big::G.g01);
 }

@@ -59,6 +59,18 @@ pub fn open_streams() -> usize {
     OPEN.load(Ordering::Relaxed)
 }
 
+/// The calling task, registered as a stream's first poll registers it, until
+/// this drops. Only for measuring the check while streams are open.
+#[doc(hidden)]
+pub struct Registered(#[allow(dead_code)] Reg);
+
+#[doc(hidden)]
+pub fn register_current() -> Registered {
+    let mut r = Reg::default();
+    r.on_poll();
+    Registered(r)
+}
+
 fn add(id: Key) {
     let mut t = TASKS.lock().unwrap();
     match t.iter_mut().find(|(x, _)| *x == id) {

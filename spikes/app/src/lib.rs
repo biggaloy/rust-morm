@@ -1,6 +1,8 @@
 //! The app side of the spikes: models, groups and hooks that the tests use.
 
-use morm::{Conn, Error, Result};
+use morm::{Changes, Committed, Conn, Error, Result, Target};
+// Proof 3: models find the app's global groups through a plain `use`.
+use groups::G;
 
 /// Proof 3: the app's global groups. With `sudo` that's 4, so `Bits<1>`.
 pub mod groups {
@@ -18,7 +20,7 @@ pub mod big {
 }
 
 /// Proofs 1, 3 and 6: two views, a global and a scoped group, a borrowed form.
-#[morm::model(table = "spike_product", global = crate::groups, groups(editor, reviewer), borrowed)]
+#[morm::model(table = "spike_product", groups(editor, reviewer), borrowed)]
 #[view(ProductPublic, hide(cost, supplier))]
 #[view(ProductCard, only(id, name))]
 #[derive(Debug, Clone, PartialEq)]
@@ -34,7 +36,7 @@ pub struct Product {
 }
 
 /// Another model with its own scoped group, for proof 3's compile errors.
-#[morm::model(table = "spike_thing", global = crate::groups, groups(owner))]
+#[morm::model(table = "spike_thing", groups(owner))]
 pub struct Thing {
     pub id: i64,
     #[col(group = owner)]
@@ -115,6 +117,75 @@ impl morm::Hooks for Note {
         }
         Ok(())
     }
+
+    fn validate_changes(changes: &Changes<Self>) -> Result<()> {
+        if changes.columns().any(|c| c == "id") {
+            return Err(Error::Validation("id can't change"));
+        }
+        Ok(())
+    }
+
+    /// Refuses an update of every note, and stamps the rest as edited.
+    async fn pre_update(
+        changes: &mut Changes<Self>,
+        target: &Target<Self>,
+        db: &impl Conn,
+    ) -> Result<()> {
+        if matches!(target, Target::All) {
+            return Err(Error::Validation("update of every note"));
+        }
+        db.query("SELECT 1", &[]).await?;
+        changes.put("edited", true);
+        Ok(())
+    }
+
+    async fn post_update(
+        changes: &Changes<Self>,
+        _target: &Target<Self>,
+        affected: u64,
+        db: &impl Conn,
+    ) -> Result<()> {
+        db.query("SELECT 1", &[]).await?;
+        let cols: Vec<_> = changes.columns().collect();
+        log(format!("post_update {} {affected}", cols.join(",")));
+        Ok(())
+    }
+
+    async fn pre_delete(target: &Target<Self>, _db: &impl Conn) -> Result<()> {
+        if matches!(target, Target::All) {
+            return Err(Error::Validation("delete of every note"));
+        }
+        Ok(())
+    }
+
+    async fn post_delete(_target: &Target<Self>, affected: u64, _db: &impl Conn) -> Result<()> {
+        log(format!("post_delete {affected}"));
+        Ok(())
+    }
+
+    async fn after_commit(event: Committed<Self>) -> Result<()> {
+        log(match event {
+            Committed::Updated { target, .. } => format!("committed update {}", ids(&target)),
+            Committed::Deleted { target } => format!("committed delete {}", ids(&target)),
+            _ => "committed other".into(),
+        });
+        Ok(())
+    }
+}
+
+fn ids(t: &Target<Note>) -> String {
+    match t {
+        Target::Id(id) => id.to_string(),
+        Target::Ids(ids) => format!("{ids:?}"),
+        _ => "other".into(),
+    }
+}
+
+/// What `Note`'s update, delete and commit hooks saw, in order.
+pub static HOOK_LOG: std::sync::Mutex<Vec<String>> = std::sync::Mutex::new(Vec::new());
+
+fn log(s: String) {
+    HOOK_LOG.lock().unwrap().push(s);
 }
 
 /// The DSN the spikes run against. Required: a proof never skips silently.

@@ -1,8 +1,10 @@
-//! Proof 4: `async |tx|` closures, with and without retry.
+//! Proof 4: `async |tx|` closures, with and without retry, and every
+//! transaction option on one prefix builder before the closure.
 
 use crate::param::Param;
 use crate::pool::{Conn, Object, run};
 use crate::{Db, Result};
+use std::time::Duration;
 use tokio_postgres::Row;
 
 /// An open transaction. Closures receive `&Tx`.
@@ -22,6 +24,156 @@ impl Conn for Tx {
 /// `40001` and `40P01`: the errors a retry is for.
 fn retryable(e: &crate::Error) -> bool {
     matches!(e.code(), Some("40001" | "40P01"))
+}
+
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+pub enum Isolation {
+    ReadCommitted,
+    RepeatableRead,
+    Serializable,
+}
+
+impl Isolation {
+    fn sql(self) -> &'static str {
+        match self {
+            Isolation::ReadCommitted => " ISOLATION LEVEL READ COMMITTED",
+            Isolation::RepeatableRead => " ISOLATION LEVEL REPEATABLE READ",
+            Isolation::Serializable => " ISOLATION LEVEL SERIALIZABLE",
+        }
+    }
+}
+
+/// The builder's retry state: `Once` takes any `AsyncFnOnce` closure, `Retry`
+/// only one it can run again.
+#[derive(Clone, Copy, Debug)]
+pub struct Once;
+#[derive(Clone, Copy, Debug)]
+pub struct Retry(u32);
+
+/// What a transaction is opened with. Every option is set before the
+/// closure, on this one prefix builder, so the closure is always the last
+/// argument and `transaction` is an `async fn`: its future is `Send` whenever
+/// the concrete closure's is, with no boxing and no named future.
+/// `db.isolation(..)`, `db.retry(n)`, `db.statement_timeout(..)` and
+/// `db.lock_timeout(..)` each start one, and the options chain in any order.
+pub struct TxOptions<'d, R> {
+    db: &'d Db,
+    isolation: Option<Isolation>,
+    statement_timeout: Option<Duration>,
+    lock_timeout: Option<Duration>,
+    retry: R,
+}
+
+impl<R> TxOptions<'_, R> {
+    pub fn isolation(self, i: Isolation) -> Self {
+        Self {
+            isolation: Some(i),
+            ..self
+        }
+    }
+    /// A per-transaction setting: `SET LOCAL statement_timeout`.
+    pub fn statement_timeout(self, d: Duration) -> Self {
+        Self {
+            statement_timeout: Some(d),
+            ..self
+        }
+    }
+    /// A per-transaction setting: `SET LOCAL lock_timeout`.
+    pub fn lock_timeout(self, d: Duration) -> Self {
+        Self {
+            lock_timeout: Some(d),
+            ..self
+        }
+    }
+
+    /// `BEGIN` with the isolation, then each setting as `SET LOCAL`, in one
+    /// message. The spike formats it per call; step 20 chooses how it's sent.
+    fn begin(&self) -> String {
+        let mut s = String::from("BEGIN");
+        if let Some(i) = self.isolation {
+            s.push_str(i.sql());
+        }
+        if let Some(d) = self.statement_timeout {
+            s.push_str(&format!(
+                "; SET LOCAL statement_timeout = '{}ms'",
+                d.as_millis()
+            ));
+        }
+        if let Some(d) = self.lock_timeout {
+            s.push_str(&format!("; SET LOCAL lock_timeout = '{}ms'", d.as_millis()));
+        }
+        s
+    }
+}
+
+impl<'d> TxOptions<'d, Once> {
+    fn new(db: &'d Db) -> Self {
+        TxOptions {
+            db,
+            isolation: None,
+            statement_timeout: None,
+            lock_timeout: None,
+            retry: Once,
+        }
+    }
+
+    pub fn retry(self, n: u32) -> TxOptions<'d, Retry> {
+        TxOptions {
+            db: self.db,
+            isolation: self.isolation,
+            statement_timeout: self.statement_timeout,
+            lock_timeout: self.lock_timeout,
+            retry: Retry(n),
+        }
+    }
+
+    /// Without retry: any `async` closure, run once. It may move or mutate
+    /// what it captures.
+    pub async fn transaction<F, T>(self, f: F) -> Result<T>
+    where
+        F: AsyncFnOnce(&Tx) -> Result<T>,
+    {
+        attempt(self.db, &self.begin(), f).await
+    }
+}
+
+impl TxOptions<'_, Retry> {
+    /// With retry: the closure must be `Clone`, so it can't mutate what it
+    /// captures through a `&mut`. An attempt that could still be retried runs
+    /// a fresh copy, and the last attempt allowed runs the original: `.retry(0)`
+    /// copies nothing, and a transaction that succeeds at once copies once.
+    pub async fn transaction<F, T>(self, f: F) -> Result<T>
+    where
+        F: RetryBody<T>,
+    {
+        let begin = self.begin();
+        for _ in 0..self.retry.0 {
+            match attempt(self.db, &begin, f.clone()).await {
+                Err(e) if retryable(&e) => {
+                    // Give the transaction that won time to commit.
+                    tokio::time::sleep(Duration::from_millis(20)).await;
+                }
+                other => return other,
+            }
+        }
+        attempt(self.db, &begin, f).await
+    }
+
+    /// The form the plan first named, `AsyncFn`, kept to show where it fails:
+    /// a closure capturing by reference isn't `Send` under `tokio::spawn`.
+    pub async fn transaction_async_fn<F, T>(self, f: F) -> Result<T>
+    where
+        F: AsyncFn(&Tx) -> Result<T>,
+    {
+        let begin = self.begin();
+        let mut left = self.retry.0;
+        loop {
+            match attempt(self.db, &begin, async |tx: &Tx| f(tx).await).await {
+                Err(e) if left > 0 && retryable(&e) => left -= 1,
+                other => return other,
+            }
+        }
+    }
 }
 
 async fn attempt<F, T>(db: &Db, begin: &str, f: F) -> Result<T>
@@ -44,78 +196,41 @@ where
 }
 
 impl Db {
-    /// The plain form: any `async` closure, run once. It may move or mutate
-    /// what it captures.
+    /// The plain form: `db.transaction(async |tx| ..)`.
     pub async fn transaction<F, T>(&self, f: F) -> Result<T>
     where
         F: AsyncFnOnce(&Tx) -> Result<T>,
     {
-        attempt(self, "BEGIN", f).await
+        TxOptions::new(self).transaction(f).await
     }
-
-    /// `db.retry(n)`: rerun the closure on a serialization failure or deadlock.
-    pub fn retry(&self, n: u32) -> Retrying<'_> {
-        Retrying { db: self, n }
+    pub fn isolation(&self, i: Isolation) -> TxOptions<'_, Once> {
+        TxOptions::new(self).isolation(i)
     }
-}
-
-pub struct Retrying<'d> {
-    db: &'d Db,
-    n: u32,
+    pub fn retry(&self, n: u32) -> TxOptions<'_, Retry> {
+        TxOptions::new(self).retry(n)
+    }
+    pub fn statement_timeout(&self, d: Duration) -> TxOptions<'_, Once> {
+        TxOptions::new(self).statement_timeout(d)
+    }
+    pub fn lock_timeout(&self, d: Duration) -> TxOptions<'_, Once> {
+        TxOptions::new(self).lock_timeout(d)
+    }
 }
 
 /// What `.retry(n)` takes: a closure it can call again, so it can't mutate
-/// what it captures. Each attempt runs a fresh copy (`Clone`), so a closure
-/// that captures by shared reference costs nothing to copy. A closure that
-/// mutates a capture holds a `&mut`, which isn't `Clone`, so it's refused.
+/// what it captures. A closure that captures by shared reference costs
+/// nothing to copy. A closure that mutates a capture holds a `&mut`, which
+/// isn't `Clone`, so it's refused. Interior mutability (`Cell`, atomics,
+/// mutexes) goes through a shared reference, so it isn't caught.
 pub trait RetryBody<T>: AsyncFnOnce(&Tx) -> Result<T> + Clone {}
 impl<F, T> RetryBody<T> for F where F: AsyncFnOnce(&Tx) -> Result<T> + Clone {}
-
-impl Retrying<'_> {
-    pub async fn transaction<F, T>(&self, f: F) -> Result<T>
-    where
-        F: RetryBody<T>,
-    {
-        let mut left = self.n;
-        loop {
-            match attempt(self.db, "BEGIN ISOLATION LEVEL SERIALIZABLE", f.clone()).await {
-                Err(e) if left > 0 && retryable(&e) => {
-                    left -= 1;
-                    // Give the transaction that won time to commit.
-                    tokio::time::sleep(std::time::Duration::from_millis(20)).await;
-                }
-                other => return other,
-            }
-        }
-    }
-
-    /// The form the plan first named, `AsyncFn`, kept to show where it fails:
-    /// a closure capturing by reference isn't `Send` under `tokio::spawn`.
-    pub async fn transaction_async_fn<F, T>(&self, f: F) -> Result<T>
-    where
-        F: AsyncFn(&Tx) -> Result<T>,
-    {
-        let mut left = self.n;
-        loop {
-            match attempt(
-                self.db,
-                "BEGIN ISOLATION LEVEL SERIALIZABLE",
-                async |tx: &Tx| f(tx).await,
-            )
-            .await
-            {
-                Err(e) if left > 0 && retryable(&e) => left -= 1,
-                other => return other,
-            }
-        }
-    }
-}
 
 /// The postfix shape, `db.transaction_postfix(f).retry(n).await`, kept to show
 /// why it isn't the design. `.await` on a builder needs `IntoFuture`, whose
 /// future must be a named type; on stable that means a boxed `dyn Future +
 /// Send`, and proving the closure's future `Send` for that box needs a bound
 /// over every lifetime, which forces the closure's captures to be `'static`.
+/// The same holds for any postfix option, `.isolation(..)` included.
 pub mod postfix {
     use super::{Tx, attempt, retryable};
     use crate::{Db, Result};

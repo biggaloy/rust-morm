@@ -1,0 +1,5 @@
+error: `#[morm::hooks]` can't see hooks a macro writes, so they'd never run: write each hook as an `fn` in this impl
+  --> tests/ui/p05_hooks_macro_in_impl.rs:20:5
+   |
+20 |     my_hooks!();
+   |     ^^^^^^^^

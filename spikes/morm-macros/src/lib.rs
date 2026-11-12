@@ -7,6 +7,7 @@ use proc_macro2::{Span, TokenStream as Ts};
 use quote::{format_ident, quote};
 use syn::parse::{Parse, ParseStream, Parser};
 use syn::punctuated::Punctuated;
+use syn::spanned::Spanned;
 use syn::{
     Attribute, Expr, Field, Fields, Ident, ImplItem, ItemImpl, ItemStruct, Lit, Meta, Path, Token,
     Type, Visibility, braced,
@@ -188,7 +189,9 @@ struct UniqueDecl {
     conflict: String,
 }
 
-/// `#[model(table = "..", base = path, global = path, groups(a, b), hooks, borrowed)]`
+/// `#[model(table = "..", base = path, groups(a, b), hooks, borrowed)]`. A field
+/// group that isn't one of `groups(..)` is a global group, found through the
+/// `G` in scope, as `use crate::groups::G;` brings it in.
 #[proc_macro_attribute]
 pub fn model(args: TokenStream, item: TokenStream) -> TokenStream {
     match model_impl(args, item) {
@@ -202,8 +205,7 @@ fn model_impl(args: TokenStream, item: TokenStream) -> syn::Result<Ts> {
     let item_ts: Ts = item.clone().into();
     let mut st: ItemStruct = syn::parse(item)?;
 
-    let (mut table, mut global, mut scoped, mut hooks, mut borrowed) =
-        (None, None, Vec::new(), false, false);
+    let (mut table, mut scoped, mut hooks, mut borrowed) = (None, Vec::new(), false, false);
     let mut rest = Vec::new();
     for m in &args.metas {
         let p = m.path();
@@ -218,8 +220,6 @@ fn model_impl(args: TokenStream, item: TokenStream) -> syn::Result<Ts> {
             return Ok(quote! { #base! { @model [#(#others),*] #item_ts } });
         } else if p.is_ident("table") {
             table = Some(str_value(m)?);
-        } else if p.is_ident("global") {
-            global = Some(path_value(m)?);
         } else if p.is_ident("groups") {
             scoped = ident_list(m)?;
         } else if p.is_ident("hooks") {
@@ -351,9 +351,17 @@ fn model_impl(args: TokenStream, item: TokenStream) -> syn::Result<Ts> {
         let n = scoped.len().div_ceil(64);
         quote!(::morm::Bits<#n>)
     };
-    let global_ty = match &global {
-        Some(g) => quote!(#g::Mask),
-        None => quote!(()),
+    // A model that names a global group writes its mask's type from the `G`
+    // in scope: `groups!` emits `G` as both a type and a constant, so the
+    // type gives `Global` and the constant gives each group's bit.
+    let names_global = cols
+        .iter()
+        .filter_map(|c| c.group.as_ref())
+        .any(|g| !scoped.contains(g));
+    let global_ty = if names_global {
+        quote!(<G as ::morm::GlobalGroups>::Mask)
+    } else {
+        quote!(())
     };
     let mut reqs = Vec::new();
     for c in &cols {
@@ -364,12 +372,7 @@ fn model_impl(args: TokenStream, item: TokenStream) -> syn::Result<Ts> {
                     let i = i as u16;
                     quote!(::morm::Req::Scoped(#i))
                 }
-                None => match &global {
-                    Some(gp) => quote!(::morm::Req::Global(#gp::GROUPS.#g.bit())),
-                    None => {
-                        return Err(err(g.span(), format!("`{g}` isn't a group of `{name}`, and the model names no `global` groups")));
-                    }
-                },
+                None => quote!(::morm::Req::Global(G.#g.bit())),
             },
         });
     }
@@ -462,7 +465,7 @@ fn model_impl(args: TokenStream, item: TokenStream) -> syn::Result<Ts> {
 
     if !hooks {
         out.extend(quote! {
-            impl ::morm::Hooks for #name { const OVERRIDES: ::morm::Overrides = ::morm::Overrides::NONE; }
+            impl ::morm::Hooks for #name { const OVERRIDES: ::morm::Overrides<Self> = ::morm::__private::overrides(&[]); }
         });
     }
 
@@ -477,7 +480,7 @@ fn model_impl(args: TokenStream, item: TokenStream) -> syn::Result<Ts> {
         out.extend(quote! {
             #(#sattrs)*
             #vis struct #vname { #(#fd),* }
-            impl ::morm::Hooks for #vname { const OVERRIDES: ::morm::Overrides = ::morm::Overrides::NONE; }
+            impl ::morm::Hooks for #vname { const OVERRIDES: ::morm::Overrides<Self> = ::morm::__private::overrides(&[]); }
         });
         out.extend(model_items(vname, &v.cols));
     }
@@ -594,6 +597,9 @@ const HOOKS: &[&str] = &[
 ];
 
 /// `#[hooks] impl Hooks for M { .. }`: records which hooks the impl overrides.
+/// It sees the impl before any macro inside it expands, so a macro call among
+/// the items is refused: a hook it wrote would go unrecorded and never run.
+/// A hand-written `OVERRIDES` is refused too.
 #[proc_macro_attribute]
 pub fn hooks(_args: TokenStream, item: TokenStream) -> TokenStream {
     let mut imp: ItemImpl = match syn::parse(item) {
@@ -601,16 +607,41 @@ pub fn hooks(_args: TokenStream, item: TokenStream) -> TokenStream {
         Err(e) => return e.to_compile_error().into(),
     };
     let mut flags = Vec::new();
+    let mut errors = Ts::new();
     for it in &imp.items {
-        if let ImplItem::Fn(f) = it {
-            let n = f.sig.ident.to_string();
-            if HOOKS.contains(&n.as_str()) {
-                flags.push(format_ident!("{}", n.to_uppercase()));
+        match it {
+            ImplItem::Fn(f) => {
+                let n = f.sig.ident.to_string();
+                if HOOKS.contains(&n.as_str()) {
+                    let v: String = n
+                        .split('_')
+                        .map(|w| w[..1].to_uppercase() + &w[1..])
+                        .collect();
+                    flags.push(format_ident!("{}", v));
+                }
             }
+            ImplItem::Macro(m) => errors.extend(
+                err(
+                    m.mac.path.span(),
+                    "`#[morm::hooks]` can't see hooks a macro writes, so they'd never run: write each hook as an `fn` in this impl",
+                )
+                .to_compile_error(),
+            ),
+            ImplItem::Const(c) if c.ident == "OVERRIDES" => errors.extend(
+                err(
+                    c.ident.span(),
+                    "`OVERRIDES` is written by `#[morm::hooks]`: remove this one",
+                )
+                .to_compile_error(),
+            ),
+            _ => {}
         }
     }
+    if !errors.is_empty() {
+        return errors.into();
+    }
     imp.items.push(syn::parse_quote! {
-        const OVERRIDES: ::morm::Overrides = ::morm::Overrides::NONE #(.with(::morm::Overrides::#flags))*;
+        const OVERRIDES: ::morm::Overrides<Self> = ::morm::__private::overrides(&[#(::morm::Hook::#flags),*]);
     });
     quote!(#imp).into()
 }
@@ -648,9 +679,14 @@ pub fn groups(input: TokenStream) -> TokenStream {
             fn has(&self, bit: u16) -> bool { ::morm::MaskBits::has(&self.0, bit) }
         }
         pub const COUNT: usize = #count;
+        /// `G` is both a type and a constant: types and values live in
+        /// separate namespaces, so one `use crate::groups::G;` brings in both.
+        /// `#[model]` writes `<G as GlobalGroups>::Mask` and `G.<name>`.
         #[allow(dead_code)]
-        pub struct Groups { pub sudo: ::morm::GlobalGroup<Mask>, #(pub #names: ::morm::GlobalGroup<Mask>),* }
-        pub const GROUPS: Groups = Groups { sudo: ::morm::GlobalGroup::new(0), #(#names: ::morm::GlobalGroup::new(#bits)),* };
+        pub struct G { pub sudo: ::morm::GlobalGroup<Mask>, #(pub #names: ::morm::GlobalGroup<Mask>),* }
+        #[allow(non_upper_case_globals)]
+        pub const G: G = G { sudo: ::morm::GlobalGroup::new(0), #(#names: ::morm::GlobalGroup::new(#bits)),* };
+        impl ::morm::GlobalGroups for G { type Mask = Mask; }
     }
     .into()
 }
