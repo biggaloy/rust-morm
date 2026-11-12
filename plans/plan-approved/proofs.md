@@ -22,7 +22,7 @@ How to rerun: `spikes/` and `.github/workflows/spikes.yml` were deleted by PR #2
 | 6 | Borrowed `ProductRef<'r>` | Pass |
 | 7 | `NestedConnection` for stream loops | Pass, with two refinements |
 | 8 | Upsert conflict-target markers | Pass, with a refinement |
-| 9 | `morm::Param` with `query_typed` | Pass with the declared type from the column (DF1). Three questions for the owner |
+| 9 | `morm::Param` with `query_typed` | Pass with the declared type from the column (DF1). Four questions for the owner |
 | 10 | Registration behind `cfg(morm_mgr)` | Pass, with two refinements |
 | 11 | The loop detector | Detection and cost pass. The exclusions are proven in step 45 (DD) |
 | 12 | `deadpool` with our own manager | Pass |
@@ -105,7 +105,7 @@ Each column's `Column<M, T, C>` has its own zero-sized marker type `C`, generate
 - On Postgres 15 to 18, each of the four targets is accepted as the arbiter of `INSERT .. ON CONFLICT .. DO UPDATE`, with a row that conflicts on that key only.
 - **Refinement:** the contract's `Cap` parameter becomes the per-column marker type, and capabilities such as refusing `.set()` become traits implemented on the marker, rather than a shared capability type.
 
-### 9. `morm::Param` with `query_typed`: pass with the declared type from the column (DF1), three questions
+### 9. `morm::Param` with `query_typed`: pass with the declared type from the column (DF1), four questions
 
 **The risk the first spike missed.** It took each parameter's declared type from the Rust value, so `String` was always `text`. When the declared type differs from the column's, Postgres casts the column, not the parameter, and the comparison changes meaning with no error. Sent as `text`, `'alice'` found 0 rows in a `citext` column holding `'Alice'`, and `'ab '` found 0 in a `char(5)` holding `'ab'`.
 
@@ -148,6 +148,9 @@ With DF1, no known-column pair gives a wrong answer. These need the owner:
 - **Question 3: a raw `Vec<String>` against `citext` or `char(n)`, and a raw `Value` into `json`.** A list goes as `text[]`, so `citext_col = ANY($1)` compares case-sensitively and finds 0 rows, and `char(5)` with `'ab '` the same. A raw `Value` goes as `jsonb`, so a `json` column stores jsonb's normalized text. Sent as an `UNKNOWN` text array literal, the list is right against `citext` and `char(5)`, but `array_length($1, 1)` fails with `42804` and `unnest($1)` with `42725` until written `$1::text[]`. Options:
   - **A (recommended):** a raw text list goes as an `UNKNOWN` text literal, like a raw `String`: the silent wrong answers become right, and the places that can't infer a type fail loudly with a fix the message points to. A raw `Value` stays `jsonb`: a `json` column keeps the same JSON value, normalized, and morm's known-column paths keep the text as given. The README says both.
   - **B:** lists stay `text[]`, and the README says raw SQL against `citext` or `char(n)` casts the list, `= ANY($1::citext[])`.
+- **Question 4: R-1104's wording.** R-1104 (step 14) says every statement is prepared "with each parameter's type from `Param`". With DF1, a parameter bound to a known column is declared as the column's type, which `Param::pg_type` doesn't give. Options:
+  - **A (recommended):** reword it to "with each parameter's declared type, as `query_typed` sends it: the column's where morm knows the column, otherwise `Param`'s", and update the manifest and `coverage.md`.
+  - **B:** leave it, and let `contracts.md` carry the rule.
 
 ### 10. Registration: pass, with two refinements
 
