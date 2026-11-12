@@ -187,3 +187,4 @@ Decisions still to add on `main`: R-0608, R-1081, T-0208, T-0209.
 
 - **CE. Can a partition's model declare `pk`?** Under CC a partition's primary key is the parent's, so the edit made a partition's model use `base = "bare"`, reached by key through the parent's model, and refused a declared `pk` at preflight with exit `2`. Alternative: allow `pk` as an exception, since Postgres names a partition's key `<partition>_pkey`, which matches morm's name. Recommended: keep it strict.
 - **PR body:** "Not exercised yet" still says `bench.yml` can't be dispatched until it's on `main`; it can now. The final check fixes it.
+- **Answered:** CE: allow `pk` on a partition's model as an exception; the edit's choices approved.
