@@ -34,3 +34,4 @@ PR #2 (`step-02-proofs`), head `f50823e` when the step agent reported. CI green 
 
 - **DH1:** answered: UTC session with no override (option C), and first-class wall-clock time in 0.1, designed first. See Decisions.
 - **DH2, DH3, DH5:** see `reviews/step-02-review-2.md`; with the owner.
+- **Answered:** DH2 (automatic casts, detect every mismatch possible, design first), DH3 (trait-based, lossless only), DH5 (savepoints, no `isolation` or `retry` on `tx`, settings for the rest of the transaction). See Decisions.
