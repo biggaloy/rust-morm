@@ -200,3 +200,4 @@ Decisions still to add on `main`: R-0608, R-1081, T-0208, T-0209.
 ## From the edit at `5b2528b`, waiting on the owner
 
 - **CK. An older build sending a column that has since gained `GENERATED ALWAYS` identity**, on a plain table, fails every insert; the startup check catches this only for partitions (R-1190). Recommended: extend R-1190 to any table whose model sends a column with `GENERATED ALWAYS` identity, and cover the rolling-deploy order when a migration adds identity, including when a partition's model should switch to `db_set`.
+- **Answered:** CK as recommended.
