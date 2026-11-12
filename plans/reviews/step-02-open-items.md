@@ -17,3 +17,7 @@ PR #2 (`step-02-proofs`), head `f50823e` when the step agent reported. CI green 
 - Refinements written into `contracts.md`: `groups!` masks are newtypes; `NestedConnection` falls back to the thread id when there's no task id; each upsert column has its own marker type; `#[model]` reads `cfg(morm_mgr)` inside `morm`; the generated `morm-mgr` does `use <crate> as _;` per model crate.
 
 - **Answered:** DA to DE as recommended.
+
+## From the review at `0137bb0`
+
+- **DF1 and DF2:** answered as recommended; DF3 to DF10 fixed as recommended. See Decisions.
