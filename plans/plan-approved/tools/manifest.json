@@ -3478,8 +3478,8 @@
 "kind": "code",
 "step": "transactions",
 "line": 940,
-"text": "```rust\ndb.transaction(|tx| async move {\n    tx.insert(&mut p).await?;\n    Ok(())\n}).await?;\n\ndb.transaction(async |tx| {                       // runs again on 40001 or 40P01\n    let mut order = Order { user_id, ..Default::default() };   // built inside\n    tx.insert(&mut order).await?;\n    Ok(())\n}).isolation(Serializable).retry(3).await?;\n```",
-"block": "**R-0435**\n\n```rust\ndb.transaction(|tx| async move {\n    tx.insert(&mut p).await?;\n    Ok(())\n}).await?;\n\ndb.transaction(async |tx| {                       // runs again on 40001 or 40P01\n    let mut order = Order { user_id, ..Default::default() };   // built inside\n    tx.insert(&mut order).await?;\n    Ok(())\n}).isolation(Serializable).retry(3).await?;\n```"
+"text": "```rust\ndb.transaction(async |tx| {\n    tx.insert(&mut p).await?;\n    Ok(())\n}).await?;\n\ndb.isolation(Serializable).retry(3).transaction(async |tx| {   // runs again on 40001 or 40P01\n    let mut order = Order { user_id, ..Default::default() };   // built inside\n    tx.insert(&mut order).await?;\n    Ok(())\n}).await?;\n```",
+"block": "**R-0435**\n\n```rust\ndb.transaction(async |tx| {\n    tx.insert(&mut p).await?;\n    Ok(())\n}).await?;\n\ndb.isolation(Serializable).retry(3).transaction(async |tx| {   // runs again on 40001 or 40P01\n    let mut order = Order { user_id, ..Default::default() };   // built inside\n    tx.insert(&mut order).await?;\n    Ok(())\n}).await?;\n```"
 },
 {
 "id": "R-0436",
@@ -3534,8 +3534,8 @@
 "kind": "code",
 "step": "transactions",
 "line": 963,
-"text": "**`.retry(n)`** is available only for a closure that can run again (`AsyncFn`), so a closure that changes a captured row doesn't compile. Rows are built inside the closure, so each attempt starts fresh and `pre_insert` can't run twice on one row, for example hashing a password twice. Between attempts the transaction rolls back and the connection is released during the jittered backoff.",
-"block": "**R-0442** **`.retry(n)`** is available only for a closure that can run again (`AsyncFn`), so a closure that changes a captured row doesn't compile. Rows are built inside the closure, so each attempt starts fresh and `pre_insert` can't run twice on one row, for example hashing a password twice. Between attempts the transaction rolls back and the connection is released during the jittered backoff."
+"text": "**`.retry(n)`** goes before the closure, with `.isolation` and the per-transaction settings, as in `db.retry(n).transaction(async |tx| ..)`, and takes only a closure that can run again: `AsyncFnOnce(&Tx) -> Result<T> + Clone`, run as a fresh copy on each attempt, so a closure that changes a captured row doesn't compile. Rows are built inside the closure, so each attempt starts fresh and `pre_insert` can't run twice on one row, for example hashing a password twice. Between attempts the transaction rolls back and the connection is released during the jittered backoff.",
+"block": "**R-0442** **`.retry(n)`** goes before the closure, with `.isolation` and the per-transaction settings, as in `db.retry(n).transaction(async |tx| ..)`, and takes only a closure that can run again: `AsyncFnOnce(&Tx) -> Result<T> + Clone`, run as a fresh copy on each attempt, so a closure that changes a captured row doesn't compile. Rows are built inside the closure, so each attempt starts fresh and `pre_insert` can't run twice on one row, for example hashing a password twice. Between attempts the transaction rolls back and the connection is released during the jittered backoff."
 },
 {
 "id": "R-0443",
@@ -3622,8 +3622,8 @@
 "kind": "code",
 "step": "locks-timeouts",
 "line": 981,
-"text": "```rust\ndb.transaction(async |tx| {\n    tx.lock::<Account>(&[from, to]).await?;             // same order every time\n    tx.update::<Account>(from).set_expr(F.balance, \"balance - $1\", &amount).run().await?;\n    tx.update::<Account>(to).set_expr(F.balance, \"balance + $1\", &amount).run().await?;\n    Ok(())\n}).retry(3).await?;\n\ndb.update_q::<Job>().any(F.id, &ids).set(F.done, true).lock_ordered().run().await?;\ntx.select::<Job>().filter().qc(F.state, \"=\", &\"queued\").limit(10).skip_locked().fetch().await?;\ntx.advisory_lock(&[\"billing\", \"reports\"]).await?;\n```",
-"block": "**R-0453**\n\n```rust\ndb.transaction(async |tx| {\n    tx.lock::<Account>(&[from, to]).await?;             // same order every time\n    tx.update::<Account>(from).set_expr(F.balance, \"balance - $1\", &amount).run().await?;\n    tx.update::<Account>(to).set_expr(F.balance, \"balance + $1\", &amount).run().await?;\n    Ok(())\n}).retry(3).await?;\n\ndb.update_q::<Job>().any(F.id, &ids).set(F.done, true).lock_ordered().run().await?;\ntx.select::<Job>().filter().qc(F.state, \"=\", &\"queued\").limit(10).skip_locked().fetch().await?;\ntx.advisory_lock(&[\"billing\", \"reports\"]).await?;\n```"
+"text": "```rust\ndb.retry(3).transaction(async |tx| {\n    tx.lock::<Account>(&[from, to]).await?;             // same order every time\n    tx.update::<Account>(from).set_expr(F.balance, \"balance - $1\", &amount).run().await?;\n    tx.update::<Account>(to).set_expr(F.balance, \"balance + $1\", &amount).run().await?;\n    Ok(())\n}).await?;\n\ndb.update_q::<Job>().any(F.id, &ids).set(F.done, true).lock_ordered().run().await?;\ntx.select::<Job>().filter().qc(F.state, \"=\", &\"queued\").limit(10).skip_locked().fetch().await?;\ntx.advisory_lock(&[\"billing\", \"reports\"]).await?;\n```",
+"block": "**R-0453**\n\n```rust\ndb.retry(3).transaction(async |tx| {\n    tx.lock::<Account>(&[from, to]).await?;             // same order every time\n    tx.update::<Account>(from).set_expr(F.balance, \"balance - $1\", &amount).run().await?;\n    tx.update::<Account>(to).set_expr(F.balance, \"balance + $1\", &amount).run().await?;\n    Ok(())\n}).await?;\n\ndb.update_q::<Job>().any(F.id, &ids).set(F.done, true).lock_ordered().run().await?;\ntx.select::<Job>().filter().qc(F.state, \"=\", &\"queued\").limit(10).skip_locked().fetch().await?;\ntx.advisory_lock(&[\"billing\", \"reports\"]).await?;\n```"
 },
 {
 "id": "R-0454",
@@ -6134,8 +6134,8 @@
 "kind": "code",
 "step": "transactions",
 "line": 1592,
-"text": "| `.retry()` on a closure that changes captured rows | Compile error |",
-"block": "| R-0767 | `.retry()` on a closure that changes captured rows | Compile error |"
+"text": "| `.retry()` on a closure that changes captured rows | Compile error. A `move` closure that changes its own copy compiles, and is safe, because each attempt gets a fresh copy |",
+"block": "| R-0767 | `.retry()` on a closure that changes captured rows | Compile error. A `move` closure that changes its own copy compiles, and is safe, because each attempt gets a fresh copy |"
 },
 {
 "id": "R-0768",
@@ -6918,8 +6918,8 @@
 "kind": "doc",
 "step": "readme-release",
 "line": 1739,
-"text": "| `.retry(n)` | You want the transaction to run again after a deadlock, and you build its rows inside the closure |",
-"block": "| R-0865 | `.retry(n)` | You want the transaction to run again after a deadlock, and you build its rows inside the closure |"
+"text": "| `.retry(n)` | You want the transaction to run again after a deadlock, and you build its rows inside the closure. A `move` closure is copied before each attempt but the last, so rows it owns are cloned even when nothing retries, and state kept in a `Cell`, an atomic or a mutex carries over from one attempt to the next |",
+"block": "| R-0865 | `.retry(n)` | You want the transaction to run again after a deadlock, and you build its rows inside the closure. A `move` closure is copied before each attempt but the last, so rows it owns are cloned even when nothing retries, and state kept in a `Cell`, an atomic or a mutex carries over from one attempt to the next |"
 },
 {
 "id": "R-0866",

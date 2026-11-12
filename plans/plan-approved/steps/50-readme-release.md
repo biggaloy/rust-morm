@@ -133,7 +133,7 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 | R-0862 | `.returning()` | You need the changed rows back |
 | R-0863 | `.all()` | You want every row, and you know the result is small |
 | R-0864 | `set_expr` | The new value depends on the current one, such as `stock - 1` |
-| R-0865 | `.retry(n)` | You want the transaction to run again after a deadlock, and you build its rows inside the closure |
+| R-0865 | `.retry(n)` | You want the transaction to run again after a deadlock, and you build its rows inside the closure. A `move` closure is copied before each attempt but the last, so rows it owns are cloned even when nothing retries, and state kept in a `Cell`, an atomic or a mutex carries over from one attempt to the next |
 | R-0866 | `.isolation(...)` | You read rows and write based on them, and nothing may change them in between |
 | R-0867 | `.lock_timeout(...)` | A transaction will wait on locks for longer than 5s, such as a large batch |
 | R-0868 | `.transaction_timeout(...)` | A transaction will run for longer than 30s, such as a large batch |

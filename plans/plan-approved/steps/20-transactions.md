@@ -37,16 +37,16 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 **R-0435**
 
 ```rust
-db.transaction(|tx| async move {
+db.transaction(async |tx| {
     tx.insert(&mut p).await?;
     Ok(())
 }).await?;
 
-db.transaction(async |tx| {                       // runs again on 40001 or 40P01
+db.isolation(Serializable).retry(3).transaction(async |tx| {   // runs again on 40001 or 40P01
     let mut order = Order { user_id, ..Default::default() };   // built inside
     tx.insert(&mut order).await?;
     Ok(())
-}).isolation(Serializable).retry(3).await?;
+}).await?;
 ```
 
 **R-0436** Same API as `db`, with savepoints and per-transaction settings (`statement_timeout`, `lock_timeout`, `transaction_timeout`). `tx.set_local("app.user", &id)` sets a value for RLS through `set_config(..., true)`, so it takes a parameter, which `SET LOCAL` can't.
@@ -58,7 +58,7 @@ db.transaction(async |tx| {                       // runs again on 40001 or 40P0
 
 **R-0441** **Savepoints** clear the failed mark, except after a deadlock or serialization error, which always fails the whole transaction. Rolling back to a savepoint keeps earlier locks, so a deadlock could repeat, and a serialization failure can't succeed on the same snapshot.
 
-**R-0442** **`.retry(n)`** is available only for a closure that can run again (`AsyncFn`), so a closure that changes a captured row doesn't compile. Rows are built inside the closure, so each attempt starts fresh and `pre_insert` can't run twice on one row, for example hashing a password twice. Between attempts the transaction rolls back and the connection is released during the jittered backoff.
+**R-0442** **`.retry(n)`** goes before the closure, with `.isolation` and the per-transaction settings, as in `db.retry(n).transaction(async |tx| ..)`, and takes only a closure that can run again: `AsyncFnOnce(&Tx) -> Result<T> + Clone`, run as a fresh copy on each attempt, so a closure that changes a captured row doesn't compile. Rows are built inside the closure, so each attempt starts fresh and `pre_insert` can't run twice on one row, for example hashing a password twice. Between attempts the transaction rolls back and the connection is released during the jittered backoff.
 
 **R-0444** **Read-only pools:** Postgres refuses `SERIALIZABLE` on a hot standby, so `.isolation(Serializable)` on a `read_only` pool returns `ReadOnly` before reaching the server.
 
@@ -75,7 +75,7 @@ db.transaction(async |tx| {                       // runs again on 40001 or 40P0
 | ID | Mistake | Caught by |
 |---|---|---|
 | R-0765 | Swallowing an error, then committing | `TransactionAborted` at runtime |
-| R-0767 | `.retry()` on a closure that changes captured rows | Compile error |
+| R-0767 | `.retry()` on a closure that changes captured rows | Compile error. A `move` closure that changes its own copy compiles, and is safe, because each attempt gets a fresh copy |
 
 ### Managed enums
 

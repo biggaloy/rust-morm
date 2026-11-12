@@ -444,14 +444,14 @@ Totals: 1204 requirements, 277 test obligations.
 | R-0432 | code | 15 | 934 | - `.q()` accepts only `&'static str`, so `format!`-ed input won't compile. `q_unchecked(St… |
 | R-0433 | code | 14 | 935 | - **`$n` in a fragment is local.** `comp`, `set_expr` and `.q()` fragments each count from… |
 | R-0434 | code | 14 | 936 | - Typed errors: `Unique { constraint, field }`, `ForeignKey`, `NotNull`, `Check`, `Seriali… |
-| R-0435 | code | 20 | 940 | ```rust db.transaction(\|tx\| async move { tx.insert(&mut p).await?; Ok(()) }).await?; db.… |
+| R-0435 | code | 20 | 940 | ```rust db.transaction(async \|tx\| { tx.insert(&mut p).await?; Ok(()) }).await?; db.isola… |
 | R-0436 | code | 20 | 953 | Same API as `db`, with savepoints and per-transaction settings (`statement_timeout`, `lock… |
 | R-0437 | code | 20 | 955 | **A commit is confirmed, never assumed.** After a failed statement, Postgres turns `COMMIT… |
 | R-0438 | code | 20 | 957 | - Any Postgres error marks the transaction as failed. Further use returns that error, and … |
 | R-0439 | code | 20 | 958 | - `COMMIT` is sent as `SELECT 1; COMMIT` in one message. In a failed transaction the `SELE… |
 | R-0440 | code | 24 | 959 | - `after_commit` fires only after a confirmed commit. If the connection is lost during `CO… |
 | R-0441 | code | 20 | 961 | **Savepoints** clear the failed mark, except after a deadlock or serialization error, whic… |
-| R-0442 | code | 20 | 963 | **`.retry(n)`** is available only for a closure that can run again (`AsyncFn`), so a closu… |
+| R-0442 | code | 20 | 963 | **`.retry(n)`** goes before the closure, with `.isolation` and the per-transaction setting… |
 | R-0443 | code | 24 | 963 | Each attempt starts with no queued `after_commit` events. |
 | R-0444 | code | 20 | 965 | **Read-only pools:** Postgres refuses `SERIALIZABLE` on a hot standby, so `.isolation(Seri… |
 | R-0445 | code | 21 | 969 | There are two kinds. In **Postgres**, two transactions lock the same rows in opposite orde… |
@@ -462,7 +462,7 @@ Totals: 1204 requirements, 277 test obligations.
 | R-0450 | code | 12 | 976 | - **Holds can't use up the pool.** `max_holds` defaults to a quarter of `max`, at least 1.… |
 | R-0451 | code | 24 | 977 | - `after_commit` runs after the connection is released, so it can't cause this. |
 | R-0452 | info | 22 | 979 | **Postgres deadlocks:** |
-| R-0453 | code | 22 | 981 | ```rust db.transaction(async \|tx\| { tx.lock::<Account>(&[from, to]).await?; // same orde… |
+| R-0453 | code | 22 | 981 | ```rust db.retry(3).transaction(async \|tx\| { tx.lock::<Account>(&[from, to]).await?; // … |
 | R-0454 | code | 22 | 994 | - **Bulk writes are sorted.** `insert_many`, `upsert` batches, `update_each` and `delete_i… |
 | R-0455 | code | 22 | 995 | - **`.lock_ordered()`** on `update_q`, `delete_q`, `update_each` and `delete_ids` locks ro… |
 | R-0456 | code | 22 | 996 | - **`tx.lock::<T>(&ids)`** runs `SELECT ... WHERE pk = ANY($1) ORDER BY pk FOR NO KEY UPDA… |
@@ -776,7 +776,7 @@ Totals: 1204 requirements, 277 test obligations.
 | R-0764 | code | 14 | 1589 | \| A stale cached statement after a migration or an enum swap \| Re-prepared or replaced a… |
 | R-0765 | code | 20 | 1590 | \| Swallowing an error, then committing \| `TransactionAborted` at runtime \| |
 | R-0766 | code | 18 | 1591 | \| Updating or deleting a missing id \| `NotFound` at runtime \| |
-| R-0767 | code | 20 | 1592 | \| `.retry()` on a closure that changes captured rows \| Compile error \| |
+| R-0767 | code | 20 | 1592 | \| `.retry()` on a closure that changes captured rows \| Compile error. A `move` closure t… |
 | R-0768 | code | 49 | 1593 | \| Locks taken in opposite order across transactions \| Lock-order detector in debug build… |
 | R-0769 | code | 22 | 1594 | \| `tx.lock`, `advisory_lock` or `.skip_locked()` outside a transaction \| Compile error \… |
 | R-0770 | code | 06 | 1595 | \| A duplicate of a unique, primary key or plain index \| Compile error \| |

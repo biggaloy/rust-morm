@@ -35,12 +35,12 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 **R-0453**
 
 ```rust
-db.transaction(async |tx| {
+db.retry(3).transaction(async |tx| {
     tx.lock::<Account>(&[from, to]).await?;             // same order every time
     tx.update::<Account>(from).set_expr(F.balance, "balance - $1", &amount).run().await?;
     tx.update::<Account>(to).set_expr(F.balance, "balance + $1", &amount).run().await?;
     Ok(())
-}).retry(3).await?;
+}).await?;
 
 db.update_q::<Job>().any(F.id, &ids).set(F.done, true).lock_ordered().run().await?;
 tx.select::<Job>().filter().qc(F.state, "=", &"queued").limit(10).skip_locked().fetch().await?;

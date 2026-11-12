@@ -47,12 +47,34 @@ pub trait PkValue: Send + Sync + 'static {}   // one Param, or a tuple for a com
 
 // Product::F.<field>. Cap is a zero-sized marker type generated for that one column, so
 // every column is its own type (proof 8). Capability traits implemented on the marker
-// let a column refuse .set(), .by() or set_expr
-pub struct Column<M, T, Cap> { /* name, marker data */ }
+// let a column refuse .set(), .by() or set_expr.
+// It carries the column's SQL type, including an explicit `sql`, as a ParamType, so a
+// parameter bound to a known column (builders, F, sql!, model inserts and updates) is
+// declared as the column's type, never the value's (DF1, proof 9)
+pub struct Column<M, T, Cap> { /* name, ParamType, marker data */ }
+pub enum ParamType {
+    Builtin(tokio_postgres::types::Type),   // a built-in type, sent as its fixed OID
+    NoOid,                                  // citext, an enum, any type with no fixed OID: Type::UNKNOWN
+}
 
-// A parameter: ToSql plus its Postgres type, because query_typed needs the type
-// PgEnum returns Type::UNKNOWN, so no OID is ever sent and a type swap can't leave one stale
-pub trait Param: tokio_postgres::types::ToSql + Sync { fn pg_type(&self) -> tokio_postgres::types::Type; }
+// A parameter: ToSql plus the type it's declared as when no column is known (raw SQL),
+// because query_typed needs a type. String and &str return Type::UNKNOWN, so Postgres
+// infers the type from the SQL; PgEnum returns Type::UNKNOWN too, so no OID is ever sent
+// and a type swap can't leave one stale. Every other type returns its own type.
+// A parameter declared Type::UNKNOWN that has a text form is sent in text format, so
+// Postgres reads it as it reads a quoted literal: in binary, "1234" compared with an
+// int4 reads as 825373492 (proof 9). The parameters go from &[&dyn Param] into
+// query_typed_raw through an iterator of a small wrapper that sets each one's format:
+// nothing is boxed or collected
+pub trait Param: tokio_postgres::types::ToSql + Sync {
+    fn pg_type(&self) -> tokio_postgres::types::Type;
+    fn has_text(&self) -> bool;                         // String, &str, lists of them, PgEnum
+    fn encode_text(&self, out: &mut bytes::BytesMut);   // the text form, for UNKNOWN
+    fn is_null(&self) -> bool;
+}
+// Where an explicit `sql` gives a field a column its type's encoder doesn't take, such as
+// sql = "bigint" on an i32 or "timestamp" on a DateTime<Utc>, is an open question to the
+// owner (proofs.md, proof 9, question 1); step 03 freezes the answer
 
 // Product::UK.<name>, and columns that are unique keys. Implemented for a unique
 // column's Column type and for Key<M, K>, one per expression, partial or composite key
@@ -69,12 +91,56 @@ pub struct Bits<const N: usize>([u64; N]);
 // from another groups! is a type error (proof 3)
 pub trait MaskBits: Copy + Send + Sync + 'static { const EMPTY: Self; fn set(&mut self, bit: u16); fn has(&self, bit: u16) -> bool; }
 pub struct Mask<M: Model> { global: M::Global, scoped: M::Scoped }
+// morm::groups! emits `G` as both a struct, one GlobalGroup<Mask> field per group, and
+// `pub const G: G`, so one `use crate::groups::G;` brings in both, plus
+// `impl GlobalGroups for G { type Mask = Mask; }`. #[model] fills Model::Global from the
+// G in scope: `type Global = <G as GlobalGroups>::Mask;`, and each group's bit from
+// `G.<name>`. A model that names no global group gets `type Global = ()` (proof 3, DF5)
+pub trait GlobalGroups { type Mask: MaskBits; }
 
 // Connection-like: db, a held connection, or tx
 pub trait Conn: Send + Sync { fn tx(&self) -> Option<&Tx>; /* every query entry point */ }
 
-// Every hook has an empty default body, so an empty `impl Hooks` compiles away
+// Transactions (proof 4, DA, DF2). Every option goes before the closure, on one prefix
+// builder, and the closure is always last, because a postfix modifier needs a named or
+// boxed future that isn't Send for a borrowing closure on stable:
+//   db.transaction(async |tx| ..)
+//   db.isolation(Serializable).retry(3).transaction(async |tx| ..)
+// db.isolation(..), db.retry(n) and each per-transaction setting start a TxOptions, and
+// they chain in any order
+impl Db {
+    pub async fn transaction<F, T>(&self, f: F) -> Result<T> where F: AsyncFnOnce(&Tx) -> Result<T>;
+    pub fn isolation(&self, i: Isolation) -> TxOptions<'_, Once>;
+    pub fn retry(&self, n: u32) -> TxOptions<'_, Retry>;
+    // and one starter per per-transaction setting: statement_timeout, lock_timeout,
+    // transaction_timeout
+}
+pub struct TxOptions<'d, R> { /* db, isolation, settings, R */ }
+pub struct Once;                 // no retry: the closure runs once and may move or mutate captures
+pub struct Retry(/* n */);       // with retry: the closure must be Clone
+impl TxOptions<'_, Once> {
+    pub fn retry(self, n: u32) -> TxOptions<'_, Retry>;
+    pub async fn transaction<F, T>(self, f: F) -> Result<T> where F: AsyncFnOnce(&Tx) -> Result<T>;
+}
+impl TxOptions<'_, Retry> {
+    // An attempt that could still be retried runs a clone; the last allowed runs the original.
+    // A closure mutating a capture holds a &mut, which isn't Clone, so it doesn't compile
+    pub async fn transaction<F, T>(self, f: F) -> Result<T> where F: AsyncFnOnce(&Tx) -> Result<T> + Clone;
+}
+// Both TxOptions impls also have isolation(..) and each setting, returning Self
+
+// Every hook has an empty default body, so an empty `impl Hooks` compiles away.
+// #[model] emits an empty impl for every model, unless the model says #[model(hooks)];
+// then #[morm::hooks] on the user's impl writes OVERRIDES, which has no default, so an
+// impl without the attribute doesn't compile. #[morm::hooks] refuses a macro call among
+// the impl's items and a hand-written OVERRIDES. Overrides<M> has no public constructor
+// or constant and is typed by its model; the macros build it through a #[doc(hidden)]
+// morm::__private::overrides(&[Hook::..]). Generic code asks M::OVERRIDES.has(Hook::..)
+// and calls only those hooks (proof 5, DB, DF3)
+pub struct Overrides<M: ?Sized>(/* private */);
+pub enum Hook { Validate, PreInsert, PostInsert, ValidateChanges, PreUpdate, PostUpdate, PreDelete, PostDelete, AfterCommit }
 pub trait Hooks: Model {
+    const OVERRIDES: Overrides<Self>;
     fn validate(&self) -> Result<()> { Ok(()) }
     fn pre_insert(rows: &mut [Self], db: &impl Conn) -> impl Future<Output = Result<()>> + Send { async { Ok(()) } }
     fn post_insert(rows: &[Self], db: &impl Conn) -> impl Future<Output = Result<()>> + Send { async { Ok(()) } }
@@ -121,7 +187,7 @@ These are shared by steps that can run side by side, so each is written and froz
 | `Db`, `Tx` and every `Conn` entry point | `morm` | All runtime steps |
 | `Changes<M>` | `morm` | Updates, hooks |
 | The `by`/`any` filter builder | `morm` | Reads, updates |
-| The internal query entry point, which runs SQL through the caches | `morm` | Pool, statements, every query step |
+| The internal query entry point, which runs SQL through the caches. It can carry a "don't count this" flag for the loop detector, so step 45's exclusions (R-0785) need no signature change (proof 11, DD) | `morm` | Pool, statements, every query step |
 | Macro field IR: the parsed form of `#[model]`, `#[col]` and `#[view]` | `morm-macros` | All model steps |
 | The conversion layer between a field and its column | `morm` | Models, types, reads, writes |
 | The trait that gives a column its SQL type and, for an enum, its labels as a constant | `morm` | Models, types, manifest |
