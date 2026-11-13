@@ -46,3 +46,8 @@ PR #2 (`step-02-proofs`), head `f50823e` when the step agent reported. CI green 
 - **Answered:** DI3 (b), UTC plus a fixed list of proven aliases; and the `check_schema = "off"` notice states the zone isn't checked.
 - **DI4. `UTC0`.** It's a POSIX TZ string Postgres parses itself, absent from tzdata and `pg_timezone_names`, though it showed offset 0 and abbreviation `UTC` over 1800 to 2200. Options: (a) keep it out, since allowing it opens the rest of the POSIX syntax (`UTC+0`, `+00`) and the fix is one `ALTER ROLE` (recommended); (b) add `UTC0` alone, with T-0297 pinning it on 15 to 18.
 - **Answered:** DI4 (b), `UTC0` accepted alone.
+
+## From the third review at `1a95854`
+
+- **DJ2:** answered: send UTC through PgBouncer, proven in CI; R-1234 stays as backstop.
+- **DJ3:** with the owner, who asked what it means.
