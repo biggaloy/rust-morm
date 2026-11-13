@@ -4,7 +4,7 @@ Generated from the frozen plan. Each requirement and test obligation lives in ex
 
 Kinds: `code` needs a tagged test, `doc` is checked in the README step, `info` is context with nothing to build.
 
-Totals: 1239 requirements, 300 test obligations.
+Totals: 1240 requirements, 300 test obligations.
 
 ## Requirements
 
@@ -1249,6 +1249,7 @@ Totals: 1239 requirements, 300 test obligations.
 | R-1237 | doc | 50 | 0 | The README shows this notice loudly, beside `pooler = "transaction"`: > **Behind PgBouncer… |
 | R-1238 | code | 12 | 0 | **CI's `pooler` job runs every supported PgBouncer against every supported Postgres.** Thi… |
 | R-1239 | doc | 50 | 0 | \| `-> Sql<'a, impl morm::Params>` \| A function builds a query that its caller runs, such… |
+| R-1240 | doc | 50 | 0 | The README ends with a "Contributing" section, which step 12 starts and this step keeps, s… |
 
 ## Test obligations
 
