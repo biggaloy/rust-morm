@@ -679,7 +679,7 @@ Totals: 1235 requirements, 298 test obligations.
 | R-0667 | code | 46 | 1435 | - **Per-connection memory** depends on how many statements are cached and how complex they… |
 | R-0668 | code | 46 | 1436 | - **`--measure`** replaces those defaults: it prepares your app's real statements on one c… |
 | R-0669 | code | 12 | 1440 | `morm::Pool` makes a pooler unnecessary for one process, but large fleets and managed Post… |
-| R-0670 | code | 12 | 1442 | - **No startup parameters.** PgBouncer rejects unknown ones by default. Falling back to se… |
+| R-0670 | code | 12 | 1442 | - **One startup parameter.** PgBouncer refuses a startup parameter it doesn't track, by de… |
 | R-0671 | code | 43 | 1442 | - `doctor` checks that they're there. |
 | R-0672 | code | 22 | 1443 | - **`SET LOCAL` still works,** because it ends with the transaction. |
 | R-0673 | code | 12 | 1444 | - **Session features refuse.** `db.hold()` returns `PoolerMode`, since a session can't be … |
@@ -1128,7 +1128,7 @@ Totals: 1235 requirements, 298 test obligations.
 | R-1116 | code | 41 | 0 | **`check_schema` runs when a pool starts.** morm runs `check_schema` by itself on every po… |
 | R-1117 | code | 41 | 0 | **Turning the startup check off.** The pool setting `check_schema` is `"on"` by default, a… |
 | R-1118 | code | 10 | 0 | \| `MORM_POOL_CHECK_SCHEMA` \| `check_schema` \| |
-| R-1119 | doc | 50 | 0 | The README shows this notice loudly, beside the rolling deploy rows: > **Turning off the s… |
+| R-1119 | doc | 50 | 0 | The README shows this notice loudly, beside the rolling deploy rows:  > **Turning off the… |
 | R-1120 | doc | 50 | 0 | \| `check_schema = "off"` \| A pool's database isn't meant to hold this binary's models, s… |
 | R-1121 | code | 60 | 0 | **What changes together.** A type change on a column that a foreign key references, where … |
 | R-1122 | code | 60 | 0 | **The steps,** each with its own boundary, and each brief lock taken under `lock_timeout` … |
@@ -1219,7 +1219,7 @@ Totals: 1235 requirements, 298 test obligations.
 | R-1207 | code | 13 | 0 | - **A parameter bound through a field is cast to its column's type.** Where a parameter is… |
 | R-1208 | code | 13 | 0 | - **A field's column type is checked through `SqlType`.** `#[model]` accepts a field's col… |
 | R-1209 | code | 13 | 0 | - **Free parameters.** A value that isn't bound through a field, a `${v: T}` in `sql!`, a… |
-| R-1210 | doc | 50 | 0 | The README shows this notice loudly, beside the `morm.toml` settings: > **morm's sessions… |
+| R-1210 | doc | 50 | 0 | The README shows this notice loudly, beside the `morm.toml` settings:  > **morm's sessions… |
 | R-1211 | doc | 50 | 0 | The README shows this notice loudly, beside raw SQL with `db.sql()`: > **Bind a value thro… |
 | R-1212 | code | 13 | 0 | - **The cast-name function.** `morm-core` turns a column type into the cast morm writes, w… |
 | R-1213 | code | 13 | 0 | - **`SqlType` for every type morm maps.** Each gives its cast and carrier as `const`s, and… |
@@ -1243,8 +1243,8 @@ Totals: 1235 requirements, 298 test obligations.
 | R-1231 | code | 45 | 0 | - **check-sql's typing pass.** Connected to the scratch database the chain migrated, `chec… |
 | R-1232 | code | 45 | 0 | - **`#[morm::test]` checks the SQL a test runs.** The first time a test process sees a run… |
 | R-1233 | code | 56 | 0 | - **`SqlType` for these types.** `TextEnum` is cast as `text`, with a `text` carrier, as a… |
-| R-1234 | code | 41 | 0 | **The startup check also checks the session's zone.** morm's sessions always run in UTC, a… |
-| R-1235 | code | 10 | 0 | **A `timezone` key is refused.** A `timezone` key in `[database]` or in any `[pools.<name>… |
+| R-1234 | code | 41 | 0 | **The startup check also checks the session's zone.** morm's sessions always run in UTC, b… |
+| R-1235 | code | 10 | 0 | **A `timezone` key is refused.** A `timezone` key in any table of `morm.toml`, `[database]… |
 
 ## Test obligations
 
@@ -1353,7 +1353,7 @@ Totals: 1235 requirements, 298 test obligations.
 | T-0101 | integration | 24 | `clean` and lazy connections |
 | T-0102 | integration | 24 | `blocking` |
 | T-0103 | integration | 41 | `check_schema` during expand phases and after a dropped default |
-| T-0104 | integration | 22 | every `pooler = "transaction"` rule and the skipped limit check behind a real PgBouncer |
+| T-0104 | integration | 22 | every `pooler = "transaction"` rule and the skipped limit check behind a real PgBouncer, i… |
 | T-0105 | integration | 15 | `.tag()` in server logs and its character filtering |
 | T-0106 | integration | 47 | `span_sample` at 0, 1 and between |
 | T-0107 | integration | 47 | `sample_scope` |
@@ -1547,4 +1547,4 @@ Totals: 1235 requirements, 298 test obligations.
 | T-0295 | integration | 45 | **`#[morm::test]`'s check:** a test that runs `.q("email = $1")` with a free `String` agai… |
 | T-0296 | integration | 45 | **The parameter matrix's free values are reported, on Postgres 15–18:** each free value fr… |
 | T-0297 | integration | 41 | **The session's zone at startup, on Postgres 15–18:** a pool with `pooler = "transaction"`… |
-| T-0298 | integration | 10 | **A `timezone` key is refused:** `timezone` in `[database]`, and in a `[pools.<name>]` pro… |
+| T-0298 | integration | 10 | **A `timezone` key is refused:** `timezone` in `[database]`, in `[database.migration]`, in… |

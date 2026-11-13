@@ -98,4 +98,4 @@ tx.advisory_lock(&["billing", "reports"]).await?;
 | T-0057 | integration | advisory key stability |
 | T-0058 | integration | `skip_locked` with rival workers |
 | T-0100 | integration | `tx.lock` with and without `.for_key_change()` against child inserts |
-| T-0104 | integration | every `pooler = "transaction"` rule and the skipped limit check behind a real PgBouncer |
+| T-0104 | integration | every `pooler = "transaction"` rule and the skipped limit check behind a real PgBouncer, in the `pooler` job, among them that a session through PgBouncer in transaction mode, logging in as a role left at a non-UTC zone such as `Europe/Berlin`, on a server whose own zone is another, reports `TimeZone` as `UTC` in every transaction, also after another client's `SET timezone` on the same server connection, on PgBouncer 1.22 and on the pinned 1.26.1 image |
