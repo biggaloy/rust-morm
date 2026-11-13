@@ -4,7 +4,7 @@ Generated from the frozen plan. Each requirement and test obligation lives in ex
 
 Kinds: `code` needs a tagged test, `doc` is checked in the README step, `info` is context with nothing to build.
 
-Totals: 1204 requirements, 277 test obligations.
+Totals: 1240 requirements, 300 test obligations.
 
 ## Requirements
 
@@ -69,7 +69,7 @@ Totals: 1204 requirements, 277 test obligations.
 | R-0057 | info | 42 | 101 | ``` morm-admin init [path] [--axum] # create a project morm-admin doctor # check Postgres,… |
 | R-0058 | code | 42 | 111 | `init` creates the `morm-mgr` package, `morm-migrations/`, `morm.toml`, `.env.example`, a … |
 | R-0059 | code | 10 | 115 | TOML is the Rust standard, with comments, real types and sections, and no indentation trap… |
-| R-0060 | code | 10 | 117 | ```toml [database] # Either a URL, or the separate fields below. Separate fields override … |
+| R-0060 | code | 10 | 117 | ```toml [database] # Either a URL, or the separate fields below. Separate fields override… |
 | R-0061 | code | 10 | 194 | A missing `morm.toml` isn't an error unless `MORM_CONFIG` names it, so a deployment can us… |
 | R-0062 | code | 10 | 196 | Precedence: defaults, then `morm.toml`, then environment variables, then code. There is on… |
 | R-0063 | info | 10 | 198 | **Environment variables:** |
@@ -359,7 +359,7 @@ Totals: 1204 requirements, 277 test obligations.
 | R-0347 | code | 17 | 759 | \| Large, with `None` on some rows of a defaulted column \| `UNNEST` in chunks, one per pa… |
 | R-0348 | code | 17 | 761 | - `insert_many` is atomic on every path: all rows or none, in one transaction. |
 | R-0349 | code | 17 | 762 | - **`.returning()` doesn't promise input order,** because rows are sorted by key and group… |
-| R-0350 | code | 17 | 763 | - **Array columns:** `UNNEST` flattens nested arrays, so two rows holding `text[]` values … |
+| R-0350 | code | 17 | 763 | - **Array columns:** `UNNEST` flattens nested arrays, so two rows holding `text[]` values… |
 | R-0351 | code | 18 | 763 | - Array columns work through `update_each` the same way. |
 | R-0352 | code | 17 | 764 | - **Explicit ids:** a normal insert always leaves an identity column to Postgres, whatever… |
 | R-0353 | code | 17 | 765 | - **Moving the sequence.** It finds the identity's sequence through `pg_depend`, as the on… |
@@ -424,7 +424,7 @@ Totals: 1204 requirements, 277 test obligations.
 | R-0412 | info | 16 | 890 | ```rust #[derive(morm::Row)] struct Sale { day: NaiveDate, total: Decimal } let q = sql!("… |
 | R-0413 | code | 16 | 904 | - Every list and single-result call works here, including `fetch_ref`, `stream` and `strea… |
 | R-0414 | code | 16 | 905 | - `#[derive(morm::Row)]` decodes by column name, for any plain struct. Columns the struct … |
-| R-0415 | code | 16 | 906 | - The SQL must be `&'static str`, as with `.q()`, and `sql_unchecked(String)` is the visib… |
+| R-0415 | code | 16 | 906 | - `db.sql()` and `db.raw()` take only what `sql!` returns, or a reference to it. `sql_unch… |
 | R-0416 | code | 45 | 906 | - `sql!` also registers it for `check-sql`. |
 | R-0417 | code | 16 | 907 | - **The list rule still applies.** `.limit(n)` appends a `LIMIT` on a new line, so a trail… |
 | R-0418 | code | 16 | 908 | - It uses the same bounded statement cache, and `db.raw::<T>()` remains for raw SQL decodi… |
@@ -440,18 +440,18 @@ Totals: 1204 requirements, 277 test obligations.
 | R-0428 | code | 44 | 927 | - `import` writes `Decimal` for bounded columns that fit, and `Decimal` with an explicit `… |
 | R-0429 | code | 23 | 928 | - **JSON:** always a string, such as `"34.50"`, because a JSON number would lose digits in… |
 | R-0430 | code | 13 | 929 | - **Speed:** `numeric` decoding is slower than integer decoding. When a column holds a fix… |
-| R-0431 | code | 45 | 933 | - `sql!` builds a `&'static str` from `F` constants and registers it. `morm-admin mgr chec… |
+| R-0431 | code | 45 | 933 | - `sql!` registers each query it builds, with its text, file and line, and each parameter'… |
 | R-0432 | code | 15 | 934 | - `.q()` accepts only `&'static str`, so `format!`-ed input won't compile. `q_unchecked(St… |
 | R-0433 | code | 14 | 935 | - **`$n` in a fragment is local.** `comp`, `set_expr` and `.q()` fragments each count from… |
 | R-0434 | code | 14 | 936 | - Typed errors: `Unique { constraint, field }`, `ForeignKey`, `NotNull`, `Check`, `Seriali… |
-| R-0435 | code | 20 | 940 | ```rust db.transaction(\|tx\| async move { tx.insert(&mut p).await?; Ok(()) }).await?; db.… |
-| R-0436 | code | 20 | 953 | Same API as `db`, with savepoints and per-transaction settings (`statement_timeout`, `lock… |
+| R-0435 | code | 20 | 940 | ```rust db.transaction(async \|tx\| { tx.insert(&mut p).await?; Ok(()) }).await?; db.isola… |
+| R-0436 | code | 20 | 953 | `tx` has every query call `db` has, and `contracts.md` lists its other methods. `tx.transa… |
 | R-0437 | code | 20 | 955 | **A commit is confirmed, never assumed.** After a failed statement, Postgres turns `COMMIT… |
 | R-0438 | code | 20 | 957 | - Any Postgres error marks the transaction as failed. Further use returns that error, and … |
 | R-0439 | code | 20 | 958 | - `COMMIT` is sent as `SELECT 1; COMMIT` in one message. In a failed transaction the `SELE… |
 | R-0440 | code | 24 | 959 | - `after_commit` fires only after a confirmed commit. If the connection is lost during `CO… |
 | R-0441 | code | 20 | 961 | **Savepoints** clear the failed mark, except after a deadlock or serialization error, whic… |
-| R-0442 | code | 20 | 963 | **`.retry(n)`** is available only for a closure that can run again (`AsyncFn`), so a closu… |
+| R-0442 | code | 20 | 963 | **`.retry(n)`** goes before the closure, with `.isolation` and the per-transaction setting… |
 | R-0443 | code | 24 | 963 | Each attempt starts with no queued `after_commit` events. |
 | R-0444 | code | 20 | 965 | **Read-only pools:** Postgres refuses `SERIALIZABLE` on a hot standby, so `.isolation(Seri… |
 | R-0445 | code | 21 | 969 | There are two kinds. In **Postgres**, two transactions lock the same rows in opposite orde… |
@@ -462,7 +462,7 @@ Totals: 1204 requirements, 277 test obligations.
 | R-0450 | code | 12 | 976 | - **Holds can't use up the pool.** `max_holds` defaults to a quarter of `max`, at least 1.… |
 | R-0451 | code | 24 | 977 | - `after_commit` runs after the connection is released, so it can't cause this. |
 | R-0452 | info | 22 | 979 | **Postgres deadlocks:** |
-| R-0453 | code | 22 | 981 | ```rust db.transaction(async \|tx\| { tx.lock::<Account>(&[from, to]).await?; // same orde… |
+| R-0453 | code | 22 | 981 | ```rust db.retry(3).transaction(async \|tx\| { tx.lock::<Account>(&[from, to]).await?; // … |
 | R-0454 | code | 22 | 994 | - **Bulk writes are sorted.** `insert_many`, `upsert` batches, `update_each` and `delete_i… |
 | R-0455 | code | 22 | 995 | - **`.lock_ordered()`** on `update_q`, `delete_q`, `update_each` and `delete_ids` locks ro… |
 | R-0456 | code | 22 | 996 | - **`tx.lock::<T>(&ids)`** runs `SELECT ... WHERE pk = ANY($1) ORDER BY pk FOR NO KEY UPDA… |
@@ -679,14 +679,14 @@ Totals: 1204 requirements, 277 test obligations.
 | R-0667 | code | 46 | 1435 | - **Per-connection memory** depends on how many statements are cached and how complex they… |
 | R-0668 | code | 46 | 1436 | - **`--measure`** replaces those defaults: it prepares your app's real statements on one c… |
 | R-0669 | code | 12 | 1440 | `morm::Pool` makes a pooler unnecessary for one process, but large fleets and managed Post… |
-| R-0670 | code | 12 | 1442 | - **No startup parameters.** PgBouncer rejects unknown ones by default. Falling back to se… |
+| R-0670 | code | 12 | 1442 | - **Only tracked startup parameters, on PgBouncer 1.20 or later.** PgBouncer refuses a sta… |
 | R-0671 | code | 43 | 1442 | - `doctor` checks that they're there. |
 | R-0672 | code | 22 | 1443 | - **`SET LOCAL` still works,** because it ends with the transaction. |
 | R-0673 | code | 12 | 1444 | - **Session features refuse.** `db.hold()` returns `PoolerMode`, since a session can't be … |
 | R-0674 | code | 22 | 1444 | - `tx.advisory_lock` is unaffected, because it ends with the transaction. |
 | R-0675 | code | 12 | 1445 | - **Connection limits:** `SHOW max_connections` reports Postgres's limit, but the real one… |
 | R-0676 | code | 46 | 1445 | - With `pooler = "transaction"`, the `max_connections` check in `size` is skipped. |
-| R-0677 | code | 22 | 1446 | - **Prepared statements** need PgBouncer 1.21+ with `max_prepared_statements` set. On olde… |
+| R-0677 | code | 22 | 1446 | - **Prepared statements** need PgBouncer 1.21+ with `max_prepared_statements` set. On 1.20… |
 | R-0678 | info | 12 | 1447 | - **Migrations must bypass the pooler.** The migrator holds a session advisory lock, so `M… |
 | R-0679 | code | 43 | 1447 | - `doctor` warns if `MORM_MIGRATION_URL` doesn't point at Postgres directly. |
 | R-0680 | info | 12 | 1451 | Crons, background jobs and service workers use the pool like everything else. Every `db` c… |
@@ -776,7 +776,7 @@ Totals: 1204 requirements, 277 test obligations.
 | R-0764 | code | 14 | 1589 | \| A stale cached statement after a migration or an enum swap \| Re-prepared or replaced a… |
 | R-0765 | code | 20 | 1590 | \| Swallowing an error, then committing \| `TransactionAborted` at runtime \| |
 | R-0766 | code | 18 | 1591 | \| Updating or deleting a missing id \| `NotFound` at runtime \| |
-| R-0767 | code | 20 | 1592 | \| `.retry()` on a closure that changes captured rows \| Compile error \| |
+| R-0767 | code | 20 | 1592 | \| `.retry()` on a closure that changes captured rows \| Compile error. A `move` closure t… |
 | R-0768 | code | 49 | 1593 | \| Locks taken in opposite order across transactions \| Lock-order detector in debug build… |
 | R-0769 | code | 22 | 1594 | \| `tx.lock`, `advisory_lock` or `.skip_locked()` outside a transaction \| Compile error \… |
 | R-0770 | code | 06 | 1595 | \| A duplicate of a unique, primary key or plain index \| Compile error \| |
@@ -1214,6 +1214,42 @@ Totals: 1204 requirements, 277 test obligations.
 | R-1202 | code | 17 | 0 | - **Chosen keys through `insert_stream`.** `db.insert_stream::<T>(stream).explicit_ids()` … |
 | R-1203 | code | 19 | 0 | - **Chosen keys through `upsert`.** `db.upsert(&mut p, target).explicit_ids()` and `db.ups… |
 | R-1204 | doc | 50 | 0 | The README shows this notice loudly, beside the `.explicit_ids()` row: > **`.explicit_ids(… |
+| R-1205 | code | 10 | 0 | **Sessions always run in UTC.** Every connection sends `TimeZone = 'UTC'` as a startup par… |
+| R-1206 | info | 10 | 0 | No setting or environment variable changes the session's zone: `morm.toml` has no `timezon… |
+| R-1207 | code | 13 | 0 | - **A parameter bound through a field is cast to its column's type.** Where a parameter is… |
+| R-1208 | code | 13 | 0 | - **A field's column type is checked through `SqlType`.** `#[model]` accepts a field's col… |
+| R-1209 | code | 13 | 0 | - **Free parameters.** A value that isn't bound through a field, a `${v: T}` in `sql!`, a… |
+| R-1210 | doc | 50 | 0 | The README shows this notice loudly, beside the `morm.toml` settings: > **morm's sessions… |
+| R-1211 | doc | 50 | 0 | The README shows this notice loudly, beside raw SQL with `db.sql()`: > **Bind a value thro… |
+| R-1212 | code | 13 | 0 | - **The cast-name function.** `morm-core` turns a column type into the cast morm writes, w… |
+| R-1213 | code | 13 | 0 | - **`SqlType` for every type morm maps.** Each gives its cast and carrier as `const`s, and… |
+| R-1214 | code | 13 | 0 | - **A value bound through a field must fit it.** `Fits<T>` says a value fits a field of ty… |
+| R-1215 | doc | 50 | 0 | The README shows this notice loudly, beside `sql_unchecked`: > **`sql_unchecked` skips eve… |
+| R-1216 | doc | 50 | 0 | The README shows this notice loudly, beside transactions: > **Inside a transaction, a sett… |
+| R-1217 | doc | 50 | 0 | \| `.statement_timeout(...)` \| A statement in this transaction must be stopped if it runs t… |
+| R-1218 | doc | 50 | 0 | \| `impl morm::SqlType` \| A field or a free parameter has a Rust type morm doesn't map, and… |
+| R-1219 | doc | 50 | 0 | \| `tx.transaction(..)` \| Part of a transaction may fail and the rest must go on, such as a… |
+| R-1221 | code | 14 | 0 | - **The scanner places the casts.** It follows Postgres's `scan.l` for everything that can… |
+| R-1220 | code | 14 | 0 | - **Every parameter has a built-in carrier and a cast.** Every statement morm sends declar… |
+| R-1222 | code | 15 | 0 | - **Reads bind through the field.** `get`, `get_by`, `get_all_by`, `.by`, `.any`, `.qc` an… |
+| R-1223 | code | 16 | 0 | - **`sql!`'s syntax.** `sql!` takes one string literal. Outside strings, quoted identifier… |
+| R-1224 | code | 16 | 0 | - **What `sql!` refuses.** It runs the scanner and looks at the tokens beside each `${..}`… |
+| R-1225 | code | 16 | 0 | - **Related rows and pages bind through the field.** `load_related`'s `= ANY($1)` takes th… |
+| R-1226 | code | 17 | 0 | - **Inserts bind through the field.** `insert`, `insert_many` on its `UNNEST` paths and `.… |
+| R-1227 | code | 18 | 0 | **Updates and deletes bind through the field.** `.set()`, `.apply()`, `update_each`, `.ver… |
+| R-1228 | code | 19 | 0 | - **Upserts bind through the field.** `upsert` and `upsert_many` cast each value, and each… |
+| R-1229 | code | 20 | 0 | **`set_local`'s value is cast.** `set_config` takes `text`, so `tx.set_local` casts its va… |
+| R-1230 | code | 41 | 0 | **The startup check also checks the casts.** `check_schema`'s one catalog statement adds o… |
+| R-1231 | code | 45 | 0 | - **check-sql's typing pass.** Connected to the scratch database the chain migrated, `chec… |
+| R-1232 | code | 45 | 0 | - **`#[morm::test]` checks the SQL a test runs.** The first time a test process sees a run… |
+| R-1233 | code | 56 | 0 | - **`SqlType` for these types.** `TextEnum` is cast as `text`, with a `text` carrier, as a… |
+| R-1234 | code | 41 | 0 | **The startup check also checks the session's zone.** morm's sessions always run in UTC, b… |
+| R-1235 | code | 10 | 0 | **A `timezone` key is refused.** A `timezone` key in any table of `morm.toml`, `[database]… |
+| R-1236 | doc | 50 | 0 | The README says this plainly, beside `sql!` and the field types, each with how to go on: -… |
+| R-1237 | doc | 50 | 0 | The README shows this notice loudly, beside `pooler = "transaction"`: > **Behind PgBouncer… |
+| R-1238 | code | 12 | 0 | **CI's `pooler` job runs every supported PgBouncer against every supported Postgres.** Thi… |
+| R-1239 | doc | 50 | 0 | \| `-> Sql<'a, impl morm::Params>` \| A function builds a query that its caller runs, such… |
+| R-1240 | doc | 50 | 0 | The README ends with a "Contributing" section, which step 12 starts and this step keeps, s… |
 
 ## Test obligations
 
@@ -1239,7 +1275,7 @@ Totals: 1204 requirements, 277 test obligations.
 | T-0018 | trybuild | 07 | `Deserialize` on models and on views without `input` or `patch` |
 | T-0019 | trybuild | 07 | protected columns in `input` and `patch` |
 | T-0020 | trybuild | 07 | a derived `Serialize` or `Debug` on a model |
-| T-0021 | trybuild | 15 | non-static `q()` and `sql()` |
+| T-0021 | trybuild | 15 | non-static `q()`, and `db.sql()` given anything but `sql!` |
 | T-0022 | trybuild | 04 | uppercase names without `keep_case` |
 | T-0023 | trybuild | 05 | columns narrower than their Rust type |
 | T-0024 | trybuild | 05 | `usize` and `isize` |
@@ -1322,7 +1358,7 @@ Totals: 1204 requirements, 277 test obligations.
 | T-0101 | integration | 24 | `clean` and lazy connections |
 | T-0102 | integration | 24 | `blocking` |
 | T-0103 | integration | 41 | `check_schema` during expand phases and after a dropped default |
-| T-0104 | integration | 22 | every `pooler = "transaction"` rule and the skipped limit check behind a real PgBouncer |
+| T-0104 | integration | 22 | every `pooler = "transaction"` rule and the skipped limit check behind a real PgBouncer, i… |
 | T-0105 | integration | 15 | `.tag()` in server logs and its character filtering |
 | T-0106 | integration | 47 | `span_sample` at 0, 1 and between |
 | T-0107 | integration | 47 | `sample_scope` |
@@ -1369,7 +1405,7 @@ Totals: 1204 requirements, 277 test obligations.
 | T-0148 | integration | 56 | **Enum binding survives type changes:** on an open connection and on one opened afterwards… |
 | T-0149 | integration | 56 | **Names and labels:** a bare derive binds to the snake_case name, `#[pg_type(name = "...")… |
 | T-0150 | trybuild | 56 | a `PgEnum` with duplicate labels, an empty label, a label over 63 bytes, a variant that is… |
-| T-0151 | integration | 14 | **Stale statements on Postgres 15–18:** after a hand-run enum swap, with the old type drop… |
+| T-0151 | integration | 14 | **Stale statements on Postgres 15–18:** with each parameter declared as its carrier and ca… |
 | T-0152 | integration | 14 | **Stale sessions:** a plpgsql trigger compiled before a hand-run swap fails with `XX000`, … |
 | T-0153 | integration | 14 | **No false recovery:** a `42883` from SQL that was never cached isn't retried, a retried w… |
 | T-0154 | trybuild | 35 | `#[pg_type]` on a type that also has `#[pg_enum(name = "...")]`, `#[pg_domain]` or `#[pg_c… |
@@ -1496,3 +1532,26 @@ Totals: 1204 requirements, 277 test obligations.
 | T-0275 | integration | 17 | **Chosen keys through `insert_stream`, on Postgres 15–18:** under each identity kind, on a… |
 | T-0276 | integration | 17 | **The sequence under concurrent writes, on Postgres 15–18:** with normal inserts running b… |
 | T-0277 | integration | 19 | **Chosen keys through `upsert` and `upsert_many`, on Postgres 15–18:** under each identity… |
+| T-0278 | integration | 13 | **The parameter matrix, on Postgres 15–18:** with the session's `TimeZone` not UTC, straig… |
+| T-0279 | suite | 13 | **Unit: the cast-name function** on every form R-1212 lists, at least 28, including quoted… |
+| T-0280 | trybuild | 13 | **Fields that don't fit:** an `i64` bound through an `i32` field, an `Option` value throug… |
+| T-0281 | suite | 14 | **Unit: the scanner's casts:** each of the 16 ways R-1221 lists that a `$n` can hide stays… |
+| T-0282 | integration | 14 | **Casts in every position, on Postgres 15–18:** a parameter written as `($n::cast)` prepar… |
+| T-0283 | trybuild | 15 | **Values that don't fit their field:** a `.by`, `.any` or `.qc` value of another type, an… |
+| T-0284 | trybuild | 16 | **`sql!` refusals:** each form R-1224 lists, 19 cases in all, among them a 65th value, fai… |
+| T-0285 | integration | 16 | **`sql!` on Postgres 15–18:** queries with `citext`, `char(5)`, an `i32` on a `bigint` fie… |
+| T-0286 | integration | 18 | **The parameter matrix through morm's own paths, on Postgres 15–18:** with the session's `… |
+| T-0287 | trybuild | 20 | `tx.isolation(..)` and `tx.retry(n)` don't compile |
+| T-0288 | integration | 20 | **Settings and savepoints on `tx`, on Postgres 15–18:** `tx.lock_timeout(d).await?`, `tx.s… |
+| T-0289 | integration | 20 | **Retry pauses are random:** the pause between attempts comes from a real random source, n… |
+| T-0290 | integration | 21 | **The stream check with streams open:** with 1, 100 and 1,000 streams open on other tasks,… |
+| T-0291 | trybuild | 24 | **`#[morm::hooks]` refuses a macro call** among the impl's items, with the message that ho… |
+| T-0292 | trybuild | 24 | **`Overrides` can't be written by hand:** an `impl Hooks` without `#[morm::hooks]` fails w… |
+| T-0293 | integration | 41 | **Casts checked at startup, on Postgres 15–18:** a model whose enum cast resolves to nothi… |
+| T-0294 | integration | 45 | **The typing pass, on Postgres 15–18:** at least 57 queries, as morm writes them with thei… |
+| T-0295 | integration | 45 | **`#[morm::test]`'s check:** a test that runs `.q("email = $1")` with a free `String` agai… |
+| T-0296 | integration | 45 | **The parameter matrix's free values are reported, on Postgres 15–18:** each free value fr… |
+| T-0297 | integration | 41 | **The session's zone at startup, on Postgres 15–18:** a pool with `pooler = "transaction"`… |
+| T-0298 | integration | 10 | **A `timezone` key is refused:** `timezone` in `[database]`, in `[database.migration]`, in… |
+| T-0299 | integration | 16 | **A stored query, on Postgres 15–18:** `let q = sql!(..)` holding a field-bound value, a f… |
+| T-0300 | integration | 12 | **Old PgBouncers and the two startup parameters, in the `pooler` job:** through PgBouncer… |

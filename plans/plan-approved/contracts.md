@@ -29,8 +29,8 @@ pub type Result<T, E = Error> = std::result::Result<T, E>;
 
 pub trait Model: Sized + Send + Sync + 'static {
     type Pk: PkValue;                 // () for a model with no primary key
-    type Global;                      // the app's global mask, from morm::groups!
-    type Scoped;                      // scoped group mask, () when the model has none
+    type Global: MaskBits;            // the app's global mask, from morm::groups!
+    type Scoped: MaskBits;            // scoped group mask, () when the model has none
     const TABLE: &'static str;
     const SELECT: &'static str;
     fn from_row(row: &tokio_postgres::Row) -> Result<Self>;
@@ -45,28 +45,179 @@ pub struct Decoders<M: Model> { /* private */ }
 pub trait HasPk: Model {}             // absent on models with no primary key
 pub trait PkValue: Send + Sync + 'static {}   // one Param, or a tuple for a composite key
 
-// Product::F.<field>. Capability markers let a column refuse .set(), .by() or set_expr
-pub struct Column<M, T, Cap> { /* name, marker data */ }
+// Product::F.<field>. Cap is a zero-sized marker type generated for that one column, so
+// every column is its own type (proof 8). Capability traits implemented on the marker
+// let a column refuse .set(), .by() or set_expr.
+// The macro writes the column's typing as constants, with const fn accessors, so sql! can
+// concatenate them at compile time (DH2, proof 9): cast and cast_list, the column's type,
+// an explicit `sql` included, with no length, precision or scale and then with [] (char(n)
+// as bpchar, bit(n) as varbit, an enum, domain, composite or citext by its name, quoted as
+// morm's DDL quotes it); and carrier and list_carrier, the built-in types the parameter is
+// declared as in Parse and encoded as (text for an enum, composite, citext or extension
+// type; a domain's base type's carrier for a domain). A parameter bound through a field
+// (builders, F, sql!'s ${v: M::F.field}, model inserts and updates) is written into the
+// SQL as ($n::cast) and declared as the carrier, so Postgres never infers its type
+pub struct Column<M, T, Cap> { /* name, cast, cast_list, carrier, list_carrier, marker data */ }
 
-// A parameter: ToSql plus its Postgres type, because query_typed needs the type
-// PgEnum returns Type::UNKNOWN, so no OID is ever sent and a type swap can't leave one stale
-pub trait Param: tokio_postgres::types::ToSql + Sync { fn pg_type(&self) -> tokio_postgres::types::Type; }
+// A Rust type's own SQL type (DH2, DH3): the cast morm writes for a free parameter, and the
+// built-in carrier it's declared and encoded as. Every type with no fixed OID (PgEnum,
+// PgDomain, PgComposite, and arrays of them) travels as text, or a domain as its base
+// type's carrier, and is cast to its name, so no OID is ever looked up or sent and a type
+// swap can't leave one stale. Every other type uses its own built-in type.
+// It's also DH3's column-type trait: CARRIES lists the column types (cast names) a field
+// of this type can sit on without loss, each encoded by the conversion layer as that
+// column's carrier, and a type with TEXT_FORM (String, &str, Box<str>, Cow<str>, and a list
+// of one) may also sit on a SQL type morm doesn't know, carried as text. PgEnum, PgDomain,
+// PgComposite and TextEnum have no text form and sit only on their own types (DJ5). Every
+// integer type, unsigned and NonZero* included, carries every wider integer column and
+// numeric, and u128 also uuid; Vec<T> carries each of T's types with [] (DJ1, R-1213).
+// #[model] checks a field's `sql` against them in a const
+// assertion, so a type alias resolves, and the error names the field, its type and the
+// `sql`. A user type implements it to be a field or a free parameter (steps 13 and 56)
+pub trait SqlType {
+    const CAST: &'static str;
+    const CAST_LIST: &'static str;
+    const CARRIER: tokio_postgres::types::Type;
+    const LIST_CARRIER: tokio_postgres::types::Type;
+    const CARRIES: &'static [&'static str];
+    const TEXT_FORM: bool;
+}
+// A parameter, object safe for &dyn Param in runtime fragments (R-0723), with a blanket
+// impl from SqlType: Option<T> and &T take T's cast and carrier, Vec<T> and &[T] T's list
+// ones. Every carrier is built in, so every parameter goes in binary format, from
+// &[&dyn Param] into query_typed_raw or a prepared statement through an iterator, with
+// nothing boxed or collected
+pub trait Param: tokio_postgres::types::ToSql + Sync {
+    fn cast(&self) -> &'static str;
+    fn carrier(&self) -> tokio_postgres::types::Type;
+    fn is_null(&self) -> bool;
+}
+// A value fits a field of type T without loss, and is encoded as that column's carrier.
+// An Option value fits only an Option field, so NULL is bound only through a nullable
+// field; a non-Option value fits an Option field (K). FitsList<T> does the same element
+// by element, for a list bound with [] (sql!'s ${v: M::F.field[]}, .any). Both are object
+// safe and Sync (DJ4): comp's values are &[&dyn Fits<T>] (R-1222, R-1227), held across an
+// .await in a future that must be Send under tokio::spawn
+pub trait Fits<T>: Sync {
+    fn encode(&self, carrier: &tokio_postgres::types::Type, out: &mut bytes::BytesMut)
+        -> std::result::Result<tokio_postgres::types::IsNull, Box<dyn std::error::Error + Sync + Send>>;
+}
+pub trait FitsList<T>: Sync { /* the same, element by element, as the column's list carrier */ }
+// What sql! returns (DJ3): the static text with every cast written in, its registration,
+// and P, that query's own set of values, a tuple the compiler fills in at each sql!, each
+// value a borrow tagged with its carrier (through its field by Fits, free by SqlType), so
+// nothing is boxed or allocated. sql! writes it as nested struct literals (hence the
+// #[doc(hidden)] public fields), so `let q = sql!(..)` keeps any temporary a value makes
+// alive as long as q. A query can be stored in a variable, passed around and run
+// elsewhere, or run several times; a function returning one writes
+// `-> Sql<'a, impl Params>`. db.sql() and db.raw() are generic over P and take a Sql or a
+// reference to one (B). sql_unchecked(String, &[&dyn Param]) is the visible escape hatch,
+// with the scanner's casts. Proven on rustc 1.99.1 (proofs.md, DJ3)
+pub struct Sql<'a, P> { /* #[doc(hidden)] pub text, registration, params: P, PhantomData<&'a ()> */ }
+// One sql! query's values: implemented for flat tuples of carrier-tagged borrows, from 0 to
+// 64 values; sql! refuses a 65th at compile time, naming the limit (DK6). Send + Sync
+// (DK3): Sync so a &Sql held across an .await keeps the future Send, and Send so a Sql
+// taken by value does, as Conn's entry points, declared + Send for every P, need under
+// &impl Conn in a hook. bind() hands each value to query_typed_raw or a prepared statement
+// from an array iterator, with nothing collected (64 values proven on rustc 1.99.1, DK6)
+pub trait Params: Send + Sync {
+    fn bind(&self) -> impl ExactSizeIterator<Item = (&(dyn tokio_postgres::types::ToSql + Sync), tokio_postgres::types::Type)> + Send;
+}
+// The conversion layer (Defined in step 03, below) encodes a value bound through a field
+// as that column's carrier where the value's own encoder doesn't take it (DG1): a narrower
+// integer as the wider column's, f32 as float8, an instant (DateTime<Utc>, Timestamp) on
+// timestamp as its UTC wall time, a NaiveDateTime on timestamptz as UTC, IpAddr on cidr,
+// String on json or jsonb as a text carrier cast to the column's type, each element alike
+// for a list or an array. Sessions always run with TimeZone = 'UTC', sent through PgBouncer
+// in transaction mode too (DJ2, step 12), and nothing overrides it (DH1, step 10; a
+// `timezone` key is Error::Config, DI2), and the startup check refuses a
+// pool whose session reports another zone (DI1, step 41), so raw SQL converts times as
+// these encodings do. Step 03 freezes the
+// layer's shape; step 13 builds the conversions and the refusal (R-1207, R-1208, T-0278)
 
-// Product::UK.<name>, and columns that are unique keys
+// Product::UK.<name>, and columns that are unique keys. Implemented for a unique
+// column's Column type and for Key<M, K>, one per expression, partial or composite key
 pub trait UniqueKey<M> { const CONFLICT: &'static str; }
+pub struct Key<M, K>(/* marker */);
 
 pub enum Patch<T> { Missing, Set(T) }
 pub enum OrDefault<T> { Default, Set(T) }
 pub struct WriteOnly<T>(/* private */);
 
 pub struct Bits<const N: usize>([u64; N]);
+// What generic code needs from a mask of any size: implemented for every Bits<N> and ().
+// morm::groups! emits its mask as its own newtype over Bits<N>, not an alias, so a group
+// from another groups! is a type error (proof 3)
+pub trait MaskBits: Copy + Send + Sync + 'static { const EMPTY: Self; fn set(&mut self, bit: u16); fn has(&self, bit: u16) -> bool; }
 pub struct Mask<M: Model> { global: M::Global, scoped: M::Scoped }
+// morm::groups! emits `G` as both a struct, one GlobalGroup<Mask> field per group, and
+// `pub const G: G`, so one `use crate::groups::G;` brings in both, plus
+// `impl GlobalGroups for G { type Mask = Mask; }`. #[model] fills Model::Global from the
+// G in scope: `type Global = <G as GlobalGroups>::Mask;`, and each group's bit from
+// `G.<name>`. A model that names no global group gets `type Global = ()` (proof 3, DF5)
+pub trait GlobalGroups { type Mask: MaskBits; }
 
 // Connection-like: db, a held connection, or tx
 pub trait Conn: Send + Sync { fn tx(&self) -> Option<&Tx>; /* every query entry point */ }
 
-// Every hook has an empty default body, so an empty `impl Hooks` compiles away
+// Transactions (proof 4, DA, DF2). Every option goes before the closure, on one prefix
+// builder, and the closure is always last, because a postfix modifier needs a named or
+// boxed future that isn't Send for a borrowing closure on stable:
+//   db.transaction(async |tx| ..)
+//   db.isolation(Serializable).retry(3).transaction(async |tx| ..)
+// db.isolation(..), db.retry(n) and each per-transaction setting start a TxOptions, and
+// they chain in any order
+impl Db {
+    pub async fn transaction<F, T>(&self, f: F) -> Result<T> where F: AsyncFnOnce(&Tx) -> Result<T>;
+    pub fn isolation(&self, i: Isolation) -> TxOptions<'_, Once>;
+    pub fn retry(&self, n: u32) -> TxOptions<'_, Retry>;
+    // and one starter per per-transaction setting: statement_timeout, lock_timeout,
+    // transaction_timeout
+}
+pub struct TxOptions<'d, R> { /* db, isolation, settings, R */ }
+pub struct Once;                 // no retry: the closure runs once and may move or mutate captures
+pub struct Retry(/* n */);       // with retry: the closure must be Clone
+impl<'d> TxOptions<'d, Once> {
+    pub fn retry(self, n: u32) -> TxOptions<'d, Retry>;
+    pub async fn transaction<F, T>(self, f: F) -> Result<T> where F: AsyncFnOnce(&Tx) -> Result<T>;
+}
+impl TxOptions<'_, Retry> {
+    // An attempt that could still be retried runs a clone; the last allowed runs the original.
+    // A closure mutating a capture holds a &mut, which isn't Clone, so it doesn't compile
+    pub async fn transaction<F, T>(self, f: F) -> Result<T> where F: AsyncFnOnce(&Tx) -> Result<T> + Clone;
+}
+// Both TxOptions impls also have isolation(..) and each setting, returning Self
+
+// Inside a transaction (DH5). tx has every Conn query entry point, and these:
+impl Tx {
+    // A savepoint: released when the closure returns Ok, rolled back to when it returns an
+    // error (R-0441). There's no TxOptions on tx: no tx.isolation(..) or tx.retry(n), so
+    // both are compile errors, because the isolation level is fixed before a transaction's
+    // first query, and a savepoint can't recover from 40001 or 40P01
+    pub async fn transaction<F, T>(&self, f: F) -> Result<T> where F: AsyncFnOnce(&Tx) -> Result<T>;
+    // Each setting is immediate, one SET LOCAL, and holds for the rest of the transaction,
+    // through savepoints that are released; rolling back to a savepoint opened before it
+    // undoes it, as Postgres does: tx.lock_timeout(d).await?. On 15 and 16,
+    // transaction_timeout moves morm's client-side timer instead (R-0471)
+    pub async fn statement_timeout(&self, d: Duration) -> Result<()>;
+    pub async fn lock_timeout(&self, d: Duration) -> Result<()>;
+    pub async fn transaction_timeout(&self, d: Duration) -> Result<()>;
+    // set_config(name, (value cast to its own type)::text, true), for RLS
+    pub async fn set_local(&self, name: &'static str, value: &dyn Param) -> Result<()>;
+}
+
+// Every hook has an empty default body, so an empty `impl Hooks` compiles away.
+// #[model] emits an empty impl for every model, unless the model says #[model(hooks)];
+// then #[morm::hooks] on the user's impl writes OVERRIDES, which has no default, so an
+// impl without the attribute doesn't compile. #[morm::hooks] refuses a macro call among
+// the impl's items and a hand-written OVERRIDES. Overrides<M> has no public constructor
+// or constant and is typed by its model; the macros build it through a #[doc(hidden)]
+// morm::__private::overrides(&[Hook::..]). Generic code asks M::OVERRIDES.has(Hook::..)
+// and calls only those hooks (proof 5, DB, DF3)
+pub struct Overrides<M: ?Sized>(/* private */);
+pub enum Hook { Validate, PreInsert, PostInsert, ValidateChanges, PreUpdate, PostUpdate, PreDelete, PostDelete, AfterCommit }
 pub trait Hooks: Model {
+    const OVERRIDES: Overrides<Self>;
     fn validate(&self) -> Result<()> { Ok(()) }
     fn pre_insert(rows: &mut [Self], db: &impl Conn) -> impl Future<Output = Result<()>> + Send { async { Ok(()) } }
     fn post_insert(rows: &[Self], db: &impl Conn) -> impl Future<Output = Result<()>> + Send { async { Ok(()) } }
@@ -113,10 +264,11 @@ These are shared by steps that can run side by side, so each is written and froz
 | `Db`, `Tx` and every `Conn` entry point | `morm` | All runtime steps |
 | `Changes<M>` | `morm` | Updates, hooks |
 | The `by`/`any` filter builder | `morm` | Reads, updates |
-| The internal query entry point, which runs SQL through the caches | `morm` | Pool, statements, every query step |
+| The internal query entry point, which runs SQL through the caches. It can carry a "don't count this" flag for the loop detector, so step 45's exclusions (R-0785) need no signature change (proof 11, DD) | `morm` | Pool, statements, every query step |
 | Macro field IR: the parsed form of `#[model]`, `#[col]` and `#[view]` | `morm-macros` | All model steps |
 | The conversion layer between a field and its column | `morm` | Models, types, reads, writes |
-| The trait that gives a column its SQL type and, for an enum, its labels as a constant | `morm` | Models, types, manifest |
+| `SqlType`, the trait that gives a column and a free parameter its cast, carrier and the column types it carries without loss (DH2, DH3), and, for an enum, its labels as a constant; `Param`, `Fits`, `FitsList`, `Sql<'a, P>` and `Params` | `morm` | Models, types, statements, reads, writes, manifest |
+| The cast-name function: a column type to its cast, with no length, precision or scale (`char(n)` to `bpchar`, `bit(n)` to `varbit`), which `#[model]` and `sql!` call at compile time | `morm-core` | Macros, types, statements, `check_schema` |
 | `ModelMeta`, the metadata every model emits | `morm-core` | Models, manifest, migrations |
 | The name function, with the 63-byte rule | `morm-core` | Macros, migrations |
 | The connection budget function, implemented in step 11 | `morm-core` | Pool, `doctor`, `size` |
@@ -126,13 +278,15 @@ These are shared by steps that can run side by side, so each is written and froz
 | The internal warning sink: stderr now, `tracing` when enabled | `morm-core` | Every step that warns |
 | Expansion layout: `#[model]` calls one module per feature, so model steps add a module and don't edit one shared function | `morm-macros` | Model steps, `manifest`, `rolling` |
 | The config structs | `morm-core` | `morm`, `morm-migrate`, `morm-admin` |
-| The SQL text scanner | `morm-core` | Statements |
+| The SQL text scanner, which renumbers each `$n` in a fragment and writes its cast as `($n::cast)` (DH2) | `morm-core` | Statements, `sql!` |
 
 `Op`, the typed migration operation, is defined in step 30. Migration steps run one at a time, so it needs no earlier freeze.
 
 ## Between `morm-mgr` and `morm-admin`
 
-`morm-mgr` prints one JSON manifest: `format`, then models (table, schema, columns, types, nullability, defaults, flags, indexes, constraints, enum labels, `was` hints, comments), managed objects, extensions, and registered `sql!` queries. Step 28 defines it, in `morm-core`. Everything else reads it, and it's versioned by `format`.
+Registration is proven in `proofs.md`, proof 10: `#[model]` calls a `macro_rules!` that `morm` defines under `cfg(morm_mgr)` and `cfg(not(morm_mgr))`, so user crates never see the cfg, and the generated `morm-mgr` names each crate with models as `use <crate> as _;`, because a crate only listed in `Cargo.toml` is dropped with its models.
+
+`morm-mgr` prints one JSON manifest: `format`, then models (table, schema, columns, types, nullability, defaults, flags, indexes, constraints, enum labels, `was` hints, comments), managed objects, extensions, and registered `sql!` queries, each with its text, file and line, and for each parameter its number, kind (field, field list or free), cast, model and column, and its `${..}` source (DH2). Step 28 defines it, in `morm-core`. Everything else reads it, and it's versioned by `format`.
 
 ## `morm-admin` layout
 

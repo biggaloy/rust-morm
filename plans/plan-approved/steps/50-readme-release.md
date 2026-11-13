@@ -133,10 +133,12 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 | R-0862 | `.returning()` | You need the changed rows back |
 | R-0863 | `.all()` | You want every row, and you know the result is small |
 | R-0864 | `set_expr` | The new value depends on the current one, such as `stock - 1` |
-| R-0865 | `.retry(n)` | You want the transaction to run again after a deadlock, and you build its rows inside the closure |
+| R-0865 | `.retry(n)` | You want the transaction to run again after a deadlock, and you build its rows inside the closure. A `move` closure is copied before each attempt but the last, so rows it owns are cloned even when nothing retries, and state kept in a `Cell`, an atomic or a mutex carries over from one attempt to the next |
 | R-0866 | `.isolation(...)` | You read rows and write based on them, and nothing may change them in between |
 | R-0867 | `.lock_timeout(...)` | A transaction will wait on locks for longer than 5s, such as a large batch |
 | R-0868 | `.transaction_timeout(...)` | A transaction will run for longer than 30s, such as a large batch |
+| R-1217 | `.statement_timeout(...)` | A statement in this transaction must be stopped if it runs too long, such as one serving a user's request; the pool's own `statement_timeout` is off by default |
+| R-1219 | `tx.transaction(..)` | Part of a transaction may fail and the rest must go on, such as an optional insert that can hit a unique key |
 | R-0869 | `tx.lock(&ids)` | You will change several rows that other requests also change, such as a money transfer |
 | R-0870 | `.lock_ordered()` | You run bulk updates or deletes that can touch the same rows at the same time |
 | R-0871 | `.skip_locked()` | Your workers take jobs from a queue and shouldn't wait for each other |
@@ -161,6 +163,8 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 | R-0887 | `db.pool("jobs")` | You run heavy jobs in the web app's process, and they must not take its connections |
 | R-0888 | `db.groups(mask)`, `db.sudo()` | Your callers may see or change different fields |
 | R-0889 | `Numeric` | Your values can exceed 28 digits, or be `NaN` or `Infinity` |
+| R-1218 | `impl morm::SqlType` | A field or a free parameter has a Rust type morm doesn't map, and you declare the SQL type it's sent as and the column types it carries without loss |
+| R-1239 | `-> Sql<'a, impl morm::Params>` | A function builds a query that its caller runs, such as a filter shared by several handlers |
 | R-0890 | `q_unchecked`, `sql_unchecked` | You must build SQL at runtime, and you will handle injection safety yourself |
 | R-0891 | `recycle_when` | You need your own rule for replacing connections |
 | R-0892 | `no_default` | You want a compile error when a required field is missed |
@@ -179,6 +183,45 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 - **R-0901** Pool and `morm.toml`: every setting, sizing, and the rule for long-running work: "use `db` for everything, including jobs and crons, and use `db.hold()` only when you need session state." It states plainly that service jobs, crons and background workers running as their own process must not spawn a pool with `min` above 1, and shows `connect_as`, `MORM_POOL` and `MORM_POOL_MIN`. It includes the full environment variable table. It also shows the jobs table, the `db.hold()` lifecycle, and when a websocket needs a listener: "release when you're done, and rely on Drop as the safety net, never as the plan."
 - **R-0902** Migrations: workflow, every command in one table, safety rules, production being forward only with `revert`, running as a deploy step, triggers and functions.
 - **R-0903** Security: TLS settings, encrypting disks and backups (outside morm's job, but expected in production), and password hashing with `clean`.
+
+**R-1210** The README shows this notice loudly, beside the `morm.toml` settings:
+
+> **morm's sessions always run in UTC.** Every connection starts with `TimeZone = 'UTC'`, whatever the server's or the role's zone, through PgBouncer in transaction mode too, and no setting changes it. Postgres converts between `timestamp` and `timestamptz`, formats a time and truncates one to a day in the session's zone, so if the zone varied by host or by role, the same query would give different rows on different machines, and raw SQL would disagree with what morm writes for a field. In UTC there is one answer everywhere. Store instants in `timestamptz`. When code needs a user's local day or wall time, pass the zone in the SQL, as in `date_trunc('day', {Order::F.at}, ${zone: String})` or `{Order::F.at} AT TIME ZONE ${zone: String}`. PgBouncer 1.20 and later keeps each client's `TimeZone`, so the role's zone doesn't matter there. A pooler that drops the parameter, such as PgBouncer with `TimeZone` in `ignore_startup_parameters`, leaves the session in the role's zone: let it pass `TimeZone`, or set the role, `ALTER ROLE app SET timezone = 'UTC'`. If the session's zone is anything but `UTC` or one of its fixed aliases, such as `Etc/UTC`, `GMT` or `UTC0`, the pool refuses to start, with an error naming the zone the session reported, and a `timezone` key in `morm.toml` is refused too, because nothing can change the zone.
+>
+> **What you give up.** There's no session-local zone. In morm's sessions `current_date`, `now()::date`, `localtimestamp` and `date_trunc('day', now())` give the UTC day and time, and a `timestamptz` turned into text, as `fetch_raw` or a `::text` cast returns it, reads with `+00`. A column default or view that leans on the session's zone, such as `DEFAULT current_date`, works in UTC for rows morm writes and in the role's zone for other clients, such as `psql`, so write the zone into it, as in `DEFAULT (now() AT TIME ZONE 'Europe/Berlin')::date`.
+
+**R-1237** The README shows this notice loudly, beside `pooler = "transaction"`:
+
+> **Behind PgBouncer, morm needs PgBouncer 1.20 or later.** morm sends two settings when it connects: `application_name`, so `pg_stat_activity` shows your binary's name, and `TimeZone = 'UTC'` in the `options` startup parameter. PgBouncer passes both and keeps them per client, but only 1.20 and later accept `options`. An older PgBouncer refuses every connection with `unsupported startup parameter: options`, and morm stops at startup with `Error::Config` saying so. Upgrade PgBouncer, or, if you can't, add `options` to its `ignore_startup_parameters` and set the role's zone, `ALTER ROLE app SET timezone = 'UTC'`, which morm checks when the pool starts. Everything else morm would set at startup, such as `lock_timeout` and `search_path`, goes on the role. Prepared statements need 1.21 or later with `max_prepared_statements` set; on 1.20 set `statement_cache = 0` and `shape_cache = 0`.
+
+**R-1240** The README ends with a "Contributing" section, which step 12 starts and this step keeps, showing this notice loudly:
+
+> **A green `pooler` job can have skipped a PgBouncer version.** When a version can't be installed in a run, after one retry, or its download doesn't match its pinned SHA-256, its cases are skipped, not failed, and the job writes a `::warning::` naming the PgBouncer and Postgres versions, such as `PgBouncer 1.22 skipped on Postgres 17: install failed`. Open the run's summary and read its annotations before trusting a green run. If a version was skipped, rerun the job; if it's skipped again, say so in the PR, and don't merge a change to pooler behaviour until a run has covered every version.
+
+**R-1211** The README shows this notice loudly, beside raw SQL with `db.sql()`:
+
+> **Bind a value through its field whenever it meets a column.** morm writes every parameter's type into the SQL. A value bound through a field, as `${email: User::F.email}`, `.by(F.email, ..)` or `.qc(F.email, ..)`, gets the column's own type and can't mismatch. A free value, as `${email: String}`, `.q()` or `set_expr`, gets its Rust type's type, here `text`. If it's compared with a column of another type, Postgres converts one side, and the answer can be silently wrong: `text` against a `citext` column is case-sensitive, and `text` against `char(n)` minds trailing spaces. `sql!` refuses a free value beside a column it can see. `check-sql` and `#[morm::test]` report every other mismatch in the SQL morm sends. They can't see five places, so bind through the field there:
+>
+> - comparisons inside your functions, procedures, triggers and views, and dynamic SQL run inside the database;
+> - runtime-built SQL that no `#[morm::test]` runs;
+> - code that's left out of the build `check-sql` makes and out of your tests;
+> - values compared inside JSON;
+> - your own explicit casts.
+
+**R-1236** The README says this plainly, beside `sql!` and the field types, each with how to go on:
+
+- **A free value's type must be concrete.** `sql!` registers each query in a static, which can't use a type parameter, so `${v: T}` inside a generic `fn` fails with rustc's `can't use generic parameters from outer item` (`E0401`), which doesn't say what to do. Name a concrete type, as in `${v: i64}`, or bind the value through its field, as in `${v: Order::F.id}`.
+- **An `Option` value binds only through a nullable field.** Comparing an `Option<i64>` with a `NOT NULL` column, as in `.by(F.id, &maybe_id)`, fails to compile with ``the trait bound `Option<i64>: Fits<i64>` is not satisfied``, because a `NULL` there would match no row. Handle `None` in your code and bind the value inside it: a `NOT NULL` column has no `NULL` to match.
+- **A non-text Rust type can't sit on a domain made by hand.** `#[col(sql = "posint")] pub n: i32`, on a domain over `integer` that morm doesn't know, is a compile error naming the field, because only text fields may sit on a SQL type morm doesn't know. Derive `PgDomain` on a one-field struct, `pub struct PosInt(pub i32);`, and use it as the field's type.
+- **One `sql!` query holds at most 64 values.** Its values are a tuple, and stable Rust can't implement a trait for tuples of every length, so morm implements it for up to 64 values, and `sql!` refuses a 65th at compile time with an error naming the limit. Split the query, bind a list through a field with `[]` in place of many single values, or, for SQL built at runtime, use `sql_unchecked`.
+
+**R-1215** The README shows this notice loudly, beside `sql_unchecked`:
+
+> **`sql_unchecked` skips every check morm has for SQL.** It takes a `String` built at runtime, so `sql!`'s compile-time refusals can't see it, `check-sql` never sees it, and nothing stops a value from a request being pasted into the text, which is SQL injection. morm still writes each parameter's type, so a wrong shape is a Postgres error, but a free value compared with a column of another type, such as a `String` against a `citext` column, is silently case-sensitive, and only a `#[morm::test]` that runs that exact text reports it. Use it only for SQL that `sql!` and the builders can't write. Pass every value as a parameter, never in the text, name a runtime table or column through `morm::quote_ident`, and run each shape it builds in a `#[morm::test]`.
+
+**R-1216** The README shows this notice loudly, beside transactions:
+
+> **Inside a transaction, a setting lasts until the transaction ends.** On `db`, `.lock_timeout(d)`, `.statement_timeout(d)` and `.transaction_timeout(d)` go before `.transaction(..)` and cover that transaction. On `tx`, `tx.lock_timeout(d).await?` takes effect at once and holds for the rest of the transaction, inside and after `tx.transaction(..)`, which is a savepoint, so set it back yourself if only one statement needs it. A setting changed inside a savepoint that then fails is undone with it. `tx` has no `.isolation(..)` or `.retry(n)`: the isolation level is fixed before a transaction's first query, and a savepoint can't retry a deadlock or a serialization failure, so set both on `db`, before `.transaction(..)`.
 
 **R-1008** The README shows this notice loudly, beside the enum rows:
 
@@ -469,7 +512,7 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 >
 > **When it's right.** Only for a pool whose database isn't meant to hold the binary's models, such as a pool used only for raw SQL on another database. `MORM_POOL_CHECK_SCHEMA=off` does the same for the pool a process opens at startup. Never turn it off to get a failing build to start: the check failed because that build can't use this schema.
 >
-> **What you give up.** A build brought back after a migration's `contract`, such as a rollback of the app to an older release, starts anyway, and Postgres changes what it writes with no error: a field built for a wider scale, timestamp precision or length than its column stores `1.0051` as `1.01` or `'abc  '` as `'abc'`. A missing column or an unrelated type fails each query that reaches it, in production, instead of failing at startup. `db.check_schema()` still runs the check whenever you call it.
+> **What you give up.** A build brought back after a migration's `contract`, such as a rollback of the app to an older release, starts anyway, and Postgres changes what it writes with no error: a field built for a wider scale, timestamp precision or length than its column stores `1.0051` as `1.01` or `'abc  '` as `'abc'`. A missing column or an unrelated type fails each query that reaches it, in production, instead of failing at startup. The session's zone isn't checked either: behind a pooler that drops morm's `TimeZone` parameter, a role that isn't set to `timezone = 'UTC'` goes unnoticed, and raw SQL then converts and truncates times in that role's zone. `db.check_schema()` still runs the check whenever you call it, the zone included.
 
 ### Risks, open items and later work / Open items
 

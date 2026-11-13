@@ -171,6 +171,12 @@ scratch_url = "${MORM_SCRATCH_URL}"
 
 **R-0109** **`search_path`** is set on every connection, so another role can't shadow a table or function through a schema earlier in the path.
 
+**R-1205** **Sessions always run in UTC.** Every connection sends `TimeZone = 'UTC'` as a startup parameter, so it adds no round trip, and it wins over the server's and the role's `TimeZone`, because a startup parameter wins over `ALTER ROLE ... SET timezone`. Nothing overrides it. So raw SQL that converts between `timestamp` and `timestamptz`, formats a time or truncates one to a day works in UTC, the zone in which morm's own encodings of a time bound through a field always work, and the two never disagree. Instants belong in `timestamptz`. Code that needs a user's local day or wall time passes the zone in its SQL, as in `date_trunc('day', {Order::F.at}, ${zone: String})` or `{Order::F.at} AT TIME ZONE ${zone: String}`. It goes in the `options` startup parameter, as `-c TimeZone=UTC`. With `pooler = "transaction"` it's still sent, the one setting sent in `options` there, beside `application_name`, because PgBouncer 1.20 and later tracks `TimeZone` per client and sets it on every server connection the client gets, as the pooler rules say, so the role's zone doesn't matter. The startup check still refuses a pool whose session reports another zone, for a pooler that drops the parameter. Owner decisions DG2, DH1, DJ2 and DK5; `proofs.md`, proof 9.
+
+**R-1206** No setting or environment variable changes the session's zone: `morm.toml` has no `timezone`, and there's no `MORM_DB_TIMEZONE`. Owner decision DH1.
+
+**R-1235** **A `timezone` key is refused.** A `timezone` key in any table of `morm.toml`, `[database]`, `[database.migration]`, `[pool]` and every `[pools.<name>]` profile among them, fails config loading with `Error::Config`, naming the key and the table it's in and saying morm's sessions always run in UTC, so a setting copied from another tool can't seem to work while it does nothing. `morm-core` loads the config, so `morm-admin` refuses it too. Owner decision DI2.
+
 **R-0111** **Credentials:** `MORM_DB_*` values override the matching parts of `DATABASE_URL`, so a URL can hold the address while the password comes from `MORM_DB_PASSWORD_FILE`. Setting both `MORM_DB_PASSWORD` and `MORM_DB_PASSWORD_FILE` is an error. `sslmode` values other than `disable` and `prefer` need the `tls` feature, and morm refuses to start without it. `prefer` without `tls` can only connect unencrypted, so morm warns at startup, and it never connects unencrypted silently. Passwords are never logged, and they're masked in `Debug` output and error messages.
 
 **R-0113** **Named pools** are full connection profiles. Any `[database]` field can be set in `[pools.<name>]`, so a job can log in as another role or reach another host. Unset connection fields come from `[database]`, and unset pool settings from `[pool]`, except `min`, which defaults to 1. A separate process can open only its own profile, so job settings live in the same file:
@@ -197,4 +203,6 @@ let db = morm::Db::connect_to(url).min(10).max(90).await?; // or set values in c
 
 ## Test obligations
 
-None beyond one tagged test per requirement.
+| ID | Type | Obligation |
+|---|---|---|
+| T-0298 | integration | **A `timezone` key is refused:** `timezone` in `[database]`, in `[database.migration]`, in `[pool]`, and in a `[pools.<name>]` profile, each make `Db::connect` and `connect_as` return `Error::Config` before any connection opens, naming the key and its table and saying sessions always run in UTC; `morm-admin` reading the same file stops with the same message; and a session opened with no such key reports `TimeZone` as `UTC` on a server whose own zone isn't UTC |

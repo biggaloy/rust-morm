@@ -162,3 +162,5 @@ changes.set(F.slug, slug);   // a pre hook can add or change a value
 | T-0080 | integration | hook slices on `insert` and `insert_many` |
 | T-0101 | integration | `clean` and lazy connections |
 | T-0102 | integration | `blocking` |
+| T-0291 | trybuild | **`#[morm::hooks]` refuses a macro call** among the impl's items, with the message that hooks a macro writes would never run, and refuses an `OVERRIDES` written inside the impl |
+| T-0292 | trybuild | **`Overrides` can't be written by hand:** an `impl Hooks` without `#[morm::hooks]` fails with `missing 'OVERRIDES'`, `Overrides` has no public constructor or constant, and another model's `OVERRIDES` doesn't fit, each a pinned compile error |

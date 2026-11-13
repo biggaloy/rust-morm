@@ -49,3 +49,4 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 | ID | Type | Obligation |
 |---|---|---|
 | T-0096 | integration | `NestedConnection` with `join!` and with a stream moved between tasks |
+| T-0290 | integration | **The stream check with streams open:** with 1, 100 and 1,000 streams open on other tasks, a checkout's stream check, timed from one thread and from eight at once, as the median of 11 runs of 100,000 checks each per thread, is at most 10 times that median with one stream open, at 100 and at 1,000 streams, from one thread and from eight, and the test fails otherwise. The sharded registry in `proofs.md`, proof 7, stayed within 4 times from one thread and 8 times from eight on the CI runners, where one process-wide lock grew 17 to 23 times locally; the PR states the numbers |

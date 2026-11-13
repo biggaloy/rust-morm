@@ -63,6 +63,7 @@ db.get_q::<Hist>().by(F.owner_id, &1).by(F.app, &"chat").one().await?;
 - **R-0337** `comp` is `&'static str`, so it can't come from a request.
 - **R-0338** The statement is cached on first use, keyed by model, column and the `comp` pointer, so repeats allocate nothing.
 - **R-0339** Composite PKs take tuples.
+- **R-1222** **Reads bind through the field.** `get`, `get_by`, `get_all_by`, `.by`, `.any`, `.qc` and a composite key's tuple bind each value through its column: the SQL casts it to the column's type from the `F` constant, it's declared as the column's carrier, and it must fit the field at compile time. `comp` in `get_where` is bound through the comp's field too, so its values are `&[&dyn Fits<T>]` for the field's type `T`, and a list in the comp, as in `<> ALL($1)`, gets the column's list cast. A comp whose value has another type, such as `> now() - $1` with an interval, is a compile error, and belongs in `.q()` with a free value. A `.q()` value is free: it's cast to its own type. Owner decision DH2, choice G.
 
 ### Reading and writing / Lists
 
@@ -84,7 +85,8 @@ let rows: Vec<(i64, String)> = db.select::<Product>()
     .limit(50)
     .fetch().await?;
 
-let products: Vec<Product> = db.raw::<Product>("SELECT * FROM products WHERE attrs ? $1", &[&"color"])
+let key = "color";
+let products: Vec<Product> = db.raw::<Product>(sql!("SELECT * FROM products WHERE attrs ? ${key: &str}"))
     .limit(50).fetch().await?;
 ```
 
@@ -125,7 +127,8 @@ let products: Vec<Product> = db.raw::<Product>("SELECT * FROM products WHERE att
 | ID | Type | Obligation |
 |---|---|---|
 | T-0009 | trybuild | list with no limit |
-| T-0021 | trybuild | non-static `q()` and `sql()` |
+| T-0021 | trybuild | non-static `q()`, and `db.sql()` given anything but `sql!` |
+| T-0283 | trybuild | **Values that don't fit their field:** a `.by`, `.any` or `.qc` value of another type, an `i64` for an `i32` field, and a `get_where` comp value of another type, such as an interval for a `timestamptz` field, each a compile error; and one that compiles: a `get_where` whose comp holds a field-bound value and a list, awaited inside `tokio::spawn` |
 | T-0033 | integration | every get form |
 | T-0035 | integration | views through every read |
 | T-0063 | integration | `order_by_allowed` |
