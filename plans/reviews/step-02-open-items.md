@@ -62,3 +62,7 @@ PR #2 (`step-02-proofs`), head `f50823e` when the step agent reported. CI green 
 ## From the fifth review at `2af47c9`
 
 - **DL2:** answered: a README "Contributing" section with its own step 50 `doc` ID. DL1 and DL3 to DL7 fixed as recommended.
+
+## From the sixth review at `7f2411e`
+
+- **DM1:** answered: `$GITHUB_OUTPUT` plus one allowed `if:` per version step. **DM4:** answered: a checksum mismatch is skipped with a warning. DM2, DM3, DM5 fixed as recommended.
