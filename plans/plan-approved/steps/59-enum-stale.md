@@ -14,7 +14,7 @@ Find the code Postgres doesn't track, keep managed functions working through any
 
 ## Deliverables
 
-- The walk of R-1038 before any op it covers, function refresh in that op's transaction, a real call on scratch for every managed function it finds, or step 38's search finds before a retire or a rename, the one decision per migration that lists what a column change's walk finds and R-1102 keeps, on scratch and again in preflight, the decisions of every other op, `plpgsql_check` in its own scratch database with its stops and decisions, the `ci.yml` job for a hot standby, the extension in every CI job R-1083 names, and the `no-plpgsql-check` job
+- The walk of R-1038 before any op it covers, function refresh in that op's transaction, a real call on scratch for every managed function it finds, or step 38's search finds before a retire or a rename, the one decision per migration that lists what a column change's walk finds and R-1102 keeps, on scratch and again in preflight, the decisions of every other op, `plpgsql_check` in its own scratch database with its stops and decisions, tests in the `standby` job step 12 adds, the extension in every CI job R-1083 names, and the `no-plpgsql-check` job
 
 ## End-to-end check
 

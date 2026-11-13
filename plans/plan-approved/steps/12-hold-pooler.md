@@ -14,7 +14,7 @@ Session connections, and correct behaviour behind a pooler.
 
 ## Deliverables
 
-- `db.hold()`, release on every exit path, `on_connect`, `listen`, `max_holds`, the pool side of `db.close()`, `pooler = "transaction"`, and CI's `pooler` job over PgBouncer 1.19.1, 1.20.1, 1.22 and 1.26.1 and Postgres 15 to 18, with its tests in `tests/tests/repo_policy.rs` and the README's "Contributing" section
+- `db.hold()`, release on every exit path, `on_connect`, `listen`, `max_holds`, the pool side of `db.close()`, `pooler = "transaction"`, and CI's `pooler` job over PgBouncer 1.19.1, 1.20.1, 1.22 and 1.26.1 and Postgres 15 to 18, with its tests in `tests/tests/repo_policy.rs` and the README's "Contributing" section, and CI's `standby` job with a streaming hot standby of each of Postgres 15 to 18
 
 ## End-to-end check
 
