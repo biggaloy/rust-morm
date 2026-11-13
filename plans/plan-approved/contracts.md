@@ -92,6 +92,14 @@ pub trait Param: tokio_postgres::types::ToSql + Sync {
     fn carrier(&self) -> tokio_postgres::types::Type;
     fn is_null(&self) -> bool;
 }
+// Proof 13 (step 55): a PgEnum's ToSql accepts only the text carrier and writes the label;
+// its FromSql accepts text or any Kind::Enum(_) and never reads the variant list, which
+// the driver's cached copy leaves stale after ADD VALUE. A PgComposite's ToSql writes its
+// text form into a text carrier, and its FromSql reads the binary record, skipping the
+// field OIDs. Lists are Vec<T> with the text[] carrier. tokio-postgres itself still looks
+// up an enum or composite result column's type (pg_type, then pg_enum or pg_attribute),
+// once per connection per OID, with named statements of its own; reading the column as
+// ::text needs no lookup (owner question Q1 on step 55)
 // A value fits a field of type T without loss, and is encoded as that column's carrier.
 // An Option value fits only an Option field, so NULL is bound only through a nullable
 // field; a non-Option value fits an Option field (K). FitsList<T> does the same element
@@ -248,6 +256,10 @@ pub enum Error {
     PoolBusy, ConnectionLost, ReadOnly, OutOfRange, InvalidText,
     InvalidOrder, InvalidCursor, Decimal,
     SchemaChanged,                             // a stale statement or session inside a transaction or on a held connection, after a type swap
+                                               // (proofs 14 to 17 record the SQLSTATE, message and routine of each stale error on 15-18;
+                                               // every message but XX000's is translated by lc_messages, and behind PgBouncer a
+                                               // re-prepare of the same text and a new client don't clear a stale server session:
+                                               // owner questions Q2 and Q3 on step 55)
     UnknownEnumValue,                          // a label this binary's enum doesn't have, with the type and label
     SchemaMismatch,                            // check_schema's findings, from a pool's start or db.check_schema(), each naming the table, column, both definitions and what's wrong
     Config, Connect, ServerTooOld, Postgres,   // config, connecting, a server below 15, any other database error
