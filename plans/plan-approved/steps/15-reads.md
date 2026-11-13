@@ -128,7 +128,7 @@ let products: Vec<Product> = db.raw::<Product>(sql!("SELECT * FROM products WHER
 |---|---|---|
 | T-0009 | trybuild | list with no limit |
 | T-0021 | trybuild | non-static `q()`, and `db.sql()` given anything but `sql!` |
-| T-0283 | trybuild | **Values that don't fit their field:** a `.by`, `.any` or `.qc` value of another type, an `i64` for an `i32` field, and a `get_where` comp value of another type, such as an interval for a `timestamptz` field, each a compile error |
+| T-0283 | trybuild | **Values that don't fit their field:** a `.by`, `.any` or `.qc` value of another type, an `i64` for an `i32` field, and a `get_where` comp value of another type, such as an interval for a `timestamptz` field, each a compile error; and one that compiles: a `get_where` whose comp holds a field-bound value and a list, awaited inside `tokio::spawn` |
 | T-0033 | integration | every get form |
 | T-0035 | integration | views through every read |
 | T-0063 | integration | `order_by_allowed` |

@@ -199,6 +199,12 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 > - values compared inside JSON;
 > - your own explicit casts.
 
+**R-1236** The README says this plainly, beside `sql!` and the field types, each with how to go on:
+
+- **A free value's type must be concrete.** `sql!` registers each query in a static, which can't use a type parameter, so `${v: T}` inside a generic `fn` fails with rustc's `can't use generic parameters from outer item` (`E0401`), which doesn't say what to do. Name a concrete type, as in `${v: i64}`, or bind the value through its field, as in `${v: Order::F.id}`.
+- **An `Option` value binds only through a nullable field.** Comparing an `Option<i64>` with a `NOT NULL` column, as in `.by(F.id, &maybe_id)`, fails to compile with ``the trait bound `Option<i64>: Fits<i64>` is not satisfied``, because a `NULL` there would match no row. Handle `None` in your code and bind the value inside it: a `NOT NULL` column has no `NULL` to match.
+- **A non-text Rust type can't sit on a domain made by hand.** `#[col(sql = "posint")] pub n: i32`, on a domain over `integer` that morm doesn't know, is a compile error naming the field, because only text fields may sit on a SQL type morm doesn't know. Derive `PgDomain` on a one-field struct, `pub struct PosInt(pub i32);`, and use it as the field's type.
+
 **R-1215** The README shows this notice loudly, beside `sql_unchecked`:
 
 > **`sql_unchecked` skips every check morm has for SQL.** It takes a `String` built at runtime, so `sql!`'s compile-time refusals can't see it, `check-sql` never sees it, and nothing stops a value from a request being pasted into the text, which is SQL injection. morm still writes each parameter's type, so a wrong shape is a Postgres error, but a free value compared with a column of another type, such as a `String` against a `citext` column, is silently case-sensitive, and only a `#[morm::test]` that runs that exact text reports it. Use it only for SQL that `sql!` and the builders can't write. Pass every value as a parameter, never in the text, name a runtime table or column through `morm::quote_ident`, and run each shape it builds in a `#[morm::test]`.

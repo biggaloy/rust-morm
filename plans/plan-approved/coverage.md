@@ -4,7 +4,7 @@ Generated from the frozen plan. Each requirement and test obligation lives in ex
 
 Kinds: `code` needs a tagged test, `doc` is checked in the README step, `info` is context with nothing to build.
 
-Totals: 1235 requirements, 298 test obligations.
+Totals: 1236 requirements, 299 test obligations.
 
 ## Requirements
 
@@ -1245,6 +1245,7 @@ Totals: 1235 requirements, 298 test obligations.
 | R-1233 | code | 56 | 0 | - **`SqlType` for these types.** `TextEnum` is cast as `text`, with a `text` carrier, as a… |
 | R-1234 | code | 41 | 0 | **The startup check also checks the session's zone.** morm's sessions always run in UTC, b… |
 | R-1235 | code | 10 | 0 | **A `timezone` key is refused.** A `timezone` key in any table of `morm.toml`, `[database]… |
+| R-1236 | doc | 50 | 0 | The README says this plainly, beside `sql!` and the field types, each with how to go on:… |
 
 ## Test obligations
 
@@ -1548,3 +1549,4 @@ Totals: 1235 requirements, 298 test obligations.
 | T-0296 | integration | 45 | **The parameter matrix's free values are reported, on Postgres 15–18:** each free value fr… |
 | T-0297 | integration | 41 | **The session's zone at startup, on Postgres 15–18:** a pool with `pooler = "transaction"`… |
 | T-0298 | integration | 10 | **A `timezone` key is refused:** `timezone` in `[database]`, in `[database.migration]`, in… |
+| T-0299 | integration | 16 | **A stored query, on Postgres 15–18:** `let q = sql!(..)` holding a field-bound value, a f… |
