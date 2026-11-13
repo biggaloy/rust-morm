@@ -4,7 +4,7 @@ Generated from the frozen plan. Each requirement and test obligation lives in ex
 
 Kinds: `code` needs a tagged test, `doc` is checked in the README step, `info` is context with nothing to build.
 
-Totals: 1240 requirements, 300 test obligations.
+Totals: 1243 requirements, 304 test obligations.
 
 ## Requirements
 
@@ -1250,6 +1250,9 @@ Totals: 1240 requirements, 300 test obligations.
 | R-1238 | code | 12 | 0 | **CI's `pooler` job runs every supported PgBouncer against every supported Postgres.** Thi… |
 | R-1239 | doc | 50 | 0 | \| `-> Sql<'a, impl morm::Params>` \| A function builds a query that its caller runs, such… |
 | R-1240 | doc | 50 | 0 | The README ends with a "Contributing" section, which step 12 starts and this step keeps, s… |
+| R-1241 | code | 56 | 0 | - **Enum and composite result columns are read as text.** `tokio-postgres` looks up any re… |
+| R-1242 | code | 16 | 0 | - **Raw SQL reads enum and composite columns as text.** morm can't add a cast to SQL you w… |
+| R-1243 | code | 45 | 0 | - **T5, result columns read as text.** The typing pass also reads each query's result colu… |
 
 ## Test obligations
 
@@ -1404,7 +1407,7 @@ Totals: 1240 requirements, 300 test obligations.
 | T-0147 | integration | 11 | **Stale generation:** raising the counter replaces every older connection at its next chec… |
 | T-0148 | integration | 56 | **Enum binding survives type changes:** on an open connection and on one opened afterwards… |
 | T-0149 | integration | 56 | **Names and labels:** a bare derive binds to the snake_case name, `#[pg_type(name = "...")… |
-| T-0150 | trybuild | 56 | a `PgEnum` with duplicate labels, an empty label, a label over 63 bytes, a variant that is… |
+| T-0150 | trybuild | 56 | a `PgEnum` with duplicate labels, an empty label, a label over 63 bytes, a label starting … |
 | T-0151 | integration | 14 | **Stale statements on Postgres 15–18:** with each parameter declared as its carrier and ca… |
 | T-0152 | integration | 14 | **Stale sessions:** a plpgsql trigger compiled before a hand-run swap fails with `XX000`, … |
 | T-0153 | integration | 14 | **No false recovery:** a `42883` from SQL that was never cached isn't retried, a retried w… |
@@ -1555,3 +1558,7 @@ Totals: 1240 requirements, 300 test obligations.
 | T-0298 | integration | 10 | **A `timezone` key is refused:** `timezone` in `[database]`, in `[database.migration]`, in… |
 | T-0299 | integration | 16 | **A stored query, on Postgres 15–18:** `let q = sql!(..)` holding a field-bound value, a f… |
 | T-0300 | integration | 12 | **Old PgBouncers and the two startup parameters, in the `pooler` job:** through PgBouncer… |
+| T-0301 | suite | 56 | **Unit: reading composites and enums as text:** a model's and a view's column list read a … |
+| T-0302 | integration | 16 | **Raw SQL and enum columns, on Postgres 15–18:** `db.sql()`, `db.raw::<T>()`, `sql_uncheck… |
+| T-0303 | integration | 45 | **T5, on Postgres 15–18:** `check-sql` reports a registered `sql!` query returning an enum… |
+| T-0304 | integration | 15 | **Enum and composite reads behind PgBouncer with no prepared statements, in the `pooler` j… |

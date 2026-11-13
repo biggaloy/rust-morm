@@ -7814,16 +7814,16 @@
 "kind": "code",
 "step": "enum-types",
 "line": 0,
-"text": "- **Labels.** A variant's Postgres label is the snake_case of its name, so `AwaitingPayment` is `awaiting_payment`. `#[pg_enum(value = \"...\")]` on the variant overrides it. Attributes on a variant never turn on management: only `#[pg_enum(name = \"...\")]` on the type does.",
-"block": "- **R-0977** **Labels.** A variant's Postgres label is the snake_case of its name, so `AwaitingPayment` is `awaiting_payment`. `#[pg_enum(value = \"...\")]` on the variant overrides it. Attributes on a variant never turn on management: only `#[pg_enum(name = \"...\")]` on the type does."
+"text": "- **Labels.** A variant's Postgres label is the snake_case of its name, so `AwaitingPayment` is `awaiting_payment`. `#[pg_enum(value = \"...\")]` on the variant overrides it. Attributes on a variant never turn on management: only `#[pg_enum(name = \"...\")]` on the type does. A label starting `_morm_`, whether given by `value` or made from the variant's name, is a compile error naming the variant, because morm renames a retired enum type's labels to `_morm_retired_<label>`, and a label of yours with that prefix could collide with one. Owner decision SA.",
+"block": "- **R-0977** **Labels.** A variant's Postgres label is the snake_case of its name, so `AwaitingPayment` is `awaiting_payment`. `#[pg_enum(value = \"...\")]` on the variant overrides it. Attributes on a variant never turn on management: only `#[pg_enum(name = \"...\")]` on the type does. A label starting `_morm_`, whether given by `value` or made from the variant's name, is a compile error naming the variant, because morm renames a retired enum type's labels to `_morm_retired_<label>`, and a label of yours with that prefix could collide with one. Owner decision SA."
 },
 {
 "id": "R-0978",
 "kind": "code",
 "step": "enum-types",
 "line": 0,
-"text": "- **Enum binding needs no OID.** morm writes `ToSql` and `FromSql` for `PgEnum` itself and doesn't use `postgres-derive`, whose exact variant check fails on every connection opened after a value is added. `accepts` compares no variants. A `PgEnum` parameter is declared as `text` and cast to the enum's name, so no OID is looked up or sent, and a swap can't leave one stale. A list goes as `text[]`, cast to the enum's array type. Labels are matched as bytes at compile time, with no heap use.",
-"block": "- **R-0978** **Enum binding needs no OID.** morm writes `ToSql` and `FromSql` for `PgEnum` itself and doesn't use `postgres-derive`, whose exact variant check fails on every connection opened after a value is added. `accepts` compares no variants. A `PgEnum` parameter is declared as `text` and cast to the enum's name, so no OID is looked up or sent, and a swap can't leave one stale. A list goes as `text[]`, cast to the enum's array type. Labels are matched as bytes at compile time, with no heap use."
+"text": "- **Enum binding needs no OID.** morm writes `ToSql` and `FromSql` for `PgEnum` itself and doesn't use `postgres-derive`, whose exact variant check fails on every connection opened after a value is added. `accepts` compares no variants: `ToSql` accepts only the `text` carrier, and `FromSql` accepts only `text`, because R-1241 reads every enum column as text. A `PgEnum` parameter is declared as `text` and cast to the enum's name, so no OID is looked up or sent, and a swap can't leave one stale. A list goes as `text[]`, cast to the enum's array type. Labels are matched as bytes at compile time, with no heap use.",
+"block": "- **R-0978** **Enum binding needs no OID.** morm writes `ToSql` and `FromSql` for `PgEnum` itself and doesn't use `postgres-derive`, whose exact variant check fails on every connection opened after a value is added. `accepts` compares no variants: `ToSql` accepts only the `text` carrier, and `FromSql` accepts only `text`, because R-1241 reads every enum column as text. A `PgEnum` parameter is declared as `text` and cast to the enum's name, so no OID is looked up or sent, and a swap can't leave one stale. A list goes as `text[]`, cast to the enum's array type. Labels are matched as bytes at compile time, with no heap use."
 },
 {
 "id": "R-0979",
@@ -9920,6 +9920,30 @@
 "line": 0,
 "block": "**R-1240** The README ends with a \"Contributing\" section, which step 12 starts and this step keeps, showing this notice loudly:\n\n> **A green `pooler` job can have skipped a PgBouncer version.** When a version can't be installed in a run, after one retry, or its download doesn't match its pinned SHA-256, its cases are skipped, not failed, and the job writes a `::warning::` naming the PgBouncer and Postgres versions, such as `PgBouncer 1.22 skipped on Postgres 17: install failed`. Open the run's summary and read its annotations before trusting a green run. If a version was skipped, rerun the job; if it's skipped again, say so in the PR, and don't merge a change to pooler behaviour until a run has covered every version.",
 "text": "The README ends with a \"Contributing\" section, which step 12 starts and this step keeps, showing this notice loudly:\n\n> **A green `pooler` job can have skipped a PgBouncer version.** When a version can't be installed in a run, after one retry, or its download doesn't match its pinned SHA-256, its cases are skipped, not failed, and the job writes a `::warning::` naming the PgBouncer and Postgres versions, such as `PgBouncer 1.22 skipped on Postgres 17: install failed`. Open the run's summary and read its annotations before trusting a green run. If a version was skipped, rerun the job; if it's skipped again, say so in the PR, and don't merge a change to pooler behaviour until a run has covered every version."
+},
+{
+"id": "R-1241",
+"kind": "code",
+"step": "enum-types",
+"line": 0,
+"text": "- **Enum and composite result columns are read as text.** `tokio-postgres` looks up any result column type that isn't built in, with named statements of its own, once per connection per type. Behind PgBouncer with no prepared statements, 1.20.1, or a later version with `max_prepared_statements = 0`, those statements reach other server connections and fail with `26000` `prepared statement \"sN\" does not exist`: 83 of 120 enum decodes failed on 1.20.1 with a pool of 4, and 86 of 120 on 1.22.0 with `max_prepared_statements = 0`. So morm never lets the driver see such a column. Every result column morm writes, in a model's or a view's column list, `filter_cols`, `RETURNING`, related rows and keyset pages, whose type is an enum, a composite, a domain over either, or a type morm doesn't know that a field with a text form sits on, such as `citext` or `ltree`, is read as `\"col\"::text`, or `\"col\"::text[]` for an array, which keeps the column's name. `SqlType` says which through `READ_AS_TEXT`: true for `PgEnum` and `PgComposite`, for a `PgDomain` over one of them, and for a list of any of these, and false for every other type; `#[model]` and `#[view]` also read as text a field with a text form whose `sql` names a type morm doesn't know. The cast is written into the compile-time column list, so it costs nothing at run time. `PgEnum`'s and `PgComposite`'s `FromSql` accept only `text`, so an uncast column can't decode by luck on one connection and fail on another. `PgComposite` decodes Postgres's text form, `(a,b)`, with no lookup: a field with nothing between its delimiters is NULL, `\"\"` is an empty string, a backslash escapes the next character, inside quotes `\"\"` is one `\"`, and a nested composite or array field is passed to its own type's decoder. It checks every position and length against the input, and returns an error, never a panic, on a field count that doesn't match, a NULL in a field that isn't an `Option`, a missing delimiter, an unclosed quote or anything after the closing parenthesis. A domain over a built-in type needs no cast, because Postgres sends a domain's base type in the row description: on 18.6 a column of a domain over `text` came back as `text`, and one of a domain over an enum as that enum. Owner decision EA.",
+"block": "- **R-1241** **Enum and composite result columns are read as text.** `tokio-postgres` looks up any result column type that isn't built in, with named statements of its own, once per connection per type. Behind PgBouncer with no prepared statements, 1.20.1, or a later version with `max_prepared_statements = 0`, those statements reach other server connections and fail with `26000` `prepared statement \"sN\" does not exist`: 83 of 120 enum decodes failed on 1.20.1 with a pool of 4, and 86 of 120 on 1.22.0 with `max_prepared_statements = 0`. So morm never lets the driver see such a column. Every result column morm writes, in a model's or a view's column list, `filter_cols`, `RETURNING`, related rows and keyset pages, whose type is an enum, a composite, a domain over either, or a type morm doesn't know that a field with a text form sits on, such as `citext` or `ltree`, is read as `\"col\"::text`, or `\"col\"::text[]` for an array, which keeps the column's name. `SqlType` says which through `READ_AS_TEXT`: true for `PgEnum` and `PgComposite`, for a `PgDomain` over one of them, and for a list of any of these, and false for every other type; `#[model]` and `#[view]` also read as text a field with a text form whose `sql` names a type morm doesn't know. The cast is written into the compile-time column list, so it costs nothing at run time. `PgEnum`'s and `PgComposite`'s `FromSql` accept only `text`, so an uncast column can't decode by luck on one connection and fail on another. `PgComposite` decodes Postgres's text form, `(a,b)`, with no lookup: a field with nothing between its delimiters is NULL, `\"\"` is an empty string, a backslash escapes the next character, inside quotes `\"\"` is one `\"`, and a nested composite or array field is passed to its own type's decoder. It checks every position and length against the input, and returns an error, never a panic, on a field count that doesn't match, a NULL in a field that isn't an `Option`, a missing delimiter, an unclosed quote or anything after the closing parenthesis. A domain over a built-in type needs no cast, because Postgres sends a domain's base type in the row description: on 18.6 a column of a domain over `text` came back as `text`, and one of a domain over an enum as that enum. Owner decision EA."
+},
+{
+"id": "R-1242",
+"kind": "code",
+"step": "reads-more",
+"line": 0,
+"text": "- **Raw SQL reads enum and composite columns as text.** morm can't add a cast to SQL you write, so a raw query that returns an enum or composite column, a domain over one, or an array of one, casts it, as in `SELECT id, state::text FROM orders`, or `states::text[]` for an array. `PgEnum` and `PgComposite` decode only `text`, so a column left uncast returns `Error::SchemaMismatch`, with one finding naming the column, its type and the `::text` cast, on every connection and every run, before any row reaches the caller. On a direct connection that's always the error; behind PgBouncer with no prepared statements the driver's own type lookup can fail first, with `26000`, which is why the cast is required everywhere. A column of another type that isn't built in, such as `citext` read into a `String`, decodes, but needs the same cast behind such a PgBouncer, and step 45's check reports it. This holds for `db.sql()`, `db.raw::<T>()`, `sql_unchecked` and `#[derive(morm::Row)]`. Owner decision EA.",
+"block": "- **R-1242** **Raw SQL reads enum and composite columns as text.** morm can't add a cast to SQL you write, so a raw query that returns an enum or composite column, a domain over one, or an array of one, casts it, as in `SELECT id, state::text FROM orders`, or `states::text[]` for an array. `PgEnum` and `PgComposite` decode only `text`, so a column left uncast returns `Error::SchemaMismatch`, with one finding naming the column, its type and the `::text` cast, on every connection and every run, before any row reaches the caller. On a direct connection that's always the error; behind PgBouncer with no prepared statements the driver's own type lookup can fail first, with `26000`, which is why the cast is required everywhere. A column of another type that isn't built in, such as `citext` read into a `String`, decodes, but needs the same cast behind such a PgBouncer, and step 45's check reports it. This holds for `db.sql()`, `db.raw::<T>()`, `sql_unchecked` and `#[derive(morm::Row)]`. Owner decision EA."
+},
+{
+"id": "R-1243",
+"kind": "code",
+"step": "query-tooling",
+"line": 0,
+"text": "- **T5, result columns read as text.** The typing pass also reads each query's result columns from the row description its Parse returns, and reports each column whose type has an OID of 16384 or more, which every enum, composite and extension type has, and a domain over one of them, because the driver looks such a type up with named statements of its own, which fail behind PgBouncer with no prepared statements, and morm decodes an enum or composite only from `text`. A domain over a built-in type comes back as its base type, so it isn't reported. It's a finding like T1 to T4, printed with the file and line, the column, its type and the fix, such as `src/orders.rs:42: column state is order_state: read it as state::text`, and `#[morm::test]` reports it the same way for the SQL a test runs. morm's own column lists never give one. Owner decision EA.",
+"block": "- **R-1243** **T5, result columns read as text.** The typing pass also reads each query's result columns from the row description its Parse returns, and reports each column whose type has an OID of 16384 or more, which every enum, composite and extension type has, and a domain over one of them, because the driver looks such a type up with named statements of its own, which fail behind PgBouncer with no prepared statements, and morm decodes an enum or composite only from `text`. A domain over a built-in type comes back as its base type, so it isn't reported. It's a finding like T1 to T4, printed with the file and line, the column, its type and the fix, such as `src/orders.rs:42: column state is order_state: read it as state::text`, and `#[morm::test]` reports it the same way for the SQL a test runs. morm's own column lists never give one. Owner decision EA."
 }
 ],
 "tests": [
@@ -10957,7 +10981,7 @@
 "step": "enum-types",
 "kind": "integration",
 "line": 0,
-"text": "**Enum binding survives type changes:** on an open connection and on one opened afterwards, `PgEnum` values and arrays, declared as `text` and `text[]` and cast to the enum's name, bind and decode through `query_typed` and prepared statements after `ADD VALUE`, and through `query_typed` and a prepared statement on the swapped table after a hand-run type swap; `PgDomain` and `PgComposite` values, cast to their names, do the same after their type is dropped and made again by hand"
+"text": "**Enum binding survives type changes:** on an open connection and on one opened afterwards, `PgEnum` values and arrays, declared as `text` and `text[]` and cast to the enum's name, bind, and decode from columns read as `::text` and `::text[]`, through `query_typed` and prepared statements after `ADD VALUE`, and through `query_typed` and a prepared statement on the swapped table after a hand-run type swap; statements prepared before `ADD VALUE`, a free `(($1::st))::text`, an insert binding the new label and a select returning the column, run after it with the new label and give it back; `PgDomain` and `PgComposite` values, cast to their names, do the same after their type is dropped and made again by hand"
 },
 {
 "id": "T-0149",
@@ -10971,7 +10995,7 @@
 "step": "enum-types",
 "kind": "trybuild",
 "line": 0,
-"text": "a `PgEnum` with duplicate labels, an empty label, a label over 63 bytes, a variant that isn't a unit variant, two `#[pg_enum(unknown)]` variants, or an `unknown` variant that also has `value`, `was` or `deprecated`"
+"text": "a `PgEnum` with duplicate labels, an empty label, a label over 63 bytes, a label starting `_morm_`, whether given by `value` or made from the variant's name, a variant that isn't a unit variant, two `#[pg_enum(unknown)]` variants, or an `unknown` variant that also has `value`, `was` or `deprecated`"
 },
 {
 "id": "T-0151",
@@ -12022,6 +12046,34 @@
 "kind": "integration",
 "line": 0,
 "text": "**Old PgBouncers and the two startup parameters, in the `pooler` job:** through PgBouncer 1.19.1's instance with `ignore_startup_parameters` empty, `Db::connect`, `connect_as`, `connect_to` and a pool added by `db.pool(name)` each return `Error::Config` quoting `unsupported startup parameter: options` and naming both fixes, before any of the app's statements, and with `pooler = \"none\"` saying first to set `pooler = \"transaction\"`; through its second instance, the one with `ignore_startup_parameters = options`, and the role's `timezone` at `UTC`, the pool starts and its sessions report `UTC`; through 1.20.1, 1.22 and 1.26.1 in front of each of Postgres 15 to 18, with the role at `Europe/Berlin`, every session shows the binary's `application_name` in `pg_stat_activity` and reports `TimeZone` as `UTC`. What happens when a version can't be installed, has a tarball with the wrong SHA-256, doesn't answer or reports another version is proven by the stubbed script test this step's CI requirement names, not here"
+},
+{
+"id": "T-0301",
+"step": "enum-types",
+"kind": "suite",
+"line": 0,
+"text": "**Unit: reading composites and enums as text:** a model's and a view's column list read a `PgEnum`, a `PgComposite`, a `PgDomain` over an enum, a list of each, and a `String` field on `citext` and on `ltree` as `\"col\"::text` or `\"col\"::text[]`, and an `i32`, a `String` on `text` and a `PgDomain` over `integer` with no cast, all in the compile-time constant; `PgComposite`'s decoder reads a NULL field, an empty string, a field with a quote, a comma, a parenthesis, a backslash and a leading space, a nested composite and an array field, as Postgres 15 to 18 print them, and returns an error, never a panic, on a short or long field count, a NULL in a non-`Option` field, a missing delimiter, an unclosed quote, trailing text and every truncation of a valid input; `PgEnum` and `PgComposite` refuse any type but `text`"
+},
+{
+"id": "T-0302",
+"step": "reads-more",
+"kind": "integration",
+"line": 0,
+"text": "**Raw SQL and enum columns, on Postgres 15\u201318:** `db.sql()`, `db.raw::<T>()`, `sql_unchecked` and `#[derive(morm::Row)]` reading an enum column, an enum array, a composite and a composite array with `::text` and `::text[]` decode each value, and the same queries without the cast return `Error::SchemaMismatch` naming the column, its type and the cast, on a first and a second run and on a new connection"
+},
+{
+"id": "T-0303",
+"step": "query-tooling",
+"kind": "integration",
+"line": 0,
+"text": "**T5, on Postgres 15\u201318:** `check-sql` reports a registered `sql!` query returning an enum column, an enum array, a composite, a `citext` column and a column of a domain over an enum, each with the column, its type and the `::text` fix, and doesn't report the same columns read as `::text` or `::text[]`, a column of a domain over `integer`, or any query a model's builders write; a `#[morm::test]` that runs such a query fails with the same finding"
+},
+{
+"id": "T-0304",
+"step": "reads",
+"kind": "integration",
+"line": 0,
+"text": "**Enum and composite reads behind PgBouncer with no prepared statements, in the `pooler` job:** through 1.20.1, and through 1.22 and 1.26.1 with `statement_cache = 0` and `shape_cache = 0`, each in front of Postgres 15 to 18 with at least three server connections, eight clients each run `get`, a list and `filter_cols` 50 times on a model with an enum, an enum array, a composite, a composite array, a domain over an enum and a `String` on `citext`, reaching at least two server sessions, counted by `pg_backend_pid()`; every read decodes, none fails, and `pg_prepared_statements` on every server session shows no statement the driver prepared to look a type up"
 }
 ],
 "frame": {
