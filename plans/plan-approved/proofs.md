@@ -438,7 +438,7 @@ Q1 to Q4 were the step session's questions; the independent review (`reviews/ste
 
 ### Re-run in CI for the second review (EF9)
 
-The spikes came back from `d8bd613`, as step 02 did under DE, with one new spike and new rows in proof 18, and ran in `spikes.yml` on the `postgres:15` to `postgres:18` images, Postgres 15.20, 16.16, 17.12 and 18.7, with PgBouncer 1.22.0 and 1.26.1 (one server connection, `max_prepared_statements = 200`), a streaming standby and `postgresql-NN-plpgsql-check` 2.10.16-1.pgdg13+2. Every proof printed "every check passed" on every version: the push run at `4ae3a1e`, https://github.com/biggaloy/rust-morm/actions/runs/43472484941, job `spikes (pg NN)`, steps "Stale-statement design (p19), straight", "... PgBouncer 1.22", "... PgBouncer 1.26.1", "... standby" and "Proof 18". GitHub keeps the logs for 90 days, so what they show is here.
+The spikes came back from `d8bd613`, as step 02 did under DE, with one new spike and new rows in proof 18, and ran in `spikes.yml` on the `postgres:15` to `postgres:18` images, Postgres 15.20, 16.16, 17.12 and 18.7, with PgBouncer 1.22.0 and 1.26.1 (one server connection, `max_prepared_statements = 200`), a streaming standby and `postgresql-NN-plpgsql-check` 2.10.16-1.pgdg13+2. Every proof printed "every check passed" on every version: the push run at `4ae3a1e`, https://github.com/biggaloy/rust-morm/actions/runs/43472484941, and again at `b682836`, the last commit with the spikes, https://github.com/biggaloy/rust-morm/actions/runs/43473420754, each job `spikes (pg NN)`, steps "Stale-statement design (p19), straight", "... PgBouncer 1.22", "... PgBouncer 1.26.1", "... standby" and "Proof 18". GitHub keeps the logs for 90 days, so what they show is here.
 
 - **`p19`, SA and SB.** A session caches statements and calls functions before SA's swap (rename the type to `_morm_retired_m2_st`, create `st` as `('c','b','a','d')`, retire the column, add the new one, change `n` to `int8`), which runs straight on the primary as the type's owner, a role that isn't superuser, in four variants, then runs each again. It ran with the old session straight, through each PgBouncer, and on the standby, where the swap and every `ALTER` replay. Every cell was the same in all of them, on all four versions:
 
@@ -460,4 +460,4 @@ The spikes came back from `d8bd613`, as step 02 did under DE, with one new spike
 
 The steps that build each change keep permanent tests of it on Postgres 15 to 18.
 
-The spikes and `spikes.yml` were deleted before merge, as the step says; the last commit that has them is `d8bd613`: `git checkout d8bd61339f298f249b85f5d534734e2a65a8d6ff`.
+The spikes and `spikes.yml` were deleted before merge, as the step says, first after step 55's own run, whose last commit with them is `d8bd613`, and again after the second review's run; the last commit that has them is `b682836`: `git checkout b68283690a95055ec7e4429a3533b61125e3b54e`. It holds `p19` beside proofs 13 to 18.
