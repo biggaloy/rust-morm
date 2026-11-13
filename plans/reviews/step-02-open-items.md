@@ -58,3 +58,7 @@ PR #2 (`step-02-proofs`), head `f50823e` when the step agent reported. CI green 
 - **DK5:** answered: send `application_name` behind PgBouncer too.
 - **DK1 and DK2:** with the owner, who asked why PgBouncer is needed when morm has its own pool.
 - **DK1 and DK2:** answered: require PgBouncer 1.20 or later when used; CI runs 1.20, 1.22 and 1.26.1 on 15 to 18, skipping an uninstallable version with a loud warning.
+
+## From the fifth review at `2af47c9`
+
+- **DL2:** answered: a README "Contributing" section with its own step 50 `doc` ID. DL1 and DL3 to DL7 fixed as recommended.
