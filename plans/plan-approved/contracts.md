@@ -92,6 +92,11 @@ pub trait SqlType {
     // (a scalar domain comes as its base type). #[model] and #[view] also read as text a
     // TEXT_FORM field whose sql names a type morm doesn't know (R-1241, step 56)
     const READ_AS: &'static str;
+    // EG4: the same for a list of this type, beside CAST_LIST, because stable Rust can't build
+    // a generic Vec<T>'s string from T's: "text[]" for PgEnum, PgComposite and a PgDomain
+    // over either, T::CAST_LIST (such as "int4[]") for a PgDomain over a built-in T, and ""
+    // for every other type. Vec<T> and &[T] take T::READ_AS_LIST as their READ_AS
+    const READ_AS_LIST: &'static str;
 }
 // A parameter, object safe for &dyn Param in runtime fragments (R-0723), with a blanket
 // impl from SqlType: Option<T> and &T take T's cast and carrier, Vec<T> and &[T] T's list
