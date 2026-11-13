@@ -39,7 +39,7 @@ Everything ran on throwaway servers under `.claude/scratch/` in my worktree, wit
 
 ### The swap every test ran
 
-Unless said otherwise, a test's "swap" is one transaction from another session, shaped like the online cutover with the old type kept:
+The harness runs (SB, SD, SG) used this swap, one transaction from another session, shaped like the online cutover with the old type kept. The `psql` runs (E1 to E9) used the same shape with shorter names, with the relabel and the reset switched on and off as each table says:
 
 ```sql
 ALTER TYPE st RENAME TO _morm_retired_m2_st;          -- R-0995's retired name
@@ -88,14 +88,15 @@ Straight connections, `psql` `PREPARE` and plpgsql, the same on 15.20, 16.16, 17
 - **Why the reset alone isn't enough:** a plpgsql variable's type is fixed when the function compiles, and plan invalidation doesn't recompile functions. So `DECLARE v st` stays on the old type, and with labels both types share it runs silently.
 - **What the reset is:** `plancache.c` registers `PlanCacheSysCallback` on the `pg_namespace` and `pg_operator` syscaches, on 15 to 18 alike, and the callback runs `ResetPlanCache()`, which marks every saved plan invalid, protocol-level statements and plpgsql's expressions included. Creating and dropping an operator sends that invalidation to every session of the database at commit. I tested four forms on all four versions: creating and dropping a schema, `GRANT USAGE ON SCHEMA` and the operator pair each reset; `ALTER SCHEMA ... OWNER TO` its current owner is a no-op and didn't. The operator pair needs only `CREATE` on `_morm` and leaves nothing behind, so it's the one to use. `DISCARD PLANS` in the session gave the same table as the reset, so the reset is `DISCARD PLANS` for every session at once.
 - **As a role that isn't superuser:** a role owning the type and a schema for the operator, with nothing else, ran the type rename, the relabel and the operator pair in one transaction on all four versions (E2).
+- **E5 again with the reset in the swap:** the `%ROWTYPE` function and the `record` function that gave `42804` were right, and so was a cached `SELECT ($1::st)::text`; the `DECLARE` function gave `22P02` naming the retired type, and a statement returning the changed column `0A000`, on all four versions. Once the retired type was dropped, as `purge` does, the `DECLARE` function in that old session gave `XX000 cache lookup failed for type`, which R-0981 already handles, and the cached statement stayed right.
 - **SQL-language functions** over the changed table, one `RETURNS SETOF t` and one returning the changed column, were right after the reset in a session that had called them before (E9, all four versions).
-- **It waits on nothing:** with `lock_timeout = '200ms'`, the relabel and the operator pair committed while another session sat idle in a `REPEATABLE READ` transaction that had read the table.
+- **It waits on nothing:** with `lock_timeout = '200ms'`, the relabel and the operator pair committed while another session sat idle in a `REPEATABLE READ` transaction that had read the table (E8, all four versions).
 - **Its cost:** `pgbench -M prepared -S`, 8 clients, 10 s, on 18.7: 176,149 and 167,832 tps with no reset, 164,899 tps with a reset sent every 0.2 s (46 resets). A migration sends one per `tx` step, so the cost is within noise. A heavier statement costs one more planning the first time it runs after a step.
 - **Behind PgBouncer and on a standby:** see SD and SG. The reset reached every server session behind 1.20.1 and 1.22.1, and it replayed on every standby.
 
 ### A transaction already open at the cutover
 
-Postgres applies a committed catalog change to an open transaction only when that transaction next takes a lock. In a `READ COMMITTED` transaction begun before the swap, a cached `($1::st) < ($2::st)` returned the old answer after the swap committed, until the same transaction read another table; from then on it returned the new one (E8, 18.7). This isn't a stale state: it ends with the transaction and isn't repeated by the next. Those statements run as they would have a moment before the cutover, as for any DDL Postgres runs, morm's or not, and a transaction that touches a swapped table can't straddle the cutover at all, because the cutover takes that table's lock. The README says so (notice 3).
+Postgres applies a committed catalog change to an open transaction only when that transaction next takes a lock. In a `READ COMMITTED` transaction begun before the swap, a cached `($1::st) < ($2::st)` returned the old answer after the swap committed, until the same transaction read another table; from then on it returned the new one (E8, all four versions). This isn't a stale state: it ends with the transaction and isn't repeated by the next. Those statements run as they would have a moment before the cutover, as for any DDL Postgres runs, morm's or not, and a transaction that touches a swapped table can't straddle the cutover at all, because the cutover takes that table's lock. The README says so (notice 3).
 
 ### Options
 
@@ -114,6 +115,7 @@ Postgres applies a committed catalog change to an open transaction only when tha
 
 - A function with `DECLARE v st` compiled before the swap kept failing on every call after it, through named, unnamed and simple-protocol statements, until something recompiled it (18.7: 12 calls through the harness and 6 through `psql`, inside and outside a transaction). After the relabel each failure is `22P02 invalid input value for enum <schema>._morm_retired_m2_st: "a"`, routine `enum_in`.
 - **A no-op `ALTER FUNCTION f(text) COST 100`**, its cost unchanged, run by the function's owner (not superuser) from another session, made the next call in the failing session compile the function again and return the right answer, on all four versions. Postgres recompiles a plpgsql function when its `pg_proc` row's `xmin` or `ctid` changes, and any `ALTER FUNCTION` writes a new row. Behind PgBouncer 1.20.1 and 1.22.1 the same `ALTER` fixed every server session (6 of 6 calls right after it, on each), and the stale session no client can reach was fixed with it.
+- On each standby, the same `ALTER` run on the primary fixed the standby session that had the function compiled, once replayed (all four versions).
 - Without it, behind PgBouncer, a new client reached the same stale server session: S5 failed 6 of 6 times for new clients on every pooler instance.
 - The reset doesn't fix a `DECLARE` (SA's table), and neither do `DISCARD PLANS` or `DISCARD ALL` (proof 15).
 
@@ -157,7 +159,7 @@ With `lc_messages = 'de_DE.utf8'` and `'C'`, on all four versions (E5):
   | `XX000` from any statement | message starting `cache lookup failed for type` (`elog`) | stale session (R-0981) |
   | `XX000` from any statement | message starting `could not open relation with OID` (`elog`) | transient (R-0981) |
   | `22P02` from any statement | routine `enum_in`, message holding `_morm_retired_` | stale session (SB) |
-  | `22P02` from a cached statement that casts a parameter to a non-built-in type | routine `enum_in`, and the message doesn't hold the cast's type name as a whole identifier | stale statement (R-0718, R-0984), for a swap made outside morm |
+  | `22P02` from a cached statement that casts a parameter to a non-built-in type | routine `enum_in`, and the message doesn't hold the cast's type name, with or without its schema, as a whole identifier (Postgres prints the schema only when the type isn't on the `search_path`, as E5 and the harness showed) | stale statement (R-0718, R-0984), for a swap made outside morm |
   | Any error from a cached statement that casts a parameter to a non-built-in type | none: retried once, as choice I says, and stale only if the retry succeeds (SF) | stale statement |
 
   An English message is accepted as a second signal for `0A000` and `42804`, so a future version that renames a routine still works on an English server. T-0151 and T-0152 assert each routine on 15 to 18, so supporting a new major version means these tests run on it first, and a renamed routine fails CI there. A miss is never silent: the error reaches the app as `Error::Postgres`.
@@ -184,7 +186,7 @@ Behind PgBouncer 1.22.1 with `max_prepared_statements = 200` and three server se
 | New clients, the marker they read: still `g1`, because nothing raised it | `22P02` | `22P02` | `0A000` at prepare | `42804` | `22P02` | `42804` |
 | Old clients, unnamed | right | right | right | `42804` | `22P02` | `42804` |
 
-Behind 1.22.1 with `max_prepared_statements = 0` and behind 1.20.1, where morm runs every statement unnamed (R-0677), every call was right with the reset apart from S5 (`22P02` until the `ALTER`); without it, S4 and S6 gave `42804` to old and new clients alike, because the server sessions were stale.
+Behind 1.22.1 with `max_prepared_statements = 0` and behind 1.20.1, where morm runs every statement unnamed (R-0677), every call was right with the reset apart from S5 (`22P02` until the `ALTER`); without it, S4 and S6 gave `42804` and S5 `22P02` to old and new clients alike, because the server sessions were stale, while S1 to S3 were right, being unnamed.
 
 Straight to Postgres the same clients needed nothing new: with the reset, only S3 failed (`0A000`, fixed by R-0718's re-prepare) and S5 (`22P02`, fixed by a new connection or the `ALTER`).
 
@@ -233,7 +235,7 @@ The swap ran on the primary with the reset; sessions were on its standby, with `
 | Idle in a `READ COMMITTED` transaction that had read the table | The same |
 | Running a query on the table during replay | `ERROR 40001 canceling statement due to conflict with recovery` after 3.5 s; the connection stayed |
 | Idle, not in a transaction, holding a prepared statement on the table | Untouched; its next run was right |
-| Cached statements and functions (S1 to S5) | Exactly as on the primary with the reset: S1, S2 and S4 right, S3 `0A000`, S5 `22P02` retired. So the reset and the relabel replay |
+| Cached statements and functions (S1 to S5) | Exactly as on the primary with the reset: S1, S2 and S4 right, S3 `0A000`, S5 `22P02` retired. So the reset and the relabel replay. After a no-op `ALTER FUNCTION` on the primary replayed, S5 was right |
 | The swap's replay | Waited 3.0 to 3.1 s behind the idle transactions |
 
 A transaction ended this way never committed, and on a standby it can't have written anything. R-0461 already retries a single statement's `40001` once.
@@ -313,7 +315,7 @@ No new IDs here: where a new requirement or test obligation is needed, it's name
   - T-0152: assert the three `42804` routines and `22P02` naming a retired type, in German too.
   - T-0153: a bad label from a client raises no generation (SF).
   - A new test obligation in the `pooler` job, on 1.20.1, 1.22 and 1.26.1 with a pool of at least 3: SD's tables, a new process after a migration preparing under the new marker with no stale error, hand-run DDL moving to a salt, and a prepare-time `0A000` retried unnamed.
-- **Step 20.** R-0984: signals from SC. A new requirement for SG's `Serialization` mapping. T-0049 or a new test obligation: `.retry(n)` on a standby pool succeeds after a recovery conflict ends an idle transaction.
+- **Step 20.** R-0984: signals from SC. A new requirement for SG's `Serialization` mapping, with a new test obligation in T-0172's standby job: `.retry(n)` on a `read_only` pool succeeds after a recovery conflict ends its idle transaction, a loss during `COMMIT` stays `CommitUnknown`, and a held connection gets `ConnectionLost` naming the conflict.
 - **Step 33.** A new requirement: every `tx` step ends with the operator pair and the generation comment; preflight checks `_morm`'s owner and `CREATE` (SE). Its test: a step's commit invalidates another session's cached plan on 15 to 18, and a step that rolls back sends nothing.
 - **Step 37.** R-0994: `DISCARD PLANS` clears some shapes (`%ROWTYPE`, a trigger) and not a variable of the type; the step's reset covers every session; the refresh stays for managed functions (EE7).
 - **Step 38.** R-0995: a retired enum type's labels are renamed to `_morm_retired_<label>`; `purge` unchanged; restoring a retired type renames them back. T-0122 or a new test: a stale session gets `22P02` naming the retired type.
@@ -336,7 +338,7 @@ An INDEX Decisions entry names every changed ID, and `coverage.md` and `manifest
 
 Each refuses, silences a check or stops a developer, so each is loud. What each must cover:
 
-1. **Retired enum labels (SA).** After an online swap the retired column holds the old values under `_morm_retired_<label>` until `purge`, so read it through `morm-admin`, not by label. Labels starting `_morm_` are refused at compile time. Code compiled against the old type fails with `22P02` naming the retired type instead of giving old answers.
+1. **Retired enum labels (SA).** After an online swap the retired column holds every old value, but a query on it shows `_morm_retired_<label>` until `purge`; the ledger maps each back, and down and rollback restore the real labels. Labels starting `_morm_` are refused at compile time. Code compiled against the old type fails with `22P02` naming the retired type instead of giving old answers.
 2. **Functions morm doesn't manage, and PgBouncer (SB).** morm refreshes the ones the migrating role owns. For the rest, the decision lists them: connected straight to Postgres, morm apps recover by themselves; behind PgBouncer, run `RECONNECT` on each PgBouncer after the migration, because a new client reaches the same server session; other services must reconnect.
 3. **A transaction open at the cutover (SA).** Statements in it that take no new lock run as they would have just before the cutover, as with any DDL in Postgres. Keep transactions short around a migration.
 4. **Standbys (SG).** Replaying a migration's DDL ends a standby session sitting in a transaction that read an affected table, after `max_standby_streaming_delay`. A transaction gets `Error::Serialization`, which `.retry(n)` retries; a `db.hold()` connection gets `ConnectionLost` and loses its session state. Replay waits up to that delay behind such a session, so the standby lags. Don't sit in a transaction on a `read_only` pool.
@@ -348,8 +350,8 @@ Each refuses, silences a check or stops a developer, so each is loud. What each 
 
 - **PgBouncer 1.26.1 and 1.19.1:** not built here; the task named 1.20.1 and 1.22. 1.26.1 keeps prepared statements by text as 1.22 does (proof 16 ran it with the same results), and 1.19.1 only matters for T-0300's refusal. The CI `pooler` job runs both.
 - **PGDG packages:** Postgres and plpgsql_check were built from source, as above, since I can't install packages here. Same releases' sources, checked by SHA-256 (plpgsql_check's tag tarball has no published checksum; its hash is recorded above).
-- **Languages other than German,** and Postgres 19, which doesn't exist yet.
-- **morm itself:** there's no runtime yet, so the harness stands in for morm's statements. Its shapes follow R-1220, but the retry, marker and recognition logic above are designed here, not run end to end; the new test obligations prove them in their steps.
+- **Languages other than German,** and Postgres 19, which morm doesn't support (R-0943 names 15 to 18).
+- **SC (b)'s settings** (`ALTER ROLE ... SET lc_messages`, `GRANT SET ON PARAMETER`) weren't run again here; the reviewer ran them on 18.6 and 17.11.- **morm itself:** there's no runtime yet, so the harness stands in for morm's statements. Its shapes follow R-1220, but the retry, marker and recognition logic above are designed here, not run end to end; the new test obligations prove them in their steps.
 - **The reset's cost under a realistic workload:** measured only with `pgbench -S`; step 48 measures what it needs.
 
 The scripts, harness and servers were throwaway and are deleted. Every result the design rests on is in this file, and the swap and statements above are enough to run them again.
