@@ -36,3 +36,7 @@ The review (`reviews/step-55-review.md`) changes several of the questions above.
 ## From the second review at `e8505c7`
 
 - **EF1, EF3, EF9:** answered as recommended (fresh-connection retry guarded against `_morm_retired_` values; decode escaped literals; re-run the evidence in spikes CI). EF2, EF4 to EF8 fixed as recommended.
+
+## From the third review at `399cdb2`
+
+- **EG2, EG5, EG6:** answered as recommended (cool-down per statement; decode plain strings when `standard_conforming_strings` is off; rebuild inside the rollback's transaction, rollback opens R-1063's decision, ledger records the retired objects, re-runs suffix names with the migration id). EG1, EG3, EG4, EG7, EG8 fixed as recommended.

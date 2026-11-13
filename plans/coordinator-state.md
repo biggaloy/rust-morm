@@ -27,7 +27,7 @@ The 30-minute wake-up lived only in the session, so a restart removes it. After 
 - Step 01's code is reviewed and fixed. PR #1 now also carries the plan redesign that came out of the reviews: managed enums, steps 51 to 59, the general walk, `plpgsql_check`, `--decide`, and type changes that never break a running app.
 - Every owner decision is in `INDEX.md` under "Decisions since the split". `reviews/step-01-open-items.md` has every open item, A to AV, each answered.
 
-**Latest:** step 55 is `in review`: PR #3 head `9caf8a2`, EF1 to EF9 written in, spikes CI green on 15 to 18 at `b682836` and deleted again, CI green, mergeable, checker 1255 R / 313 T, 0 problems; IDs in Decisions. The owner chose EF8's rebuild path. The third review is done (`399cdb2`, `reviews/step-55-review-3.md`): EG1 blocks (fix as recommended); EG2, EG5 and EG6's details are with the owner; EG3, EG4, EG7, EG8 are fixes. Next free IDs: R-1256, T-0314.
+**Latest:** step 55 is `in review`: PR #3 head `9caf8a2`, EF1 to EF9 written in, spikes CI green on 15 to 18 at `b682836` and deleted again, CI green, mergeable, checker 1255 R / 313 T, 0 problems; IDs in Decisions. The owner chose EF8's rebuild path. The third review is done (`399cdb2`, `reviews/step-55-review-3.md`): the owner answered EG2, EG5 and EG6 as recommended. The fix agent writes EG1 to EG8 into PR #3; then the review repeats. Next free IDs: R-1256, T-0314.
 
 ## What comes next
 
