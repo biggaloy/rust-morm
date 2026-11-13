@@ -1,0 +1,17 @@
+# Step 55's throwaway spikes: proofs 13 to 18 of the managed enum design.
+# Their own workspace, so nothing here reaches the real crates, and the whole
+# folder is deleted when the step ends.
+[workspace]
+
+[package]
+name = "enum-proofs"
+version = "0.0.0"
+edition = "2024"
+rust-version = "1.99.1"
+license = "BSD-3-Clause"
+publish = false
+
+[dependencies]
+bytes = "1"
+tokio = { version = "1.54", features = ["macros", "rt-multi-thread", "time"] }
+tokio-postgres = "0.7.18"
