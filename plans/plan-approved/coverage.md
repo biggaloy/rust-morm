@@ -4,7 +4,7 @@ Generated from the frozen plan. Each requirement and test obligation lives in ex
 
 Kinds: `code` needs a tagged test, `doc` is checked in the README step, `info` is context with nothing to build.
 
-Totals: 1248 requirements, 310 test obligations.
+Totals: 1254 requirements, 310 test obligations.
 
 ## Requirements
 
@@ -1258,6 +1258,12 @@ Totals: 1248 requirements, 310 test obligations.
 | R-1246 | code | 14 | 0 | **Behind PgBouncer, a statement generation every process shares.** PgBouncer keeps one ser… |
 | R-1247 | code | 20 | 0 | - **A hot standby ends a connection inside a transaction.** Replaying DDL on a hot standby… |
 | R-1248 | code | 33 | 0 | - **Every `tx` step ends with a reset.** Postgres marks a cached plan invalid when an obje… |
+| R-1249 | doc | 50 | 0 | The README shows this notice loudly, beside the enum rows: > **After an online enum swap, … |
+| R-1250 | doc | 50 | 0 | The README shows this notice loudly, beside the managed function rows: > **Functions morm … |
+| R-1251 | doc | 50 | 0 | The README shows this notice loudly, beside the online swap: > **A transaction open across… |
+| R-1252 | doc | 50 | 0 | The README shows this notice loudly, beside transactions: > **On a hot standby, a migratio… |
+| R-1253 | doc | 50 | 0 | The README shows this notice loudly, beside `pooler = "transaction"`: > **Behind PgBouncer… |
+| R-1254 | doc | 50 | 0 | The README shows this notice loudly, beside raw SQL with `db.sql()`: > **In raw SQL, read … |
 
 ## Test obligations
 
