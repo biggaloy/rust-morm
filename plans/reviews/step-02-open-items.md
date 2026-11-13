@@ -51,3 +51,4 @@ PR #2 (`step-02-proofs`), head `f50823e` when the step agent reported. CI green 
 
 - **DJ2:** answered: send UTC through PgBouncer, proven in CI; R-1234 stays as backstop.
 - **DJ3:** with the owner, who asked what it means.
+- **DJ3:** answered: `Sql<'a, P>`, as recommended.
