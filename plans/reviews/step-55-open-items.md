@@ -32,3 +32,7 @@ The review (`reviews/step-55-review.md`) changes several of the questions above.
 - **EE10:** proofs 14 to 16 need an owner-approved change before the step can pass.
 - **Answered:** EA (b), read enum and composite columns as `::text`. The rest goes to one design pass: `reviews/stale-statement-design.md`.
 - **Answered:** the stale-statement design SA to SH, all as recommended. EE7 to EE9 fixed as the review recommends.
+
+## From the second review at `e8505c7`
+
+- **EF1, EF3, EF9:** answered as recommended (fresh-connection retry guarded against `_morm_retired_` values; decode escaped literals; re-run the evidence in spikes CI). EF2, EF4 to EF8 fixed as recommended.
