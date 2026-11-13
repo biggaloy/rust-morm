@@ -4,7 +4,7 @@ Generated from the frozen plan. Each requirement and test obligation lives in ex
 
 Kinds: `code` needs a tagged test, `doc` is checked in the README step, `info` is context with nothing to build.
 
-Totals: 1236 requirements, 299 test obligations.
+Totals: 1239 requirements, 300 test obligations.
 
 ## Requirements
 
@@ -679,14 +679,14 @@ Totals: 1236 requirements, 299 test obligations.
 | R-0667 | code | 46 | 1435 | - **Per-connection memory** depends on how many statements are cached and how complex they… |
 | R-0668 | code | 46 | 1436 | - **`--measure`** replaces those defaults: it prepares your app's real statements on one c… |
 | R-0669 | code | 12 | 1440 | `morm::Pool` makes a pooler unnecessary for one process, but large fleets and managed Post… |
-| R-0670 | code | 12 | 1442 | - **One startup parameter.** PgBouncer refuses a startup parameter it doesn't track, by de… |
+| R-0670 | code | 12 | 1442 | - **Only tracked startup parameters, on PgBouncer 1.20 or later.** PgBouncer refuses a sta… |
 | R-0671 | code | 43 | 1442 | - `doctor` checks that they're there. |
 | R-0672 | code | 22 | 1443 | - **`SET LOCAL` still works,** because it ends with the transaction. |
 | R-0673 | code | 12 | 1444 | - **Session features refuse.** `db.hold()` returns `PoolerMode`, since a session can't be … |
 | R-0674 | code | 22 | 1444 | - `tx.advisory_lock` is unaffected, because it ends with the transaction. |
 | R-0675 | code | 12 | 1445 | - **Connection limits:** `SHOW max_connections` reports Postgres's limit, but the real one… |
 | R-0676 | code | 46 | 1445 | - With `pooler = "transaction"`, the `max_connections` check in `size` is skipped. |
-| R-0677 | code | 22 | 1446 | - **Prepared statements** need PgBouncer 1.21+ with `max_prepared_statements` set. On olde… |
+| R-0677 | code | 22 | 1446 | - **Prepared statements** need PgBouncer 1.21+ with `max_prepared_statements` set. On 1.20… |
 | R-0678 | info | 12 | 1447 | - **Migrations must bypass the pooler.** The migrator holds a session advisory lock, so `M… |
 | R-0679 | code | 43 | 1447 | - `doctor` warns if `MORM_MIGRATION_URL` doesn't point at Postgres directly. |
 | R-0680 | info | 12 | 1451 | Crons, background jobs and service workers use the pool like everything else. Every `db` c… |
@@ -1246,6 +1246,9 @@ Totals: 1236 requirements, 299 test obligations.
 | R-1234 | code | 41 | 0 | **The startup check also checks the session's zone.** morm's sessions always run in UTC, b… |
 | R-1235 | code | 10 | 0 | **A `timezone` key is refused.** A `timezone` key in any table of `morm.toml`, `[database]… |
 | R-1236 | doc | 50 | 0 | The README says this plainly, beside `sql!` and the field types, each with how to go on: -… |
+| R-1237 | doc | 50 | 0 | The README shows this notice loudly, beside `pooler = "transaction"`: > **Behind PgBouncer… |
+| R-1238 | code | 12 | 0 | **CI's `pooler` job runs every supported PgBouncer against every supported Postgres.** Thi… |
+| R-1239 | doc | 50 | 0 | \| `-> Sql<'a, impl morm::Params>` \| A function builds a query that its caller runs, such… |
 
 ## Test obligations
 
@@ -1534,7 +1537,7 @@ Totals: 1236 requirements, 299 test obligations.
 | T-0281 | suite | 14 | **Unit: the scanner's casts:** each of the 16 ways R-1221 lists that a `$n` can hide stays… |
 | T-0282 | integration | 14 | **Casts in every position, on Postgres 15–18:** a parameter written as `($n::cast)` prepar… |
 | T-0283 | trybuild | 15 | **Values that don't fit their field:** a `.by`, `.any` or `.qc` value of another type, an… |
-| T-0284 | trybuild | 16 | **`sql!` refusals:** each form R-1224 lists, 18 cases in all, among them a positional `$1`… |
+| T-0284 | trybuild | 16 | **`sql!` refusals:** each form R-1224 lists, 19 cases in all, among them a 65th value, fai… |
 | T-0285 | integration | 16 | **`sql!` on Postgres 15–18:** queries with `citext`, `char(5)`, an `i32` on a `bigint` fie… |
 | T-0286 | integration | 18 | **The parameter matrix through morm's own paths, on Postgres 15–18:** with the session's `… |
 | T-0287 | trybuild | 20 | `tx.isolation(..)` and `tx.retry(n)` don't compile |
@@ -1550,3 +1553,4 @@ Totals: 1236 requirements, 299 test obligations.
 | T-0297 | integration | 41 | **The session's zone at startup, on Postgres 15–18:** a pool with `pooler = "transaction"`… |
 | T-0298 | integration | 10 | **A `timezone` key is refused:** `timezone` in `[database]`, in `[database.migration]`, in… |
 | T-0299 | integration | 16 | **A stored query, on Postgres 15–18:** `let q = sql!(..)` holding a field-bound value, a f… |
+| T-0300 | integration | 12 | **Old PgBouncers and the two startup parameters, in the `pooler` job:** through PgBouncer… |

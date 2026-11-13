@@ -114,10 +114,13 @@ pub trait FitsList<T>: Sync { /* the same, element by element, as the column's l
 // reference to one (B). sql_unchecked(String, &[&dyn Param]) is the visible escape hatch,
 // with the scanner's casts. Proven on rustc 1.99.1 (proofs.md, DJ3)
 pub struct Sql<'a, P> { /* #[doc(hidden)] pub text, registration, params: P, PhantomData<&'a ()> */ }
-// One sql! query's values: implemented for tuples of carrier-tagged borrows. Sync, so a
-// query held across an .await keeps the future Send. bind() hands each value to
-// query_typed_raw or a prepared statement from an array iterator, with nothing collected
-pub trait Params: Sync {
+// One sql! query's values: implemented for flat tuples of carrier-tagged borrows, from 0 to
+// 64 values; sql! refuses a 65th at compile time, naming the limit (DK6). Send + Sync
+// (DK3): Sync so a &Sql held across an .await keeps the future Send, and Send so a Sql
+// taken by value does, as Conn's entry points, declared + Send for every P, need under
+// &impl Conn in a hook. bind() hands each value to query_typed_raw or a prepared statement
+// from an array iterator, with nothing collected (64 values proven on rustc 1.99.1, DK6)
+pub trait Params: Send + Sync {
     fn bind(&self) -> impl ExactSizeIterator<Item = (&(dyn tokio_postgres::types::ToSql + Sync), tokio_postgres::types::Type)> + Send;
 }
 // The conversion layer (Defined in step 03, below) encodes a value bound through a field
