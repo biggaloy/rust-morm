@@ -4,7 +4,7 @@ Generated from the frozen plan. Each requirement and test obligation lives in ex
 
 Kinds: `code` needs a tagged test, `doc` is checked in the README step, `info` is context with nothing to build.
 
-Totals: 1247 requirements, 307 test obligations.
+Totals: 1248 requirements, 310 test obligations.
 
 ## Requirements
 
@@ -1257,6 +1257,7 @@ Totals: 1247 requirements, 307 test obligations.
 | R-1245 | code | 14 | 0 | **Recognising a stale error in any language.** `lc_messages` translates every message but … |
 | R-1246 | code | 14 | 0 | **Behind PgBouncer, a statement generation every process shares.** PgBouncer keeps one ser… |
 | R-1247 | code | 20 | 0 | - **A hot standby ends a connection inside a transaction.** Replaying DDL on a hot standby… |
+| R-1248 | code | 33 | 0 | - **Every `tx` step ends with a reset.** Postgres marks a cached plan invalid when an obje… |
 
 ## Test obligations
 
@@ -1432,8 +1433,8 @@ Totals: 1247 requirements, 307 test obligations.
 | T-0168 | integration | 59 | **Stale plpgsql on Postgres 15–18:** a session that compiled `DECLARE v the_enum`, `SELECT… |
 | T-0169 | suite | 53 | **Live refusals:** an unmanaged column in another schema, an unmanaged view and a new depe… |
 | T-0170 | suite | 53 | **Fault injection:** kill the process during a swap with recreated dependents, and every d… |
-| T-0171 | integration | 59 | **Proof, PgBouncer:** in a `pooler` test, in transaction mode, an app recovers from a swap… |
-| T-0172 | integration | 59 | **Proof, hot standby:** a `read_only` pool on a standby recovers from a swap on the primar… |
+| T-0171 | integration | 59 | **Proof, PgBouncer:** in a `pooler` test, in transaction mode, through 1.20.1, 1.22 and 1.… |
+| T-0172 | integration | 59 | **Proof, hot standby:** in the `standby` job step 12 adds, a `read_only` pool on a standby… |
 | T-0173 | suite | 54 | **Domains and composites:** with rows, on Postgres 15–18: a domain, a composite with and w… |
 | T-0174 | suite | 54 | **Fault injection:** kill the process during a swap through a domain and a composite, and … |
 | T-0175 | suite | 52 | **Live traffic:** with writers on an old binary, including writes of the removed value unt… |
@@ -1569,3 +1570,6 @@ Totals: 1247 requirements, 307 test obligations.
 | T-0305 | integration | 12 | **A held connection ended by a recovery conflict, in the `standby` job, on Postgres 15–18:… |
 | T-0306 | integration | 14 | **Stale statements behind PgBouncer, in the `pooler` job:** through 1.22 and 1.26.1 with `… |
 | T-0307 | integration | 20 | **A recovery conflict inside a transaction, in the `standby` job step 12 adds, on Postgres… |
+| T-0308 | suite | 33 | **The reset, on Postgres 15–18:** after a `tx` step that, through a test-only op, swaps an… |
+| T-0309 | suite | 38 | **Retired enum labels, on Postgres 15–18:** retiring an enum type with its column renames … |
+| T-0310 | integration | 59 | **Hidden narrowings, on Postgres 15–18:** with `plpgsql_check` 2.10.16, a managed function… |
