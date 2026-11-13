@@ -46,4 +46,4 @@ Moved to "Repo tooling" in `later-defo-build.plan`, by owner decision.
 ## Housekeeping
 
 - Every agent worktree and its local branch was removed on 2026-11-12 and again after step 02's merge, with the owner's go-ahead, after checking each had no uncommitted or unpushed work.
-- `target/` in the main checkout and the merged remote branches `step-01-bootstrap` and `step-02-proofs` were removed on 2026-11-13 at the owner's request. Still on disk: older files in `.claude/scratch/` (the first session's `session-scratchpad/` copies and a few review scripts), none needed to resume. Ask the owner before removing them. After each future merge, delete the merged remote branch and the finished worktrees, as the owner asked.
+- `target/` in the main checkout and the merged remote branches `step-01-bootstrap` and `step-02-proofs` were removed on 2026-11-13 at the owner's request. The older files in `.claude/scratch/` were removed the same day at the owner's request; the folder is empty. After each future merge, delete the merged remote branch and the finished worktrees, as the owner asked.
