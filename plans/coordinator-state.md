@@ -27,13 +27,12 @@ The 30-minute wake-up lived only in the session, so a restart removes it. After 
 - Step 01's code is reviewed and fixed. PR #1 now also carries the plan redesign that came out of the reviews: managed enums, steps 51 to 59, the general walk, `plpgsql_check`, `--decide`, and type changes that never break a running app.
 - Every owner decision is in `INDEX.md` under "Decisions since the split". `reviews/step-01-open-items.md` has every open item, A to AV, each answered.
 
-**Latest:** step 02 is `in review`: PR #2 head `5754360`, CI green, CLEAN, checker 1240 R / 300 T, 0 problems, nothing open. The eighth review (`05d734c`, `reviews/step-02-review-8.md`) found only DO1, a stale PR body line, which the coordinator fixed in the body (reworded so it no longer depends on INDEX). PR #2 is with the owner for approval. Next free IDs: R-1241, T-0301.
+**Latest:** the owner approved PR #2; it's merged as `34c81aa` (merge commit), and step 02 is `done`. `INDEX.md` on `main` keeps its Decisions. Step 55 is `in progress` with a fresh agent on branch `step-55-enum-proofs`. Next free IDs: R-1241, T-0301.
 
 ## What comes next
 
-1. Step 02: the owner approves PR #2. Then merge (merge commit), mark step 02 `done`, and check `INDEX.md` on `main` keeps its Decisions and the branch's rows.
-2. Step 55 depends on 02: start it as a fresh agent, then an independent review. The owner approves the PRs of steps 01, 02, 03, 50 and 55.
-3. Then follow the order in `INDEX.md`.
+1. Step 55: the fresh agent opens a PR, then an independent review until clean, then the owner approves. The owner approves the PRs of steps 01, 02, 03, 50 and 55.
+2. Then follow the order in `INDEX.md`.
 
 ## Open with the owner
 
@@ -46,5 +45,5 @@ Moved to "Repo tooling" in `later-defo-build.plan`, by owner decision.
 
 ## Housekeeping
 
-- Every agent worktree and its local branch was removed on 2026-11-12 with the owner's go-ahead, after checking each had no uncommitted or unpushed work.
-- Still on disk: `target/` in the main checkout (1.2 GB build output, ignored by git), and older files in `.claude/scratch/` (the first session's `session-scratchpad/` copies and a few review scripts), none needed to resume. The remote branch `step-01-bootstrap` is merged and still on GitHub. Ask the owner before removing any of these.
+- Every agent worktree and its local branch was removed on 2026-11-12 and again after step 02's merge, with the owner's go-ahead, after checking each had no uncommitted or unpushed work.
+- Still on disk: `target/` in the main checkout (1.2 GB build output, ignored by git), and older files in `.claude/scratch/` (the first session's `session-scratchpad/` copies and a few review scripts), none needed to resume. The merged remote branches `step-01-bootstrap` and `step-02-proofs` are still on GitHub. Ask the owner before removing any of these.

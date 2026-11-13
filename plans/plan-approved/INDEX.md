@@ -17,7 +17,7 @@ The frozen plan was split word for word into requirements (`R-nnnn`) and test ob
 | Step | Title | Phase | Depends on | Status |
 |---|---|---|---|---|
 | 01 | [Repo bootstrap and CI](steps/01-bootstrap.md) | Foundation | none | done |
-| 02 | [Proofs of the risky parts](steps/02-proofs.md) | Foundation | 01 | in review |
+| 02 | [Proofs of the risky parts](steps/02-proofs.md) | Foundation | 01 | done |
 | 03 | [Freeze the contracts](steps/03-contracts-freeze.md) | Foundation | 55 | todo |
 | 04 | [`#[model]`, names and types](steps/04-model-core.md) | Models | 03 | todo |
 | 05 | [Type inference and decoding](steps/05-model-types.md) | Models | 04 | todo |
@@ -70,7 +70,7 @@ The frozen plan was split word for word into requirements (`R-nnnn`) and test ob
 | 52 | [Managed enums: online swap](steps/52-enum-online.md) | Migrations | 39, 54, 59 | todo |
 | 53 | [Managed enums: dependents](steps/53-enum-deps.md) | Migrations | 58 | todo |
 | 54 | [Managed enums: domains and composite types](steps/54-enum-wrappers.md) | Migrations | 53 | todo |
-| 55 | [Proofs of the managed enum design](steps/55-enum-proofs.md) | Foundation | 02 | todo |
+| 55 | [Proofs of the managed enum design](steps/55-enum-proofs.md) | Foundation | 02 | in progress |
 | 56 | [Enums, domains and composite types in Rust](steps/56-enum-types.md) | Runtime | 13, 28 | todo |
 | 57 | [Managed objects: enums, domains, composite types and sequences](steps/57-managed-types.md) | Migrations | 36 | todo |
 | 58 | [Managed enums: removing values and inverses](steps/58-enum-remove.md) | Migrations | 51 | todo |
