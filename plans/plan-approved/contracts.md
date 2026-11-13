@@ -66,8 +66,12 @@ pub struct Column<M, T, Cap> { /* name, cast, cast_list, carrier, list_carrier, 
 // swap can't leave one stale. Every other type uses its own built-in type.
 // It's also DH3's column-type trait: CARRIES lists the column types (cast names) a field
 // of this type can sit on without loss, each encoded by the conversion layer as that
-// column's carrier, and a type with TEXT_FORM may also sit on a SQL type morm doesn't
-// know, carried as text. #[model] checks a field's `sql` against them in a const
+// column's carrier, and a type with TEXT_FORM (String, &str, Box<str>, Cow<str>, and a list
+// of one) may also sit on a SQL type morm doesn't know, carried as text. PgEnum, PgDomain,
+// PgComposite and TextEnum have no text form and sit only on their own types (DJ5). Every
+// integer type, unsigned and NonZero* included, carries every wider integer column and
+// numeric, and u128 also uuid; Vec<T> carries each of T's types with [] (DJ1, R-1213).
+// #[model] checks a field's `sql` against them in a const
 // assertion, so a type alias resolves, and the error names the field, its type and the
 // `sql`. A user type implements it to be a field or a free parameter (steps 13 and 56)
 pub trait SqlType {
@@ -91,21 +95,39 @@ pub trait Param: tokio_postgres::types::ToSql + Sync {
 // A value fits a field of type T without loss, and is encoded as that column's carrier.
 // An Option value fits only an Option field, so NULL is bound only through a nullable
 // field; a non-Option value fits an Option field (K). FitsList<T> does the same element
-// by element, for a list bound with [] (sql!'s ${v: M::F.field[]}, .any)
-pub trait Fits<T> { /* encode as the column's carrier */ }
-pub trait FitsList<T> { /* the same, element by element */ }
-// What sql! returns: the static text with every cast written in, its registration, and
-// the borrowed values, each as its carrier, in a tuple with no boxing. db.sql() and
-// db.raw() take only this, or a reference to it, so one query can run several times (B).
-// sql_unchecked(String, &[&dyn Param]) is the visible escape hatch, with the scanner's casts
-pub struct Sql<'a> { /* private */ }
+// by element, for a list bound with [] (sql!'s ${v: M::F.field[]}, .any). Both are object
+// safe and Sync (DJ4): comp's values are &[&dyn Fits<T>] (R-1222, R-1227), held across an
+// .await in a future that must be Send under tokio::spawn
+pub trait Fits<T>: Sync {
+    fn encode(&self, carrier: &tokio_postgres::types::Type, out: &mut bytes::BytesMut)
+        -> std::result::Result<tokio_postgres::types::IsNull, Box<dyn std::error::Error + Sync + Send>>;
+}
+pub trait FitsList<T>: Sync { /* the same, element by element, as the column's list carrier */ }
+// What sql! returns (DJ3): the static text with every cast written in, its registration,
+// and P, that query's own set of values, a tuple the compiler fills in at each sql!, each
+// value a borrow tagged with its carrier (through its field by Fits, free by SqlType), so
+// nothing is boxed or allocated. sql! writes it as nested struct literals (hence the
+// #[doc(hidden)] public fields), so `let q = sql!(..)` keeps any temporary a value makes
+// alive as long as q. A query can be stored in a variable, passed around and run
+// elsewhere, or run several times; a function returning one writes
+// `-> Sql<'a, impl Params>`. db.sql() and db.raw() are generic over P and take a Sql or a
+// reference to one (B). sql_unchecked(String, &[&dyn Param]) is the visible escape hatch,
+// with the scanner's casts. Proven on rustc 1.99.1 (proofs.md, DJ3)
+pub struct Sql<'a, P> { /* #[doc(hidden)] pub text, registration, params: P, PhantomData<&'a ()> */ }
+// One sql! query's values: implemented for tuples of carrier-tagged borrows. Sync, so a
+// query held across an .await keeps the future Send. bind() hands each value to
+// query_typed_raw or a prepared statement from an array iterator, with nothing collected
+pub trait Params: Sync {
+    fn bind(&self) -> impl ExactSizeIterator<Item = (&(dyn tokio_postgres::types::ToSql + Sync), tokio_postgres::types::Type)> + Send;
+}
 // The conversion layer (Defined in step 03, below) encodes a value bound through a field
 // as that column's carrier where the value's own encoder doesn't take it (DG1): a narrower
 // integer as the wider column's, f32 as float8, an instant (DateTime<Utc>, Timestamp) on
 // timestamp as its UTC wall time, a NaiveDateTime on timestamptz as UTC, IpAddr on cidr,
 // String on json or jsonb as a text carrier cast to the column's type, each element alike
-// for a list or an array. Sessions always run with TimeZone = 'UTC', and nothing overrides
-// it (DH1, step 10; a `timezone` key is Error::Config, DI2), and the startup check refuses a
+// for a list or an array. Sessions always run with TimeZone = 'UTC', sent through PgBouncer
+// in transaction mode too (DJ2, step 12), and nothing overrides it (DH1, step 10; a
+// `timezone` key is Error::Config, DI2), and the startup check refuses a
 // pool whose session reports another zone (DI1, step 41), so raw SQL converts times as
 // these encodings do. Step 03 freezes the
 // layer's shape; step 13 builds the conversions and the refusal (R-1207, R-1208, T-0278)
@@ -242,7 +264,7 @@ These are shared by steps that can run side by side, so each is written and froz
 | The internal query entry point, which runs SQL through the caches. It can carry a "don't count this" flag for the loop detector, so step 45's exclusions (R-0785) need no signature change (proof 11, DD) | `morm` | Pool, statements, every query step |
 | Macro field IR: the parsed form of `#[model]`, `#[col]` and `#[view]` | `morm-macros` | All model steps |
 | The conversion layer between a field and its column | `morm` | Models, types, reads, writes |
-| `SqlType`, the trait that gives a column and a free parameter its cast, carrier and the column types it carries without loss (DH2, DH3), and, for an enum, its labels as a constant; `Param`, `Fits`, `FitsList` and `Sql` | `morm` | Models, types, statements, reads, writes, manifest |
+| `SqlType`, the trait that gives a column and a free parameter its cast, carrier and the column types it carries without loss (DH2, DH3), and, for an enum, its labels as a constant; `Param`, `Fits`, `FitsList`, `Sql<'a, P>` and `Params` | `morm` | Models, types, statements, reads, writes, manifest |
 | The cast-name function: a column type to its cast, with no length, precision or scale (`char(n)` to `bpchar`, `bit(n)` to `varbit`), which `#[model]` and `sql!` call at compile time | `morm-core` | Macros, types, statements, `check_schema` |
 | `ModelMeta`, the metadata every model emits | `morm-core` | Models, manifest, migrations |
 | The name function, with the 63-byte rule | `morm-core` | Macros, migrations |
