@@ -27,12 +27,13 @@ The 30-minute wake-up lived only in the session, so a restart removes it. After 
 - Step 01's code is reviewed and fixed. PR #1 now also carries the plan redesign that came out of the reviews: managed enums, steps 51 to 59, the general walk, `plpgsql_check`, `--decide`, and type changes that never break a running app.
 - Every owner decision is in `INDEX.md` under "Decisions since the split". `reviews/step-01-open-items.md` has every open item, A to AV, each answered.
 
-**Latest:** step 02 is `in review`: PR #2 head `5754360`, DN1 to DN4 written in, CI green, CLEAN, checker 1240 R / 300 T, 0 problems, nothing open; IDs in Decisions. The eighth independent review is running on the changes since `878b5f7`, findings to `reviews/step-02-review-8.md`. Next free IDs: R-1241, T-0301.
+**Latest:** step 02 is `in review`: PR #2 head `5754360`, CI green, CLEAN, checker 1240 R / 300 T, 0 problems, nothing open. The eighth review (`05d734c`, `reviews/step-02-review-8.md`) found only DO1, a stale PR body line, which the coordinator fixed in the body (reworded so it no longer depends on INDEX). PR #2 is with the owner for approval. Next free IDs: R-1241, T-0301.
 
 ## What comes next
 
-1. Step 02: when the review reports, one agent writes DA to DE in and fixes the findings on PR #2; review repeats until clean; then the spikes-deletion commit and PR #2 to the owner. The owner approves the PRs of steps 01, 02, 03, 50 and 55.
-2. Then follow the order in `INDEX.md`.
+1. Step 02: the owner approves PR #2. Then merge (merge commit), mark step 02 `done`, and check `INDEX.md` on `main` keeps its Decisions and the branch's rows.
+2. Step 55 depends on 02: start it as a fresh agent, then an independent review. The owner approves the PRs of steps 01, 02, 03, 50 and 55.
+3. Then follow the order in `INDEX.md`.
 
 ## Open with the owner
 
