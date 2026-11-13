@@ -40,7 +40,11 @@ pgbouncer -d "$dir/apt.ini"
 docker run -d --name spike-pgbouncer --network host -v "$dir/image.ini:/etc/pgbouncer/pgbouncer.ini:ro" "$image"
 
 for port in 6432 6433; do
-  if ! pg_isready -h 127.0.0.1 -p "$port" -t 30; then
+  for _ in $(seq 30); do
+    if pg_isready -q -h 127.0.0.1 -p "$port"; then break; fi
+    sleep 1
+  done
+  if ! pg_isready -h 127.0.0.1 -p "$port"; then
     echo "::error::PgBouncer on port $port didn't answer."
     docker logs spike-pgbouncer
     exit 1

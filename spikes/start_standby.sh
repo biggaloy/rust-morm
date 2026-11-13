@@ -11,7 +11,12 @@ psql "host=127.0.0.1 port=5432 user=postgres dbname=postgres" -c "SELECT pg_relo
 docker run -d --name spike-standby --network host --user postgres --entrypoint bash "postgres:${PG_MAJOR:?}" -c \
   'pg_basebackup -h 127.0.0.1 -p 5432 -U postgres -D /var/lib/postgresql/standby -R -X stream && exec postgres -D /var/lib/postgresql/standby -p 5433 -c listen_addresses=127.0.0.1 -c hot_standby=on -c max_standby_streaming_delay=5s'
 
-if ! pg_isready -h 127.0.0.1 -p 5433 -t 120; then
+# pg_isready doesn't wait for a server that isn't listening yet, so poll.
+for _ in $(seq 120); do
+  if pg_isready -q -h 127.0.0.1 -p 5433; then break; fi
+  sleep 1
+done
+if ! pg_isready -h 127.0.0.1 -p 5433; then
   echo "::error::The standby didn't answer on port 5433."
   docker logs spike-standby
   exit 1
