@@ -1,0 +1,95 @@
+# Step 55's proofs 13 to 18 on Postgres 15 to 18, through PgBouncer and on a
+# hot standby. Deleted with `spikes/` when the step ends.
+name: spikes
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  spikes:
+    name: spikes (pg ${{ matrix.pg }})
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        pg: [15, 16, 17, 18]
+    services:
+      postgres:
+        image: postgres:${{ matrix.pg }}
+        env:
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 2s
+          --health-timeout 5s
+          --health-retries 30
+    env:
+      SPIKE_DSN: host=127.0.0.1 port=5432 user=postgres dbname=postgres
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-rust
+        with:
+          toolchain: "1.99.1"
+      - name: Server version
+        run: psql "$SPIKE_DSN" -Atc "SHOW server_version"
+      - name: Build
+        run: cargo build --locked --release --manifest-path spikes/Cargo.toml
+      - name: A German locale in the service, for proof 14
+        env:
+          PG_CONTAINER: ${{ job.services.postgres.id }}
+        run: |
+          docker exec "$PG_CONTAINER" localedef -i de_DE -f UTF-8 de_DE.UTF-8
+          docker exec "$PG_CONTAINER" ls /usr/share/locale/de/LC_MESSAGES
+      - name: Proof 13
+        run: cargo run --locked --release --manifest-path spikes/Cargo.toml --bin p13
+      - name: Proof 14
+        env:
+          SPIKE_LC: de_DE.UTF-8
+        run: cargo run --locked --release --manifest-path spikes/Cargo.toml --bin p14
+      - name: Proof 15
+        run: cargo run --locked --release --manifest-path spikes/Cargo.toml --bin p15
+      - name: Start PgBouncer 1.22 and 1.26.1
+        run: bash spikes/start_pgbouncers.sh
+      - name: Proof 16, PgBouncer 1.22
+        env:
+          SPIKE_BOUNCER_NAME: "1.22"
+          SPIKE_BOUNCER_DSN: host=127.0.0.1 port=6432 user=postgres dbname=postgres
+          SPIKE_BOUNCER_ADMIN_DSN: host=127.0.0.1 port=6432 user=postgres dbname=pgbouncer
+        run: cargo run --locked --release --manifest-path spikes/Cargo.toml --bin p16
+      - name: Proof 16, PgBouncer 1.26.1
+        env:
+          SPIKE_BOUNCER_NAME: "1.26.1"
+          SPIKE_BOUNCER_DSN: host=127.0.0.1 port=6433 user=postgres dbname=postgres
+          SPIKE_BOUNCER_ADMIN_DSN: host=127.0.0.1 port=6433 user=postgres dbname=pgbouncer
+        run: cargo run --locked --release --manifest-path spikes/Cargo.toml --bin p16
+      - name: Start a streaming standby
+        env:
+          PG_CONTAINER: ${{ job.services.postgres.id }}
+          PG_MAJOR: ${{ matrix.pg }}
+        run: bash spikes/start_standby.sh
+      - name: Proof 17
+        env:
+          SPIKE_STANDBY_DSN: host=127.0.0.1 port=5433 user=postgres dbname=postgres
+        run: cargo run --locked --release --manifest-path spikes/Cargo.toml --bin p17
+      - name: Install plpgsql_check from PGDG into the running service
+        env:
+          PG_CONTAINER: ${{ job.services.postgres.id }}
+          PG_MAJOR: ${{ matrix.pg }}
+        run: |
+          echo "SPIKE_PG_STARTED=$(psql "$SPIKE_DSN" -Atc 'SELECT pg_postmaster_start_time()::text')" >> "$GITHUB_ENV"
+          docker exec "$PG_CONTAINER" apt-get update
+          docker exec "$PG_CONTAINER" apt-get install -y "postgresql-$PG_MAJOR-plpgsql-check"
+          docker exec "$PG_CONTAINER" dpkg-query -W "postgresql-$PG_MAJOR-plpgsql-check"
+      - name: Proof 18
+        run: cargo run --locked --release --manifest-path spikes/Cargo.toml --bin p18

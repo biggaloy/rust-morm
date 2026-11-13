@@ -334,11 +334,16 @@ pub async fn statements(t: &Target, mode: Mode, rep: &mut Report) {
     );
     t.migrate(&setup_sql(&sch)).await;
 
+    // A standby can't write, so it runs no insert or update.
+    let list: Vec<Stmt> = STATEMENTS
+        .into_iter()
+        .filter(|s| !(t.standby() && matches!(s, Stmt::Insert | Stmt::Update)))
+        .collect();
     let mut ctxs = Vec::new();
     for ctx in [Ctx::Out, Ctx::In] {
         let s = t.app().await;
         let mut stmts = Vec::new();
-        for st in STATEMENTS {
+        for st in list.iter().copied() {
             let p = s
                 .prepare_typed(&st.sql(&sch), &[st.carrier()])
                 .await
@@ -354,7 +359,7 @@ pub async fn statements(t: &Target, mode: Mode, rep: &mut Report) {
 
     for (ctx, s, stmts) in &ctxs {
         let ctx = *ctx;
-        for (st, p) in STATEMENTS.iter().zip(stmts) {
+        for (st, p) in list.iter().zip(stmts) {
             let st = *st;
             for (step, l) in [
                 ("run 1, label d", "d"),
@@ -399,7 +404,7 @@ pub async fn statements(t: &Target, mode: Mode, rep: &mut Report) {
             &format!("SET lc_messages = '{lc}'"),
             &set,
         ]);
-        for (st, p) in STATEMENTS.iter().zip(stmts) {
+        for (st, p) in list.iter().zip(stmts) {
             let o = run(s, Ctx::Out, &How::Prepared(p), *st, &sch, "d").await;
             rep.row(&[
                 "outside a transaction",
@@ -416,7 +421,7 @@ pub async fn statements(t: &Target, mode: Mode, rep: &mut Report) {
         rep.row(&["-", "-", "PgBouncer RECONNECT", &r]);
         for ctx in [Ctx::Out, Ctx::In] {
             let n = t.app().await;
-            for st in STATEMENTS {
+            for st in list.iter().copied() {
                 let o = prepare_and_run(&n, ctx, &st.sql(&sch), st, &sch, "d").await;
                 rep.row(&[ctx.name(), st.name(), "after RECONNECT, new client", &o]);
             }
@@ -424,7 +429,7 @@ pub async fn statements(t: &Target, mode: Mode, rep: &mut Report) {
     } else {
         for ctx in [Ctx::Out, Ctx::In] {
             let n = t.app().await;
-            for st in STATEMENTS {
+            for st in list.iter().copied() {
                 let o = prepare_and_run(&n, ctx, &st.sql(&sch), st, &sch, "d").await;
                 rep.row(&[ctx.name(), st.name(), "new connection", &o]);
             }

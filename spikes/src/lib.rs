@@ -10,16 +10,22 @@ use std::sync::{Arc, Mutex};
 use tokio_postgres::types::{FromSql, IsNull, Kind, ToSql, Type, to_sql_checked};
 use tokio_postgres::{AsyncMessage, Client, Error, NoTls};
 
-/// A connection, with the notices the server sent it.
+/// A connection, with the notices the server sent it, and the error that
+/// closed it, such as a `FATAL` the server sent while it was idle.
 pub struct Session {
     pub c: Client,
     notices: Arc<Mutex<Vec<String>>>,
+    closed: Arc<Mutex<Option<String>>>,
 }
 
 impl Session {
     /// The notices received since the last call.
     pub fn take_notices(&self) -> Vec<String> {
         std::mem::take(&mut *self.notices.lock().unwrap())
+    }
+    /// Why the connection closed, if the server said.
+    pub fn closed_by(&self) -> Option<String> {
+        self.closed.lock().unwrap().clone()
     }
 }
 
@@ -33,7 +39,9 @@ impl std::ops::Deref for Session {
 pub async fn connect(dsn: &str) -> Result<Session, Error> {
     let (c, mut connection) = tokio_postgres::connect(dsn, NoTls).await?;
     let notices = Arc::new(Mutex::new(Vec::new()));
+    let closed = Arc::new(Mutex::new(None));
     let sink = notices.clone();
+    let why = closed.clone();
     tokio::spawn(async move {
         loop {
             match std::future::poll_fn(|cx| connection.poll_message(cx)).await {
@@ -44,11 +52,15 @@ pub async fn connect(dsn: &str) -> Result<Session, Error> {
                     n.message()
                 )),
                 Some(Ok(_)) => {}
-                Some(Err(_)) | None => break,
+                Some(Err(e)) => {
+                    *why.lock().unwrap() = Some(show(&e));
+                    break;
+                }
+                None => break,
             }
         }
     });
-    Ok(Session { c, notices })
+    Ok(Session { c, notices, closed })
 }
 
 /// Connects or stops the proof: every proof needs its servers.
