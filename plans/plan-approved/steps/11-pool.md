@@ -187,7 +187,7 @@ morm: pool max 160 lowered to 92 (max_connections=100, reserved=3, margin=5)
 
 ### Managed enums
 
-- **R-0975** **Stale generation.** The pool holds a generation counter for connections, in one atomic word, and each connection remembers the value it started with. A checkout compares them with one atomic read and no lock, and replaces a connection that's behind. Step 14 raises the counter when a connection reports stale server state, so after an enum swap the other connections don't each have to fail first. `pool_stats()` counts these replacements.
+- **R-0975** **Stale generation.** The pool holds a generation counter for connections, in one atomic word, and each connection remembers the value it started with. A checkout compares them with one atomic read and no lock, and replaces a connection that's behind. Step 14 raises the counter when a connection reports stale server state, so after an enum swap the other connections don't each have to fail first. Behind a pooler, with `pooler = "transaction"`, a stale-session error doesn't raise it, because replacing a client connection can't reach the server session that holds the stale code. Owner decision SD. `pool_stats()` counts these replacements.
 
 ## Test obligations
 

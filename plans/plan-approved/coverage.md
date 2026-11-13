@@ -4,7 +4,7 @@ Generated from the frozen plan. Each requirement and test obligation lives in ex
 
 Kinds: `code` needs a tagged test, `doc` is checked in the README step, `info` is context with nothing to build.
 
-Totals: 1243 requirements, 304 test obligations.
+Totals: 1247 requirements, 307 test obligations.
 
 ## Requirements
 
@@ -706,7 +706,7 @@ Totals: 1243 requirements, 304 test obligations.
 | R-0694 | code | 12 | 1487 | \| Panic, or task cancelled \| Drop, with `panic = "unwind"` \| |
 | R-0695 | code | 12 | 1488 | \| Process crash, `kill -9`, `panic = "abort"` \| The OS closes the socket, and Postgres e… |
 | R-0696 | code | 12 | 1489 | \| Machine or network dies (TCP) \| morm sets TCP keepalives, and the server clears the se… |
-| R-0697 | code | 12 | 1490 | \| Postgres restarts \| Every session ends. The next use of `held` returns `ConnectionLost… |
+| R-0697 | code | 12 | 1490 | \| Postgres restarts, or a hot standby's replay ends the session over a recovery conflict … |
 | R-0698 | code | 12 | 1492 | - **Held connections are closed on release, never reused.** They can carry `LISTEN`, temp … |
 | R-0699 | code | 12 | 1493 | - **Reconnecting:** `db.hold().on_connect(...)` re-applies session state after a lost conn… |
 | R-0700 | code | 12 | 1494 | - **Forgotten holds:** `#[must_use]` warns if a guard is discarded straight away. Rust can… |
@@ -990,8 +990,8 @@ Totals: 1243 requirements, 304 test obligations.
 | R-0978 | code | 56 | 0 | - **Enum binding needs no OID.** morm writes `ToSql` and `FromSql` for `PgEnum` itself and… |
 | R-0979 | code | 56 | 0 | - **A label the binary doesn't know** returns `Error::UnknownEnumValue`, with the type and… |
 | R-0980 | code | 56 | 0 | - **Renamed labels.** `#[pg_enum(was = "old")]` on a variant decodes both labels to it and… |
-| R-0981 | code | 14 | 0 | - **Stale server state.** Two errors, from any statement, mean a session holds compiled co… |
-| R-0982 | code | 14 | 0 | - **Telling the rest of the pool.** Any stale statement raises a statement generation, hel… |
+| R-0981 | code | 14 | 0 | - **Stale server state.** Three errors, from any statement, mean a session holds compiled … |
+| R-0982 | code | 14 | 0 | - **Telling the rest of the pool.** A confirmed stale statement raises a statement generat… |
 | R-0983 | code | 14 | 0 | - **Retrying is safe.** Postgres rolls back a failed statement outside a transaction, so a… |
 | R-0984 | code | 20 | 0 | - **Stale statements inside a transaction.** The stale errors that step 14 retries can't b… |
 | R-0985 | code | 20 | 0 | - `.retry(n)` also retries `Error::SchemaChanged`, because the next attempt runs on fresh … |
@@ -1253,6 +1253,10 @@ Totals: 1243 requirements, 304 test obligations.
 | R-1241 | code | 56 | 0 | - **Enum and composite result columns are read as text.** `tokio-postgres` looks up any re… |
 | R-1242 | code | 16 | 0 | - **Raw SQL reads enum and composite columns as text.** morm can't add a cast to SQL you w… |
 | R-1243 | code | 45 | 0 | - **T5, result columns read as text.** The typing pass also reads each query's result colu… |
+| R-1244 | code | 12 | 0 | **CI's `standby` job.** This step adds a job to `ci.yml` that runs on every push and pull … |
+| R-1245 | code | 14 | 0 | **Recognising a stale error in any language.** `lc_messages` translates every message but … |
+| R-1246 | code | 14 | 0 | **Behind PgBouncer, a statement generation every process shares.** PgBouncer keeps one ser… |
+| R-1247 | code | 20 | 0 | - **A hot standby ends a connection inside a transaction.** Replaying DDL on a hot standby… |
 
 ## Test obligations
 
@@ -1562,3 +1566,6 @@ Totals: 1243 requirements, 304 test obligations.
 | T-0302 | integration | 16 | **Raw SQL and enum columns, on Postgres 15–18:** `db.sql()`, `db.raw::<T>()`, `sql_uncheck… |
 | T-0303 | integration | 45 | **T5, on Postgres 15–18:** `check-sql` reports a registered `sql!` query returning an enum… |
 | T-0304 | integration | 15 | **Enum and composite reads behind PgBouncer with no prepared statements, in the `pooler` j… |
+| T-0305 | integration | 12 | **A held connection ended by a recovery conflict, in the `standby` job, on Postgres 15–18:… |
+| T-0306 | integration | 14 | **Stale statements behind PgBouncer, in the `pooler` job:** through 1.22 and 1.26.1 with `… |
+| T-0307 | integration | 20 | **A recovery conflict inside a transaction, in the `standby` job step 12 adds, on Postgres… |
