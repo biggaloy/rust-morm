@@ -27,7 +27,7 @@ The 30-minute wake-up lived only in the session, so a restart removes it. After 
 - Step 01's code is reviewed and fixed. PR #1 now also carries the plan redesign that came out of the reviews: managed enums, steps 51 to 59, the general walk, `plpgsql_check`, `--decide`, and type changes that never break a running app.
 - Every owner decision is in `INDEX.md` under "Decisions since the split". `reviews/step-01-open-items.md` has every open item, A to AV, each answered.
 
-**Latest:** step 02 is `in review`: PR #2 head `4a3a265`, all decisions through DI4 written in, CI green, checker 1235 R / 298 T, 0 problems, nothing open. The third review is done (`1a95854`, `reviews/step-02-review-3.md`): nothing blocks; DJ1 to DJ11, DJ2 and DJ3 answered (send UTC through PgBouncer; `Sql<'a, P>`). One fix agent is writing DJ1 to DJ11 into PR #2; then the review repeats. Next free IDs: R-1236, T-0299.
+**Latest:** step 02 is `in review`: PR #2 head `47be1d6`, DJ1 to DJ11 written in, CI green, CLEAN, checker 1236 R / 299 T, 0 problems, nothing open; IDs in Decisions. The fourth independent review is running, findings to `reviews/step-02-review-4.md`. Next free IDs: R-1237, T-0300.
 
 ## What comes next
 
