@@ -27,11 +27,11 @@ The 30-minute wake-up lived only in the session, so a restart removes it. After 
 - Step 01's code is reviewed and fixed. PR #1 now also carries the plan redesign that came out of the reviews: managed enums, steps 51 to 59, the general walk, `plpgsql_check`, `--decide`, and type changes that never break a running app.
 - Every owner decision is in `INDEX.md` under "Decisions since the split". `reviews/step-01-open-items.md` has every open item, A to AV, each answered.
 
-**Latest:** the owner approved PR #2; it's merged as `34c81aa` (merge commit), and step 02 is `done`. `INDEX.md` on `main` keeps its Decisions. Step 55 is `in progress` with a fresh agent on branch `step-55-enum-proofs`. Next free IDs: R-1241, T-0301.
+**Latest:** step 55 is `in review`: PR #3 (`step-55-enum-proofs`), head `7a7285b`, spikes run on Postgres 15 to 18 and deleted (last commit with them `d8bd613`), CI green, checker 0 problems. Questions EA to ED in `reviews/step-55-open-items.md` are with the owner; the independent review runs in parallel, findings to `reviews/step-55-review.md`. Next free IDs: R-1241, T-0301.
 
 ## What comes next
 
-1. Step 55: the fresh agent opens a PR, then an independent review until clean, then the owner approves. The owner approves the PRs of steps 01, 02, 03, 50 and 55.
+1. Step 55: get the owner's answers to EA to ED and the review's findings, have one fix agent write both into PR #3, review until clean, then the owner approves. The owner approves the PRs of steps 01, 02, 03, 50 and 55.
 2. Then follow the order in `INDEX.md`.
 
 ## Open with the owner
