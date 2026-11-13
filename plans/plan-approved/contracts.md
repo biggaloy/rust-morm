@@ -83,12 +83,15 @@ pub trait SqlType {
     const LIST_CARRIER: tokio_postgres::types::Type;
     const CARRIES: &'static [&'static str];
     const TEXT_FORM: bool;
-    // EA: a result column of this type is read as "col"::text, or ::text[] for a list, in every
-    // column list morm writes, so the driver never looks its type up with named statements of
-    // its own, which fail behind PgBouncer with no prepared statements. True for PgEnum,
-    // PgComposite, a PgDomain over one of them and a list of any of these; #[model] and #[view]
-    // also read as text a TEXT_FORM field whose sql names a type morm doesn't know (step 56)
-    const READ_AS_TEXT: bool;
+    // EA, EF2: the cast written after a result column of this type in every column list morm
+    // writes, as "col"::text, or "" for none, so the driver never looks a type up with named
+    // statements of its own, which fail behind PgBouncer with no prepared statements: "text"
+    // for PgEnum, PgComposite and a PgDomain over one of them, "text[]" for a list of any of
+    // these, and for a list of a PgDomain over a built-in type its base type's array, such as
+    // "int4[]", because Postgres sends an array of a domain as the domain's own array type
+    // (a scalar domain comes as its base type). #[model] and #[view] also read as text a
+    // TEXT_FORM field whose sql names a type morm doesn't know (R-1241, step 56)
+    const READ_AS: &'static str;
 }
 // A parameter, object safe for &dyn Param in runtime fragments (R-0723), with a blanket
 // impl from SqlType: Option<T> and &T take T's cast and carrier, Vec<T> and &[T] T's list

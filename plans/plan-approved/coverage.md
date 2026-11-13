@@ -4,7 +4,7 @@ Generated from the frozen plan. Each requirement and test obligation lives in ex
 
 Kinds: `code` needs a tagged test, `doc` is checked in the README step, `info` is context with nothing to build.
 
-Totals: 1254 requirements, 310 test obligations.
+Totals: 1255 requirements, 313 test obligations.
 
 ## Requirements
 
@@ -1264,6 +1264,7 @@ Totals: 1254 requirements, 310 test obligations.
 | R-1252 | doc | 50 | 0 | The README shows this notice loudly, beside transactions: > **On a hot standby, a migratio… |
 | R-1253 | doc | 50 | 0 | The README shows this notice loudly, beside `pooler = "transaction"`: > **Behind PgBouncer… |
 | R-1254 | doc | 50 | 0 | The README shows this notice loudly, beside raw SQL with `db.sql()`: > **In raw SQL, read … |
+| R-1255 | doc | 50 | 0 | The README shows this notice loudly, beside the migration commands: > **The migrating role… |
 
 ## Test obligations
 
@@ -1579,3 +1580,6 @@ Totals: 1254 requirements, 310 test obligations.
 | T-0308 | suite | 33 | **The reset, on Postgres 15–18:** after a `tx` step that, through a test-only op, swaps an… |
 | T-0309 | suite | 38 | **Retired enum labels, on Postgres 15–18:** retiring an enum type with its column renames … |
 | T-0310 | integration | 59 | **Hidden narrowings, on Postgres 15–18:** with `plpgsql_check` 2.10.16, a managed function… |
+| T-0311 | integration | 14 | **The stale `22P02`, both branches, on Postgres 15–18:** after a hand-run swap that keeps … |
+| T-0312 | integration | 20 | **The stale `22P02` inside a transaction, on Postgres 15–18:** after a hand-run swap that … |
+| T-0313 | integration | 41 | **The statement generation at a pool's start, in the `pooler` job:** behind 1.22 and 1.26.… |
