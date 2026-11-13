@@ -196,7 +196,7 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 
 **R-1240** The README ends with a "Contributing" section, which step 12 starts and this step keeps, showing this notice loudly:
 
-> **A green `pooler` job can have skipped a PgBouncer version.** When a version can't be installed in a run, after one retry, its cases are skipped, not failed, and the job writes a `::warning::` naming the PgBouncer and Postgres versions, such as `PgBouncer 1.22 skipped on Postgres 17: install failed`. Open the run's summary and read its annotations before trusting a green run. If a version was skipped, rerun the job; if it's skipped again, say so in the PR, and don't merge a change to pooler behaviour until a run has covered every version.
+> **A green `pooler` job can have skipped a PgBouncer version.** When a version can't be installed in a run, after one retry, or its download doesn't match its pinned SHA-256, its cases are skipped, not failed, and the job writes a `::warning::` naming the PgBouncer and Postgres versions, such as `PgBouncer 1.22 skipped on Postgres 17: install failed`. Open the run's summary and read its annotations before trusting a green run. If a version was skipped, rerun the job; if it's skipped again, say so in the PR, and don't merge a change to pooler behaviour until a run has covered every version.
 
 **R-1211** The README shows this notice loudly, beside raw SQL with `db.sql()`:
 
