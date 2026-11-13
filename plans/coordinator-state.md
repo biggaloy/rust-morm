@@ -27,7 +27,7 @@ The 30-minute wake-up lived only in the session, so a restart removes it. After 
 - Step 01's code is reviewed and fixed. PR #1 now also carries the plan redesign that came out of the reviews: managed enums, steps 51 to 59, the general walk, `plpgsql_check`, `--decide`, and type changes that never break a running app.
 - Every owner decision is in `INDEX.md` under "Decisions since the split". `reviews/step-01-open-items.md` has every open item, A to AV, each answered.
 
-**Latest:** step 02 is `in review`: PR #2 head `f4bdd82`, DK1 to DK9 written in, CI green, CLEAN, checker 1239 R / 300 T, 0 problems, nothing open; IDs in Decisions. The fifth independent review is running, findings to `reviews/step-02-review-5.md`. Next free IDs: R-1240, T-0301.
+**Latest:** step 02 is `in review`: PR #2 head `f4bdd82`, DK1 to DK9 written in, CI green, CLEAN, checker 1239 R / 300 T, 0 problems, nothing open; IDs in Decisions. The fifth independent review started but stopped on the weekly usage limit (resets 2026-11-18 07:00 Asia/Dhaka) before writing anything. After the reset, resume it in this session with SendMessage; after a session restart, start a fresh reviewer with the same brief (findings DL1, ... to `reviews/step-02-review-5.md`, focus on changes since `47be1d6`). Next free IDs: R-1240, T-0301.
 
 ## What comes next
 
