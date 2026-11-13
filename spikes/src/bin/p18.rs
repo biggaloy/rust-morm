@@ -350,21 +350,21 @@ async fn main() {
             .map(|r| r.get::<_, String>(0))
             .unwrap_or_default(),
     );
-    su.batch_execute(
-        r#"DROP DATABASE IF EXISTS p18_check WITH (FORCE);
-DROP DATABASE IF EXISTS p18_plain WITH (FORCE);
-DO $$ BEGIN
-  IF EXISTS (SELECT FROM pg_database WHERE datname = 'morm_plpgsql_check') THEN
-    ALTER DATABASE morm_plpgsql_check IS_TEMPLATE false;
-  END IF;
-END $$;
-DROP DATABASE IF EXISTS morm_plpgsql_check;
-DROP ROLE IF EXISTS p18_user;
-CREATE ROLE p18_user LOGIN CREATEDB;
-CREATE DATABASE morm_plpgsql_check;"#,
-    )
-    .await
-    .unwrap();
+    // One statement at a time: a multi-statement string runs as one
+    // transaction, and DROP DATABASE refuses that.
+    for sql in [
+        "DROP DATABASE IF EXISTS p18_check WITH (FORCE)",
+        "DROP DATABASE IF EXISTS p18_plain WITH (FORCE)",
+        "DO $$ BEGIN IF EXISTS (SELECT FROM pg_database WHERE datname = 'morm_plpgsql_check') THEN ALTER DATABASE morm_plpgsql_check IS_TEMPLATE false; END IF; END $$",
+        "DROP DATABASE IF EXISTS morm_plpgsql_check WITH (FORCE)",
+        "DROP ROLE IF EXISTS p18_user",
+        "CREATE ROLE p18_user LOGIN CREATEDB",
+        "CREATE DATABASE morm_plpgsql_check",
+    ] {
+        su.batch_execute(sql)
+            .await
+            .unwrap_or_else(|e| panic!("{sql}: {}", show(&e)));
+    }
     let tpl = must_connect(&dsn_for(&base, "postgres", "morm_plpgsql_check", "")).await;
     rep.row(&[
         "superuser",
@@ -468,9 +468,17 @@ CREATE DATABASE morm_plpgsql_check;"#,
     drop(plain);
     drop(user_pg);
     tokio::time::sleep(std::time::Duration::from_millis(200)).await;
-    su.batch_execute("DROP DATABASE p18_check WITH (FORCE); DROP DATABASE p18_plain WITH (FORCE); ALTER DATABASE morm_plpgsql_check IS_TEMPLATE false; DROP DATABASE morm_plpgsql_check WITH (FORCE); DROP ROLE p18_user;")
-        .await
-        .unwrap();
+    for sql in [
+        "DROP DATABASE p18_check WITH (FORCE)",
+        "DROP DATABASE p18_plain WITH (FORCE)",
+        "ALTER DATABASE morm_plpgsql_check IS_TEMPLATE false",
+        "DROP DATABASE morm_plpgsql_check WITH (FORCE)",
+        "DROP ROLE p18_user",
+    ] {
+        su.batch_execute(sql)
+            .await
+            .unwrap_or_else(|e| panic!("{sql}: {}", show(&e)));
+    }
     rep.finish("proof 18");
 }
 
