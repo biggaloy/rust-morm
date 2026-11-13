@@ -27,7 +27,7 @@ The 30-minute wake-up lived only in the session, so a restart removes it. After 
 - Step 01's code is reviewed and fixed. PR #1 now also carries the plan redesign that came out of the reviews: managed enums, steps 51 to 59, the general walk, `plpgsql_check`, `--decide`, and type changes that never break a running app.
 - Every owner decision is in `INDEX.md` under "Decisions since the split". `reviews/step-01-open-items.md` has every open item, A to AV, each answered.
 
-**Latest:** step 02 is `in review`: PR #2 head `878b5f7`, DM1 to DM5 written in, CI green, CLEAN, checker 1240 R / 300 T, 0 problems, nothing open; IDs in Decisions. The seventh independent review is running on the changes since `05f47e2`, findings to `reviews/step-02-review-7.md`. Next free IDs: R-1241, T-0301.
+**Latest:** step 02 is `in review`: PR #2 head `878b5f7`. The seventh review is done (`7f02d26`, `reviews/step-02-review-7.md`): nothing blocks; DN1 to DN4, no owner choice needed. The fix agent writes them in; then the review repeats. Next free IDs: R-1241, T-0301.
 
 ## What comes next
 
