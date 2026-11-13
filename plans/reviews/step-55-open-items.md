@@ -30,3 +30,4 @@ The review (`reviews/step-55-review.md`) changes several of the questions above.
 - **EE11:** (a) replaying a swap ends a standby session idle in a transaction holding the table with FATAL `40001`, including a `db.hold()` connection; the plan has no rule. (b) R-0718 and R-0981 have no rule for a stale-statement error at prepare time behind PgBouncer.
 - **EE7 to EE9 (minor):** R-0994's text vs proof 15's `DISCARD PLANS` result; proof 13 never ran a statement cached before `ADD VALUE` after it (the reviewer's run shows it works); the recorded composite decoder shape leaves out NULL fields and bounds checks.
 - **EE10:** proofs 14 to 16 need an owner-approved change before the step can pass.
+- **Answered:** EA (b), read enum and composite columns as `::text`. The rest goes to one design pass: `reviews/stale-statement-design.md`.

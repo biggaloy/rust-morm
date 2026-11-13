@@ -27,7 +27,7 @@ The 30-minute wake-up lived only in the session, so a restart removes it. After 
 - Step 01's code is reviewed and fixed. PR #1 now also carries the plan redesign that came out of the reviews: managed enums, steps 51 to 59, the general walk, `plpgsql_check`, `--decide`, and type changes that never break a running app.
 - Every owner decision is in `INDEX.md` under "Decisions since the split". `reviews/step-01-open-items.md` has every open item, A to AV, each answered.
 
-**Latest:** step 55 is `in review`: PR #3 head `7a7285b`, CI green, checker 0 problems. The independent review is done (`7122fd9`, `reviews/step-55-review.md`): 4 blocking (EE1, EE2, EE10, plus EA reframed), 4 should fix, 2 minor. It changes EA to ED; the revised set is in `reviews/step-55-open-items.md`, with the owner. Next free IDs: R-1241, T-0301.
+**Latest:** step 55 is `in review`: PR #3 head `7a7285b`, CI green, checker 0 problems. The independent review is done (`7122fd9`, `reviews/step-55-review.md`): 4 blocking (EE1, EE2, EE10, plus EA reframed), 4 should fix, 2 minor. The owner answered EA (read enum and composite columns as `::text`) and approved one design pass for EE1, EB, EC, ED, EE6 and EE11, running now, choices to `reviews/stale-statement-design.md`. Then one fix agent writes everything into PR #3, and the review repeats. Next free IDs: R-1241, T-0301.
 
 ## What comes next
 
