@@ -49,13 +49,15 @@ jobs:
         env:
           PG_CONTAINER: ${{ job.services.postgres.id }}
         run: |
-          docker exec "$PG_CONTAINER" localedef -i de_DE -f UTF-8 de_DE.UTF-8
+          # Outside the locale archive, which the running server has mapped already.
+          docker exec "$PG_CONTAINER" localedef --no-archive -i de_DE -f UTF-8 de_DE.UTF-8
+          docker exec "$PG_CONTAINER" ls /usr/lib/locale
           docker exec "$PG_CONTAINER" ls /usr/share/locale/de/LC_MESSAGES
       - name: Proof 13
         run: cargo run --locked --release --manifest-path spikes/Cargo.toml --bin p13
       - name: Proof 14
         env:
-          SPIKE_LC: de_DE.UTF-8
+          SPIKE_LC: de_DE.utf8
         run: cargo run --locked --release --manifest-path spikes/Cargo.toml --bin p14
       - name: Proof 15
         run: cargo run --locked --release --manifest-path spikes/Cargo.toml --bin p15

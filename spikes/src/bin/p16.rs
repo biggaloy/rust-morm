@@ -34,7 +34,12 @@ async fn main() {
                             | "server_reset_query_always"
                     )
                 {
-                    shown.push(format!("{key} = {}", r.get(1).unwrap_or(key)));
+                    let value = if r.len() > 1 {
+                        r.get(1).unwrap_or("")
+                    } else {
+                        ""
+                    };
+                    shown.push(format!("{key} {value}"));
                 }
             }
         }
