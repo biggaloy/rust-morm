@@ -215,23 +215,24 @@ How to rerun: the commit that deletes `spikes/` and `spikes.yml` names its paren
 
 | # | Proof | Result |
 |---|---|---|
-| 13 | Enum and composite binding with no OID | Pass, with one finding for the owner: the driver looks up an enum or composite result column's type itself (Q1) |
-| 14 | Stale statements after a type swap | Recorded. Matches R-0718 and T-0151 on every version. The messages are translated by `lc_messages`, except `cache lookup failed for type` (Q2) |
-| 15 | Compiled plpgsql after a swap | Recorded. Matches the step's description, except that `DISCARD PLANS` cures `%ROWTYPE` and the trigger, though not `DECLARE v st` or `SELECT ... INTO`; with the old type kept, `DECLARE` and `INTO` fail with `22P02`, which R-0981 doesn't replace a connection on (Q4) |
-| 16 | Stale state behind PgBouncer | Recorded. **Contradicts R-0718 and R-0981 behind PgBouncer**: re-preparing, and replacing the client connection, don't clear a stale server session (Q3) |
-| 17 | Stale state on a hot standby | Recorded. The standby behaves as the primary does, and every recovery proved in 14 and 15 works on it; replay cancels a conflicting query after `max_standby_streaming_delay` |
-| 18 | `plpgsql_check` | Pass. An in-comment `@plpgsql_check_options: relid = ...` hides an `error`, so step 59 refuses functions containing it, as the step says |
+| 13 | Enum and composite binding with no OID | Pass, with an owner-approved change: the driver's own lookup of an enum or composite result column fails behind PgBouncer with no prepared statements, so morm reads such columns as `::text` (EA) |
+| 14 | Stale statements after a type swap | Recorded, with an owner-approved change. With the old type kept, a statement that touches no table of the type runs on the old type with no error for a label both types share, which after a reorder is a wrong answer (EE1); the reset and the relabel fix it (SA). Every message but `XX000`'s is translated, so stale errors are recognised by SQLSTATE and routine (SC) |
+| 15 | Compiled plpgsql after a swap | Recorded, with an owner-approved change. `DISCARD PLANS` cures `%ROWTYPE` and the trigger, not `DECLARE v st` or `SELECT ... INTO`, against R-0994's text (EE7); with the old type kept, `DECLARE` and `INTO` fail with `22P02` or run on the old type; the relabel makes them fail loudly, and a no-op `ALTER` recompiles unmanaged ones (SA, SB) |
+| 16 | Stale state behind PgBouncer | Recorded, with an owner-approved change. **It contradicted R-0718 and R-0981 behind PgBouncer**: re-preparing, and replacing the client connection, don't clear a stale server session. The reset, the shared statement generation in the cached text and an unnamed retry fix it (SA, SD, SE) |
+| 17 | Stale state on a hot standby | Recorded, with an owner-approved change for a session the replay ends inside a transaction (SG). The standby behaves as the primary does, the reset and the relabel replay, and every recovery proved in 14 and 15 works on it |
+| 18 | `plpgsql_check` | Pass, with an owner-approved change. An in-comment `@plpgsql_check_options: relid = ...` hides an `error`, so step 59 refuses functions containing it, as the step says; `disable:performance_warnings` and `disable:check` can hide a narrowing (SH) |
 
-Q1 to Q4 are questions for the owner, on PR #3; nothing here changes the design until the owner answers.
+The owner answered Q1 to Q4, and the independent review's EE1 to EE11 (`reviews/step-55-review.md`), as EA and SA to SH: EA on the review, and SA to SH as `reviews/stale-statement-design.md` recommends, every choice, with EE7 to EE9 fixed as the review recommends; these are owner decisions, which the coordinator records in `INDEX.md`. The design's evidence wasn't run in `spikes.yml`: the design session ran it locally on Postgres 15.20, 16.16, 17.12 and 18.7, built from ftp.postgresql.org's tarballs checked by SHA-256 with `--enable-nls`, behind PgBouncer 1.20.1 and 1.22.1 built from pgbouncer.org's tarballs checked by SHA-256, each with `default_pool_size = 3`, `min_pool_size = 3` and `server_round_robin = 1`, on a streaming standby of each made with `pg_basebackup -R`, `hot_standby_feedback = off` and `max_standby_streaming_delay = 3s`, and with `plpgsql_check` 2.10.16 built from its `v2.10.16` tag (SHA-256 `b4734ffac4110348e8b963abb5b4f97cf0ade819ab92a74f0ddd47c4141288e3`), through `psql` and a throwaway harness on `tokio-postgres` 0.7.18 that casts every parameter with its carrier. The review ran its own checks on 18.6 and 17.11, and behind PgBouncer 1.20.1 and 1.22.0. Each result below says whose run it was, and all four versions gave the same rows unless it says otherwise. Every owner-approved change is written into the step files, `contracts.md`, `coverage.md` and `tools/manifest.json` in PR #3, and the steps that build each change keep permanent tests of it.
 
-### 13. Enum and composite binding with no OID: pass, with a finding
+### 13. Enum and composite binding with no OID: pass, with an owner-approved change (EA)
 
 The shape, which steps 13 and 56 build on:
 
 - **Enum, `ToSql`:** `accepts` only `Type::TEXT`, and writes the label's bytes. The SQL casts it: `($2::"p13"."order_state")`. A list is a `Vec<T>` bound with the `text[]` carrier and cast `($3::"p13"."order_state"[])`.
 - **Enum, `FromSql`:** `accepts` `Type::TEXT` or any `Kind::Enum(_)`, ignoring the variant list inside it, and matches the label's bytes to a variant. A label it doesn't know is an error (R-0979's `UnknownEnumValue`). `Vec<T>` decodes an enum array through it.
 - **Composite, `ToSql`:** the text form `("street",zip)`, with `"` and `\` escaped by `\`, in a `text` carrier, cast `($4::"p13"."address")`; a list is `text[]` cast to `"p13"."address"[]`.
-- **Composite, `FromSql`:** `accepts` any `Kind::Composite(_)`, and reads the binary record (a field count, then each field's OID, length and bytes), skipping the OIDs on the wire and never reading the driver's field list.
+- **Composite, `FromSql`:** `accepts` any `Kind::Composite(_)`, and reads the binary record (a field count, then each field's OID, a length and that many bytes, where a length of `-1` is a NULL field with no bytes), skipping the OIDs on the wire and never reading the driver's field list. The spike's decoder didn't check a length against the buffer, so a NULL field would have panicked it; the test data had none (EE9).
+- **What steps 13 and 56 build, after EA:** enum and composite result columns are read as `::text`, so `PgEnum`'s and `PgComposite`'s `FromSql` accept only `text`, and a composite is parsed from its text form, which, on 18.6, Postgres prints as `("a,b",)` for `a,b` and a NULL, `("",1)` for an empty string, `("a\\b""c",2)` for `a\b"c` and `(" x",3)` for a leading space. Nothing between delimiters is NULL, and every position and length is checked, with an error, never a panic, on bad input (EE9; R-1241, T-0301). `ca::text[]` on a composite array returns each element's text form, so lists need no array-literal parsing.
 
 What ran, on a connection opened at the start and on one opened in each phase: an insert of every column (enum, enum array, composite with a quote, a comma and a backslash in its text, composite array) through `query_typed` and through a prepared statement, then each row read back through five selects (an enum parameter, an enum array parameter with `= ANY`, a composite parameter, a composite array with `= ANY`, and every column read as `::text`), each through `query_typed` and a prepared statement, decoded and compared with what was written: 111 checks per version, all passing. Phases: at the start; after `ALTER TYPE ... ADD VALUE 'shipped'`, binding and decoding the new label; after a swap of both types in one transaction (enum: rename, create with the labels reordered plus `refunded`, `ALTER COLUMN ... TYPE ... USING s::text::"order_state"`, drop the old one; composite: rename, create again, `USING addr::text::"address"`, drop the old one), binding and decoding `refunded`.
 
@@ -239,9 +240,22 @@ What ran, on a connection opened at the start and on one opened in each phase: a
 - After `ADD VALUE`, the driver's own copy of the enum on the first connection still lists `new,paid`, while `shipped` decodes: the decoder never reads it.
 - Statements the first connection prepared before the swap and that return the swapped columns get `0A000` after it; one returning them as `::text` keeps working. Proof 14 covers these.
 
-**Finding (Q1).** `tokio-postgres` itself looks up any result column type it doesn't know. When a row holds an enum or composite column, it prepares and runs a query on `pg_type` by OID, then one on `pg_enum` for an enum's labels or on `pg_attribute` for a composite's fields, once per connection per OID, and keeps them as named prepared statements (seen in `pg_prepared_statements`: one statement each on the first connection). A connection that reads the same columns as `::text` prepared none. The decoders above need nothing it fetches, so this is a cost (up to three extra round trips the first time a connection decodes a type, and one more cached entry per type) rather than a stale-state risk: a swap gives the new type a new OID, which is looked up afresh, and the old entry is never used again. Through PgBouncer 1.22 and 1.26.1 with `max_prepared_statements = 200` the lookup worked for two clients (proof 16). It wasn't tested behind a PgBouncer that keeps no prepared statements, such as 1.19.1 and 1.20.1, which DL3 runs with morm's caches off; the driver's own named statements would still be sent there.
+**Finding (Q1), and the owner's answer (EA).** `tokio-postgres` itself looks up any result column type that isn't built in. When a row holds an enum or composite column, it prepares and runs a query on `pg_type` by OID, then one on `pg_enum` for an enum's labels or on `pg_attribute` for a composite's fields, once per connection per OID, as named prepared statements of its own (seen in `pg_prepared_statements`: one statement each on the first connection), on the prepared path and through `query_typed` alike (`prepare.rs` and `query.rs` call `get_type` for any OID `Type::from_oid` doesn't know). A connection that reads the same columns as `::text` prepared none. The spike recorded this as a cost and recommended testing it in step 12, because through PgBouncer 1.22 and 1.26.1 with `max_prepared_statements = 200` the lookup worked; it ran with `default_pool_size = 1` and never behind a PgBouncer that keeps no prepared statements.
 
-### 14. Stale statements after a type swap: recorded
+**It's a failure, not a cost (EE2).** The lookup prepares and executes its statements in separate round trips, which in transaction mode with no prepared-statement support can reach different server connections. The review ran eight clients, five rounds, three `query_typed` decodes of an enum column each, 120 decodes per setup, on 18.6 and 17.11:
+
+| PgBouncer | Pool size | `max_prepared_statements` | Result |
+|---|---|---|---|
+| 1.20.1 | 4 | n/a | 83 of 120 failed with `26000 prepared statement "sN" does not exist` (`FetchPreparedStatement`) |
+| 1.20.1 | 1 | n/a | 120 right |
+| 1.22.0 | 4 | 0 | 86 of 120 failed the same way |
+| 1.22.0 | 4 | 200 | 120 right |
+
+**EA, owner decision:** morm reads enum and composite result columns, and arrays of them and domains over them, as `::text` or `::text[]` in every column list it writes, so the driver never looks their types up, and raw SQL must cast too: `PgEnum` and `PgComposite` decode only `text`, an uncast column is `Error::SchemaMismatch` naming the cast, and `check-sql` and `#[morm::test]` report one (R-1241 in step 56, R-1242 in step 16, R-1243 in step 45, T-0301 to T-0304, R-1254's README notice). The pooler job runs pools of at least three server connections (R-1238, T-0104), and T-0304 reads such columns behind PgBouncer with no prepared statements. Two choices of this fix, which the owner approves through PR #3: a type morm doesn't know, such as `citext` or `ltree`, under a field with a text form is read as `::text` too, because the driver looks it up the same way; and a domain over a built-in type needs no cast, because Postgres sends the base type in the row description, as this fix checked on 18.6 (a domain over `text` came back as OID 25, a domain over an enum as the enum's OID).
+
+**Statements cached before `ADD VALUE` (EE8).** The spike ran the statements it kept only after the swap. The review ran three statements prepared before `ADD VALUE 'z'`, with the new label, on 18.6 and 17.11: a free `($1::st)::text`, an `INSERT` binding `z`, and a `SELECT s FROM t` returning the column. All three returned `z` with no error. T-0148 now runs them.
+
+### 14. Stale statements after a type swap: recorded, with an owner-approved change (SA, SC)
 
 Each table `t` holds `s st` and `ss st[]`, and the swap renames `st` to `st_old`, creates `st` with the labels in another order plus `d`, changes both columns with `USING s::text::st`, inserts row 4 holding `d`, and then drops `st_old` or keeps it, in one transaction from another connection. Before it, each statement was prepared with its carrier (`int4`, `text` or `text[]`) and run once, on one connection run outside a transaction and another with each run in its own `BEGIN` ... `ROLLBACK`. After it, each ran three times (twice with the new label `d`, once with the old `b`), was prepared again on the same connection, ran through `query_typed`, and ran on a new connection. The same on 15, 16, 17 and 18, in and out of a transaction:
 
@@ -249,16 +263,38 @@ Each table `t` holds `s st` and `ss st[]`, and the swap renames `st` to `st_old`
 |---|---|---|
 | Returns the column: `SELECT s FROM t WHERE id = ($1::int4)` | `0A000` `cached plan must not change result type` (`RevalidateCachedQuery`), every run | the same |
 | On the swapped table: `s = ($1::st)`, `s = ANY(($1::st[]))`, `ss @> ARRAY[($1::st)]`, an insert and an update, each returning `s::text` or ids | right, every run, the new label included | right |
-| No table of the type: `SELECT ($1::st)` | `XX000` `cache lookup failed for type <n>` (`getTypeInputInfo`), every run, the old label too | `22P02` `invalid input value for enum <schema>.st_old: "d"` (`enum_in`); the old label `b` gives the right answer |
+| No table of the type: `SELECT ($1::st)` | `XX000` `cache lookup failed for type <n>` (`getTypeInputInfo`), every run, the old label too | `22P02` `invalid input value for enum <schema>.st_old: "d"` (`enum_in`); the old label `b` runs on the old type with no error, which the spike read as right only because it round-trips `b` as text (EE1) |
 | `SELECT ($1::st)::text` | `XX000` the same (`getTypeOutputInfo`) | `22P02` the same |
 | `SELECT ($1::st[])::text[]` | `XX000` the same (`getTypeInputInfo`) | `22P02` the same |
 
-- Every failure repeated on every run until the statement was prepared again; a re-prepare on the same connection, `query_typed` and a new connection were all right. The old statement kept failing after the re-prepare, since it's still cached. So R-0718 and T-0151 hold as written on all four versions.
+- Every failure repeated on every run until the statement was prepared again; a re-prepare on the same connection, `query_typed` and a new connection were all right. The old statement kept failing after the re-prepare, since it's still cached. This section said R-0718 and T-0151 held as written; they don't, with the old type kept (EE1, below).
 - The step's line "Postgres 18 gave `0A000`, `XX000` ..., `42883` and `42804`" wasn't reproduced for cached statements: with carriers, no statement gave `42883`, and `42804` came only from plpgsql. The design session's `42883` was from plain inference (`param-typing-design.md`, section 2) and its `42804` from plpgsql, which this matches.
 - **A `%ROWTYPE` function compiled before a column changes from `integer` to `bigint`** fails with `42804` `type of parameter 4 (bigint) does not match that when preparing the plan (integer)`, routine `plpgsql_param_eval_recfield`, on every call, on 15 to 18. A new connection clears it, as R-0981 says. `DISCARD PLANS` on the same session clears it too, and `DISCARD ALL` does.
-- **`lc_messages` (Q2).** With `SET lc_messages = 'de_DE.utf8'` (a superuser, on a server with the locale and the PGDG translations), on 15 to 18: `42804` reads `Typ von Parameter 4 (bigint) stimmt nicht mit dem überein, als der Plan vorbereitet worden ist (integer)`; `0A000` reads `gecachter Plan darf den Ergebnistyp nicht ändern`; `22P02` reads `ungültiger Eingabewert für Enum p14_stmt_keep.st_old: »d«`, still naming the type. `XX000` `cache lookup failed for type <n>` is never translated: Postgres raises it with `elog`. The routine field (`plpgsql_param_eval_recfield`, `RevalidateCachedQuery`, `enum_in`, `getType...Info`) is never translated. A role that isn't superuser can't choose: `SET lc_messages` and the startup option `-c lc_messages=...` both fail with `42501`, so a server whose `lc_messages` is set to another language sends these messages in it to every client.
+- **`lc_messages` (Q2).** With `SET lc_messages = 'de_DE.utf8'` (a superuser, on a server with the locale and the PGDG translations), on 15 to 18: `42804` reads `Typ von Parameter 4 (bigint) stimmt nicht mit dem überein, als der Plan vorbereitet worden ist (integer)`; `0A000` reads `gecachter Plan darf den Ergebnistyp nicht ändern`; `22P02` reads `ungültiger Eingabewert für Enum p14_stmt_keep.st_old: »d«`, still naming the type. `XX000` `cache lookup failed for type <n>` is never translated: Postgres raises it with `elog`. The routine field (`plpgsql_param_eval_recfield`, `RevalidateCachedQuery`, `enum_in`, `getType...Info`) is never translated. A role that isn't superuser can't choose for itself: `SET lc_messages` and the startup option `-c lc_messages=...` both fail with `42501`. This section said no client could change it, which overstated it (EE3): the review found on 18.6 and 17.11 that a superuser can run `ALTER ROLE app SET lc_messages = 'C'`, or, on 15 and later, `GRANT SET ON PARAMETER lc_messages TO app`, after which the role can `SET` it or send it at startup.
 
-### 15. Compiled plpgsql after a swap: recorded
+**With the old type kept, a stale statement runs on the old type with no error (EE1).** Postgres records no plan dependency on a plain enum type, so a cached plan keeps the old type's OID, and while the old type is kept, as R-1050 keeps it after every online swap until `purge`, a label both types share runs on it. After a reorder that's a wrong answer, and a cached `INSERT ... WHERE` writes a row the new order excludes. The review showed it on 18.6 and 17.11 (`st` `('a','b','c')` swapped to `('c','b','a','d')`, `st_old` kept): `EXECUTE b_lt('a','c')`, `($1::st) < ($2::st)`, returned `t` where a fresh statement returns `f`; `b_audit('c')` inserted its row; a plpgsql `DECLARE v st` function returned `true`. The design session ran SA's swap (rename, create reordered with `d`, retire the column, change a column to `bigint` in the same step) on 15.20, 16.16, 17.12 and 18.7, straight, with the same results on all four:
+
+| After the swap | No relabel, no reset | Relabel only | Reset only | Relabel and reset |
+|---|---|---|---|---|
+| `EXECUTE b_lt('a','c')`, `($1::st) < ($2::st)` | `t`, **silent** | `22P02` naming the retired type | `f`, right | `f`, right |
+| `EXECUTE b_const`, `'a'::st < 'c'::st` | `t`, **silent** | `t`, **silent** | `f`, right | `f`, right |
+| `EXECUTE b_audit('c')`, an `INSERT ... WHERE 'a'::st < ($1::st)` | inserts the row, **silent** | `22P02` | inserts nothing, right | inserts nothing, right |
+| A function `RETURN ('a'::st < 'c'::st)` | `true`, **silent** | `true`, **silent** | `false`, right | `false`, right |
+| A function with `DECLARE v st; v := p;` comparing `v < 'c'::st` | `true`, **silent** | `22P02` naming the retired type | `42883 operator does not exist: st_old < st` | `22P02` naming the retired type |
+| A function with two such variables, comparing `v < w` | | | `true`, **silent** | |
+| A `%ROWTYPE` function | `42804` (`plpgsql_param_eval_recfield`) | `42804` | right | right |
+| `EXECUTE` of a statement returning the changed column | `0A000` | `0A000` | `0A000` | `0A000` |
+
+- **The relabel** renames each label of the kept type to `_morm_retired_<label>`. Rows keep every value, since Postgres stores a label by its OID, and read as the placeholders. It alone isn't enough: Postgres folds a constant such as `'a'::st` into a cached plan as the label's OID, so a folded comparison keeps the old order.
+- **The reset** creates and drops an operator in `_morm`. `plancache.c` registers `PlanCacheSysCallback` on the `pg_namespace` and `pg_operator` syscaches on 15 to 18, and the callback runs `ResetPlanCache()`, which marks every saved plan invalid, protocol-level statements and plpgsql's expressions included, in every session of the database at commit. Creating and dropping a schema and `GRANT USAGE ON SCHEMA` reset too, and `ALTER SCHEMA ... OWNER TO` its current owner didn't. `DISCARD PLANS` in the session gave the same table as the reset. It alone isn't enough either: a plpgsql variable's type is fixed when the function compiles, so `DECLARE v st` stays on the old type.
+- **Both together** leave nothing silent. A role owning the type and a schema for the operator, not superuser, ran the type rename, the relabel and the operator pair in one transaction on all four versions. With `lock_timeout = '200ms'` they committed while another session sat idle in a `REPEATABLE READ` transaction that had read the table. `pgbench -M prepared -S`, 8 clients, 10 s, on 18.7: 176,149 and 167,832 tps with no reset, 164,899 with one every 0.2 s. Once the retired type was dropped, as `purge` does, the `DECLARE` function in an old session gave `XX000 cache lookup failed for type`, which R-0981 already handles. SQL-language functions over the changed table were right after the reset.
+- **A transaction open at the cutover.** Postgres applies a committed catalog change to an open transaction only when it next takes a lock: in a `READ COMMITTED` transaction begun before the swap, a cached `($1::st) < ($2::st)` returned the old answer after the swap committed, until the same transaction read another table (all four versions). It ends with the transaction, and a transaction that touches a swapped table can't straddle the cutover, which takes that table's lock.
+
+**SA, owner decision:** every migration `tx` step ends with the reset and raises the statement generation (R-1248 in step 33); a retired enum type's labels are renamed `_morm_retired_<label>`, down and rollback map them back through the ledger, and labels starting `_morm_` are refused (R-0995, R-1049, R-1050, R-1023, R-0977, R-0997, R-1001); README notices R-1249 and R-1251. R-0718 and T-0151 change to match.
+
+**SC, owner decision (Q2, EE3):** stale errors are recognised by SQLSTATE with the routine, an identifier or an untranslated `elog` message, never translated text, with English messages as a second signal (R-1245, R-0981, R-0983, R-0984; T-0151 and T-0152 pin each routine on 15 to 18, in German too). The design session found, on 15.20 to 18.7 with German messages: `pl_exec.c` raises the parameter-type `42804` from exactly three routines, `plpgsql_param_eval_recfield`, `plpgsql_param_eval_generic` and `plpgsql_param_eval_generic_ro` (a `record` variable after a composite is made again gave the last); `RevalidateCachedQuery` raises the `0A000`, and 18 also raises its message from `sql_postrewrite_callback`, which isn't a stale statement; a retired type's name is in the `22P02` message in every language. The option of requiring English messages wasn't chosen, so its README notice isn't written.
+
+### 15. Compiled plpgsql after a swap: recorded, with an owner-approved change (SA, SB)
 
 Four functions, each compiled in a session (called once) before the swap, then called after it with the new label `d` twice and the old label `b` once: `DECLARE v st` assigned from a `text` argument, `SELECT s INTO v` with `v st`, a `t%ROWTYPE` variable, and a `BEFORE UPDATE` trigger function that never names the type (`IF NEW.s IS DISTINCT FROM OLD.s`). The same on 15 to 18:
 
@@ -267,17 +303,22 @@ Four functions, each compiled in a session (called once) before the swap, then c
 | `DECLARE v st` | `XX000` `cache lookup failed for type <n>` (`getTypeInputInfo`), every call | `22P02` `invalid input value for enum <schema>.st_old: "d"`; the old label `b` works |
 | `SELECT ... INTO v` | `XX000` (`getBaseTypeAndTypmod`), every call | `22P02` the same; `b` works |
 | `%ROWTYPE` | `XX000` (`getTypeOutputInfo`), every call | `42804` `type of parameter 4 (<schema>.st) does not match that when preparing the plan (<schema>.st_old)` (`plpgsql_param_eval_recfield`), every call |
-| The trigger | `XX000` (`format_type_extended`), every write | `42804` `type of parameter 14 (...st) does not match ... (...st_old)`, every write |
+| The trigger | `XX000` (`format_type_extended`), every write | `42804` `type of parameter 14 (...st) does not match ... (...st_old)` (`plpgsql_param_eval_recfield`, from the spike's log, EE3), every write |
 
 What clears it, each in its own session compiled before the swap:
 
-- `DISCARD PLANS`, and `DISCARD ALL`: cure `%ROWTYPE` and the trigger; `DECLARE` and `INTO` keep failing (`XX000`, now from `typeOrDomainTypeRelid` for `DECLARE`, or `22P02`). The step expected `DISCARD PLANS` not to help at all.
+- `DISCARD PLANS`, and `DISCARD ALL`: cure `%ROWTYPE` and the trigger; `DECLARE` and `INTO` keep failing (`XX000`, now from `typeOrDomainTypeRelid` for `DECLARE`, or `22P02`). The step expected `DISCARD PLANS` not to help at all, and R-0994 said it doesn't clear a stale compiled function; it clears some shapes and not a variable of the type (EE7). R-0994 now says so.
 - A no-op `CREATE OR REPLACE` of each function from another session: cures all four in a session that was failing.
 - A fresh session: all four right.
 
-**Q4.** With the old type kept, `DECLARE v st` and `SELECT ... INTO v` fail with `22P02` naming `st_old`, which isn't one of R-0981's two errors, and silently keep the old type for labels both types share. A morm app wouldn't replace the connection on it. The swap's refresh of managed plpgsql (a no-op `CREATE OR REPLACE`, which this proof shows cures it) covers managed functions; unmanaged ones are a decision already.
+**Q4, and the owner's answer (SB).** With the old type kept, `DECLARE v st` and `SELECT ... INTO v` fail with `22P02` naming `st_old` for a label the old type lacks, and keep the old type for labels both types share. The kept type is the default state after every online swap until `purge`, not an edge case, and always dropping the old type would conflict with R-1050 (EE5). The design session found, on 15.20 to 18.7:
 
-### 16. Stale state behind PgBouncer in transaction mode: recorded, contradicts R-0718 and R-0981
+- A `DECLARE v st` function compiled before the swap kept failing on every call, through named, unnamed and simple-protocol statements, until something recompiled it (18.7: 12 calls through the harness and 6 through `psql`). After the relabel each failure is `22P02 invalid input value for enum <schema>._morm_retired_m2_st: "a"`, routine `enum_in`. The reset doesn't fix it, and neither do `DISCARD PLANS` or `DISCARD ALL`.
+- **A no-op `ALTER FUNCTION f(text) COST 100`**, the cost unchanged, run by the function's owner, not superuser, from another session, made the next call in the failing session compile the function again and return the right answer, on all four versions: Postgres recompiles a plpgsql function when its `pg_proc` row's `xmin` or `ctid` changes, and any `ALTER FUNCTION` writes a new row. Behind PgBouncer 1.20.1 and 1.22.1 it fixed every server session, and on each standby, once replayed. A procedure has no `COST`: this fix checked on 18.6 that `ALTER PROCEDURE pr(text) COST 100` fails with `invalid attribute in procedure definition`, and that `ALTER PROCEDURE pr(text) SECURITY INVOKER`, on a procedure already `INVOKER`, writes a new row (its `xmin` and `ctid` changed), as `ALTER FUNCTION ... COST` does; R-1039 uses that for procedures, a choice the owner approves through PR #3.
+
+**SB, owner decision:** managed functions keep R-1039's refresh; each unmanaged plpgsql function or procedure the walk finds that the migrating role owns gets the no-op `ALTER`; a `22P02` naming a `_morm_retired_` type is a stale session; R-1040's decision says which it refreshed, that morm apps straight to Postgres recover by themselves, and that behind PgBouncer you run `RECONNECT` (R-1039, R-1040, R-0981, T-0168, R-1250).
+
+### 16. Stale state behind PgBouncer in transaction mode: recorded, contradicted R-0718 and R-0981, owner-approved change (SD, SE, SF)
 
 Proofs 14 and 15 repeated through PgBouncer 1.22.0 and 1.26.1, `pool_mode = transaction`, `max_prepared_statements = 200` (as morm runs 1.22 and later), and `default_pool_size = 1`, so every client reaches the same server session, as it can in production. The migration ran straight on Postgres. `server_reset_query` is `DISCARD ALL`, which PgBouncer doesn't run in transaction mode (`server_reset_query_always = 0`). The same on both PgBouncers and all four Postgres versions:
 
@@ -285,9 +326,30 @@ Proofs 14 and 15 repeated through PgBouncer 1.22.0 and 1.26.1, `pool_mode = tran
 - **Re-preparing doesn't clear a stale statement**, on the same client or on a new one: PgBouncer keeps one server-side statement per query text and hands the new prepare the old one, so the stale error comes back, sometimes at the prepare itself (`prepare: 0A000`, `prepare: XX000 ... (getBaseTypeAndTypmod)`). R-0718's evict, re-prepare and retry, and R-0981's retry on another connection, would both fail again.
 - **What clears a stale statement:** the same query with any change to its text (a trailing `/* g2 */` was enough): every statement was right at once; an unnamed statement (`query_typed`): always right; PgBouncer's `RECONNECT`, after which a new client's prepare was right.
 - **Replacing the client connection doesn't clear plpgsql either:** a new client reached the same server session and got the same errors. `DISCARD PLANS` and `DISCARD ALL` sent by the client cured `%ROWTYPE` and the trigger, not `DECLARE` or `INTO`, as straight. What cleared all four: a no-op `CREATE OR REPLACE` from the migration's connection, or `RECONNECT`. The `%ROWTYPE` column-change case (`42804`) was cleared by `DISCARD PLANS` and by `RECONNECT`.
-- An enum column decodes through both PgBouncers, so the driver's own type lookup works there (proof 13).
+- An enum column decodes through both PgBouncers, so the driver's own type lookup works there (proof 13). With `default_pool_size = 1` every round trip reached the one server, which hid EE2's failure (proof 13), and a marker counted inside each process starts at the same value in every process, so a process started after a swap would prepare the same text and get the stale server statement back; these errors also arrive at prepare time, which R-0718 didn't cover (EE4, EE11).
 
-### 17. Stale state on a hot standby: recorded
+The design session repeated it behind PgBouncer 1.22.1 with `max_prepared_statements = 200` and three server connections: six clients each cached S1 (`SELECT ($1::st)::text`), S2 (`(($1::st) < ($2::st))::text`), S3 (`SELECT n FROM t WHERE id = ($1::int4)`, whose result type changes), S4 (a `t%ROWTYPE` function), S5 (a `DECLARE v st` function, never refreshed) and S6 (an `UPDATE` firing a trigger comparing `NEW.s`) under the marker they read (`g1`), ran them until every server session held them, then SA's swap ran straight on Postgres. Each cell is six calls, the same on all four versions:
+
+| After the swap, with the reset | S1 | S2 | S3 | S4 | S5 | S6 |
+|---|---|---|---|---|---|---|
+| Old clients, their cached statements | right | right | `0A000` | right | `22P02` retired | right |
+| New clients preparing the old text (`g1`) | right | right | **`0A000` at prepare** | right | `22P02` retired | right |
+| New clients preparing under the marker they read (`g2`) | right | right | right | right | `22P02` retired | right |
+| Old clients, the same text unnamed | right | right | right | right | `22P02` retired | right |
+| After the no-op `ALTER FUNCTION` on S5's function | | | | | right | |
+
+| After the swap, without the reset | S1 | S2 | S3 | S4 | S5 | S6 |
+|---|---|---|---|---|---|---|
+| Old clients, cached | `22P02` | `22P02` | `0A000` | `42804` | `22P02` | `42804` |
+| New clients, old text | `22P02` | `22P02` | `0A000` at prepare | `42804` | `22P02` | `42804` |
+| New clients, a marker nothing raised (`g1`) | `22P02` | `22P02` | `0A000` at prepare | `42804` | `22P02` | `42804` |
+| Old clients, unnamed | right | right | right | `42804` | `22P02` | `42804` |
+
+Behind 1.22.1 with `max_prepared_statements = 0` and behind 1.20.1, where morm runs every statement unnamed, every call was right with the reset apart from S5, until the `ALTER`; without it, S4 and S6 gave `42804` and S5 `22P02` to old and new clients alike. Straight to Postgres, with the reset only S3 (`0A000`, R-0718's re-prepare) and S5 (`22P02`, a new connection or the `ALTER`) failed. So with the reset the only stale server statement left behind PgBouncer is one whose result type changed, permanent for that text on that server connection and arriving at prepare as often as at execute, and a marker every process reads cures it once a migration raises it.
+
+**SD, SE and SF, owner decisions (Q3, EE4, EE11b):** behind a pooler with the caches on, cached text starts with `/* morm g<n> */`, `n` the statement generation in the `_morm` schema's comment, which every `tx` step raises and every pool reads at start; a stale signal at prepare or execute retries once unnamed, then adopts the new `n` or, when it didn't move, a random salt; a stale-session signal behind a pooler raises no connection generation; the statement generation rises only for a confirmed stale statement, and a `22P02` is confirmed only by a retry that succeeds, because its text can come from a client, a choice of this fix the owner approves through PR #3 (R-1246, R-0718, R-0981, R-0982, R-0975, R-1116, R-1248, T-0306, T-0171, R-1253).
+
+### 17. Stale state on a hot standby: recorded, with an owner-approved change (SG)
 
 The swaps ran on the primary, and every app session was on a streaming standby (`hot_standby = on`, `hot_standby_feedback = off`, `max_standby_streaming_delay = 5s`), waiting for replay before each step. The same on 15 to 18:
 
@@ -295,7 +357,22 @@ The swaps ran on the primary, and every app session was on a streaming standby (
 - **Recovery on a `read_only` pool:** a re-prepare on the standby, a new standby session, and a no-op `CREATE OR REPLACE` run on the primary and replayed each cured what they cure on the primary; `DISCARD PLANS` and `DISCARD ALL` likewise cure only `%ROWTYPE`. So the recovery proved in 14 and 15 works on a standby, with the refresh run on the primary.
 - **Replay cancels queries.** Replaying a swap's `ALTER TABLE` needs an exclusive lock on the standby. A query reading the table was cancelled after the 5 s delay with `40001` `canceling statement due to conflict with recovery`, and replay then went on. A session idle in a `REPEATABLE READ` transaction that had read the table was ended after 5 s with `40001` `terminating connection due to conflict with recovery`, and its next statement found the connection closed. A session holding only a prepared statement on the table, outside a transaction, didn't delay replay (0.0 to 0.3 s) and its next run worked. With the default delay of 30 s, the swap's replay would wait up to 30 s behind any such query.
 
-### 18. `plpgsql_check`: pass
+The design session repeated it with SA's swap and the reset on the primary and `max_standby_streaming_delay = 3s`, on 15.20 to 18.7 (EE11a):
+
+| Standby session | What happened |
+|---|---|
+| Idle in a `REPEATABLE READ` transaction that had read the table | Ended after the delay. The client's connection task received `FATAL 40001 terminating connection due to conflict with recovery` while idle; the next statement got `tokio-postgres`'s `connection closed`, with no database error attached |
+| Idle in a `READ COMMITTED` transaction that had read the table | The same |
+| Running a query on the table during replay | `ERROR 40001 canceling statement due to conflict with recovery` after 3.5 s; the connection stayed |
+| Idle, not in a transaction, holding a prepared statement on the table | Untouched; its next run was right |
+| Cached statements and functions (S1 to S5) | As on the primary with the reset: S1, S2 and S4 right, S3 `0A000`, S5 `22P02` retired, so the reset and the relabel replay; after a no-op `ALTER FUNCTION` on the primary replayed, S5 was right |
+| The swap's replay | Waited 3.0 to 3.1 s behind the idle transactions |
+
+The recovery-conflict routine is `ProcessInterrupts` on 15 and 16 and `ProcessRecoveryConflictInterrupt` on 17 and 18, so nothing reads it.
+
+**SG, owner decision (EE11a):** a statement in a transaction that finds its connection closed by a `FATAL` `40001`, other than the `COMMIT`, returns `Error::Serialization`, which `.retry(n)` retries on a fresh connection; a loss found by the `COMMIT` stays `CommitUnknown`; a held connection gets `ConnectionLost` naming the conflict (R-1247, R-0697, T-0307, T-0305, T-0172, R-1252). CI gets a `standby` job in step 12, so steps 12, 20 and 59 can each test on it (R-1244); that placement is a choice of this fix, because step 59, which used to add the job, can run beside step 20.
+
+### 18. `plpgsql_check`: pass, with an owner-approved change (SH)
 
 `postgresql-NN-plpgsql-check` 2.10.16 installed from PGDG into the running `postgres:NN` service with `docker exec ... apt-get install`, with no restart (`pg_postmaster_start_time()` unchanged). A superuser made `morm_plpgsql_check` with the extension and `ALTER DATABASE ... IS_TEMPLATE true ALLOW_CONNECTIONS false`. Everything else ran as `p18_user`, with `CREATEDB` and not superuser: it cloned the template (`CREATE DATABASE ... TEMPLATE morm_plpgsql_check`), got `42501` from `CREATE EXTENSION plpgsql_check` in a database it made from `template0`, which holds no extension, and found the extension in the clone. Each check was `plpgsql_check_function_tb('<regprocedure>', fatal_errors => false, all_warnings => true)`, plus the trigger arguments. 66 checks per version, all passing, with identical findings on 15 to 18:
 
@@ -319,14 +396,39 @@ The swaps ran on the primary, and every app session was on a streaming standby (
 - **`plpgsql_check.mode = 'disabled'`** over a function with a real `42703`: set by `SET` (before or after the library loads), on the role, or in the connection's `options`, the check returns no findings and one `NOTICE 00000: plpgsql_check is disabled`, and `current_setting('plpgsql_check.mode', true)` reads `disabled` before the library loads; with nothing set it reads NULL, and with `by_function` the check runs. On the function, `ALTER FUNCTION ... SET plpgsql_check.mode = 'disabled'` by `p18_user` fails with `42501` `permission denied to set parameter` before the library loads in that session and works after it; then that function alone gets no findings and the `NOTICE`, `current_setting` reads NULL, and `pg_proc.proconfig` holds `plpgsql_check.mode=disabled`, while other functions are still checked. This is R-1082 and T-0204 as written.
 - **Trigger forms**, with the table and transition tables read from `pg_trigger`: `BEFORE ROW`, `AFTER ROW`, `AFTER STATEMENT`, transition tables (with `oldtable` and `newtable`) and `INSTEAD OF` on a view each report `42703` for the dropped column. Without `oldtable` and `newtable`, a transition-table function, healthy or not, gets `42P01 relation "nt" does not exist`. A trigger function with no trigger, checked with no table, fails with `22023 missing trigger relation`. An event trigger function, a procedure and a polymorphic function need nothing more and report the `42703`. A `language sql` function fails with `22023 f_sql() is not a plpgsql function`.
 - **`@plpgsql_check_options` can hide an `error`.** A trigger function on `tc` whose body holds `-- @plpgsql_check_options: relid = other`, where `other` still has the column `tc` lost, gets no findings when checked with `'tc'::regclass`: the comment's table wins over the argument. With `use_incomment_options => false` the `42703` comes back. `without_warnings = true` and `performance_warnings = false` in a comment also hide a narrowing's finding. So step 59 refuses functions containing `@plpgsql_check_options`, as the step file says; the option is `relid`, and the finding it hid was `error 42703 record "new" has no field "gone"`.
+- **Pragmas that hide a narrowing (EE6).** The spike didn't test `disable:performance_warnings`. The design session did, with 2.10.16 on 15.20 to 18.7, on a function with `v int` reading a `bigint` column, checked with `all_warnings => true`:
 
-### Questions for the owner on step 55
+| Line in the function | R-1080's finding |
+|---|---|
+| none | `performance 42804 cast "bigint" value to "integer" type` |
+| `PERFORM 'PRAGMA:DISABLE:PERFORMANCE_WARNINGS';` | **gone** |
+| the same in lower case | **gone** |
+| `PERFORM plpgsql_check_pragma('disable:performance_warnings');` | **gone** |
+| `aux int := plpgsql_check_pragma('disable:performance_warnings');` in `DECLARE` | **gone** |
+| `PERFORM 'PRAGMA:DISABLE:CHECK';` in a block around the read | **gone** |
+| `disable:other_warnings`, `extra_warnings`, `security_warnings` and `compatibility_warnings` | reported |
+| `disable:performance_warnings` in an inner block that ends before the read | reported |
+| `disable:performance_warnings` then `enable:performance_warnings` | reported |
+| `'PRAGMA: disable : performance_warnings'`, with spaces | reported, with `WARNING unsupported pragma` |
 
-None of these is decided here. Each has the evidence above, and the PR lists the options.
+The two `plpgsql_check_pragma(...)` forms fail at run time with `42883` in a database without the extension; the short forms are strings and run anywhere.
 
-- **Q1 (proof 13):** the driver's own lookup of enum and composite result types. Options: accept it, and prove it behind a PgBouncer with no prepared statements in step 12; or have morm read such columns as `::text` in the SQL it writes, which needs no lookup.
-- **Q2 (proofs 14 to 16):** R-0981's `42804` and R-0718's `0A000` are matched by message, which `lc_messages` translates and no client can change. Options: match on the SQLSTATE plus the error's routine field, which isn't translated (`plpgsql_param_eval_recfield`, `RevalidateCachedQuery`; `XX000` keeps its English message); or require English server messages.
-- **Q3 (proof 16):** behind PgBouncer a re-prepare and a new client connection don't clear a stale server session. Options: retry with a changed text (the statement generation as a comment); retry through an unnamed statement; turn morm's statement caches off behind PgBouncer; or have the migration send `RECONNECT` to the PgBouncers it's told about. Stale plpgsql behind PgBouncer is cleared only by the migration's `CREATE OR REPLACE` refresh or `RECONNECT`.
-- **Q4 (proof 15):** plpgsql compiled before a swap that keeps the old type fails with `22P02` naming the old type, which R-0981 doesn't act on. Options: rely on the swap's refresh of managed functions and the decision for unmanaged ones; also treat a `22P02` naming a type morm retired as a stale session; or always drop the old type in the swap's transaction.
+**SH, owner decision:** `performance_warnings` anywhere in a checked function's source, in any case, stops `makemigrations` with exit code `2`; a function holding `disable:check` that's checked on a change to a column's type, length or precision gets its own line in the narrowing decision, whose default refuses (R-1093, R-1080, T-0310, R-1084).
+
+### Owner decisions on step 55
+
+Q1 to Q4 were the step session's questions; the independent review (`reviews/step-55-review.md`) found EE1 to EE11. The owner's answers, with where each is written in:
+
+- **EA (Q1, EE2):** enum and composite result columns are read as `::text` (proof 13).
+- **SA (EE1):** every migration `tx` step ends with the reset, and a retired enum type's labels are renamed `_morm_retired_<label>` (proofs 14 and 15).
+- **SB (Q4, EE5):** a no-op `ALTER` recompiles unmanaged functions the migrating role owns, a `22P02` naming a retired type is a stale session, and R-1040's text says when to run `RECONNECT` (proof 15).
+- **SC (Q2, EE3):** stale errors are recognised without translated text (proof 14).
+- **SD, SE and SF (Q3, EE4, EE11b):** the shared statement generation behind PgBouncer, kept in the `_morm` schema's comment, raised only for a confirmed stale statement (proof 16).
+- **SG (EE11a):** a standby's recovery conflict inside a transaction is `Serialization` (proof 17).
+- **SH (EE6):** `performance_warnings` is refused, and `disable:check` gets a line in the narrowing decision (proof 18).
+- **EE7 to EE9,** as the review recommends: R-0994 now names what `DISCARD PLANS` clears (proof 15), the statements cached before `ADD VALUE` are recorded and T-0148 runs them (proof 13), and the composite decoder's NULL fields and bounds are recorded, for the text form EA chose (proof 13).
+- **EE10, the step's end-to-end check:** it asks for a pass or an owner-approved change for each item. Proofs 13 and 18 pass; proofs 14, 15, 16 and 17 each now have an owner-approved change written in, above, so the check is met.
+
+The spikes weren't brought back for these answers: every result they rest on was run by the review or the design session and is recorded above, and the steps that build each change keep permanent tests of it on Postgres 15 to 18.
 
 The spikes and `spikes.yml` were deleted before merge, as the step says; the last commit that has them is `d8bd613`: `git checkout d8bd61339f298f249b85f5d534734e2a65a8d6ff`.
