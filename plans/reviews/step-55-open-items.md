@@ -53,3 +53,7 @@ The review (`reviews/step-55-review.md`) changes several of the questions above.
 
 - **EJ1:** answered: on `53300`, replace the stale connection in its slot. EJ5 must heal behind PgBouncer too. EJ2 to EJ4, EJ6 to EJ9 fixed as recommended.
 - **EJ5:** answered: opt-in `RECONNECT` from `migrate` where a PgBouncer admin URL is configured, with PgBouncer's `server_lifetime` as the fallback elsewhere.
+
+## From the seventh review at `b33de20`
+
+- **EK1:** answered: behind a pooler, no marker moves and the statement enters the cool-down. EK2 to EK8 fixed as recommended.
