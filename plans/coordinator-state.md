@@ -10,7 +10,7 @@ Nothing is kept in `/tmp`: it's memory-backed here, so a power cut wipes it. Age
 
 ## Wake-up
 
-The 30-minute wake-up lived only in the session, so a restart removes it. After resuming, set it again with `CronCreate`, so a usage limit doesn't stall the work, and delete it when the job is done. A session started after 2026-11-06 15:50 also loads `autoContinueAtUsageLimit`.
+The 30-minute wake-up lives only in the session, so a restart removes it, and a recurring job also expires after 7 days. The first one (`32a9e7c4`) expired by 2026-11-14 and was recreated that day as `b71ec56e` (`13,43 * * * *`), which expires about 2026-11-21. After resuming, or when it expires, set it again with `CronCreate`, so a usage limit doesn't stall the work, and delete it when the job is done. While a usage limit is in force the wake-up can't run either; the first one after the reset resumes stopped agents.
 
 ## How to resume
 
