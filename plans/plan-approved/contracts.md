@@ -17,6 +17,8 @@ What parallel steps share. Signatures here are the starting point, taken from th
 
 - Rust 2024, MSRV 1.99.1, Tokio only, PostgreSQL 15 and later only.
 - Tool prefix `morm-`. Config `morm.toml`. Environment `MORM_*` and `DATABASE_URL`. Migrations in `morm-migrations/`. Ledger schema `_morm`.
+- `_morm` is owned by the migrating role and holds the database's statement generation in its comment, `morm statement generation <n>`, which any role reads from `pg_description` with no grant; a database with no `_morm` or no such comment reads as `0` (SE). Every migration `tx` step ends, in its own transaction, with the reset `CREATE OPERATOR _morm.### (LEFTARG = int4, RIGHTARG = int4, FUNCTION = int4eq); DROP OPERATOR _morm.### (int4, int4); COMMENT ON SCHEMA _morm IS 'morm statement generation <n>'`, `<n>` one more than before, which marks every cached plan in every session invalid at commit (SA, step 33). Behind a pooler with the statement caches on, the text of each cached statement starts with `/* morm g<n> */`, or `/* morm g<n>.<salt> */` after DDL made outside morm (SD, step 14).
+- Enum labels starting `_morm_` are reserved: a retired enum type's labels are renamed `_morm_retired_<label>` (SA, step 38).
 - Exit codes: `0` ok, `1` error or drift, `2` refused by a guard, `3` open decisions. A run with both a refusal and an open decision exits `2`.
 - Generated SQL always quotes names. Generated code uses static dispatch.
 - Macro-generated items are public API: names below don't change without following `rules.md`.
@@ -81,6 +83,20 @@ pub trait SqlType {
     const LIST_CARRIER: tokio_postgres::types::Type;
     const CARRIES: &'static [&'static str];
     const TEXT_FORM: bool;
+    // EA, EF2: the cast written after a result column of this type in every column list morm
+    // writes, as "col"::text, or "" for none, so the driver never looks a type up with named
+    // statements of its own, which fail behind PgBouncer with no prepared statements: "text"
+    // for PgEnum, PgComposite and a PgDomain over one of them, "text[]" for a list of any of
+    // these, and for a list of a PgDomain over a built-in type its base type's array, such as
+    // "int4[]", because Postgres sends an array of a domain as the domain's own array type
+    // (a scalar domain comes as its base type). #[model] and #[view] also read as text a
+    // TEXT_FORM field whose sql names a type morm doesn't know (R-1241, step 56)
+    const READ_AS: &'static str;
+    // EG4: the same for a list of this type, beside CAST_LIST, because stable Rust can't build
+    // a generic Vec<T>'s string from T's: "text[]" for PgEnum, PgComposite and a PgDomain
+    // over either, T::CAST_LIST (such as "int4[]") for a PgDomain over a built-in T, and ""
+    // for every other type. Vec<T> and &[T] take T::READ_AS_LIST as their READ_AS
+    const READ_AS_LIST: &'static str;
 }
 // A parameter, object safe for &dyn Param in runtime fragments (R-0723), with a blanket
 // impl from SqlType: Option<T> and &T take T's cast and carrier, Vec<T> and &[T] T's list
@@ -92,6 +108,14 @@ pub trait Param: tokio_postgres::types::ToSql + Sync {
     fn carrier(&self) -> tokio_postgres::types::Type;
     fn is_null(&self) -> bool;
 }
+// Proof 13 (step 55) and EA: a PgEnum's ToSql accepts only the text carrier and writes the
+// label; its FromSql accepts only text, because every enum result column is read as ::text,
+// and never reads a variant list. A PgComposite's ToSql writes its text form into a text
+// carrier, and its FromSql parses Postgres's text form, (a,b): nothing between delimiters is
+// NULL, "" an empty string, a backslash escapes the next character, "" inside quotes is one
+// ", each position and length is checked, and bad input is an error, never a panic (EE9).
+// Lists are Vec<T> with the text[] carrier, read as ::text[]. tokio-postgres never sees an
+// enum or composite result column, so it never looks one up (R-1241, R-1242, R-1243)
 // A value fits a field of type T without loss, and is encoded as that column's carrier.
 // An Option value fits only an Option field, so NULL is bound only through a nullable
 // field; a non-Option value fits an Option field (K). FitsList<T> does the same element
@@ -243,11 +267,18 @@ pub enum Upserted { Inserted, Updated, Unchanged }
 pub enum Error {
     Unique { constraint: String, field: Option<&'static str> },
     ForeignKey, NotNull, Check, Serialization, Deadlock, LockTimeout,
+                                               // Serialization also: a FATAL 40001 recovery conflict on a hot standby that
+                                               // ended the connection inside a transaction, before COMMIT (SG, step 20)
     TransactionTimeout, TransactionAborted, CommitUnknown, NestedConnection,
     PoolerMode, NotFound, EmptyPatch, Conflict, Forbidden, Validation,
     PoolBusy, ConnectionLost, ReadOnly, OutOfRange, InvalidText,
+                                               // ConnectionLost on a held connection names a recovery conflict when one ended it (SG, step 12)
     InvalidOrder, InvalidCursor, Decimal,
     SchemaChanged,                             // a stale statement or session inside a transaction or on a held connection, after a type swap
+                                               // or a column type change, recognised by SQLSTATE with the routine, an identifier or an
+                                               // untranslated elog message, never translated text (SC, R-1245): 0A000, the three plpgsql
+                                               // 42804 routines, XX000 cache lookup, and 22P02 from enum_in naming a _morm_retired_ type
+                                               // or another enum than the statement's cast (proofs 14 to 17)
     UnknownEnumValue,                          // a label this binary's enum doesn't have, with the type and label
     SchemaMismatch,                            // check_schema's findings, from a pool's start or db.check_schema(), each naming the table, column, both definitions and what's wrong
     Config, Connect, ServerTooOld, Postgres,   // config, connecting, a server below 15, any other database error
@@ -264,7 +295,7 @@ These are shared by steps that can run side by side, so each is written and froz
 | `Db`, `Tx` and every `Conn` entry point | `morm` | All runtime steps |
 | `Changes<M>` | `morm` | Updates, hooks |
 | The `by`/`any` filter builder | `morm` | Reads, updates |
-| The internal query entry point, which runs SQL through the caches. It can carry a "don't count this" flag for the loop detector, so step 45's exclusions (R-0785) need no signature change (proof 11, DD) | `morm` | Pool, statements, every query step |
+| The internal query entry point, which runs SQL through the caches. It can carry a "don't count this" flag for the loop detector, so step 45's exclusions (R-0785) need no signature change (proof 11, DD). Behind a pooler with the caches on, the text it prepares for a cached statement carries the statement generation's marker (SD) | `morm` | Pool, statements, every query step |
 | Macro field IR: the parsed form of `#[model]`, `#[col]` and `#[view]` | `morm-macros` | All model steps |
 | The conversion layer between a field and its column | `morm` | Models, types, reads, writes |
 | `SqlType`, the trait that gives a column and a free parameter its cast, carrier and the column types it carries without loss (DH2, DH3), and, for an enum, its labels as a constant; `Param`, `Fits`, `FitsList`, `Sql<'a, P>` and `Params` | `morm` | Models, types, statements, reads, writes, manifest |
@@ -274,7 +305,7 @@ These are shared by steps that can run side by side, so each is written and froz
 | The connection budget function, implemented in step 11 | `morm-core` | Pool, `doctor`, `size` |
 | `Timestamp`, re-exported `Uuid`, `Range<T>` as types | `morm` | Bases and inference, before `types` adds their encoding |
 | The internal transaction with confirmed commit, implemented in step 17 for `insert_many` and chunked paths, before `db.transaction` exists | `morm` | Inserts, updates, upsert, transactions |
-| `PoolStats`, with every counter the plan names, including connections replaced for a stale generation | `morm` | Pool, hold-pooler, locks, outbox, telemetry |
+| `PoolStats`, with every counter the plan names, including connections replaced for a stale generation, stale statements retried unnamed behind a pooler, and the pool's current marker, `g<n>` or `g<n>.<salt>` (SD) | `morm` | Pool, hold-pooler, locks, outbox, telemetry |
 | The internal warning sink: stderr now, `tracing` when enabled | `morm-core` | Every step that warns |
 | Expansion layout: `#[model]` calls one module per feature, so model steps add a module and don't edit one shared function | `morm-macros` | Model steps, `manifest`, `rolling` |
 | The config structs | `morm-core` | `morm`, `morm-migrate`, `morm-admin` |

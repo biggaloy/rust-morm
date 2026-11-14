@@ -50,7 +50,7 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 
 ### Managed enums
 
-- **R-0994** **Refreshing functions.** A session keeps its compiled copy of a plpgsql function, and when a type is replaced under it, that copy fails on every call. Nothing in the catalog shows this, and `DISCARD PLANS` doesn't clear it. The planner can re-run a managed function's `CREATE OR REPLACE` with its definition unchanged, in the same transaction, which makes every session recompile it. Step 59 decides which functions need it.
+- **R-0994** **Refreshing functions.** A session keeps its compiled copy of a plpgsql function, and when a type is replaced under it, that copy fails on every call. Nothing in the catalog shows this. `DISCARD PLANS`, and the reset every migration `tx` step ends with (step 33), which acts as `DISCARD PLANS` in every session at once, clear some shapes, a `%ROWTYPE` variable and a trigger function that never names the type, but not a variable declared with the type, as in `DECLARE v st` or `SELECT ... INTO v`, whose type is fixed when the function compiles: on Postgres 15 to 18 those kept failing after both. The planner can re-run a managed function's `CREATE OR REPLACE` with its definition unchanged, in the same transaction, which makes every session recompile it, so every managed function that needs it is refreshed. Step 59 decides which functions need it. Owner decisions SA and EE7.
 
 ## Test obligations
 

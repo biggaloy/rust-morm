@@ -4,7 +4,7 @@ Generated from the frozen plan. Each requirement and test obligation lives in ex
 
 Kinds: `code` needs a tagged test, `doc` is checked in the README step, `info` is context with nothing to build.
 
-Totals: 1240 requirements, 300 test obligations.
+Totals: 1258 requirements, 316 test obligations.
 
 ## Requirements
 
@@ -595,7 +595,7 @@ Totals: 1240 requirements, 300 test obligations.
 | R-0583 | code | 40 | 1250 | - **`morm-admin mgr revert ID`** is the way to undo in production. It creates a new forwar… |
 | R-0584 | code | 34 | 1251 | - **A failed migration can always be cleaned up.** `migrate --resume` is the first choice.… |
 | R-0585 | code | 40 | 1252 | - **Emergency override:** `rollback --production --reason "..."` works but is logged to `_… |
-| R-0586 | code | 38 | 1253 | - Retired columns are a tracked state, so `verify` doesn't report them as drift. |
+| R-0586 | code | 38 | 1253 | - Retired columns are a tracked state, so `verify` doesn't report them as drift. That hold… |
 | R-0587 | code | 32 | 1257 | Every rename, retire, purge, lossy change and missing backfill is a decision with an id, e… |
 | R-0588 | code | 32 | 1259 | Exit codes: `0` ok, `1` error or drift, `2` refused by a guard, `3` open decisions. A run … |
 | R-0589 | code | 32 | 1263 | Files are written only after all of these pass on scratch: |
@@ -706,7 +706,7 @@ Totals: 1240 requirements, 300 test obligations.
 | R-0694 | code | 12 | 1487 | \| Panic, or task cancelled \| Drop, with `panic = "unwind"` \| |
 | R-0695 | code | 12 | 1488 | \| Process crash, `kill -9`, `panic = "abort"` \| The OS closes the socket, and Postgres e… |
 | R-0696 | code | 12 | 1489 | \| Machine or network dies (TCP) \| morm sets TCP keepalives, and the server clears the se… |
-| R-0697 | code | 12 | 1490 | \| Postgres restarts \| Every session ends. The next use of `held` returns `ConnectionLost… |
+| R-0697 | code | 12 | 1490 | \| Postgres restarts, or a hot standby's replay ends the session over a recovery conflict … |
 | R-0698 | code | 12 | 1492 | - **Held connections are closed on release, never reused.** They can carry `LISTEN`, temp … |
 | R-0699 | code | 12 | 1493 | - **Reconnecting:** `db.hold().on_connect(...)` re-applies session state after a lost conn… |
 | R-0700 | code | 12 | 1494 | - **Forgotten holds:** `#[must_use]` warns if a guard is discarded straight away. Rust can… |
@@ -990,8 +990,8 @@ Totals: 1240 requirements, 300 test obligations.
 | R-0978 | code | 56 | 0 | - **Enum binding needs no OID.** morm writes `ToSql` and `FromSql` for `PgEnum` itself and… |
 | R-0979 | code | 56 | 0 | - **A label the binary doesn't know** returns `Error::UnknownEnumValue`, with the type and… |
 | R-0980 | code | 56 | 0 | - **Renamed labels.** `#[pg_enum(was = "old")]` on a variant decodes both labels to it and… |
-| R-0981 | code | 14 | 0 | - **Stale server state.** Two errors, from any statement, mean a session holds compiled co… |
-| R-0982 | code | 14 | 0 | - **Telling the rest of the pool.** Any stale statement raises a statement generation, hel… |
+| R-0981 | code | 14 | 0 | - **Stale server state.** Three errors, from any statement, mean a session holds compiled … |
+| R-0982 | code | 14 | 0 | - **Telling the rest of the pool.** A confirmed stale statement raises a statement generat… |
 | R-0983 | code | 14 | 0 | - **Retrying is safe.** Postgres rolls back a failed statement outside a transaction, so a… |
 | R-0984 | code | 20 | 0 | - **Stale statements inside a transaction.** The stale errors that step 14 retries can't b… |
 | R-0985 | code | 20 | 0 | - `.retry(n)` also retries `Error::SchemaChanged`, because the next attempt runs on fresh … |
@@ -1250,6 +1250,24 @@ Totals: 1240 requirements, 300 test obligations.
 | R-1238 | code | 12 | 0 | **CI's `pooler` job runs every supported PgBouncer against every supported Postgres.** Thi… |
 | R-1239 | doc | 50 | 0 | \| `-> Sql<'a, impl morm::Params>` \| A function builds a query that its caller runs, such… |
 | R-1240 | doc | 50 | 0 | The README ends with a "Contributing" section, which step 12 starts and this step keeps, s… |
+| R-1241 | code | 56 | 0 | - **Enum and composite result columns are read as text.** `tokio-postgres` looks up any re… |
+| R-1242 | code | 16 | 0 | - **Raw SQL reads enum and composite columns as text.** morm can't add a cast to SQL you w… |
+| R-1243 | code | 45 | 0 | - **T5, result columns read as text.** The typing pass also reads each query's result colu… |
+| R-1244 | code | 12 | 0 | **CI's `standby` job.** This step adds a job to `ci.yml` that runs on every push and pull … |
+| R-1245 | code | 14 | 0 | **Recognising a stale error in any language.** `lc_messages` translates every message but … |
+| R-1246 | code | 14 | 0 | **Behind PgBouncer, a statement generation every process shares.** PgBouncer keeps one ser… |
+| R-1247 | code | 20 | 0 | - **A hot standby ends a connection inside a transaction.** Replaying DDL on a hot standby… |
+| R-1248 | code | 33 | 0 | - **Every `tx` step ends with a reset.** Postgres marks a cached plan invalid when an obje… |
+| R-1249 | doc | 50 | 0 | The README shows this notice loudly, beside the enum rows: > **After an online enum swap, … |
+| R-1250 | doc | 50 | 0 | The README shows this notice loudly, beside the managed function rows: > **Functions morm … |
+| R-1251 | doc | 50 | 0 | The README shows this notice loudly, beside the online swap: > **A transaction open across… |
+| R-1252 | doc | 50 | 0 | The README shows this notice loudly, beside transactions: > **On a hot standby, a migratio… |
+| R-1253 | doc | 50 | 0 | The README shows this notice loudly, beside `pooler = "transaction"`: > **Behind PgBouncer… |
+| R-1254 | doc | 50 | 0 | The README shows this notice loudly, beside raw SQL with `db.sql()`: > **In raw SQL, read … |
+| R-1255 | doc | 50 | 0 | The README shows this notice loudly, beside the migration commands: > **The migrating role… |
+| R-1256 | code | 59 | 0 | - **Healing server sessions behind PgBouncer.** A function the migration couldn't refresh … |
+| R-1257 | doc | 50 | 0 | \| `[migrations] pgbouncer_admin_urls` \| Your apps reach Postgres through PgBouncer and y… |
+| R-1258 | doc | 50 | 0 | The README shows this notice loudly, beside `pooler = "transaction"`: > **Behind PgBouncer… |
 
 ## Test obligations
 
@@ -1404,7 +1422,7 @@ Totals: 1240 requirements, 300 test obligations.
 | T-0147 | integration | 11 | **Stale generation:** raising the counter replaces every older connection at its next chec… |
 | T-0148 | integration | 56 | **Enum binding survives type changes:** on an open connection and on one opened afterwards… |
 | T-0149 | integration | 56 | **Names and labels:** a bare derive binds to the snake_case name, `#[pg_type(name = "...")… |
-| T-0150 | trybuild | 56 | a `PgEnum` with duplicate labels, an empty label, a label over 63 bytes, a variant that is… |
+| T-0150 | trybuild | 56 | a `PgEnum` with duplicate labels, an empty label, a label over 63 bytes, a label starting … |
 | T-0151 | integration | 14 | **Stale statements on Postgres 15–18:** with each parameter declared as its carrier and ca… |
 | T-0152 | integration | 14 | **Stale sessions:** a plpgsql trigger compiled before a hand-run swap fails with `XX000`, … |
 | T-0153 | integration | 14 | **No false recovery:** a `42883` from SQL that was never cached isn't retried, a retried w… |
@@ -1425,8 +1443,8 @@ Totals: 1240 requirements, 300 test obligations.
 | T-0168 | integration | 59 | **Stale plpgsql on Postgres 15–18:** a session that compiled `DECLARE v the_enum`, `SELECT… |
 | T-0169 | suite | 53 | **Live refusals:** an unmanaged column in another schema, an unmanaged view and a new depe… |
 | T-0170 | suite | 53 | **Fault injection:** kill the process during a swap with recreated dependents, and every d… |
-| T-0171 | integration | 59 | **Proof, PgBouncer:** in a `pooler` test, in transaction mode, an app recovers from a swap… |
-| T-0172 | integration | 59 | **Proof, hot standby:** a `read_only` pool on a standby recovers from a swap on the primar… |
+| T-0171 | integration | 59 | **Proof, PgBouncer:** in a `pooler` test, in transaction mode, through 1.20.1, 1.22 and 1.… |
+| T-0172 | integration | 59 | **Proof, hot standby:** in the `standby` job step 12 adds, a `read_only` pool on a standby… |
 | T-0173 | suite | 54 | **Domains and composites:** with rows, on Postgres 15–18: a domain, a composite with and w… |
 | T-0174 | suite | 54 | **Fault injection:** kill the process during a swap through a domain and a composite, and … |
 | T-0175 | suite | 52 | **Live traffic:** with writers on an old binary, including writes of the removed value unt… |
@@ -1555,3 +1573,19 @@ Totals: 1240 requirements, 300 test obligations.
 | T-0298 | integration | 10 | **A `timezone` key is refused:** `timezone` in `[database]`, in `[database.migration]`, in… |
 | T-0299 | integration | 16 | **A stored query, on Postgres 15–18:** `let q = sql!(..)` holding a field-bound value, a f… |
 | T-0300 | integration | 12 | **Old PgBouncers and the two startup parameters, in the `pooler` job:** through PgBouncer… |
+| T-0301 | suite | 56 | **Unit: reading composites and enums as text:** a model's and a view's column list read a … |
+| T-0302 | integration | 16 | **Raw SQL and enum columns, on Postgres 15–18:** `db.sql()`, `db.raw::<T>()`, `sql_uncheck… |
+| T-0303 | integration | 45 | **T5, on Postgres 15–18:** `check-sql` reports a registered `sql!` query returning an enum… |
+| T-0304 | integration | 15 | **Enum and composite reads behind PgBouncer with no prepared statements, in the `pooler` j… |
+| T-0305 | integration | 12 | **A held connection ended by a recovery conflict, in the `standby` job, on Postgres 15–18:… |
+| T-0306 | integration | 14 | **Stale statements behind PgBouncer, in the `pooler` job:** through 1.22 and 1.26.1 with `… |
+| T-0307 | integration | 20 | **A recovery conflict inside a transaction, in the `standby` job step 12 adds, on Postgres… |
+| T-0308 | suite | 33 | **The reset, on Postgres 15–18:** after a `tx` step that, through a test-only op, swaps an… |
+| T-0309 | suite | 38 | **Retired enum labels, on Postgres 15–18:** retiring an enum type with its column renames … |
+| T-0310 | integration | 59 | **Hidden narrowings, on Postgres 15–18:** with `plpgsql_check` 2.10.16, a managed function… |
+| T-0311 | integration | 14 | **The stale `22P02`, both branches, on Postgres 15–18:** after a hand-run swap that keeps … |
+| T-0312 | integration | 20 | **The stale `22P02` inside a transaction, on Postgres 15–18:** after a hand-run swap that … |
+| T-0313 | integration | 41 | **The statement generation at a pool's start, in the `pooler` job:** behind 1.22 and 1.26.… |
+| T-0314 | integration | 14 | **The `22P02` cool-down, on Postgres 15–18:** after a function that converts a stored `_mo… |
+| T-0315 | suite | 52 | **Unit: mapping retired names:** with `_morm_retired_m2_s` mapped to `_morm_retired_m2_s_7… |
+| T-0316 | integration | 59 | **`RECONNECT` after a migration, in the `pooler` job:** behind the `RECONNECT` test's own … |

@@ -62,7 +62,7 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 
 ### Migrations / Managed enums / After the swap
 
-- **R-1023** **Restoring rows.** Down restores an old value only where the row still holds the value it was mapped to. A row the app changed since `up`, or a row inserted since, keeps what it has. `purge` makes that down irreversible.
+- **R-1023** **Restoring rows.** Down restores an old value only where the row still holds the value it was mapped to. A row the app changed since `up`, or a row inserted since, keeps what it has. Where a retired column keeps the retired enum type, as after the online swap's cutover, its rows read as `_morm_retired_<label>`, because the cutover renames that type's labels, so down maps each placeholder back to its label through the labels `op_data` records, in its own expression, and never renames the labels back. `purge` makes that down irreversible. Owner decision SA.
 
 - **R-1027** **With-data proof.** A map also puts rows on the removed label, and `refuse` keeps rows off it. A column kept by a retired copy must match its checksum after up and down, and with `drop now` it's left out.
 
