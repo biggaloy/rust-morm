@@ -27,7 +27,7 @@ The 30-minute wake-up lived only in the session, so a restart removes it. After 
 - Step 01's code is reviewed and fixed. PR #1 now also carries the plan redesign that came out of the reviews: managed enums, steps 51 to 59, the general walk, `plpgsql_check`, `--decide`, and type changes that never break a running app.
 - Every owner decision is in `INDEX.md` under "Decisions since the split". `reviews/step-01-open-items.md` has every open item, A to AV, each answered.
 
-**Latest:** step 55 is `in review`: PR #3 head `baf82f0`, EG1 to EG8 written in, CI green, mergeable, checker 1255 R / 314 T, 0 problems; IDs in Decisions. The fourth review is done (`eb56a80`, `reviews/step-55-review-4.md`): the owner answered EH1 and EH3 as recommended. The fix agent writes EH1 to EH8 into PR #3; then the review repeats. Next free IDs: R-1256, T-0315.
+**Latest:** step 55 is `in review`: PR #3 head `0501425`, EH1 to EH8 written in, CI green, mergeable, checker 1255 R / 314 T, 0 problems; IDs in Decisions. The fifth independent review is running on the changes since `baf82f0`, findings to `reviews/step-55-review-5.md`. Next free IDs: R-1256, T-0315. Asked the owner whether to delete the stray `~/.claude/scratch/ci-watch-a1834.log` (2026-11-11).
 
 ## What comes next
 
