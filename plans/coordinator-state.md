@@ -27,7 +27,7 @@ The 30-minute wake-up lives only in the session, so a restart removes it, and a 
 - Step 01's code is reviewed and fixed. PR #1 now also carries the plan redesign that came out of the reviews: managed enums, steps 51 to 59, the general walk, `plpgsql_check`, `--decide`, and type changes that never break a running app.
 - Every owner decision is in `INDEX.md` under "Decisions since the split". `reviews/step-01-open-items.md` has every open item, A to AV, each answered.
 
-**Latest:** step 55 is `in review`: PR #3 head `1a49674`, EJ1 to EJ9 and EJ5 written in, CI green, mergeable, checker 1258 R / 316 T, 0 problems; IDs in Decisions. The seventh independent review is running on the changes since `14bcb6f`, findings to `reviews/step-55-review-7.md`. Next free IDs: R-1259, T-0317.
+**Latest:** step 55 is `in review`: PR #3 head `1a49674`, EJ1 to EJ9 and EJ5 written in, CI green, mergeable, checker 1258 R / 316 T, 0 problems; IDs in Decisions. The seventh review is done (`b33de20`, `reviews/step-55-review-7.md`): the rule set is sound straight to Postgres; EK1 (behind a pooler) blocks and is with the owner; EK2 to EK8 are fixes. Next free IDs: R-1259, T-0317.
 
 ## What comes next
 
