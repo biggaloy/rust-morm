@@ -4,7 +4,7 @@ Generated from the frozen plan. Each requirement and test obligation lives in ex
 
 Kinds: `code` needs a tagged test, `doc` is checked in the README step, `info` is context with nothing to build.
 
-Totals: 1255 requirements, 314 test obligations.
+Totals: 1255 requirements, 315 test obligations.
 
 ## Requirements
 
@@ -1584,3 +1584,4 @@ Totals: 1255 requirements, 314 test obligations.
 | T-0312 | integration | 20 | **The stale `22P02` inside a transaction, on Postgres 15–18:** after a hand-run swap that … |
 | T-0313 | integration | 41 | **The statement generation at a pool's start, in the `pooler` job:** behind 1.22 and 1.26.… |
 | T-0314 | integration | 14 | **The `22P02` cool-down, on Postgres 15–18:** after a function that converts a stored `_mo… |
+| T-0315 | suite | 52 | **Unit: mapping retired names:** with `_morm_retired_m2_s` mapped to `_morm_retired_m2_s_7… |
