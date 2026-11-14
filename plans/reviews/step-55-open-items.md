@@ -52,3 +52,4 @@ The review (`reviews/step-55-review.md`) changes several of the questions above.
 ## From the sixth review at `1df3f2d`
 
 - **EJ1:** answered: on `53300`, replace the stale connection in its slot. EJ5 must heal behind PgBouncer too. EJ2 to EJ4, EJ6 to EJ9 fixed as recommended.
+- **EJ5:** answered: opt-in `RECONNECT` from `migrate` where a PgBouncer admin URL is configured, with PgBouncer's `server_lifetime` as the fallback elsewhere.
