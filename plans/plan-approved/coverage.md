@@ -595,7 +595,7 @@ Totals: 1255 requirements, 314 test obligations.
 | R-0583 | code | 40 | 1250 | - **`morm-admin mgr revert ID`** is the way to undo in production. It creates a new forwar… |
 | R-0584 | code | 34 | 1251 | - **A failed migration can always be cleaned up.** `migrate --resume` is the first choice.… |
 | R-0585 | code | 40 | 1252 | - **Emergency override:** `rollback --production --reason "..."` works but is logged to `_… |
-| R-0586 | code | 38 | 1253 | - Retired columns are a tracked state, so `verify` doesn't report them as drift. |
+| R-0586 | code | 38 | 1253 | - Retired columns are a tracked state, so `verify` doesn't report them as drift. That hold… |
 | R-0587 | code | 32 | 1257 | Every rename, retire, purge, lossy change and missing backfill is a decision with an id, e… |
 | R-0588 | code | 32 | 1259 | Exit codes: `0` ok, `1` error or drift, `2` refused by a guard, `3` open decisions. A run … |
 | R-0589 | code | 32 | 1263 | Files are written only after all of these pass on scratch: |
