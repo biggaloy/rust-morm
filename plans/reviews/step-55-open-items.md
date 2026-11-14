@@ -48,3 +48,7 @@ The review (`reviews/step-55-review.md`) changes several of the questions above.
 ## From the fifth review at `a9ee0d3`
 
 - **EI1:** answered: keep the retry, since stale sessions must heal by themselves; first-failure records carry the statement generation and are capped at 64 per pool (option (a)). EI2 to EI9 fixed as recommended.
+
+## From the sixth review at `1df3f2d`
+
+- **EJ1:** answered: on `53300`, replace the stale connection in its slot. EJ5 must heal behind PgBouncer too. EJ2 to EJ4, EJ6 to EJ9 fixed as recommended.

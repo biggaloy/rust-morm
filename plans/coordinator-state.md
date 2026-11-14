@@ -27,7 +27,7 @@ The 30-minute wake-up lived only in the session, so a restart removes it. After 
 - Step 01's code is reviewed and fixed. PR #1 now also carries the plan redesign that came out of the reviews: managed enums, steps 51 to 59, the general walk, `plpgsql_check`, `--decide`, and type changes that never break a running app.
 - Every owner decision is in `INDEX.md` under "Decisions since the split". `reviews/step-01-open-items.md` has every open item, A to AV, each answered.
 
-**Latest:** step 55 is `in review`: PR #3 head `14bcb6f`, EI1 to EI9 written in, CI green, mergeable, checker 1255 R / 315 T, 0 problems; IDs in Decisions. The sixth independent review is running on the changes since `0501425`, findings to `reviews/step-55-review-6.md`. Next free IDs: R-1256, T-0316.
+**Latest:** step 55 is `in review`: PR #3 head `14bcb6f`. The sixth review is done (`1df3f2d`, `reviews/step-55-review-6.md`); the owner answered EJ1 (replace in place on `53300`), and EJ5 must heal behind PgBouncer. The fix agent writes EJ1 to EJ9 into PR #3; then the review repeats. Next free IDs: R-1256, T-0316.
 
 ## What comes next
 
