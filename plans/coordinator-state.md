@@ -27,7 +27,7 @@ The 30-minute wake-up lives only in the session, so a restart removes it, and a 
 - Step 01's code is reviewed and fixed. PR #1 now also carries the plan redesign that came out of the reviews: managed enums, steps 51 to 59, the general walk, `plpgsql_check`, `--decide`, and type changes that never break a running app.
 - Every owner decision is in `INDEX.md` under "Decisions since the split". `reviews/step-01-open-items.md` has every open item, A to AV, each answered.
 
-**Latest:** step 55 is `in review`: PR #3 head `1887f07`, EK1 to EK8 written in, CI green, mergeable, checker 1258 R / 316 T, 0 problems; IDs in Decisions. The eighth review is done (`97cb17f`, `reviews/step-55-review-8.md`): the retired-label path is sound behind a pooler; EL1 blocks; EL1 and EL2 are with the owner; EL3 to EL7 are fixes. Next free IDs: R-1259, T-0317.
+**Latest:** step 55 is `in review`: PR #3 head `1887f07`, EK1 to EK8 written in, CI green, mergeable, checker 1258 R / 316 T, 0 problems; IDs in Decisions. The eighth review is done (`97cb17f`, `reviews/step-55-review-8.md`): the retired-label path is sound behind a pooler; the owner answered EL1 and EL2 as recommended. The fix agent writes EL1 to EL7 into PR #3; then the review repeats. Next free IDs: R-1259, T-0317.
 
 ## What comes next
 

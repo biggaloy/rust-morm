@@ -57,3 +57,7 @@ The review (`reviews/step-55-review.md`) changes several of the questions above.
 ## From the seventh review at `b33de20`
 
 - **EK1:** answered: behind a pooler, no marker moves and the statement enters the cool-down. EK2 to EK8 fixed as recommended.
+
+## From the eighth review at `97cb17f`
+
+- **EL1, EL2:** answered as recommended (confirm through `.retry(n)`'s next attempt; extend EK1's carve-out to `42804` and `XX000`). EL3 to EL7 fixed as recommended.
