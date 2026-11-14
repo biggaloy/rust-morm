@@ -1588,4 +1588,4 @@ Totals: 1258 requirements, 316 test obligations.
 | T-0313 | integration | 41 | **The statement generation at a pool's start, in the `pooler` job:** behind 1.22 and 1.26.… |
 | T-0314 | integration | 14 | **The `22P02` cool-down, on Postgres 15–18:** after a function that converts a stored `_mo… |
 | T-0315 | suite | 52 | **Unit: mapping retired names:** with `_morm_retired_m2_s` mapped to `_morm_retired_m2_s_7… |
-| T-0316 | integration | 59 | **`RECONNECT` after a migration, in the `pooler` job:** behind PgBouncer 1.20.1 and 1.26.1… |
+| T-0316 | integration | 59 | **`RECONNECT` after a migration, in the `pooler` job:** behind the `RECONNECT` test's own … |
