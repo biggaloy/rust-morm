@@ -44,3 +44,7 @@ The review (`reviews/step-55-review.md`) changes several of the questions above.
 ## From the fourth review at `eb56a80`
 
 - **EH1, EH3:** answered as recommended (later failures count as failed confirmations; the ledger maps retired names). EH2, EH4 to EH8 fixed as recommended.
+
+## From the fifth review at `a9ee0d3`
+
+- **EI1:** answered: keep the retry, since stale sessions must heal by themselves; first-failure records carry the statement generation and are capped at 64 per pool (option (a)). EI2 to EI9 fixed as recommended.
