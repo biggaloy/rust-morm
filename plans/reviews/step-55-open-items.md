@@ -40,3 +40,7 @@ The review (`reviews/step-55-review.md`) changes several of the questions above.
 ## From the third review at `399cdb2`
 
 - **EG2, EG5, EG6:** answered as recommended (cool-down per statement; decode plain strings when `standard_conforming_strings` is off; rebuild inside the rollback's transaction, rollback opens R-1063's decision, ledger records the retired objects, re-runs suffix names with the migration id). EG1, EG3, EG4, EG7, EG8 fixed as recommended.
+
+## From the fourth review at `eb56a80`
+
+- **EH1, EH3:** answered as recommended (later failures count as failed confirmations; the ledger maps retired names). EH2, EH4 to EH8 fixed as recommended.
