@@ -8,7 +8,7 @@ Read this first when resuming. It's what the coordinating session needs that isn
 
 - **Steps done:** 01 (PR #1, merged `ccd4413`) and 02 (PR #2, merged `34c81aa`), both approved by the owner.
 - **Step 55 is `in review`:** PR #3, branch `step-55-enum-proofs`, head `0f26ba7`. CI green, mergeable, checker 1269 R / 317 T, 0 problems. Every owner decision is written in and recorded in INDEX's Decisions, through "Step 55 eleventh review, EO1 to EO10". Nothing is open with the owner.
-- **Running when saved:** the twelfth independent review of PR #3, on the changes since `c4b4ce2`, writing `reviews/step-55-review-12.md` with findings EP1, EP2, …
+- **Twelfth review done:** `31fed21`, `reviews/step-55-review-12.md`, findings EP1 to EP8; EP1 blocks; EP1 and EP2 need owner choices. Twelve rounds have each found new gaps in the stale-session retry rules, so the coordinator asked the owner whether to replace incremental patching with one consolidated redesign of that rule set.
 - **Next free IDs:** R-1270, T-0318.
 - Step 55's open items, reviews and designs: `reviews/step-55-open-items.md`, `reviews/step-55-review.md` and `-review-2.md` to `-review-12.md`, `reviews/stale-statement-design.md`.
 
