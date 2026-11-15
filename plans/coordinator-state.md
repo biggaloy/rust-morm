@@ -2,13 +2,13 @@
 
 Read this first when resuming. It's what the coordinating session needs that isn't in `plan-approved/INDEX.md`. The coordinator updates and pushes it after each milestone. Agent briefs to reuse are in `coordinator-briefs.md`.
 
-**Last updated:** 2026-11-15, during step 55's twelfth review.
+**Last updated:** 2026-11-15, while the consolidated stale-session design runs.
 
 ## Where things stand
 
 - **Steps done:** 01 (PR #1, merged `ccd4413`) and 02 (PR #2, merged `34c81aa`), both approved by the owner.
 - **Step 55 is `in review`:** PR #3, branch `step-55-enum-proofs`, head `0f26ba7`. CI green, mergeable, checker 1269 R / 317 T, 0 problems. Every owner decision is written in and recorded in INDEX's Decisions, through "Step 55 eleventh review, EO1 to EO10". Nothing is open with the owner.
-- **Twelfth review done:** `31fed21`, `reviews/step-55-review-12.md`, findings EP1 to EP8; the owner chose one consolidated redesign of the stale-session rules instead of more patching. A design agent is writing `reviews/stale-session-state-machine.md` (use the "Design pass" brief if it must be restarted); it comes to the owner, then one fix agent rewrites the requirements from it on PR #3, then one review.
+- **Twelfth review done:** `31fed21`, `reviews/step-55-review-12.md`, findings EP1 to EP8; the owner chose one consolidated redesign of the stale-session rules instead of more patching. A design agent is writing `reviews/stale-session-state-machine.md`. Its full brief, and what follows it, is in `briefs/stale-session-state-machine.md`: restart it from there if the file isn't on `main`.
 - **Next free IDs:** R-1270, T-0318.
 - Step 55's open items, reviews and designs: `reviews/step-55-open-items.md`, `reviews/step-55-review.md` and `-review-2.md` to `-review-12.md`, `reviews/stale-statement-design.md`.
 
@@ -17,7 +17,7 @@ Read this first when resuming. It's what the coordinating session needs that isn
 1. Read `plan-approved/INDEX.md` ("The coordinating session" and "Decisions since the split") and this file. Stay thin: don't read code or the frozen plan.
 2. Set the wake-up again with `CronCreate`: cron `13,43 * * * *`, recurring, prompt as in `coordinator-briefs.md`. A restart removes it, and it expires after 7 days anyway. The current one (`b71ec56e`) expires about 2026-11-21.
 3. Check what landed: `gh pr view 3`, `git log origin/step-55-enum-proofs`, and `git log origin/main -- plans/reviews/`. Commits are the truth; unpushed agent work is lost in a crash.
-4. Background agents don't survive a restart. If `reviews/step-55-review-12.md` isn't on `main`, start a fresh reviewer with the "Review round" brief, scoped to the changes since `c4b4ce2`, head `0f26ba7`. If it is, act on it as below.
+4. Background agents don't survive a restart. If `reviews/stale-session-state-machine.md` isn't on `main` (or is partial), restart the design agent from `briefs/stale-session-state-machine.md`. If it's complete, bring its choices to the owner, as that brief's last section says.
 5. Remove stale agent worktrees under `.claude/worktrees/` only after checking each has no uncommitted or unpushed work.
 
 ## The review loop (how step PRs go)
