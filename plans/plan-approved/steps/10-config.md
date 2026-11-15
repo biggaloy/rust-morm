@@ -85,6 +85,11 @@ idle_in_transaction_session_timeout = "1m"
 client_connection_check_interval = "5s"
 tx_warn_after = "1s"
 check_schema = "on"              # "off" starts against a schema that may not match: read the README first
+stale_cooldown = "60s"           # how long a stale-enum error whose fresh retry failed returns at once; at least 1s
+stale_cooldown_max = 64          # statements remembered for that, per pool; at least 1
+stale_pending_expiry = "60s"     # how long an unconfirmed stale statement waits for its next run; 0 turns that off
+stale_pending_max = 64           # pending confirmations per pool; 0 turns them off
+stale_first_failure_max = 64     # first-failure records per pool, inside transactions; at least 1
 
 [pools.replica]                  # a read replica
 host = "db-replica.internal"
@@ -164,6 +169,9 @@ scratch_url = "${MORM_SCRATCH_URL}"
 | R-0099 | `MORM_POOL_STATEMENT_CACHE`, `MORM_POOL_SHAPE_CACHE` | `statement_cache`, `shape_cache` |
 | R-0100 | `MORM_POOL_SHUTDOWN_TIMEOUT` | `shutdown_timeout` |
 | R-1118 | `MORM_POOL_CHECK_SCHEMA` | `check_schema` |
+| R-1259 | `MORM_POOL_STALE_COOLDOWN`, `MORM_POOL_STALE_COOLDOWN_MAX` | `stale_cooldown`, `stale_cooldown_max` |
+| R-1260 | `MORM_POOL_STALE_PENDING_EXPIRY`, `MORM_POOL_STALE_PENDING_MAX` | `stale_pending_expiry`, `stale_pending_max` |
+| R-1261 | `MORM_POOL_STALE_FIRST_FAILURE_MAX` | `stale_first_failure_max` |
 
 **R-0101** `MORM_POOL_*` variables apply to the pool this process opens at startup.
 

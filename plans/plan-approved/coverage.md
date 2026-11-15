@@ -4,7 +4,7 @@ Generated from the frozen plan. Each requirement and test obligation lives in ex
 
 Kinds: `code` needs a tagged test, `doc` is checked in the README step, `info` is context with nothing to build.
 
-Totals: 1258 requirements, 316 test obligations.
+Totals: 1268 requirements, 317 test obligations.
 
 ## Requirements
 
@@ -69,7 +69,7 @@ Totals: 1258 requirements, 316 test obligations.
 | R-0057 | info | 42 | 101 | ``` morm-admin init [path] [--axum] # create a project morm-admin doctor # check Postgres,… |
 | R-0058 | code | 42 | 111 | `init` creates the `morm-mgr` package, `morm-migrations/`, `morm.toml`, `.env.example`, a … |
 | R-0059 | code | 10 | 115 | TOML is the Rust standard, with comments, real types and sections, and no indentation trap… |
-| R-0060 | code | 10 | 117 | ```toml [database] # Either a URL, or the separate fields below. Separate fields override… |
+| R-0060 | code | 10 | 117 | ```toml [database] # Either a URL, or the separate fields below. Separate fields override … |
 | R-0061 | code | 10 | 194 | A missing `morm.toml` isn't an error unless `MORM_CONFIG` names it, so a deployment can us… |
 | R-0062 | code | 10 | 196 | Precedence: defaults, then `morm.toml`, then environment variables, then code. There is on… |
 | R-0063 | info | 10 | 198 | **Environment variables:** |
@@ -1268,6 +1268,16 @@ Totals: 1258 requirements, 316 test obligations.
 | R-1256 | code | 59 | 0 | - **Healing server sessions behind PgBouncer.** A function the migration couldn't refresh … |
 | R-1257 | doc | 50 | 0 | \| `[migrations] pgbouncer_admin_urls` \| Your apps reach Postgres through PgBouncer and y… |
 | R-1258 | doc | 50 | 0 | The README shows this notice loudly, beside `pooler = "transaction"`: > **Behind PgBouncer… |
+| R-1259 | code | 10 | 0 | \| `MORM_POOL_STALE_COOLDOWN`, `MORM_POOL_STALE_COOLDOWN_MAX` \| `stale_cooldown`, `stale_… |
+| R-1260 | code | 10 | 0 | \| `MORM_POOL_STALE_PENDING_EXPIRY`, `MORM_POOL_STALE_PENDING_MAX` \| `stale_pending_expir… |
+| R-1261 | code | 10 | 0 | \| `MORM_POOL_STALE_FIRST_FAILURE_MAX` \| `stale_first_failure_max` \| |
+| R-1262 | code | 14 | 0 | **The stale-session settings.** Every number the stale-session rules use is a pool setting… |
+| R-1263 | doc | 50 | 0 | \| `stale_cooldown` \| Statements fed text holding a retired enum label, or whose confirmi… |
+| R-1264 | doc | 50 | 0 | \| `stale_cooldown_max` \| More than 64 statements in one pool can be fed such text at onc… |
+| R-1265 | doc | 50 | 0 | \| `stale_pending_expiry` \| Your transactions retry a failed call more than 60 seconds la… |
+| R-1266 | doc | 50 | 0 | \| `stale_pending_max` \| Changes made by hand can leave more than 64 statements in one po… |
+| R-1267 | doc | 50 | 0 | \| `stale_first_failure_max` \| More than 64 statements in one pool fail on a retired enum… |
+| R-1268 | doc | 50 | 0 | The README shows this notice loudly, beside the pool settings: > **The stale-session setti… |
 
 ## Test obligations
 
@@ -1589,3 +1599,4 @@ Totals: 1258 requirements, 316 test obligations.
 | T-0314 | integration | 14 | **The `22P02` cool-down, on Postgres 15–18:** after a function that converts a stored `_mo… |
 | T-0315 | suite | 52 | **Unit: mapping retired names:** with `_morm_retired_m2_s` mapped to `_morm_retired_m2_s_7… |
 | T-0316 | integration | 59 | **`RECONNECT` after a migration, in the `pooler` job:** behind the `RECONNECT` test's own … |
+| T-0317 | integration | 14 | **The stale-session settings:** with nothing set, a pool uses `stale_cooldown = "60s"`, `s… |

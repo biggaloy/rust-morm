@@ -69,6 +69,11 @@ Owned elsewhere, and quoted so this step needs no other file. Nothing here needs
 > client_connection_check_interval = "5s"
 > tx_warn_after = "1s"
 > check_schema = "on"              # "off" starts against a schema that may not match: read the README first
+> stale_cooldown = "60s"           # how long a stale-enum error whose fresh retry failed returns at once; at least 1s
+> stale_cooldown_max = 64          # statements remembered for that, per pool; at least 1
+> stale_pending_expiry = "60s"     # how long an unconfirmed stale statement waits for its next run; 0 turns that off
+> stale_pending_max = 64           # pending confirmations per pool; 0 turns them off
+> stale_first_failure_max = 64     # first-failure records per pool, inside transactions; at least 1
 >
 > [pools.replica]                  # a read replica
 > host = "db-replica.internal"
