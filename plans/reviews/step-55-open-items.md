@@ -69,3 +69,7 @@ The review (`reviews/step-55-review.md`) changes several of the questions above.
 ## From the tenth review at `e19c480`
 
 - **EN1:** answered: unnamed runs for other values while a confirmation is pending. **EN5:** answered: 60-second expiry, and every stale-session tunable becomes a per-pool `morm.toml` setting with these defaults. EN2 to EN4 fixed as recommended.
+
+## From the eleventh review at `d81b599`
+
+- **EO1, EO2:** answered: at most one confirmation-driven cache clear per pool per `stale_cooldown`; a stale signal from freshly salted text counts as plpgsql. **EO3:** keep a minimum of 1, with a loud notice. **EO4:** ceilings of 10 minutes and 4096. EO5 to EO10 fixed as recommended.

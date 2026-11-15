@@ -27,7 +27,7 @@ The 30-minute wake-up lives only in the session, so a restart removes it, and a 
 - Step 01's code is reviewed and fixed. PR #1 now also carries the plan redesign that came out of the reviews: managed enums, steps 51 to 59, the general walk, `plpgsql_check`, `--decide`, and type changes that never break a running app.
 - Every owner decision is in `INDEX.md` under "Decisions since the split". `reviews/step-01-open-items.md` has every open item, A to AV, each answered.
 
-**Latest:** step 55 is `in review`: PR #3 head `c4b4ce2`, EN1 to EN5 and the stale-session settings written in, CI green, mergeable, checker 1268 R / 317 T, 0 problems; IDs in Decisions. The eleventh review is done (`d81b599`, `reviews/step-55-review-11.md`): EO1 blocks; EO1 to EO4 need owner choices; EO5 to EO10 are fixes. Next free IDs: R-1269, T-0318. Heartbeats resend a stopped agent even when unsure the limit has lifted.
+**Latest:** step 55 is `in review`: PR #3 head `c4b4ce2`, EN1 to EN5 and the stale-session settings written in, CI green, mergeable, checker 1268 R / 317 T, 0 problems; IDs in Decisions. The eleventh review is done (`d81b599`, `reviews/step-55-review-11.md`): the owner answered EO1 to EO4 (rate-limited cache clears; minimum 1 with a loud notice; ceilings of 10 minutes and 4096). The fix agent writes EO1 to EO10 into PR #3; then the review repeats. Next free IDs: R-1269, T-0318. Heartbeats resend a stopped agent even when unsure the limit has lifted.
 
 ## What comes next
 
