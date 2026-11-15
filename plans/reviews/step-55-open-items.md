@@ -61,3 +61,7 @@ The review (`reviews/step-55-review.md`) changes several of the questions above.
 ## From the eighth review at `97cb17f`
 
 - **EL1, EL2:** answered as recommended (confirm through `.retry(n)`'s next attempt; extend EK1's carve-out to `42804` and `XX000`). EL3 to EL7 fixed as recommended.
+
+## From the ninth review at `64e11d1`
+
+- **EM1, EM3:** answered as recommended (confirm `XX000` with one unnamed run; keep the pending confirmation in the pool). EM2, EM4 to EM6 fixed as recommended.
