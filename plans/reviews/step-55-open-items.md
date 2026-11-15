@@ -65,3 +65,7 @@ The review (`reviews/step-55-review.md`) changes several of the questions above.
 ## From the ninth review at `64e11d1`
 
 - **EM1, EM3:** answered as recommended (confirm `XX000` with one unnamed run; keep the pending confirmation in the pool). EM2, EM4 to EM6 fixed as recommended.
+
+## From the tenth review at `e19c480`
+
+- **EN1:** answered: unnamed runs for other values while a confirmation is pending. **EN5:** answered: 60-second expiry, and every stale-session tunable becomes a per-pool `morm.toml` setting with these defaults. EN2 to EN4 fixed as recommended.
