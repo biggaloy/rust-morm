@@ -1,49 +1,54 @@
 # Coordinator state
 
-Read this first when resuming. It's what the coordinating session needs that isn't in `plan-approved/INDEX.md`. The coordinator updates and pushes it after each milestone.
+Read this first when resuming. It's what the coordinating session needs that isn't in `plan-approved/INDEX.md`. The coordinator updates and pushes it after each milestone. Agent briefs to reuse are in `coordinator-briefs.md`.
 
-**Last updated:** 2026-11-11, after BB to BD landed at `9f4ee7a`.
+**Last updated:** 2026-11-15, during step 55's twelfth review.
 
-## Where working files live
+## Where things stand
 
-Nothing is kept in `/tmp`: it's memory-backed here, so a power cut wipes it. Agents and the coordinator keep working files in the repo's `.claude/scratch/` or their own worktree, with `TMPDIR` set there for commands that create temp files. That folder is on this disk but not on GitHub, so anything needed to resume is also pushed under `plans/`. Put this in every agent's prompt until the `rules.md` line lands.
+- **Steps done:** 01 (PR #1, merged `ccd4413`) and 02 (PR #2, merged `34c81aa`), both approved by the owner.
+- **Step 55 is `in review`:** PR #3, branch `step-55-enum-proofs`, head `0f26ba7`. CI green, mergeable, checker 1269 R / 317 T, 0 problems. Every owner decision is written in and recorded in INDEX's Decisions, through "Step 55 eleventh review, EO1 to EO10". Nothing is open with the owner.
+- **Running when saved:** the twelfth independent review of PR #3, on the changes since `c4b4ce2`, writing `reviews/step-55-review-12.md` with findings EP1, EP2, …
+- **Next free IDs:** R-1270, T-0318.
+- Step 55's open items, reviews and designs: `reviews/step-55-open-items.md`, `reviews/step-55-review.md` and `-review-2.md` to `-review-12.md`, `reviews/stale-statement-design.md`.
 
-## Wake-up
+## How to resume after a restart
 
-The 30-minute wake-up lives only in the session, so a restart removes it, and a recurring job also expires after 7 days. The first one (`32a9e7c4`) expired by 2026-11-14 and was recreated that day as `b71ec56e` (`13,43 * * * *`), which expires about 2026-11-21. After resuming, or when it expires, set it again with `CronCreate`, so a usage limit doesn't stall the work, and delete it when the job is done. While a usage limit is in force the wake-up can't run either; the first one after the reset resumes stopped agents.
+1. Read `plan-approved/INDEX.md` ("The coordinating session" and "Decisions since the split") and this file. Stay thin: don't read code or the frozen plan.
+2. Set the wake-up again with `CronCreate`: cron `13,43 * * * *`, recurring, prompt as in `coordinator-briefs.md`. A restart removes it, and it expires after 7 days anyway. The current one (`b71ec56e`) expires about 2026-11-21.
+3. Check what landed: `gh pr view 3`, `git log origin/step-55-enum-proofs`, and `git log origin/main -- plans/reviews/`. Commits are the truth; unpushed agent work is lost in a crash.
+4. Background agents don't survive a restart. If `reviews/step-55-review-12.md` isn't on `main`, start a fresh reviewer with the "Review round" brief, scoped to the changes since `c4b4ce2`, head `0f26ba7`. If it is, act on it as below.
+5. Remove stale agent worktrees under `.claude/worktrees/` only after checking each has no uncommitted or unpushed work.
 
-## How to resume
+## The review loop (how step PRs go)
 
-1. Read `plan-approved/INDEX.md` and follow "The coordinating session". Stay thin: don't read code or the frozen plan.
-2. Run `gh pr view 1` and `git log origin/step-01-bootstrap`, to see which fixes below landed. Commits on that branch are the truth.
-3. Redo any fix round that didn't land, with a fresh agent, from the files named here. Unpushed agent work is lost in a crash, and nothing else is.
-4. Agents can't reach the owner. Bring design questions to the owner, and don't decide them.
-
-## Where step 01 stands
-
-**Last saved:** 2026-11-07, before a PC restart, with the weekly usage limit nearly reached.
-
-- PR #1 is open and unmerged, at `acf82a2` when saved. `INDEX.md` shows `in review`. All repo settings are live.
-- Step 01's code is reviewed and fixed. PR #1 now also carries the plan redesign that came out of the reviews: managed enums, steps 51 to 59, the general walk, `plpgsql_check`, `--decide`, and type changes that never break a running app.
-- Every owner decision is in `INDEX.md` under "Decisions since the split". `reviews/step-01-open-items.md` has every open item, A to AV, each answered.
-
-**Latest:** step 55 is `in review`: PR #3 head `0f26ba7`, EO1 to EO10 written in, CI green, mergeable, checker 1269 R / 317 T, 0 problems; IDs in Decisions. The twelfth independent review is running on the changes since `c4b4ce2`, findings to `reviews/step-55-review-12.md`. Next free IDs: R-1270, T-0318. Heartbeats resend a stopped agent even when unsure the limit has lifted.
+1. A step agent opens the PR. A fresh independent reviewer reviews it ("Review round" brief) and pushes `reviews/step-NN-review-K.md` to `main`.
+2. The coordinator brings design choices to the owner, with options and a recommendation, and records each answer in INDEX's Decisions on `main`.
+3. One fix agent writes the findings and decisions into the PR ("Fix round" brief). The coordinator records the IDs and the fix's own choices in Decisions; those choices are approved by the owner through the PR.
+4. Repeat until a review finds nothing to fix. Then bring the PR to the owner. The owner approves the PRs of steps 01, 02, 03, 50 and 55; no agent merges without that.
+5. After approval: merge with a merge commit, mark the step `done`, check INDEX on `main` keeps its Decisions, delete the merged remote branch and finished worktrees, and start the next step.
 
 ## What comes next
 
-1. Step 55: get the owner's answers to EA to ED and the review's findings, have one fix agent write both into PR #3, review until clean, then the owner approves. The owner approves the PRs of steps 01, 02, 03, 50 and 55.
-2. Then follow the order in `INDEX.md`.
+1. Step 55: act on the twelfth review, repeat until clean, then PR #3 to the owner.
+2. Step 03 (freeze the contracts) depends on 55. Then follow the order in `INDEX.md`.
+
+## Rules that hold for every agent
+
+- Commit and push as `Biggo Dev <biggodev@gmail.com>`, never neurobin, with the session's attribution lines.
+- Never use `/tmp`; keep working files in `.claude/scratch/` with `TMPDIR` set there. Clean up when done, and report what's left.
+- No gaps left open: close each one, or bring it to the owner. Never record one as "accepted".
+- Anything that silences a check or stops a developer's work gets a loud README notice; every opt-in call or setting gets a "use this when" line.
+- Never force-push, never merge, never change repository settings without the owner.
+
+## Usage limits
+
+When an agent stops on a usage limit, resume it with `SendMessage` once the limit lifts. Wake-ups can't run during a limit either; they queue and arrive together after it. On a heartbeat, resend a stopped agent even when unsure the limit has lifted: an early resend does no harm.
 
 ## Open with the owner
 
-- **When bringing PR #1:** point out the choices the BB to BD edit made (see the "Rollback loss and the startup check" entry in Decisions).
 - Four collaborators have write access, and `main` needs no review. The owner may want to reduce that list.
-
-## Not proven yet
-
-Moved to "Repo tooling" in `later-defo-build.plan`, by owner decision.
 
 ## Housekeeping
 
-- Every agent worktree and its local branch was removed on 2026-11-12 and again after step 02's merge, with the owner's go-ahead, after checking each had no uncommitted or unpushed work.
-- `target/` in the main checkout and the merged remote branches `step-01-bootstrap` and `step-02-proofs` were removed on 2026-11-13 at the owner's request. The older files in `.claude/scratch/` were removed the same day at the owner's request; the folder is empty. After each future merge, delete the merged remote branch and the finished worktrees, as the owner asked.
+- Agent worktrees and their local branches were removed after steps 01 and 02 merged, with the owner's go-ahead. `target/`, old scratch files and the merged remote branches were removed on 2026-11-13. After each future merge, delete the merged remote branch and the finished worktrees, as the owner asked.
