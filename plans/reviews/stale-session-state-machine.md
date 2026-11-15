@@ -1,0 +1,38 @@
+# The stale-session state machine: design
+
+For the owner to approve. It replaces the stale-session rule set of PR #3 (step 55, branch `step-55-enum-proofs`, head `0f26ba7`) with one state machine, as INDEX's "Step 55 twelfth review, and one consolidated stale-session design" asks. Nothing here is written into `plan-approved/` until the owner answers; then one fix agent rewrites the requirements from it and one review follows. Base: `origin/main` at the commit that adds this file.
+
+Every owner decision listed in the brief stands. Where the machine can't keep one exactly, the section "Lettered choices" says so and gives a choice with a recommendation.
+
+## What was tested
+
+Everything ran on throwaway servers under `.claude/scratch/` in my worktree, with `TMPDIR` set there, sockets under `~/.claude/scratch/`, all stopped and deleted afterwards.
+
+- **Postgres 17.12**, built from ftp.postgresql.org's `postgresql-17.12.tar.bz2`, checked against its published `.sha256` (`9cf136a703d8ee2f83465c43be4e9e8e7930c82b0bfba13be7e2537be769ac55`).
+- **Postgres 18.6**, the machine's own build (Manjaro package `18.6-1`), run as a throwaway cluster made with its `initdb`. Not built from a tarball.
+- **PgBouncer 1.20.1** (`24992cf557d73426d7048698dffc7b019e6364d4d8757ae2cf5e2471286a2088`, the hash R-1238 pins) and **1.26.1** (`00886a2994b4844cd37110970df777772cfc42a74c400522c82fba509a3f42d9`), built from pgbouncer.org's tarballs, each checked against its `.sha256`. One of each in front of each Postgres, four in all: `pool_mode = transaction`, `default_pool_size = 3`, `min_pool_size = 3`, `server_round_robin = 1`; 1.26.1 with `max_prepared_statements = 200`, 1.20.1 with none, so morm would run there with its caches off (R-0677).
+- **Clients:** `psql`, and a throwaway harness on `tokio-postgres` 0.7.18 (built offline from the local registry) for named and unnamed statements, several clients and concurrent transactions. Server sessions were told apart by `pg_backend_pid()`.
+- **The simulation prototype:** a scratch crate on stable Rust 1.99.1 with no dependencies (section 6).
+
+Unless a row says otherwise, 17.12 and 18.6 printed the same, apart from `pl_exec.c` and `plancache.c` line numbers.
+
+| # | Claim the design rests on | Result |
+|---|---|---|
+| X1 | A `42804` from plpgsql's parameter routines needs no schema change: a client can cause it | **Yes.** `pick(tbl text)` does `EXECUTE format('SELECT * FROM e1.%I ...', tbl) INTO r; RETURN (r.v + 1)::text`, where table `a`'s `v` is `int` and `b`'s is `bigint`. In one session: `pick('a')` → `11`; `pick('b')` → `42804 type of parameter 4 (bigint) does not match that when preparing the plan (integer)`, routine `plpgsql_param_eval_recfield`; `pick('a')` → `11`; `pick('b')` → `42804` again. A `FOR r IN EXECUTE` loop gives the same. No DDL ran. So R-0981's "certain signal" can be paced by the caller's arguments, and under PR #3's text each such call straight to Postgres raises the connection generation, ungated, and replaces the whole pool (new finding N1) |
+| X2 | A `0A000` from `RevalidateCachedQuery` needs no schema change, and fresh text doesn't stop it | **Yes.** With `search_path = t1`, `PREPARE s1 AS SELECT * FROM items WHERE id = $1`, then in a transaction `set_config('search_path', 't2', true)` and `EXECUTE s1(1)`: `0A000 cached plan must not change result type`. A new statement prepared under `t2` then fails the same way under `t1`. Unnamed runs answer under either path (EP2's spot check, on 17.12 too) |
+| X3 | Behind PgBouncer the same `0A000` reaches other clients and arrives at prepare | **Yes, 1.26.1 on both.** A cached text prepared under `p7a` gives `0A000` executed under `p7b`; a client *preparing* that text, or a salted copy, under the other path gets `prepare 0A000`, because PgBouncer hands it the server statement another transaction planned. Another client preparing the original text under `p7b` gets the same |
+| X4 | A `22P02` that names no retired type, from stored text, behaves as R-0981's stale one | **Yes.** A function converting a stored `_morm_retired_x` to enum `s1.st`: `22P02 invalid input value for enum s1.st: "_morm_retired_x"`, routine `enum_in`, on an old connection and on a newly opened one alike; after `UPDATE ... SET t = 'b'` the same bytes succeed on both (EP1's premise) |
+| X5 | A connection opened after a change compiles plpgsql fresh, so connection age splits stale sessions from data | **Yes.** After a hand-made relabel swap: a connection that called `f` before it gets `22P02 invalid input value for enum s2._morm_retired_m1_st: "a"` on every call; one that was open but had never called `f` answers right; one opened after answers right. Age is conservative: it never calls a stale session fresh, and may call a fresh one old |
+| X6 | Closing one connection lets the next open pass a role's `CONNECTION LIMIT` | **Yes.** Limit 2: the third open gets `53300 too many connections for role "s3r"` (routine `InitializeSessionUserId`); after closing one, the open succeeds (EJ1's premise) |
+| X7 | Which server session a transaction reaches, behind PgBouncer | **Sequential transactions from one client reached one server session, 30 of 30**, on 1.20.1 and 1.26.1 in front of both, even with `server_round_robin = 1`. Three clients with overlapping transactions reached all three sessions, 10 each. So a retry right after a failure usually reaches the same session under light load, and another one under load |
+| X8 | Plpgsql left stale in one server session: other sessions answer, unnamed | **Yes, on all four pairs.** One call compiled `f` in one session, then a hand-made relabel swap; ten rounds of three overlapping transactions, each an unnamed call: the session that compiled `f` gave `22P02 ... p1.st_old` 10 of 10, the other two answered right 10 of 10 each. So an unnamed "confirming" run can succeed on another session while the failing one stays stale (EO1's premise) |
+| X9 | Behind PgBouncer a stale server statement is cured by new text, and new text can go stale again | **Yes, 1.26.1 on both.** Six clients cached `/* morm g1 */ SELECT (($1::text)::p2.st)::text` on all three sessions; after a hand-made drop of the type: named `XX000 cache lookup failed for type ...` (routine `getTypeInputInfo`) 6 of 6; unnamed right 6 of 6; salted text `g1.s1` right 6 of 6. A second hand-made drop: `g1.s1` named `XX000` 6 of 6, unnamed right, a new salt `g1.s2` right |
+| X10 | `RECONNECT` heals both kinds of stale state behind PgBouncer | **Yes.** On 1.26.1, after X9 the three server pids were replaced, and new and old clients preparing the stale `g1.s1` text were right 18 of 18 and 6 of 6. On 1.20.1 and 1.26.1, the session X8 left stale gave `22P02` 5 of 5 before `RECONNECT`; afterwards three new pids answered right 15 of 15 |
+| X11 | PgBouncer bounds the server statements that salts leave | **Yes.** 300 distinct texts prepared and run through one 1.26.1 client: each of three server sessions held exactly 200 in `pg_prepared_statements`, the `max_prepared_statements` value |
+
+### What I couldn't run
+
+- **PgBouncer 1.22**, which the CI `pooler` job also runs. It keeps prepared statements by text as 1.26.1 does (proof 16 ran 1.22.0 and 1.22.1 with the same results).
+- **Postgres 15 and 16.** X1 to X6 rest on `pl_exec.c`, `plancache.c` and `enum_in` behaviour the earlier design recorded on 15 to 18; the building steps' tests run them on every version.
+- **A Postgres 18 built from a tarball:** 18.6 is the distribution's build.
+- **morm itself.** There's no runtime yet. The machine was run only as the prototype in section 6, against a model of Postgres and PgBouncer that the rows above calibrate.
