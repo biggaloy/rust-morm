@@ -4,7 +4,7 @@ Generated from the frozen plan. Each requirement and test obligation lives in ex
 
 Kinds: `code` needs a tagged test, `doc` is checked in the README step, `info` is context with nothing to build.
 
-Totals: 1268 requirements, 317 test obligations.
+Totals: 1269 requirements, 317 test obligations.
 
 ## Requirements
 
@@ -1271,13 +1271,14 @@ Totals: 1268 requirements, 317 test obligations.
 | R-1259 | code | 10 | 0 | \| `MORM_POOL_STALE_COOLDOWN`, `MORM_POOL_STALE_COOLDOWN_MAX` \| `stale_cooldown`, `stale_… |
 | R-1260 | code | 10 | 0 | \| `MORM_POOL_STALE_PENDING_EXPIRY`, `MORM_POOL_STALE_PENDING_MAX` \| `stale_pending_expir… |
 | R-1261 | code | 10 | 0 | \| `MORM_POOL_STALE_FIRST_FAILURE_MAX` \| `stale_first_failure_max` \| |
-| R-1262 | code | 14 | 0 | **The stale-session settings.** Every number the stale-session rules use is a pool setting… |
+| R-1262 | code | 14 | 0 | **The stale-session settings.** Every tunable of the stale-session rules, these five, is a… |
 | R-1263 | doc | 50 | 0 | \| `stale_cooldown` \| Statements fed text holding a retired enum label, or whose confirmi… |
 | R-1264 | doc | 50 | 0 | \| `stale_cooldown_max` \| More than 64 statements in one pool can be fed such text at onc… |
 | R-1265 | doc | 50 | 0 | \| `stale_pending_expiry` \| Your transactions retry a failed call more than 60 seconds la… |
 | R-1266 | doc | 50 | 0 | \| `stale_pending_max` \| Changes made by hand can leave more than 64 statements in one po… |
 | R-1267 | doc | 50 | 0 | \| `stale_first_failure_max` \| More than 64 statements in one pool fail on a retired enum… |
 | R-1268 | doc | 50 | 0 | The README shows this notice loudly, beside the pool settings: > **The stale-session setti… |
+| R-1269 | code | 48 | 0 | - **The pending check on the cached-statement path.** A cached statement's run with the po… |
 
 ## Test obligations
 
