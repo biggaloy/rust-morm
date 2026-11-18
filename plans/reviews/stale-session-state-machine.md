@@ -28,6 +28,39 @@ What that buys, argued in section 4 and checked by the simulation in section 6:
 | **MD** A `search_path` set per transaction over tables of different shapes | (a) the machine handles it at the stated cost, and the README says so beside `tx.set_local` |
 | **ME** The simulation's generator | (a) `proptest` as a dev-dependency of `morm`, for shrinking a failing event sequence |
 
+## What was tested
+
+Everything ran on throwaway servers under `.claude/scratch/` in my worktree, with `TMPDIR` set there, sockets under `~/.claude/scratch/`, all stopped and deleted afterwards.
+
+- **Postgres 17.12**, built from ftp.postgresql.org's `postgresql-17.12.tar.bz2`, checked against its published `.sha256` (`9cf136a703d8ee2f83465c43be4e9e8e7930c82b0bfba13be7e2537be769ac55`).
+- **Postgres 18.6**, the machine's own build (Manjaro package `18.6-1`), run as a throwaway cluster made with its `initdb`. Not built from a tarball.
+- **PgBouncer 1.20.1** (`24992cf557d73426d7048698dffc7b019e6364d4d8757ae2cf5e2471286a2088`, the hash R-1238 pins) and **1.26.1** (`00886a2994b4844cd37110970df777772cfc42a74c400522c82fba509a3f42d9`), built from pgbouncer.org's tarballs, each checked against its `.sha256`. One of each in front of each Postgres, four in all: `pool_mode = transaction`, `default_pool_size = 3`, `min_pool_size = 3`, `server_round_robin = 1`; 1.26.1 with `max_prepared_statements = 200`, 1.20.1 with none, so morm would run there with its caches off (R-0677).
+- **Clients:** `psql`, and a throwaway harness on `tokio-postgres` 0.7.18 (built offline from the local registry) for named and unnamed statements, several clients and concurrent transactions. Server sessions were told apart by `pg_backend_pid()`.
+- **The simulation prototype:** a scratch crate on stable Rust 1.99.1 with no dependencies (section 6).
+
+Unless a row says otherwise, 17.12 and 18.6 printed the same, apart from `pl_exec.c` and `plancache.c` line numbers.
+
+| # | Claim the design rests on | Result |
+|---|---|---|
+| X1 | A `42804` from plpgsql's parameter routines needs no schema change: a client can cause it | **Yes.** `pick(tbl text)` does `EXECUTE format('SELECT * FROM e1.%I ...', tbl) INTO r; RETURN (r.v + 1)::text`, where table `a`'s `v` is `int` and `b`'s is `bigint`. In one session: `pick('a')` → `11`; `pick('b')` → `42804 type of parameter 4 (bigint) does not match that when preparing the plan (integer)`, routine `plpgsql_param_eval_recfield`; `pick('a')` → `11`; `pick('b')` → `42804` again. A `FOR r IN EXECUTE` loop gives the same. No DDL ran. So R-0981's "certain signal" can be paced by the caller's arguments, and under PR #3's text each such call straight to Postgres raises the connection generation, ungated, and replaces the whole pool (new finding N1) |
+| X2 | A `0A000` from `RevalidateCachedQuery` needs no schema change, and fresh text doesn't stop it | **Yes.** With `search_path = t1`, `PREPARE s1 AS SELECT * FROM items WHERE id = $1`, then in a transaction `set_config('search_path', 't2', true)` and `EXECUTE s1(1)`: `0A000 cached plan must not change result type`. A new statement prepared under `t2` then fails the same way under `t1`. Unnamed runs answer under either path (EP2's spot check, on 17.12 too) |
+| X3 | Behind PgBouncer the same `0A000` reaches other clients and arrives at prepare | **Yes, 1.26.1 on both.** A cached text prepared under `p7a` gives `0A000` executed under `p7b`; a client *preparing* that text, or a salted copy, under the other path gets `prepare 0A000`, because PgBouncer hands it the server statement another transaction planned. Another client preparing the original text under `p7b` gets the same |
+| X4 | A `22P02` that names no retired type, from stored text, behaves as R-0981's stale one | **Yes.** A function converting a stored `_morm_retired_x` to enum `s1.st`: `22P02 invalid input value for enum s1.st: "_morm_retired_x"`, routine `enum_in`, on an old connection and on a newly opened one alike; after `UPDATE ... SET t = 'b'` the same bytes succeed on both (EP1's premise) |
+| X5 | A connection opened after a change compiles plpgsql fresh, so connection age splits stale sessions from data | **Yes.** After a hand-made relabel swap: a connection that called `f` before it gets `22P02 invalid input value for enum s2._morm_retired_m1_st: "a"` on every call; one that was open but had never called `f` answers right; one opened after answers right. Age is conservative: it never calls a stale session fresh, and may call a fresh one old |
+| X6 | Closing one connection lets the next open pass a role's `CONNECTION LIMIT` | **Yes.** Limit 2: the third open gets `53300 too many connections for role "s3r"` (routine `InitializeSessionUserId`); after closing one, the open succeeds (EJ1's premise) |
+| X7 | Which server session a transaction reaches, behind PgBouncer | **Sequential transactions from one client reached one server session, 30 of 30**, on 1.20.1 and 1.26.1 in front of both, even with `server_round_robin = 1`. Three clients with overlapping transactions reached all three sessions, 10 each. So a retry right after a failure usually reaches the same session under light load, and another one under load |
+| X8 | Plpgsql left stale in one server session: other sessions answer, unnamed | **Yes, on all four pairs.** One call compiled `f` in one session, then a hand-made relabel swap; ten rounds of three overlapping transactions, each an unnamed call: the session that compiled `f` gave `22P02 ... p1.st_old` 10 of 10, the other two answered right 10 of 10 each. So an unnamed "confirming" run can succeed on another session while the failing one stays stale (EO1's premise) |
+| X9 | Behind PgBouncer a stale server statement is cured by new text, and new text can go stale again | **Yes, 1.26.1 on both.** Six clients cached `/* morm g1 */ SELECT (($1::text)::p2.st)::text` on all three sessions; after a hand-made drop of the type: named `XX000 cache lookup failed for type ...` (routine `getTypeInputInfo`) 6 of 6; unnamed right 6 of 6; salted text `g1.s1` right 6 of 6. A second hand-made drop: `g1.s1` named `XX000` 6 of 6, unnamed right, a new salt `g1.s2` right |
+| X10 | `RECONNECT` heals both kinds of stale state behind PgBouncer | **Yes.** On 1.26.1, after X9 the three server pids were replaced, and new and old clients preparing the stale `g1.s1` text were right 18 of 18 and 6 of 6. On 1.20.1 and 1.26.1, the session X8 left stale gave `22P02` 5 of 5 before `RECONNECT`; afterwards three new pids answered right 15 of 15 |
+| X11 | PgBouncer bounds the server statements that salts leave | **Yes.** 300 distinct texts prepared and run through one 1.26.1 client: each of three server sessions held exactly 200 in `pg_prepared_statements`, the `max_prepared_statements` value |
+
+### What I couldn't run
+
+- **PgBouncer 1.22**, which the CI `pooler` job also runs. It keeps prepared statements by text as 1.26.1 does (proof 16 ran 1.22.0 and 1.22.1 with the same results).
+- **Postgres 15 and 16.** X1 to X6 rest on `pl_exec.c`, `plancache.c` and `enum_in` behaviour the earlier design recorded on 15 to 18; the building steps' tests run them on every version.
+- **A Postgres 18 built from a tarball:** 18.6 is the distribution's build.
+- **morm itself.** There's no runtime yet. The machine was run only as the prototype in section 6, against a model of Postgres and PgBouncer that the rows above calibrate.
+
 ## 1. The signals
 
 Each signal is recognised as SC decided (SQLSTATE with the routine, an identifier or an untranslated `elog` message), by R-1245. The machine sorts them into two classes by what cures them, which is all it needs to know.
@@ -49,7 +82,7 @@ Each signal is recognised as SC decided (SQLSTATE with the routine, an identifie
 | A schema change made by hand | nothing until one of the errors above | event | | No (it needs DDL) |
 | `RECONNECT`, `server_lifetime` | nothing in morm | event: PgBouncer replaces server sessions (X10) | | No |
 
-**A confirmation** is a fresh run of the same text with the same parameter bytes (EH2) that succeeds, with or without rows (EK4), or ends in a server error other than the first one and outside the no-confirm list (EI4, EJ6), where the cached statement or the old connection failed. `0A000`, `42804` and an `XX000` from a fresh run count as confirmed when they arrive on a connection the machine would replace, because a fresh statement or session cures them for certain (SF's certain signals, kept). No other signal raises anything without a confirmation.
+**A confirmation** is a fresh run of the same text with the same parameter bytes (EH2) that succeeds, with or without rows (EK4), or ends in a server error other than the first one and outside the no-confirm list (EI4, EJ6), where the cached statement or the old connection failed. `0A000` counts as confirmed on its own, because a fresh statement cures it for certain; so do `42804` and an `XX000` from a fresh run on a connection the machine replaces, because a new session cures them for certain (SF's certain signals, kept). No other signal raises anything without a confirmation.
 
 ## 2. The state
 
@@ -62,7 +95,7 @@ Per pool. Every item is stated once here, with its bound and what clears it.
 | Connection generation | a counter; a connection behind it is replaced at checkout (R-0975) | one word, the same atomic word | raised by the gate's "replace" action, straight to Postgres only |
 | The window | the time of the last pool-wide action and the `<n>` it was taken under, and one "due" action | O(1); "due" is one bit pair in the generation word | an action starts it; it ends `stale_cooldown` later; a request inside it sets "due", and the first checkout after it ends takes that action |
 | The epoch (straight to Postgres) | start `T`, the `<n>` read at `T`, end `T + stale_cooldown`, and "suspended" | O(1) | started by a stale-session failure when there's no epoch, it has ended, or the `<n>` just read differs from its own; suspended for the rest of its life when a replacement connection can't be opened |
-| Pending entries | per statement text, by a 64-bit hash: the hash of the confirming parameter bytes, a horizon, and an expiry | at most `stale_pending_max`, oldest dropped | created by a statement-class signal that hasn't been acted on pool-wide; a later signal of the same statement moves its horizon and confirming bytes, never its expiry; removed when it expires (`stale_pending_expiry` after creation), when its confirming run fails, and with every entry when a pool-wide action is taken or `<n>` moves |
+| Pending entries | per statement text, by a 64-bit hash: the hash of the confirming parameter bytes, a horizon, and an expiry | at most `stale_pending_max`, oldest dropped | created by a statement-class signal inside a transaction (B1, B2, D1), after any request that signal makes, unless `<n>` moved; a later signal of the same statement moves its horizon and confirming bytes, never its expiry; removed when it expires (`stale_pending_expiry` after creation), when its confirming run fails, and with every entry when a pool-wide action is taken or `<n>` moves |
 | Cool-down (behind PgBouncer) | per statement text, by a 64-bit hash: an expiry | at most `stale_cooldown_max`, oldest dropped | added by a stale-session failure that got `SchemaChanged` or a failed retry; removed `stale_cooldown` later, and with every entry when a pool-wide action is taken or `<n>` moves |
 
 Per connection: the time it was opened, the two generations it last saw, and for each cached statement the sequence number at which it was prepared (8 bytes), which the pending entry's horizon is compared with.
@@ -106,44 +139,44 @@ The procedures the rows name:
 | # | Signal | morm does | Caller gets | May raise | Cost |
 |---|---|---|---|---|---|
 | B1 | `0A000` or a sixth-row `22P02` | Evict the statement on that connection; after the rollback, entry | `SchemaChanged` | `0A000` requests *clear*; the confirming run's confirmation requests *clear* | One evict; the entry |
-| B2 | `XX000` from a cached statement | As B1, and if the connection is old, discard it too, which cures compiled code as well | `SchemaChanged` | The confirming run's confirmation requests *replace* | One catalog read; one connection if old |
+| B2 | `XX000` from a cached statement | As B1, and if the connection is old, discard it too, which cures compiled code as well | `SchemaChanged` | The confirming run's confirmation requests *replace* if the connection was discarded, *clear* otherwise | One catalog read; one connection if old |
 | B3 | Session class, on an old connection | Discard | `SchemaChanged` | `42804` and `XX000` request *replace*; so does the next attempt's run of the same text and bytes on the new connection, if it confirms | One catalog read; one connection |
 | B4 | Session class, on a connection opened since `T`, or the epoch suspended | Nothing | As it is, so `.retry(n)` stops | Nothing | One catalog read |
 | B5 | Any other error from a cached statement casting a parameter to a non-built-in type | Nothing | As it is (R-0984) | Nothing | None |
 
-### D. Behind PgBouncer, outside a transaction
+### C. Behind PgBouncer, outside a transaction
 
 | # | Signal | morm does | Caller gets | May raise | Cost |
 |---|---|---|---|---|---|
-| D1 | Statement class, the `XX000` from a cached statement included | Fresh run, unnamed; on a confirmation or `0A000`, read `<n>` | The unnamed run's result | A moved `<n>` is adopted, not gated; otherwise *salt* is requested. An `XX000` from the unnamed run goes to D2 | One unnamed run; one catalog read on a confirmation |
-| D2 | Session class | If the statement is in the cool-down, nothing; otherwise retry once on another client connection, and if that fails the same way, the statement enters the cool-down | The retry's result, or as it is | Nothing, ever (EK1, EL2) | One run; under light load it usually reaches the same server session (X7) |
+| C1 | Statement class, the `XX000` from a cached statement included | Fresh run, unnamed; on a confirmation or `0A000`, read `<n>` | The unnamed run's result | A moved `<n>` is adopted, not gated; otherwise *salt* is requested. An `XX000` from the unnamed run goes to C2 | One unnamed run; one catalog read on a confirmation |
+| C2 | Session class | If the statement is in the cool-down, nothing; otherwise retry once on another client connection, and if that fails the same way, the statement enters the cool-down | The retry's result, or as it is | Nothing, ever (EK1, EL2) | One run; under light load it usually reaches the same server session (X7) |
 
-### E. Behind PgBouncer, inside a transaction
+### D. Behind PgBouncer, inside a transaction
 
 | # | Signal | morm does | Caller gets | May raise | Cost |
 |---|---|---|---|---|---|
-| E1 | Statement class, the `XX000` from a cached statement included | After the rollback, read `<n>`: if it moved, adopt it; otherwise entry, so every run of the statement goes unnamed while it lasts | `SchemaChanged` | `0A000` requests *salt*; the confirming run's confirmation requests *salt*; an `XX000` from the confirming run goes to E2 | One catalog read; unnamed runs while the entry lasts |
-| E2 | Session class | If the statement is in the cool-down, nothing; otherwise the statement enters it | As it is in the cool-down; otherwise `SchemaChanged` | Nothing, ever | None |
-| E3 | Any other error from a cached statement casting to a non-built-in type | Nothing | As it is | Nothing | None |
+| D1 | Statement class, the `XX000` from a cached statement included | After the rollback, read `<n>`: if it moved, adopt it; otherwise entry, so every run of the statement goes unnamed while it lasts | `SchemaChanged` | `0A000` requests *salt*; the confirming run's confirmation requests *salt*; an `XX000` from the confirming run goes to D2 | One catalog read; unnamed runs while the entry lasts |
+| D2 | Session class | If the statement is in the cool-down, nothing; otherwise the statement enters it | As it is in the cool-down; otherwise `SchemaChanged` | Nothing, ever | None |
+| D3 | Any other error from a cached statement casting to a non-built-in type | Nothing | As it is | Nothing | None |
 
-Behind PgBouncer with the caches off, as on 1.20.1 (R-0677), no statement is cached, so only D2 and E2 occur. `db.hold()` isn't available there (R-0673).
+Behind PgBouncer with the caches off, as on 1.20.1 (R-0677), no statement is cached, so only C2 and D2 occur. `db.hold()` isn't available there (R-0673).
 
 ### Pending entries off
 
-With `stale_pending_expiry = "off"` or `stale_pending_max = 0` no entry is kept. B1 and B2 still evict, so straight to Postgres each connection's copy fails at most once. Behind PgBouncer, E1 returns `SchemaChanged` on every call of the statement inside transactions, including `.retry(n)`'s attempts, until a call outside a transaction confirms it (D1), `RECONNECT`, or `server_lifetime`; and while an old type is kept, a value both types share can run on the old order meanwhile (section 4 (e)).
+With `stale_pending_expiry = "off"` or `stale_pending_max = 0` no entry is kept. B1 and B2 still evict, so straight to Postgres each connection's copy fails at most once. Behind PgBouncer, D1 returns `SchemaChanged` on every call of the statement inside transactions, including `.retry(n)`'s attempts, until a call outside a transaction confirms it (C1), `RECONNECT`, or `server_lifetime`; and while an old type is kept, a value both types share can run on the old order meanwhile (section 4 (e)).
 
-### F. Events
+### E. Events
 
 | # | Event | What changes |
 |---|---|---|
-| F1 | A migration commits a `tx` step | The reset and the raised generation (R-1248), the relabel (SA), the refreshes (SB). The pool learns of it at its next read of `<n>`: behind PgBouncer it adopts the marker, which drops the salt, raises the statement generation and clears every entry and cool-down entry; straight to Postgres it clears every entry, its next stale-session failure starts a new epoch, and its next request passes a closed window once. Nothing is gated, because migrations pace it. `migrate` sends `RECONNECT` where admin URLs are listed (R-1256) |
-| F2 | A schema change made by hand | Nothing until a signal |
-| F3 | `RECONNECT` or `server_lifetime` | PgBouncer replaces each server connection as it's released, which cures stale plpgsql and stale server statements alike (X10). No morm state changes: cool-down entries run out by themselves |
-| F4 | The window ends with an action due | The first checkout after it takes the action |
-| F5 | A pool-wide action is taken | *clear*: the statement generation rises. *salt*: a new salt replaces any earlier one and the statement generation rises. *replace*: the connection generation rises, so every connection is replaced at checkout, which clears its caches too. Every pending and cool-down entry is removed and a window starts. The epoch is kept |
-| F6 | A checkout | One atomic read of the generation word, as now: a connection behind the connection generation is replaced, one behind the statement generation clears both caches, and a due action whose window has ended is taken |
-| F7 | Time | An entry expires `stale_pending_expiry` after it was created, a cool-down entry `stale_cooldown` after, the epoch `stale_cooldown` after `T`, the window `stale_cooldown` after its action |
-| F8 | A recovery conflict on a standby | Unchanged: `Serialization` inside a transaction, `CommitUnknown` during `COMMIT`, `ConnectionLost` on a held connection (SG). As a fresh run's outcome it's on the no-confirm list |
+| E1 | A migration commits a `tx` step | The reset and the raised generation (R-1248), the relabel (SA), the refreshes (SB). The pool learns of it at its next read of `<n>`: behind PgBouncer it adopts the marker, which drops the salt, raises the statement generation and clears every entry and cool-down entry; straight to Postgres it clears every entry, its next stale-session failure starts a new epoch, and its next request passes a closed window once. Nothing is gated, because migrations pace it. `migrate` sends `RECONNECT` where admin URLs are listed (R-1256) |
+| E2 | A schema change made by hand | Nothing until a signal |
+| E3 | `RECONNECT` or `server_lifetime` | PgBouncer replaces each server connection as it's released, which cures stale plpgsql and stale server statements alike (X10). No morm state changes: cool-down entries run out by themselves |
+| E4 | The window ends with an action due | The first checkout after it takes the action |
+| E5 | A pool-wide action is taken | *clear*: the statement generation rises. *salt*: a new salt replaces any earlier one and the statement generation rises. *replace*: the connection generation rises, so every connection is replaced at checkout, which clears its caches too. Every pending and cool-down entry is removed and a window starts. The epoch is kept |
+| E6 | A checkout | One atomic read of the generation word, as now: a connection behind the connection generation is replaced, one behind the statement generation clears both caches, and a due action whose window has ended is taken |
+| E7 | Time | An entry expires `stale_pending_expiry` after it was created, a cool-down entry `stale_cooldown` after, the epoch `stale_cooldown` after `T`, the window `stale_cooldown` after its action |
+| E8 | A recovery conflict on a standby | Unchanged: `Serialization` inside a transaction, `CommitUnknown` during `COMMIT`, `ConnectionLost` on a held connection (SG). As a fresh run's outcome it's on the no-confirm list |
 
 ### The same, as code
 
@@ -186,39 +219,6 @@ request(action, n):
     if window_open() or n != window.n: take(max(action, due)); else due = max(due, action)
 ```
 
-## What was tested
-
-Everything ran on throwaway servers under `.claude/scratch/` in my worktree, with `TMPDIR` set there, sockets under `~/.claude/scratch/`, all stopped and deleted afterwards.
-
-- **Postgres 17.12**, built from ftp.postgresql.org's `postgresql-17.12.tar.bz2`, checked against its published `.sha256` (`9cf136a703d8ee2f83465c43be4e9e8e7930c82b0bfba13be7e2537be769ac55`).
-- **Postgres 18.6**, the machine's own build (Manjaro package `18.6-1`), run as a throwaway cluster made with its `initdb`. Not built from a tarball.
-- **PgBouncer 1.20.1** (`24992cf557d73426d7048698dffc7b019e6364d4d8757ae2cf5e2471286a2088`, the hash R-1238 pins) and **1.26.1** (`00886a2994b4844cd37110970df777772cfc42a74c400522c82fba509a3f42d9`), built from pgbouncer.org's tarballs, each checked against its `.sha256`. One of each in front of each Postgres, four in all: `pool_mode = transaction`, `default_pool_size = 3`, `min_pool_size = 3`, `server_round_robin = 1`; 1.26.1 with `max_prepared_statements = 200`, 1.20.1 with none, so morm would run there with its caches off (R-0677).
-- **Clients:** `psql`, and a throwaway harness on `tokio-postgres` 0.7.18 (built offline from the local registry) for named and unnamed statements, several clients and concurrent transactions. Server sessions were told apart by `pg_backend_pid()`.
-- **The simulation prototype:** a scratch crate on stable Rust 1.99.1 with no dependencies (section 6).
-
-Unless a row says otherwise, 17.12 and 18.6 printed the same, apart from `pl_exec.c` and `plancache.c` line numbers.
-
-| # | Claim the design rests on | Result |
-|---|---|---|
-| X1 | A `42804` from plpgsql's parameter routines needs no schema change: a client can cause it | **Yes.** `pick(tbl text)` does `EXECUTE format('SELECT * FROM e1.%I ...', tbl) INTO r; RETURN (r.v + 1)::text`, where table `a`'s `v` is `int` and `b`'s is `bigint`. In one session: `pick('a')` → `11`; `pick('b')` → `42804 type of parameter 4 (bigint) does not match that when preparing the plan (integer)`, routine `plpgsql_param_eval_recfield`; `pick('a')` → `11`; `pick('b')` → `42804` again. A `FOR r IN EXECUTE` loop gives the same. No DDL ran. So R-0981's "certain signal" can be paced by the caller's arguments, and under PR #3's text each such call straight to Postgres raises the connection generation, ungated, and replaces the whole pool (new finding N1) |
-| X2 | A `0A000` from `RevalidateCachedQuery` needs no schema change, and fresh text doesn't stop it | **Yes.** With `search_path = t1`, `PREPARE s1 AS SELECT * FROM items WHERE id = $1`, then in a transaction `set_config('search_path', 't2', true)` and `EXECUTE s1(1)`: `0A000 cached plan must not change result type`. A new statement prepared under `t2` then fails the same way under `t1`. Unnamed runs answer under either path (EP2's spot check, on 17.12 too) |
-| X3 | Behind PgBouncer the same `0A000` reaches other clients and arrives at prepare | **Yes, 1.26.1 on both.** A cached text prepared under `p7a` gives `0A000` executed under `p7b`; a client *preparing* that text, or a salted copy, under the other path gets `prepare 0A000`, because PgBouncer hands it the server statement another transaction planned. Another client preparing the original text under `p7b` gets the same |
-| X4 | A `22P02` that names no retired type, from stored text, behaves as R-0981's stale one | **Yes.** A function converting a stored `_morm_retired_x` to enum `s1.st`: `22P02 invalid input value for enum s1.st: "_morm_retired_x"`, routine `enum_in`, on an old connection and on a newly opened one alike; after `UPDATE ... SET t = 'b'` the same bytes succeed on both (EP1's premise) |
-| X5 | A connection opened after a change compiles plpgsql fresh, so connection age splits stale sessions from data | **Yes.** After a hand-made relabel swap: a connection that called `f` before it gets `22P02 invalid input value for enum s2._morm_retired_m1_st: "a"` on every call; one that was open but had never called `f` answers right; one opened after answers right. Age is conservative: it never calls a stale session fresh, and may call a fresh one old |
-| X6 | Closing one connection lets the next open pass a role's `CONNECTION LIMIT` | **Yes.** Limit 2: the third open gets `53300 too many connections for role "s3r"` (routine `InitializeSessionUserId`); after closing one, the open succeeds (EJ1's premise) |
-| X7 | Which server session a transaction reaches, behind PgBouncer | **Sequential transactions from one client reached one server session, 30 of 30**, on 1.20.1 and 1.26.1 in front of both, even with `server_round_robin = 1`. Three clients with overlapping transactions reached all three sessions, 10 each. So a retry right after a failure usually reaches the same session under light load, and another one under load |
-| X8 | Plpgsql left stale in one server session: other sessions answer, unnamed | **Yes, on all four pairs.** One call compiled `f` in one session, then a hand-made relabel swap; ten rounds of three overlapping transactions, each an unnamed call: the session that compiled `f` gave `22P02 ... p1.st_old` 10 of 10, the other two answered right 10 of 10 each. So an unnamed "confirming" run can succeed on another session while the failing one stays stale (EO1's premise) |
-| X9 | Behind PgBouncer a stale server statement is cured by new text, and new text can go stale again | **Yes, 1.26.1 on both.** Six clients cached `/* morm g1 */ SELECT (($1::text)::p2.st)::text` on all three sessions; after a hand-made drop of the type: named `XX000 cache lookup failed for type ...` (routine `getTypeInputInfo`) 6 of 6; unnamed right 6 of 6; salted text `g1.s1` right 6 of 6. A second hand-made drop: `g1.s1` named `XX000` 6 of 6, unnamed right, a new salt `g1.s2` right |
-| X10 | `RECONNECT` heals both kinds of stale state behind PgBouncer | **Yes.** On 1.26.1, after X9 the three server pids were replaced, and new and old clients preparing the stale `g1.s1` text were right 18 of 18 and 6 of 6. On 1.20.1 and 1.26.1, the session X8 left stale gave `22P02` 5 of 5 before `RECONNECT`; afterwards three new pids answered right 15 of 15 |
-| X11 | PgBouncer bounds the server statements that salts leave | **Yes.** 300 distinct texts prepared and run through one 1.26.1 client: each of three server sessions held exactly 200 in `pg_prepared_statements`, the `max_prepared_statements` value |
-
-### What I couldn't run
-
-- **PgBouncer 1.22**, which the CI `pooler` job also runs. It keeps prepared statements by text as 1.26.1 does (proof 16 ran 1.22.0 and 1.22.1 with the same results).
-- **Postgres 15 and 16.** X1 to X6 rest on `pl_exec.c`, `plancache.c` and `enum_in` behaviour the earlier design recorded on 15 to 18; the building steps' tests run them on every version.
-- **A Postgres 18 built from a tarball:** 18.6 is the distribution's build.
-- **morm itself.** There's no runtime yet. The machine was run only as the prototype in section 6, against a model of Postgres and PgBouncer that the rows above calibrate.
-
 ## 4. Guarantees, argued
 
 Notation: `W` is `stale_cooldown` (60 s by default), `E` is `stale_pending_expiry` (60 s), `L` is PgBouncer's `server_lifetime` (3600 s by default), and `max` is the pool's `max`. A change is a schema change committed at time `t0`, by a migration or by hand. Something is stale when it was prepared or compiled before `t0` and fails or answers wrongly after it. An error is visible when it reaches the caller and a fresh session with a fresh statement wouldn't return it. Every bound is per pool: a process with several pools on one database, such as `[pools.jobs]`, has each pool's (EP7).
@@ -240,7 +240,7 @@ Notation: `W` is `stale_cooldown` (60 s by default), `E` is `stale_pending_expir
 
 **H3. Behind PgBouncer, stale statements.**
 
-- Outside a transaction none is ever visible: D1 answers with an unnamed run.
+- Outside a transaction none is ever visible: C1 answers with an unnamed run.
 - Inside one, the first call per process returns `SchemaChanged`. While its entry lasts every run of that statement is unnamed and right, so with `.retry(n)`, `n` at least 1, nothing is visible.
 - The salt comes within `W` of the first confirmation or `0A000`.
 - Without any confirmation, a statement run only inside transactions, with no `.retry(n)` and different values each time, returns `SchemaChanged` once per `E` per process. It heals at the first call outside a transaction, at `RECONNECT`, which also clears stale server statements (X10), or within `L`. R-1253 states this case.
@@ -256,27 +256,27 @@ These hold whatever clients send, because a client can only start an epoch early
 
 ### (b) Churn is bounded, whatever clients send
 
-**C1. Pool-wide actions:** at most one per `W`, plus one per migration.
+**K1. Pool-wide actions:** at most one per `W`, plus one per migration.
 
 - `request` takes an action only when the window is open or `<n>` moved since the last action, and a due action waits for the window's end.
 - So two actions less than `W` apart have a migration between them.
 - An action clears every connection's statement caches, or behind PgBouncer adds a salt, or straight to Postgres replaces up to `max` connections at checkout.
 
-**C2. Straight to Postgres, stale-driven replacements:** at most `max` per `W`, plus `max` per migration.
+**K2. Straight to Postgres, stale-driven replacements:** at most `max` per `W`, plus `max` per migration.
 
 - A new epoch starts only after the last one ended, or when `<n>` moved.
 - Inside an epoch only connections opened before `T` are replaced, each at most once, because its replacement is opened after `T`. There are at most `max` of them.
 - A failed open suspends the epoch, so at most two opens fail per epoch: one beside the old connection, one in its slot on `53300`.
 
-**C3. New connections from stale handling,** straight to Postgres: C2's replacements plus C1's *replace* actions, at most `2 × max` per `W`, plus `2 × max` per migration.
+**K3. New connections from stale handling,** straight to Postgres: K2's replacements plus K1's *replace* actions, at most `2 × max` per `W`, plus `2 × max` per migration.
 
-**C4. Behind PgBouncer:**
+**K4. Behind PgBouncer:**
 
 - stale handling never opens or discards a client connection;
 - at most one salt per `W` plus one adoption per migration;
 - the server statements salts leave behind are bounded by PgBouncer's `max_prepared_statements` per server connection (X11).
 
-**C5. Per call:**
+**K5. Per call:**
 
 - outside a transaction, at most one fresh run, one catalog read and, behind PgBouncer for a stale session, one retry on another connection;
 - inside one, at most one catalog read after the rollback;
@@ -324,9 +324,9 @@ morm's own migrations leave neither of these, apart from the first: the reset re
 
 | Finding | Closed by |
 |---|---|
-| EP1: straight to Postgres, a row changed during `.retry(n)`'s backoff makes the confirming attempt replace the whole pool every round | The connection generation is raised only through the gate (C1), at most once per `W`. The epoch, not a per-statement record, decides replacements (C2), and an action doesn't reset it, so the round after a confirmation finds every connection opened since `T` and returns the error as it is (B4). The cycle costs at most `max` replacements and one *replace* per `W` |
+| EP1: straight to Postgres, a row changed during `.retry(n)`'s backoff makes the confirming attempt replace the whole pool every round | The connection generation is raised only through the gate (K1), at most once per `W`. The epoch, not a per-statement record, decides replacements (K2), and an action doesn't reset it, so the round after a confirmation finds every connection opened since `T` and returns the error as it is (B4). The cycle costs at most `max` replacements and one *replace* per `W` |
 | EP2: a per-transaction `search_path` makes `0A000` clear the caches on every switch | `0A000`'s request goes through the gate like every other (MB). The call is still repaired locally, and inside a transaction the entry keeps the statement fresh, so a switch costs one `SchemaChanged` per `E`. X2 and X3 add that fresh text can't cure a switch and that behind PgBouncer it arrives at prepare and in other clients; MD's notice says what a schema-per-tenant app pays |
-| EP3: inside the window, R-1246 and R-0982 describe different calls; `0A000` behind PgBouncer reads both ways | The window never changes a call's outcome: inside or outside it, a statement-class signal gets its fresh run and the caller its result. Only the pool-wide action waits. `0A000` is gated like the rest, and a new salt replaces the old one (F5) |
+| EP3: inside the window, R-1246 and R-0982 describe different calls; `0A000` behind PgBouncer reads both ways | The window never changes a call's outcome: inside or outside it, a statement-class signal gets its fresh run and the caller its result. Only the pool-wide action waits. `0A000` is gated like the rest, and a new salt replaces the old one (E5) |
 | EP4: a second hand-made change within the window fails calls for up to `2 × stale_cooldown`, unstated | Gone with the in-window "treat as plpgsql" path. A second change inside the window costs what the first did: outside a transaction nothing visible, inside one a `SchemaChanged` and then fresh runs, and the pool-wide action comes at the window's end (H1, H3) |
 | EP5: no test shows the window reopening or a second change healing | The deferred action makes "the window reopens" an observable event: a request inside it is taken at the first checkout after it ends. T-0306 and T-0312 assert it with `stale_cooldown = "1s"`, and the simulation asserts the actions' spacing (section 6) |
 | EP6: `stale_pending_expiry = 0` is both off and refused | MC: `0` and `"0"` are bare numbers, refused; `"off"` and `"0s"` turn entries off |
@@ -337,7 +337,7 @@ morm's own migrations leave neither of these, apart from the first: the reset re
 
 | # | Gap in PR #3's text | Evidence | Closed by |
 |---|---|---|---|
-| N1 | Straight to Postgres, `42804` is a certain signal that raises the connection generation at once, ungated, and a caller choosing a record's shape causes it with no change, so it can replace the whole pool on every call | X1 | `42804` reaches the gate (C1) and the epoch (C2); on a connection opened since `T` it's returned as it is |
+| N1 | Straight to Postgres, `42804` is a certain signal that raises the connection generation at once, ungated, and a caller choosing a record's shape causes it with no change, so it can replace the whole pool on every call | X1 | `42804` reaches the gate (K1) and the epoch (K2); on a connection opened since `T` it's returned as it is |
 | N2 | Behind PgBouncer, a `0A000` from a per-transaction `search_path` arrives at prepare and in other clients, and no salt can cure it | X3 | Gated (MB); the entry keeps the statement unnamed while it lasts; MD's notice |
 | N3 | Straight to Postgres, an `XX000` from a plain cached statement went straight to connection replacement, which the epoch would refuse on a newer connection, leaving a stale statement failing | the prototype | A1 and B2: every `XX000` from a cached statement gets a fresh run first; inside a transaction an old connection is also discarded |
 | N4 | A second statement-class signal while an entry lasts left copies cached between the two signals stale, so `.retry(n)` could fail twice | the prototype | A later signal moves the entry's horizon and confirming bytes, not its expiry (section 2) |
@@ -349,8 +349,8 @@ The machine replaces the rules these findings patched, so each is closed by a st
 
 | Finding | Where the machine closes it |
 |---|---|
-| EE1, EE4, EE5, EE11, EF5 | Kept as designed: reset and relabel (SA), the shared marker read at pool start (SD, SE), the refresh (SB), prepare-time signals handled as execute-time ones (F1, D1, E1) |
-| EF1, EG2 | The parameter test, before any row; stored or transformed text costs at most C2's replacements and nothing else |
+| EE1, EE4, EE5, EE11, EF5 | Kept as designed: reset and relabel (SA), the shared marker read at pool start (SD, SE), the refresh (SB), prepare-time signals handled as execute-time ones (E1, C1, D1) |
+| EF1, EG2 | The parameter test, before any row; stored or transformed text costs at most K2's replacements and nothing else |
 | EG1, EH1, EI1, EJ2, EJ7 | The epoch: in a transaction only an old connection is discarded; a connection opened since `T` returns the error as it is, so `.retry(n)` stops; `<n>` moved starts a new epoch, so a later migration's stale sessions are never taken for data; `T` is the time `<n>` was read, so a migration that commits between the failure and the read is inside the epoch |
 | EG3, EH5, EI6, EJ1 | Section 3's replace: momentary extra, close first on a full budget or `53300`, slot kept, a failed open suspends the epoch so it isn't retried every call |
 | EH2, EM4 | A confirmation needs the same text and bytes |
@@ -373,7 +373,7 @@ The guarantees are about sequences: twelve reviews found sequences of ordinary c
 ### How the building step shapes it
 
 - **The machine is one pure module** in `morm`, such as `stale.rs`: the pool's state (section 2) and functions that take a signal, the call's context and the clock, and return a decision: answer with a fresh run, replace, discard, return `SchemaChanged`, return as it is, request an action. The pool and connection code carries the decisions out. The simulation drives the same module, with the model carrying them out, so it tests the code that ships, not a copy.
-- **Which step:** step 14 writes the module with rows A, D and F; step 20 adds rows B and E and the simulation, as a new test obligation, because step 20 is the first step with the pool (11), the pooler mode (12), the caches (14) and transactions (20) all in place.
+- **Which step:** step 14 writes the module with rows A, C and E; step 20 adds rows B and D and the simulation, as a new test obligation, because step 20 is the first step with the pool (11), the pooler mode (12), the caches (14) and transactions (20) all in place.
 - **How it runs in CI:** a unit test in `crates/morm`, so it runs in `ci`'s workspace test job (`cargo test --locked --workspace --exclude morm-tests --all-targets`), with no Postgres: 256 sequences of 2,000 events, a few seconds. `nightly`'s `cargo test --locked --workspace` runs it with `PROPTEST_CASES=20000`. A failure shrinks to a shortest failing sequence (ME), saved under `crates/morm/proptest-regressions/` and committed, so it reruns on every build.
 
 ### The model
@@ -390,10 +390,10 @@ The guarantees are about sequences: twelve reviews found sequences of ordinary c
 
 | # | Invariant | Guarantee |
 |---|---|---|
-| I1 | Two pool-wide actions are at least `stale_cooldown` apart unless `<n>` moved between them | C1 |
+| I1 | Two pool-wide actions are at least `stale_cooldown` apart unless `<n>` moved between them | K1 |
 | I2 | A request the window deferred is taken by the first checkout after the window ends | EP5 |
-| I3 | Two epochs start at least `stale_cooldown` apart unless `<n>` moved; an epoch replaces at most the connections open at its start | C2 |
-| I4 | Stale-driven connection opens stay within `2 × max + 2` per `stale_cooldown` plus `max` per migration; behind PgBouncer there are none | C3, C4 |
+| I3 | Two epochs start at least `stale_cooldown` apart unless `<n>` moved; an epoch replaces at most the connections open at its start | K2 |
+| I4 | Stale-driven connection opens stay within `2 × max + 2` per `stale_cooldown` plus `max` per migration; behind PgBouncer there are none | K3, K4 |
 | I5 | The pool's slots never pass `max`; open connections never pass `max + 1` or the budget | (c) |
 | I6 | Pending and cool-down entries never pass their caps | (d) |
 | I7 | A stale statement is never visible outside a transaction, nor under `.retry(n)`, `n` at least 1, with entries on and enough of them | H1, H3 |
@@ -441,13 +441,13 @@ One fix agent rewrites these from this design, on PR #3's branch. No new IDs app
 | ID | Step | Fate | What it says after the rewrite |
 |---|---|---|---|
 | R-1245 | 14 | Rewritten | Section 1's table: each signal, how it's recognised, its class, what cures it, and whether client input can cause it. The definition of a confirmation and the no-confirm list. SC's language, routine and version text kept as is |
-| R-0718 | 14 | Rewritten | The statement class, both modes, both contexts: rows A1, B1, B2, D1, E1; the fresh run; pending entries (one per statement, horizon, confirming bytes, refresh, expiry, removal, entries off, cap); a confirmation or `0A000` requests *clear* or *salt*. Choice I unchanged |
+| R-0718 | 14 | Rewritten | The statement class, both modes, both contexts: rows A1, B1, B2, C1, D1; the fresh run; pending entries (one per statement, horizon, confirming bytes, refresh, expiry, removal, entries off, cap); a confirmation or `0A000` requests *clear* or *salt*. Choice I unchanged |
 | R-0981 | 14 | Rewritten | The session class straight to Postgres: the epoch (start, `T`, `<n>`, end, suspension), old and new connections, *replace* with R-0981's slot rules and the new connection keeping the slot, rows A2 to A4, B3, B4; the parameter test; the transient `XX000`; certain signals requesting *replace* |
 | R-0982 | 14 | Rewritten | The three pool-wide actions and the gate: the window, the due action at the first checkout after it, one action per migration, what an action clears, and that the epoch is kept; why the window never changes a call's own outcome |
 | R-0983 | 14 | Edited | Keeps "any other routine"; adds that a stale statement gets one fresh run and no other retry |
-| R-1246 | 14 | Rewritten | Behind PgBouncer: the marker, the salt (a new one replaces the last), adoption of a moved `<n>`, unnamed fresh runs, entries making every run unnamed, rows D2 and E2 (no pool-wide action, one retry on another connection, the cool-down), `pool_stats()`, and the costs of section 4 (C4, C5) |
+| R-1246 | 14 | Rewritten | Behind PgBouncer: the marker, the salt (a new one replaces the last), adoption of a moved `<n>`, unnamed fresh runs, entries making every run unnamed, rows C2 and D2 (no pool-wide action, one retry on another connection, the cool-down), `pool_stats()`, and the costs of section 4 (K4, K5) |
 | R-1262 | 14 | Rewritten | Four settings, as below; MC's rule for zero; floors and ceilings; values fixed at start |
-| R-0984 | 20 | Rewritten, shorter | Inside a transaction: when the call gets `SchemaChanged` and when the error as it is; rows B1 to B5 and E1 to E3 by reference; `.retry(n)`'s next attempt on a new connection after a discard, and on fresh statements through the entry; what happens with no `.retry(n)`. The first-failure records go |
+| R-0984 | 20 | Rewritten, shorter | Inside a transaction: when the call gets `SchemaChanged` and when the error as it is; rows B1 to B5 and D1 to D3 by reference; `.retry(n)`'s next attempt on a new connection after a discard, and on fresh statements through the entry; what happens with no `.retry(n)`. The first-failure records go |
 | R-0985 | 20 | Unchanged | |
 | R-0975 | 11 | Edited | The connection generation rises only through R-0982's *replace* action; behind a pooler, never |
 | R-0060 | 10, and its copies in 11, 12, 27, 47 | Edited | The stale block has four lines; `stale_cooldown`'s comment names the window, the epoch and the cool-down (EP7) |
@@ -485,9 +485,9 @@ A record of this design's evidence, X1 to X11, with versions and hashes, and the
 
 | ID | Step | Fate | What it covers after the rewrite |
 |---|---|---|---|
-| T-0306 | 14 | Rewritten | Behind PgBouncer, rows D1, D2 and E1 on 1.20.1, 1.22 and 1.26.1 with three server sessions. Keeps proof 16's statements. Adds, with `stale_cooldown = "1s"`: a second hand-made drop inside the window answered right outside a transaction, with the salt taken at the first checkout after the window (EP4, EP5); plpgsql stale in one of three sessions (X8) costing at most one salt per window over ten windows (EO1); per-transaction `search_path` flips answered right outside a transaction and at most one salt per window, with the prepare-time `0A000` (X3); `RECONNECT` clearing a stale server statement (X10) |
+| T-0306 | 14 | Rewritten | Behind PgBouncer, rows C1, C2 and D1 on 1.20.1, 1.22 and 1.26.1 with three server sessions. Keeps proof 16's statements. Adds, with `stale_cooldown = "1s"`: a second hand-made drop inside the window answered right outside a transaction, with the salt taken at the first checkout after the window (EP4, EP5); plpgsql stale in one of three sessions (X8) costing at most one salt per window over ten windows (EO1); per-transaction `search_path` flips answered right outside a transaction and at most one salt per window, with the prepare-time `0A000` (X3); `RECONNECT` clearing a stale server statement (X10) |
 | T-0311 | 14 | Rewritten | Straight to Postgres, rows A2 to A4: an old connection replaced once, with the slot rules' branches (room in the budget, full budget, `53300`, every open refused, which suspends the epoch, a `statement_timeout` before the conversion, a `23505` after it, an `UPDATE` returning only its tag); stored text costing at most the connections open at `T`, then nothing until the epoch ends; X1's record-shape `42804` costing at most `max` replacements and one *replace* per window over ten windows |
-| T-0312 | 20 | Rewritten, shorter | Inside transactions, both modes: B1 to B5 and E1 to E3 each once; EP1's cycle, a row changed during the backoff ten times, costing at most `max` discards and one *replace* per window; two migrations each starting an epoch; no `.retry(n)`; entries off; the cool-down; caps of 2 |
+| T-0312 | 20 | Rewritten, shorter | Inside transactions, both modes: B1 to B5 and D1 to D3 each once; EP1's cycle, a row changed during the backoff ten times, costing at most `max` discards and one *replace* per window; two migrations each starting an epoch; no `.retry(n)`; entries off; the cool-down; caps of 2 |
 | T-0314 | 14 | Rewritten | The epoch and the cool-down: discards stop at the connections open at `T` and resume after the epoch; a moved `<n>` starts a new one; behind PgBouncer, errors return at once for `stale_cooldown`, and a cap of 2 drops the oldest |
 | T-0317 | 14 | Rewritten | The four settings, defaults, overrides, floors and ceilings; `0` and `"0"` refused for `stale_pending_expiry`, `"off"` and `"0s"` accepted; `stale_first_failure_max` refused as an unknown key |
 | T-0316 | 59 | Edited | Adds that after `RECONNECT` a new client preparing a stale text gets a fresh server statement (X10) |
@@ -502,6 +502,7 @@ These were the fix's own choices, approved through PR #3, not owner decisions. T
 - a failed retry's new connection was closed and the first kept its slot (EG3's fix); now the new connection keeps the slot (MA);
 - first-failure records cleared when the connection generation moves, and the 64-entry per-statement memory straight to Postgres (EI1's and EG2's fixes); both go (MA);
 - "unnamed runs for other values apply behind a pooler only" (EN1's fix); straight to Postgres an entry now makes each connection prepare its older copy again, the same rule in that mode's terms;
+- pending confirmations "keyed by a 64-bit hash of text and parameter bytes" (EM3's fix); now one entry per statement text, holding the latest failing call's bytes, so client values add no entries and every value of a pending statement runs fresh;
 - "the one-clear window limits only confirmation-driven raises, not a `0A000`" (EO1's fix); every pool-wide action is gated (MB);
 - "`0` also means off" for `stale_pending_expiry` (EO10's fix); MC.
 
@@ -541,6 +542,41 @@ Each is loud, beside the row the old one sits by. What each must cover:
    - `stale_cooldown_max`: behind PgBouncer, more than 64 statements can be hitting stale server sessions at once;
    - `stale_pending_expiry`: your transactions retry later than a minute, or a bad label should stop making a statement run unnamed sooner; `"off"` turns entries off, so read the notice first;
    - `stale_pending_max`: more than 64 statements can be waiting for a confirmation at once; `0` turns entries off.
+
+## Owner decisions, one by one
+
+| Decision | In the machine |
+|---|---|
+| Stale sessions heal by themselves | Kept: H1 to H4, with stated bounds |
+| SA, the reset and the relabel at cutover | Kept, unchanged (E1) |
+| SB, the refresh, and a `22P02` naming a retired type as a stale session | Kept (section 1, E1) |
+| SC, recognising by SQLSTATE and routine, identifier or `elog` text | Kept: R-1245 |
+| SD, the marker, the unnamed retry, the salt | Kept (C1, D1); a new salt replaces the last |
+| SE, the generation in `_morm`'s comment | Kept |
+| SF, the generation raised only for a confirmed stale statement | Kept: section 1's confirmation, certain signals included |
+| SG, recovery conflicts on a standby | Kept (E8) |
+| The `22P02` narrowing: stale only once its retry succeeds | Kept |
+| EF1, the parameter test and the retry on a newly opened connection | Kept |
+| EG1, inside a transaction discard only that connection, the next attempt on a new one, raise only if it succeeds | Kept (B3); the raise goes through the gate |
+| EG2, a statement's error at once for a cool-down after a failed fresh retry | Kept behind PgBouncer; straight to Postgres kept in purpose, by the epoch (MA) |
+| EG3, the slot and budget rules | Kept; the new connection now keeps the slot (MA) |
+| EH1, a failure on a newer connection is a failed confirmation | Kept (B4), by the epoch rather than a per-statement record (MA) |
+| EH2, the same text and bytes | Kept |
+| EH3, the ledger's mapping of retired names | Outside this subsystem; unchanged |
+| EI1, the record carries the generation | Kept in purpose: the epoch carries `<n>`; the records go (MA) |
+| EJ1, on `53300` close the stale connection and open in its slot | Kept |
+| EJ5, `RECONNECT` and `server_lifetime`, never `pg_terminate_backend` | Kept |
+| EK1, behind PgBouncer no marker moves and the cool-down follows the first `SchemaChanged` | Kept (D2) |
+| EL1, the sixth-row `22P02` confirmed by the next same-bytes run | Kept: the entry's confirming run |
+| EL2, behind PgBouncer `42804` and `XX000` move nothing and enter the cool-down | Kept |
+| EM1, an `XX000` from a cached statement behind PgBouncer gets one unnamed run | Kept, and the same straight to Postgres (N3) |
+| EM3, the pending confirmation kept in the pool, so any later run confirms | Kept, one entry per statement |
+| EN1, other values run unnamed while a confirmation is pending | Kept; straight to Postgres the same by re-preparing older copies |
+| EN5, a 60-second expiry, and every tunable a per-pool setting with defaults, floors, ceilings, an environment override, a use-when line and loud notices | Kept, with four settings instead of five (MA) |
+| EO1, one confirmation-driven clear per pool per `stale_cooldown`, and freshly salted text treated as plpgsql | The first half kept and extended to every pool-wide action; the second refined (MB) |
+| EO2 | Kept, by the same gate |
+| EO3, floors of 1 with a loud notice | Kept for `stale_cooldown_max`; `stale_first_failure_max` goes (MA) |
+| EO4, ceilings of 10 minutes and 4096 | Kept |
 
 ## Lettered choices
 
