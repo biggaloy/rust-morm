@@ -25,7 +25,7 @@ Killing the process and worker at every point never loses an event, and repeats 
 Owned elsewhere, and quoted so this step needs no other file. Nothing here needs a test in this step.
 
 > ```toml
-> # Every setting at its default, with what it does: morm-core's shipped morm.toml
+> # An example. Every setting, at its default and with what it does, is in morm-core's shipped morm.toml
 > [database]
 > # Either a URL, or the separate fields below. Separate fields override URL parts.
 > url = "${DATABASE_URL}"

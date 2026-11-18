@@ -69,7 +69,7 @@ Totals: 1279 requirements, 323 test obligations.
 | R-0057 | info | 42 | 101 | ``` morm-admin init [path] [--axum] # create a project morm-admin doctor # check Postgres,… |
 | R-0058 | code | 42 | 111 | `init` creates the `morm-mgr` package, `morm-migrations/`, `morm.toml`, `.env.example`, a … |
 | R-0059 | code | 10 | 115 | TOML is the Rust standard, with comments, real types and sections, and no indentation trap… |
-| R-0060 | code | 10 | 117 | ```toml # Every setting at its default, with what it does: morm-core's shipped morm.toml [… |
+| R-0060 | code | 10 | 117 | ```toml # An example. Every setting, at its default and with what it does, is in morm-core… |
 | R-0061 | code | 10 | 194 | A missing `morm.toml` isn't an error unless `MORM_CONFIG` names it, so a deployment can us… |
 | R-0062 | code | 10 | 196 | Precedence: defaults, then `morm.toml`, then environment variables, then code. There is on… |
 | R-0063 | info | 10 | 198 | **Environment variables:** |
