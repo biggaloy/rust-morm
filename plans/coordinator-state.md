@@ -2,12 +2,12 @@
 
 Read this first when resuming. It's what the coordinating session needs that isn't in `plan-approved/INDEX.md`. The coordinator updates and pushes it after each milestone. Agent briefs to reuse are in `coordinator-briefs.md`.
 
-**Last updated:** 2026-11-15, while the consolidated stale-session design runs.
+**Last updated:** 2026-11-18, fourteenth review in, ER2 with the owner.
 
 ## Where things stand
 
 - **Steps done:** 01 (PR #1, merged `ccd4413`) and 02 (PR #2, merged `34c81aa`), both approved by the owner.
-- **Step 55 is `in review`:** PR #3, branch `step-55-enum-proofs`, head `8abcd9d`: the stale-session state machine, the real `crates/morm-core/morm.toml`, unknown keys refused, `sslmode = "require"` over TCP only, and EQ2. CI green, mergeable, checker 1279 R / 323 T, 0 problems; IDs in Decisions; nothing open with the owner. The fourteenth review is running on the changes since `564723e`, findings ER1, … to `reviews/step-55-review-14.md` (restart it with the "Review round" brief if it isn't on `main`).
+- **Step 55 is `in review`:** PR #3, branch `step-55-enum-proofs`, head `8abcd9d`, CI green, checker 1279 R / 323 T, 0 problems. The fourteenth review is in (`reviews/step-55-review-14.md`, `9de5c94`): should fix ER1 to ER3, minor ER4 to ER7. ER2 (`init` writing a found socket's `host`/`port` as active lines) is with the owner: (a) loud warning, README notice, startup warning, port handled, IDs and tests (recommended); (b) placeholders, found values only in `.env.example`; (c) environment `DATABASE_URL` beats file fields. Once answered: record it in INDEX Decisions, then one fix agent ("Fix round" brief) for ER1 to ER7.
 - **Next free IDs:** R-1280, T-0324.
 - Step 55's open items, reviews and designs: `reviews/step-55-open-items.md`, `reviews/step-55-review.md` and `-review-2.md` to `-review-12.md`, `reviews/stale-statement-design.md`.
 
@@ -29,7 +29,7 @@ Read this first when resuming. It's what the coordinating session needs that isn
 
 ## What comes next
 
-1. Step 55: act on the twelfth review, repeat until clean, then PR #3 to the owner.
+1. Step 55: act on the fourteenth review, repeat until clean, then PR #3 to the owner.
 2. Step 03 (freeze the contracts) depends on 55. Then follow the order in `INDEX.md`.
 
 ## Rules that hold for every agent
