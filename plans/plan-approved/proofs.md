@@ -540,6 +540,15 @@ Q1 to Q4 were the step session's questions; the independent review (`reviews/ste
   - **EQ7:** straight to Postgres, `<n>` is read only for the old-connection test and a closed-window request, and a read finding it moved makes no entry; R-1270's procedure has row A4's branch; R-1245 counts a session-class `XX000` as certain (R-1270, R-1245, R-0718, T-0318, T-0319).
   - **EQ8:** the `sslmode` warning names a real loud notice, R-1278. **EQ9:** the loader keeps one table of settings that its validation reads, and T-0320 compares each comment's range with it. **EQ10:** R-1263 names the window, the epoch and the cool-down. **EQ11:** T-0322 tests `morm-migrate`, and R-1275 is the one place that says the removed-setting message applies in any table. **EQ12:** the PR body's stale sentence is marked superseded.
 
+- **The fourteenth review, ER1 to ER7** (`reviews/step-55-review-14.md`), which found EQ1 to EQ12 and the three decisions written in, and one owner decision:
+  - **ER1:** straight to Postgres the pool reads `<n>` when it starts too, as behind PgBouncer, through R-1116's startup statement, so its last-read `<n>` is always set; every read that finds `<n>` moved calls `on_moved`, the gate's own read included; and only the call whose read found it moved skips its pending entry. T-0318, T-0319's unit test of rows B and D and T-0312's `search_path` case with a migration assert it (R-1270, R-0982, R-1116, T-0318, T-0319, T-0312).
+  - **ER2 (owner decision, option (a)):** `morm-admin init` keeps writing a found socket's `host` and `port` as active lines, but loudly: only the lines whose found value isn't the default, a non-default port in the default directory included, each with a `# WARNING:` line saying it overrides `DATABASE_URL` and how to undo it; a loud README notice; and a startup warning whenever a value written in `[database]` or `[database.migration]` overrides a different one in its URL, naming both and never a password. R-0062 now says the separate fields override a URL's parts wherever each is set. R-0107's TCP alternative carries `sslmode = "disable"` with its warning (R-1280, R-1282, R-1283, R-1284, R-0062, R-0107, T-0324, T-0325).
+  - **ER3:** R-1272's notice and R-1271 say the switches request repairs themselves, so with recurring values or several such statements failures come about once per `stale_cooldown`, and the advice is to raise `stale_pending_expiry` and `stale_cooldown` together, with what a longer `stale_cooldown` costs (T-0312).
+  - **ER4:** `42804` and a session-class `XX000` on an old connection request *replace* once, at the failure, and the confirmation after asks nothing more (R-1245, R-1270, R-0981's rows A2 and B3, T-0318, T-0319).
+  - **ER5:** R-1277 names every connection morm opens, `scratch_url`, the PgBouncer admin URLs and `morm-admin`'s own among them; R-1258 says what an admin URL to a PgBouncer without client TLS needs; `init`'s CI workflow sets `sslmode = disable` loudly (R-1281); T-0323 adds a mixed host list without `tls`, T-0316 an admin URL with `sslmode` unset; R-1278 says how to turn on the `tls` feature. The evidence is below, "PgBouncer's admin console without client TLS".
+  - **ER6:** R-1273 lists the R-0060 values that aren't defaults, T-0320 fails on any other default that isn't R-0060's value, and R-0102 gives the default `port`, `5432`.
+  - **ER7:** the PR body's two history lines on the superseded straight-to-Postgres mechanism are marked superseded.
+
 ### TLS over a Unix socket: evidence
 
 For the owner's `sslmode` decision, on a throwaway Postgres 18.6 (the Manjaro package `18.6-1`, a cluster made with its `initdb` under `.claude/scratch/`, with `TMPDIR` there and the socket under `~/.claude/scratch/`), with `ssl = on` and a self-signed certificate, then `ssl = off`. The driver was `tokio-postgres` 0.7.18, the version the workspace's `Cargo.lock` holds, in a throwaway probe built offline, with `NoTls` and with a connector that says it can do TLS and fails any handshake, so reaching the handshake shows TLS was tried; `psql` 18.6 stood for libpq.
@@ -556,6 +565,19 @@ For the owner's `sslmode` decision, on a throwaway Postgres 18.6 (the Manjaro pa
 | TCP, `ssl = off` | `require` | fails: `server does not support TLS` | fails: `server does not support TLS` | fails: `server does not support SSL, but SSL was required` |
 
 So Postgres never offers TLS on a Unix socket, libpq ignores `sslmode` there, and `tokio-postgres` 0.7.18 doesn't: its `connect_tls` sends the TLS request on any stream and fails `require` when the server answers no. It also calls the connector's `make_tls_connect` with an empty host name for a socket, even with `disable`, which a rustls connector may refuse. The driver can still do what the owner decided, because the mode and the connector are morm's to choose per connection: morm gives a socket host `SslMode::Disable` and `NoTls`, and a TCP host the mode and connector `sslmode` asks for, with one driver config per host when a host list mixes the two (R-1277). Not run: Postgres 15 to 17 and a TLS handshake with a real rustls connector, which T-0323 runs on every version; the probe and the server were deleted.
+
+**PgBouncer's admin console without client TLS,** for the fourteenth review's ER5: PgBouncer 1.26.1, built from pgbouncer.org's `pgbouncer-1.26.1.tar.gz` (SHA-256 `00886a2994b4844cd37110970df777772cfc42a74c400522c82fba509a3f42d9`, checked against its `.sha256`), in transaction mode with `client_tls_sslmode` unset, which `SHOW CONFIG` reported as `disable`, the default, in front of a throwaway Postgres 18.6 with `ssl = off`, the Manjaro package, both under `.claude/scratch/` with `TMPDIR` there and their sockets under `~/.claude/scratch/`. The client was the same kind of probe, `tokio-postgres` 0.7.18 with `NoTls`, built offline from the workspace's `Cargo.lock`, sending `RECONNECT` as a simple query:
+
+| Connection | `sslmode` | Result |
+|---|---|---|
+| Admin console, TCP | `disable`, `prefer` | connects; `RECONNECT` completes |
+| Admin console, TCP | `require` | **fails:** `error performing TLS handshake: server does not support TLS` |
+| Admin console, Unix socket | `disable`, `prefer` | connects; `RECONNECT` completes |
+| Admin console, Unix socket | `require` | fails the same way, as the driver does on any socket |
+| A pooled database, TCP | `disable` | connects; `SELECT version()` gives 18.6 |
+| A pooled database, TCP | `require` | fails the same way |
+
+So with `sslmode`'s default an admin URL over TCP to a PgBouncer without client TLS fails its send, `?sslmode=disable` on that URL sends, and a Unix-socket admin URL works once morm gives it `SslMode::Disable`, as it gives every socket host (R-1277, R-1258, T-0316). Not run: PgBouncer 1.20.1 and 1.22, which T-0316 runs, Postgres 15 to 17, and a PgBouncer with client TLS on; the servers and the probe were deleted.
 
 ### The stale-session state machine: evidence
 

@@ -4,7 +4,7 @@ Generated from the frozen plan. Each requirement and test obligation lives in ex
 
 Kinds: `code` needs a tagged test, `doc` is checked in the README step, `info` is context with nothing to build.
 
-Totals: 1279 requirements, 323 test obligations.
+Totals: 1284 requirements, 325 test obligations.
 
 ## Requirements
 
@@ -116,7 +116,7 @@ Totals: 1279 requirements, 323 test obligations.
 | R-0104 | code | 42 | 244 | **Detection:** `morm-admin init` finds the socket and writes it into `morm.toml` and `.env… |
 | R-0105 | code | 42 | 246 | 1. Look for `.s.PGSQL.<port>` files in `/var/run/postgresql`, `/run/postgresql` and `/tmp`… |
 | R-0106 | code | 42 | 247 | 2. If several servers are found, ask which to use. Without a terminal, take the default di… |
-| R-0107 | code | 42 | 248 | 3. If none is found, keep the default and print a warning, with the TCP settings as a comm… |
+| R-0107 | code | 42 | 248 | - If none is found, keep the default, writing the shipped `morm.toml` unchanged, and print… |
 | R-0108 | code | 42 | 249 | 4. Once connected, compare with `SHOW unix_socket_directories` and warn on a mismatch. |
 | R-0109 | code | 10 | 251 | **`search_path`** is set on every connection, so another role can't shadow a table or func… |
 | R-0110 | code | 31 | 251 | `lint` warns about a `SECURITY DEFINER` function with no `SET search_path` of its own. |
@@ -1289,6 +1289,11 @@ Totals: 1279 requirements, 323 test obligations.
 | R-1277 | code | 10 | 0 | **`sslmode` defaults to `require`, and applies to TCP connections only.** With `sslmode` s… |
 | R-1278 | doc | 50 | 0 | The README shows this notice loudly, beside the TLS settings and `sslmode`: > **Over TCP m… |
 | R-1279 | doc | 50 | 0 | \| `sslmode = "disable"` \| Your app reaches a Postgres or PgBouncer that has no TLS over… |
+| R-1280 | code | 42 | 0 | **The `morm.toml` and `.env.example` `init` writes, with a found socket written loudly.**… |
+| R-1281 | code | 42 | 0 | **`init`'s CI workflow connects without TLS, on purpose and loudly.** The CI workflow `ini… |
+| R-1282 | code | 10 | 0 | **A `[database]` value written in `morm.toml` that overrides `DATABASE_URL` is warned abou… |
+| R-1283 | doc | 50 | 0 | The README shows this notice loudly, beside the `morm.toml` settings and `[database]`'s `h… |
+| R-1284 | doc | 50 | 0 | \| `host` and `port` written in `morm.toml` \| Every deployment of your app reaches Postgr… |
 
 ## Test obligations
 
@@ -1617,3 +1622,5 @@ Totals: 1279 requirements, 323 test obligations.
 | T-0321 | suite | 50 | **The README and the shipped `morm.toml` agree:** a check in `ci` reads the README's `morm… |
 | T-0322 | integration | 10 | **Unknown keys are refused:** a misspelt key in each table, `[database]`, `[database.migra… |
 | T-0323 | integration | 10 | **`sslmode` defaults to `require`, over TCP only, on Postgres 15–18:** against a server wi… |
+| T-0324 | suite | 42 | **`init`'s files, with and without a found socket:** a test in `morm-admin` runs `init`'s… |
+| T-0325 | suite | 10 | **A `[database]` value written in `morm.toml` that overrides `DATABASE_URL` is warned abou… |
