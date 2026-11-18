@@ -4,7 +4,7 @@ Generated from the frozen plan. Each requirement and test obligation lives in ex
 
 Kinds: `code` needs a tagged test, `doc` is checked in the README step, `info` is context with nothing to build.
 
-Totals: 1277 requirements, 323 test obligations.
+Totals: 1279 requirements, 323 test obligations.
 
 ## Requirements
 
@@ -993,7 +993,7 @@ Totals: 1277 requirements, 323 test obligations.
 | R-0981 | code | 14 | 0 | **Stale sessions straight to Postgres: the session class and the epoch.** R-1245's session… |
 | R-0982 | code | 14 | 0 | **The one gate for pool-wide actions.** Three actions reach the whole pool: *clear*, which… |
 | R-0983 | code | 14 | 0 | - **Retrying is safe.** Postgres rolls back a failed statement outside a transaction, so a… |
-| R-0984 | code | 20 | 0 | - **Stale statements and sessions inside a transaction.** Postgres has already failed the … |
+| R-0984 | code | 20 | 0 | - **Stale statements and sessions inside a transaction.** Postgres has already failed the… |
 | R-0985 | code | 20 | 0 | - `.retry(n)` also retries `Error::SchemaChanged`, because the next attempt runs on fresh … |
 | R-0986 | code | 29 | 0 | - **Enum catalog reads.** Labels come from `pg_enum` directly, ordered by `enumsortorder`.… |
 | R-0987 | code | 30 | 0 | - **Step boundaries.** An op can declare that its step ends after it, so the planner puts … |
@@ -1283,10 +1283,12 @@ Totals: 1277 requirements, 323 test obligations.
 | R-1271 | code | 20 | 0 | - **What the stale-session machine guarantees, per pool.** Step 14's machine, with this st… |
 | R-1272 | doc | 50 | 0 | The README shows this notice loudly, beside `tx.set_local`: > **A `search_path` set per tr… |
 | R-1273 | code | 10 | 0 | **morm ships a real `morm.toml`, with every setting at its default.** `crates/morm-core/mo… |
-| R-1274 | doc | 50 | 0 | \| `morm.example.toml` \| You're writing or reviewing a `morm.toml` and want every setting… |
+| R-1274 | doc | 50 | 0 | \| morm's shipped `morm.toml` \| You're starting or reviewing your app's `morm.toml` and w… |
 | R-1275 | code | 10 | 0 | **Every key morm doesn't read is refused.** Config loading refuses any key the config stru… |
 | R-1276 | doc | 50 | 0 | The README shows this notice loudly, beside the `morm.toml` settings: > **A key morm doesn… |
 | R-1277 | code | 10 | 0 | **`sslmode` defaults to `require`, and applies to TCP connections only.** With `sslmode` s… |
+| R-1278 | doc | 50 | 0 | The README shows this notice loudly, beside the TLS settings and `sslmode`: > **Over TCP m… |
+| R-1279 | doc | 50 | 0 | \| `sslmode = "disable"` \| Your app reaches a Postgres or PgBouncer that has no TLS over… |
 
 ## Test obligations
 
@@ -1612,6 +1614,6 @@ Totals: 1277 requirements, 323 test obligations.
 | T-0318 | suite | 14 | **Unit: the stale-session machine, rows A, C and E:** a unit test in `crates/morm`, with n… |
 | T-0319 | suite | 20 | **The stale-session simulation:** a unit test in `crates/morm`, with no Postgres, generate… |
 | T-0320 | suite | 10 | **The shipped `morm.toml` stays in step with the plan and loads as no file does:** a unit… |
-| T-0321 | suite | 50 | **The README and the settings template agree:** a check in `ci` reads the README's `morm.t… |
+| T-0321 | suite | 50 | **The README and the shipped `morm.toml` agree:** a check in `ci` reads the README's `morm… |
 | T-0322 | integration | 10 | **Unknown keys are refused:** a misspelt key in each table, `[database]`, `[database.migra… |
 | T-0323 | integration | 10 | **`sslmode` defaults to `require`, over TCP only, on Postgres 15–18:** against a server wi… |

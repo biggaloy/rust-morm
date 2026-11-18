@@ -174,11 +174,12 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 | R-1073 | `--terminate-blockers` | A cutover keeps giving way, and you'd rather end the transactions in its way than wait; those transactions die and their apps lose the connection |
 | R-1074 | `cutover_lock_timeout`, `cutover_attempts`, `cutover_pause` | A cutover gives up on a busy table, or its retries stall your traffic too much |
 | R-1257 | `[migrations] pgbouncer_admin_urls` | Your apps reach Postgres through PgBouncer and you want a function a migration couldn't refresh to heal at once, not within `server_lifetime`; list every PgBouncer process, and read the notice first |
-| R-1263 | `stale_cooldown` | You want stale-session handling, and the clearing of every connection's statement caches, to react sooner or later than once a minute; `1s` to `10m`, so read the notice first |
+| R-1263 | `stale_cooldown` | You want stale-session handling, and the clearing of every connection's statement caches, to react sooner or later than once a minute; it sets the one window for pool-wide repairs, the epoch straight to Postgres and the cool-down behind PgBouncer; `1s` to `10m`, so read the notice first |
 | R-1264 | `stale_cooldown_max` | Behind PgBouncer, more than 64 statements can be hitting stale server sessions at once; `1` to `4096` |
 | R-1265 | `stale_pending_expiry` | Your transactions retry a failed call later than a minute after it, or a client's bad label should stop making a statement run unnamed sooner; `"off"` turns pending checks off, so read the notice first; at most `10m` |
 | R-1266 | `stale_pending_max` | More than 64 statements in one pool can be waiting for a confirmation at once; `0` turns pending checks off, so read the notice first; at most `4096` |
-| R-1274 | `morm.example.toml` | You're writing or reviewing a `morm.toml` and want every setting in one commented file, with its default, allowed values, environment variable and when to change it; copy it, and read each `WARNING` line before changing that setting |
+| R-1274 | morm's shipped `morm.toml` | You're starting or reviewing your app's `morm.toml` and want every setting in one working file, each set to its default with what it does, its allowed values, its environment variable and when to change it; copy it next to your app unchanged, change only what you need, and read each `WARNING` line before changing that setting |
+| R-1279 | `sslmode = "disable"` | Your app reaches a Postgres or PgBouncer that has no TLS over TCP, on this machine or on a network you trust end to end; a Unix socket needs nothing, so read the notice first |
 | R-1100 | `--decide ID=OPT` on `migrate`, `rollback` and `rehearse` | A run stopped with exit code `3` on something only the live database shows, such as an unmanaged function, and you've read what it names; the answer covers only that migration, its current version and that direction |
 
 **R-1267** The Extra calls table has no `stale_first_failure_max` line: the setting is gone, because one epoch per pool decides which connections a stale-session failure may replace. Owner decision MA.
@@ -204,7 +205,17 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 >
 > **What you give up.** `morm.toml` holds only morm's settings: keep notes in comments, and other tools' settings in their own files. A key copied from another tool or an earlier draft, such as `timezone` or `stale_first_failure_max`, is refused too, with a message saying why. Environment variables aren't checked, because the `${VAR}` names your file interpolates can start with `MORM_`.
 >
-> **How to fix it.** Find the key in `morm.example.toml`, which lists every setting under its table with its default, allowed values and environment variable, and correct its spelling or move it to its table; remove it if morm has no such setting.
+> **How to fix it.** Find the key in the `morm.toml` morm ships, linked here, which lists every setting under its table, set to its default, with its allowed values and environment variable, and correct its spelling or move it to its table; remove it if morm has no such setting.
+
+**R-1278** The README shows this notice loudly, beside the TLS settings and `sslmode`:
+
+> **Over TCP morm requires TLS by default, so a server without it needs `sslmode = "disable"`.** `sslmode` defaults to `require`: a TCP connection is encrypted, and a Postgres or PgBouncer that doesn't offer TLS is refused, with an error naming this notice. Without the `tls` feature, morm stops at startup when a TCP host would need TLS. A Unix socket never uses TLS, whatever `sslmode` says, so a socket connection, morm's default `host`, works unchanged, with no `tls` feature and nothing set.
+>
+> **When `disable` or `prefer` is right.** A Postgres or PgBouncer on the same machine reached over TCP, such as `127.0.0.1` or a container's published port, or one on a private network you trust end to end. PgBouncer offers its clients TLS only when its `client_tls_sslmode` is set, so a PgBouncer reached over TCP without it needs `disable` too. Set it in `morm.toml`, as `MORM_DB_SSLMODE=disable`, or as `?sslmode=disable` in the URL, for that pool only.
+>
+> **What you give up.** With `disable`, and with `prefer` against a server without TLS or with the `tls` feature left out, queries, results and the parameters you bind cross the network unencrypted, and so does the password when the server asks for it in clear text; anyone on the path can read or change them. `prefer` falls back to no TLS whenever the server, or anyone on the path pretending to be it, says it has none. `require` encrypts but doesn't check who answered; `verify-full` does, with `sslrootcert`.
+>
+> **How to proceed.** On the same machine, connect through the Unix socket instead. Otherwise turn TLS on in Postgres, `ssl = on` with a certificate, and keep the default, or use `verify-full`. Set `sslmode = "disable"` only for a server you reach over a network you trust.
 
 **R-1237** The README shows this notice loudly, beside `pooler = "transaction"`:
 
@@ -222,7 +233,7 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 > **Two cases give a wrong answer with no error,** because Postgres itself raises none:
 >
 > - **A transaction open across a schema change,** morm's or anyone's: its statements that take no new lock see the catalog as it was before the change.
-> - **A type swap made outside morm that keeps the old type without renaming its labels:** a cached statement, or a plpgsql function compiled before the swap, that compares or converts a label both types share answers by the old type's order. For a statement that ends when it's prepared again, which morm does on every connection within `stale_cooldown` of the first stale error it confirms after the swap, or when its own stale error is repaired, or when its connection is replaced; for a function, when its session ends, which straight to Postgres is when morm replaces the connection and behind PgBouncer is `RECONNECT` or `server_lifetime`. If nothing in the pool ever errors, it lasts until the connection, or the server session, is replaced. Behind PgBouncer, while morm keeps such a statement pending its runs are unnamed and right, but between those times, and always with pending checks off, the old order can come back.
+> - **A type swap made outside morm that keeps the old type without renaming its labels:** a cached statement, or a plpgsql function compiled before the swap, that compares or converts a label both types share answers by the old type's order. For a statement that ends when it's prepared again, which morm does on every connection within `stale_cooldown` of the first stale error it confirms after the swap, or when its own stale error is repaired, or when its connection is replaced; for a function, when its session ends, which straight to Postgres is when morm replaces the connection and behind PgBouncer is `RECONNECT` or `server_lifetime`. If nothing in the pool ever errors, it lasts until the connection, or the server session, is replaced. While morm keeps such a statement pending, straight to Postgres and behind PgBouncer alike, its runs are unnamed and right, but between those times, and always with pending checks off, the old order can come back until one of those ends it.
 >
 > morm's own migrations leave only the first: they re-plan every cached statement and rename a kept type's labels, so stale code fails loudly instead. Run schema changes through morm, and use `.retry(n)`.
 
@@ -241,7 +252,7 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 > **The stale-session settings change how fast stale state heals and what it costs, and two of them can turn a check off.** `stale_cooldown`, `stale_cooldown_max`, `stale_pending_expiry` and `stale_pending_max` default to 60 seconds and 64 entries, the values morm's rules were designed and tested with. Each holds per pool. What a longer and a shorter value cost:
 >
 > - **`stale_cooldown`,** `1s` to `10m`, the one window for pool-wide repairs: morm clears every connection's statement caches, moves its statements to fresh text behind PgBouncer, or replaces every connection, at most once per window, plus once per migration. Longer: fewer clears and replacements when clients cause stale errors on purpose; but straight to Postgres a connection opened just before a change can return its stale error that long, a refused connection pauses replacements that long, and behind PgBouncer a statement hitting a stale server session returns its error at once that long. Shorter: up to the pool's `max` replacements and one cache clear per window.
-> - **`stale_pending_expiry`,** up to `10m`, how long morm keeps a statement pending after a stale error inside a transaction. Longer: a client's bad label makes that statement run unnamed behind PgBouncer, or prepared again on each connection straight to Postgres, for every caller that long. Shorter: a statement run only in transactions fails with `Error::SchemaChanged` more often after a change made by hand.
+> - **`stale_pending_expiry`,** up to `10m`, how long morm keeps a statement pending after a stale error inside a transaction. Longer: a client's bad label makes that statement run unnamed, straight to Postgres and behind PgBouncer alike, for every caller that long. Shorter: a statement run only in transactions fails with `Error::SchemaChanged` more often after a change made by hand.
 > - **`stale_cooldown_max` and `stale_pending_max`,** at most `4096`. Each entry is a few bytes, keyed by statement text, so client values add none, and the ceilings hold morm to about 200 KB per pool. A value smaller than the number of statements pending, or hitting a stale server session, at once makes them push each other out: a statement pushed out costs one more `Error::SchemaChanged`, or behind PgBouncer one more retry on another connection, never a connection. `stale_cooldown_max` matters only behind PgBouncer.
 >
 > **What's refused.** `stale_cooldown` under one second, `"0s"`, `0` or `"off"`; `stale_cooldown_max` at `0`; any duration above `10m`; any count above `4096`; and a duration written as a bare number, `stale_pending_expiry = 0` and `"0"` among them, stop the pool at start with `Error::Config`, naming the key and the limit. So does `stale_first_failure_max`, a setting morm no longer has.
@@ -250,14 +261,22 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 
 **R-1272** The README shows this notice loudly, beside `tx.set_local`:
 
-> **A `search_path` set per transaction over tables of different shapes makes cached statements fail when it switches.** A statement prepared under one `search_path` and run under another, where the same table name has another shape, such as a schema per tenant with a column added in one, fails with `0A000` `cached plan must not change result type`, with no schema change at all. A fresh statement can't stop it: one prepared under the new path fails the same way when the path switches back.
+> **A `search_path` set per transaction over tables of different shapes makes cached statements fail when it switches.** A statement prepared under one `search_path` and run under another, where the same table name has another shape, such as a schema per tenant with a column added in one, fails with `0A000` `cached plan must not change result type`, with no schema change at all. A fresh statement can't stop it: one prepared under the new path fails the same way when the path switches back. morm handles it the same way straight to Postgres and behind PgBouncer:
 >
 > - Outside a transaction morm runs the call on a fresh statement and returns that answer.
-> - Inside one you get `Error::SchemaChanged` once per `stale_pending_expiry`, 60 seconds by default, per statement and process, and then the statement runs fresh while morm keeps it pending.
-> - morm clears its statement caches for it at most once per `stale_cooldown`, 60 seconds by default, per pool.
+> - Inside one you get `Error::SchemaChanged` at most once per `stale_pending_expiry`, 60 seconds by default, per statement and pool, and then morm keeps the statement pending and runs it unnamed, parsed and planned on every run, until the entry expires. Any pool-wide repair morm makes meanwhile, for this statement or another, ends every pending entry, so the next switch can fail once more: those repairs come at most once per `stale_cooldown`, 60 seconds by default, plus once per migration.
+> - morm clears its statement caches for it, or behind PgBouncer moves its statements to fresh text, at most once per `stale_cooldown` per pool.
 > - Behind PgBouncer the error comes at prepare too, and for other clients, because PgBouncer hands every client that prepares the same text the server statement another transaction planned.
 >
-> **What to do.** Use `.retry(n)`, which hides the `SchemaChanged`, or keep tenant schemas the same shape. Otherwise each switch costs a fresh run outside a transaction, and, without `.retry(n)`, one failed transaction per statement per `stale_pending_expiry` inside one.
+> **What you give up.** Without `.retry(n)`, about one failed transaction per statement per `stale_pending_expiry` inside transactions, plus one after each pool-wide repair; and while a statement is pending, an unnamed run instead of a cached one.
+>
+> **What to do,** any one of these:
+>
+> - **Name the schema in the SQL,** as `tenant_a.items`, or build it with a fragment, so each tenant's text is its own cached statement and no plan meets another path.
+> - **Keep every tenant's tables the same shape,** so a switch changes no result type and nothing fails.
+> - **Set `search_path` per pool rather than per transaction,** one `[pools.<name>]` per tenant schema with its own `search_path`, so a pool's statements are only ever planned under one path.
+> - **Use `.retry(n)`,** which hides the `SchemaChanged`, because its next attempt runs the statement unnamed.
+> - **Tune `stale_pending_expiry`,** longer for fewer failures and more unnamed runs, or **turn the statement cache off for that pool,** `statement_cache = 0` and `shape_cache = 0` in its `[pools.<name>]`, so every statement is planned per run and none fails.
 
 **R-1255** The README shows this notice loudly, beside the migration commands:
 
@@ -633,4 +652,4 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 | ID | Type | Obligation |
 |---|---|---|
 | T-0115 | suite | **Doc tests:** every README and doc example compiles and runs. |
-| T-0321 | suite | **The README and the settings template agree:** a check in `ci` reads the README's `morm.toml` settings and `crates/morm-core/morm.example.toml`: every table and key the README lists is in the template with the same default and environment variable, and every key in the template is in the README; every setting a loud README notice names as turning a check or protection off has a `# WARNING:` line in the template naming that notice; and the README links to the template. A key in one and not the other, or a different default, fails it, naming the key |
+| T-0321 | suite | **The README and the shipped `morm.toml` agree:** a check in `ci` reads the README's `morm.toml` settings and `crates/morm-core/morm.toml`: every table and key the README lists is in the file with the same default and environment variable, and every key in the file is in the README; every setting a loud README notice names as turning a check or protection off has a `# WARNING:` line in the file naming that notice, `sslmode`'s naming the notice on `sslmode`; and the README links to the file and says to copy it next to the app. A key in one and not the other, or a different default, fails it, naming the key |

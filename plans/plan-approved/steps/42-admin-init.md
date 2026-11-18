@@ -15,6 +15,7 @@ Create a working project from one command.
 ## Deliverables
 
 - `init` with socket detection and the Axum template, `morm-mgr` packaging, `scratch`, `outbox`, `baseline`, the managed `morm::pg_outbox!` form
+- The `morm.toml` `init` creates is step 10's shipped `crates/morm-core/morm.toml`, embedded in `morm-admin` and written byte for byte, with every setting at its default, apart from what detection finds: when the socket is somewhere other than the default `host`, `init` writes the found directory and port in place of the `host` and `port` placeholders, with a comment beside them saying that a value written here overrides `DATABASE_URL`'s host and port, so a deployment that sets `DATABASE_URL` puts the placeholders back or sets `MORM_DB_HOST` and `MORM_DB_PORT` instead; `.env.example` gets the same values as `MORM_DB_HOST` and `MORM_DB_PORT`
 
 ## End-to-end check
 
