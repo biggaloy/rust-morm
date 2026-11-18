@@ -69,11 +69,10 @@ Owned elsewhere, and quoted so this step needs no other file. Nothing here needs
 > client_connection_check_interval = "5s"
 > tx_warn_after = "1s"
 > check_schema = "on"              # "off" starts against a schema that may not match: read the README first
-> stale_cooldown = "60s"           # how long a stale-enum error whose fresh retry failed returns at once; 1s to 10m
-> stale_cooldown_max = 64          # statements remembered for that, per pool; 1 to 4096
-> stale_pending_expiry = "60s"     # how long an unconfirmed stale statement waits for its next run; up to 10m, or "off"
-> stale_pending_max = 64           # pending confirmations per pool; 0 (off) to 4096
-> stale_first_failure_max = 64     # first-failure records per pool, inside transactions; 1 to 4096
+> stale_cooldown = "60s"           # one window for pool-wide stale repairs, the epoch, the pooler cool-down; 1s to 10m
+> stale_cooldown_max = 64          # cool-down entries per pool, behind a pooler only; 1 to 4096
+> stale_pending_expiry = "60s"     # how long a pending entry keeps a stale statement fresh; "off", or "0s" to 10m
+> stale_pending_max = 64           # pending entries per pool; 0 (off) to 4096
 >
 > [pools.replica]                  # a read replica
 > host = "db-replica.internal"
@@ -192,7 +191,7 @@ morm: pool max 160 lowered to 92 (max_connections=100, reserved=3, margin=5)
 
 ### Managed enums
 
-- **R-0975** **Stale generation.** The pool holds a generation counter for connections, in one atomic word, and each connection remembers the value it started with. A checkout compares them with one atomic read and no lock, and replaces a connection that's behind. Step 14 raises the counter when a connection reports stale server state, so after an enum swap the other connections don't each have to fail first. Behind a pooler, with `pooler = "transaction"`, a stale-session error doesn't raise it, because replacing a client connection can't reach the server session that holds the stale code. Owner decision SD. `pool_stats()` counts these replacements.
+- **R-0975** **Stale generation.** The pool holds a generation counter for connections, in one atomic word, and each connection remembers the value it started with. A checkout compares them with one atomic read and no lock, and replaces a connection that's behind. Step 14 raises the counter only through its gate's *replace* action, at most once per `stale_cooldown` plus once per migration, so after an enum swap the other connections don't each have to fail first. Behind a pooler, with `pooler = "transaction"`, it's never raised, because replacing a client connection can't reach the server session that holds the stale code. Owner decisions SD and MB. `pool_stats()` counts these replacements.
 
 ## Test obligations
 

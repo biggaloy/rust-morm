@@ -278,7 +278,10 @@ pub enum Error {
                                                // or a column type change, recognised by SQLSTATE with the routine, an identifier or an
                                                // untranslated elog message, never translated text (SC, R-1245): 0A000, the three plpgsql
                                                // 42804 routines, XX000 cache lookup, and 22P02 from enum_in naming a _morm_retired_ type
-                                               // or another enum than the statement's cast (proofs 14 to 17)
+                                               // or another enum than the statement's cast (proofs 14 to 17). Returned only where morm
+                                               // repaired something for the next attempt: a statement evicted, a pending entry made, or a
+                                               // connection discarded or marked for replacement; where it repaired nothing, the server's
+                                               // error is returned as Error::Postgres, so .retry(n) stops (the stale-session machine, MA, MB)
     UnknownEnumValue,                          // a label this binary's enum doesn't have, with the type and label
     SchemaMismatch,                            // check_schema's findings, from a pool's start or db.check_schema(), each naming the table, column, both definitions and what's wrong
     Config, Connect, ServerTooOld, Postgres,   // config, connecting, a server below 15, any other database error
@@ -305,7 +308,7 @@ These are shared by steps that can run side by side, so each is written and froz
 | The connection budget function, implemented in step 11 | `morm-core` | Pool, `doctor`, `size` |
 | `Timestamp`, re-exported `Uuid`, `Range<T>` as types | `morm` | Bases and inference, before `types` adds their encoding |
 | The internal transaction with confirmed commit, implemented in step 17 for `insert_many` and chunked paths, before `db.transaction` exists | `morm` | Inserts, updates, upsert, transactions |
-| `PoolStats`, with every counter the plan names, including connections replaced for a stale generation, stale statements retried unnamed behind a pooler, and the pool's current marker, `g<n>` or `g<n>.<salt>` (SD) | `morm` | Pool, hold-pooler, locks, outbox, telemetry |
+| `PoolStats`, with every counter the plan names, including connections replaced for a stale generation, stale statements run unnamed behind a pooler, the stale-session machine's epochs started, stale-driven replacements, pool-wide actions taken and deferred, salts added and markers adopted, the sizes of the pending and cool-down tables, the four stale-session settings in force, and the pool's current marker, `g<n>` or `g<n>.<salt>` (SD, MA, MB) | `morm` | Pool, hold-pooler, locks, outbox, telemetry |
 | The internal warning sink: stderr now, `tracing` when enabled | `morm-core` | Every step that warns |
 | Expansion layout: `#[model]` calls one module per feature, so model steps add a module and don't edit one shared function | `morm-macros` | Model steps, `manifest`, `rolling` |
 | The config structs | `morm-core` | `morm`, `morm-migrate`, `morm-admin` |

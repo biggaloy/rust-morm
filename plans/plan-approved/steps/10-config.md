@@ -16,6 +16,7 @@ Read `../rules.md`, `../contracts.md` and, once it exists, `../proofs.md` first.
 
 - Config loading in `morm-core`, every key and variable, `[database.migration]`, `[server]`, named pool profiles and replicas as config
 - `Db::connect`, `connect_as`, `connect_to`, sockets, TLS, `search_path`, startup parameters
+- `crates/morm-core/morm.example.toml`, the commented settings template, and its test
 
 ## End-to-end check
 
@@ -85,11 +86,10 @@ idle_in_transaction_session_timeout = "1m"
 client_connection_check_interval = "5s"
 tx_warn_after = "1s"
 check_schema = "on"              # "off" starts against a schema that may not match: read the README first
-stale_cooldown = "60s"           # how long a stale-enum error whose fresh retry failed returns at once; 1s to 10m
-stale_cooldown_max = 64          # statements remembered for that, per pool; 1 to 4096
-stale_pending_expiry = "60s"     # how long an unconfirmed stale statement waits for its next run; up to 10m, or "off"
-stale_pending_max = 64           # pending confirmations per pool; 0 (off) to 4096
-stale_first_failure_max = 64     # first-failure records per pool, inside transactions; 1 to 4096
+stale_cooldown = "60s"           # one window for pool-wide stale repairs, the epoch, the pooler cool-down; 1s to 10m
+stale_cooldown_max = 64          # cool-down entries per pool, behind a pooler only; 1 to 4096
+stale_pending_expiry = "60s"     # how long a pending entry keeps a stale statement fresh; "off", or "0s" to 10m
+stale_pending_max = 64           # pending entries per pool; 0 (off) to 4096
 
 [pools.replica]                  # a read replica
 host = "db-replica.internal"
@@ -126,6 +126,14 @@ scratch_url = "${MORM_SCRATCH_URL}"
 **R-0061** A missing `morm.toml` isn't an error unless `MORM_CONFIG` names it, so a deployment can use environment variables alone. An unset `${VAR}` leaves that field unset, and if a required value ends up missing, startup fails and names the variable.
 
 **R-0062** Precedence: defaults, then `morm.toml`, then environment variables, then code. There is one config file, and a process that needs different values uses a named pool, an environment variable, or code.
+
+**R-1273** **A commented settings template ships with morm.** `crates/morm-core/morm.example.toml`, part of `morm-core`'s published package because `morm-core` reads the config, lists every setting morm reads from `morm.toml`, grouped by table in R-0060's order: `[database]`, `[database.migration]`, `[server]`, `[pool]`, the `[pools.<name>]` profiles, `[outbox]`, `[telemetry]` and `[migrations]`. Each setting is one line, `key = value`, with comments above it giving:
+
+- what it does and when to change it, in a line or two;
+- its default, its allowed values or range, and its environment variable, or that it has none;
+- a loud `# WARNING:` line beside any value that turns a protection or a check off, saying what's lost and naming the README notice that explains it, such as `check_schema = "off"`, `stale_pending_expiry = "off"` or `"0s"`, `stale_pending_max = 0`, and `sslmode` values that don't encrypt a TCP connection.
+
+Every key of R-0060's block appears in the template, in the same table, with R-0060's value. The tables R-0060 shows as examples rather than defaults, `[server]`, `[pools.replica]`, `[pools.replica.server]` and `[pools.jobs]`, are written commented out, each line as `# key = value` and each table as `# [table]`, and so is every setting with no default that R-0060 doesn't show, so loading the template unchanged, with no environment variable set, gives the same config as no file at all; uncommenting a line turns it on. The stale-session settings carry step 14's ranges, say that `stale_cooldown_max` matters only behind a pooler, and say what turning pending entries off costs. A step that adds a setting adds it to the template in the same PR, because T-0320 fails until it does. Owner decision on the stale-session design: a commented settings template, kept in step with the plan by a test.
 
 **R-0063** **Environment variables:**
 
@@ -171,7 +179,8 @@ scratch_url = "${MORM_SCRATCH_URL}"
 | R-1118 | `MORM_POOL_CHECK_SCHEMA` | `check_schema` |
 | R-1259 | `MORM_POOL_STALE_COOLDOWN`, `MORM_POOL_STALE_COOLDOWN_MAX` | `stale_cooldown`, `stale_cooldown_max` |
 | R-1260 | `MORM_POOL_STALE_PENDING_EXPIRY`, `MORM_POOL_STALE_PENDING_MAX` | `stale_pending_expiry`, `stale_pending_max` |
-| R-1261 | `MORM_POOL_STALE_FIRST_FAILURE_MAX` | `stale_first_failure_max` |
+
+**R-1261** There's no `stale_first_failure_max` setting and no `MORM_POOL_STALE_FIRST_FAILURE_MAX`: straight to Postgres one epoch per pool decides which connections a stale-session failure may replace, so there are no first-failure records to bound, and step 14 refuses the key. Owner decision MA.
 
 **R-0101** `MORM_POOL_*` variables apply to the pool this process opens at startup.
 
@@ -214,3 +223,4 @@ let db = morm::Db::connect_to(url).min(10).max(90).await?; // or set values in c
 | ID | Type | Obligation |
 |---|---|---|
 | T-0298 | integration | **A `timezone` key is refused:** `timezone` in `[database]`, in `[database.migration]`, in `[pool]`, and in a `[pools.<name>]` profile, each make `Db::connect` and `connect_as` return `Error::Config` before any connection opens, naming the key and its table and saying sessions always run in UTC; `morm-admin` reading the same file stops with the same message; and a session opened with no such key reports `TimeZone` as `UTC` on a server whose own zone isn't UTC |
+| T-0320 | suite | **The settings template stays in step with the plan:** a unit test in `morm-core`, run in `ci`'s workspace test job, reads `crates/morm-core/morm.example.toml` and R-0060's `toml` block from this step's file, `plans/plan-approved/steps/10-config.md`, reading a `# key = value` line as a commented-out setting and a `# [table]` line as a commented-out table: every key of R-0060's block is in the template, in the same table, with the same value, commented out exactly where R-1273 says; every key the config structs read, in every table, is in the template, with the default the loader uses and the environment variable the loader reads for it named in its comment, or none; the template holds no key, active or commented out, that the config structs don't read; each setting has a comment giving its default and its allowed values or range; `check_schema`, `stale_pending_expiry`, `stale_pending_max` and `sslmode` each have a `# WARNING:` line; and loading the template with no environment variable set gives the same config as loading no file. A key added to the config structs or to R-0060's block without the template, a changed default, or a key left in the template after it's gone, such as `stale_first_failure_max`, fails it, naming the key and the table |

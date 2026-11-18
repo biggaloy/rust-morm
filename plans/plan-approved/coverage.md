@@ -4,7 +4,7 @@ Generated from the frozen plan. Each requirement and test obligation lives in ex
 
 Kinds: `code` needs a tagged test, `doc` is checked in the README step, `info` is context with nothing to build.
 
-Totals: 1269 requirements, 317 test obligations.
+Totals: 1274 requirements, 321 test obligations.
 
 ## Requirements
 
@@ -727,7 +727,7 @@ Totals: 1269 requirements, 317 test obligations.
 | R-0715 | code | 14 | 1516 | - Built SQL text is kept in a small bounded map keyed by model and column bitmask, so a re… |
 | R-0716 | code | 14 | 1517 | - Other dynamic SQL and overflow go through `query_typed`, which needs no prepare round tr… |
 | R-0717 | code | 48 | 1518 | - The first benchmark run measures this split against a single cache, and a patch through … |
-| R-0718 | code | 14 | 1519 | - A cached statement can go stale when a migration changes something under it, and it then… |
+| R-0718 | code | 14 | 1519 | **Stale statements: the statement class.** A cached statement can go stale when a schema c… |
 | R-0719 | code | 20 | 1519 | - `cached plan must not change result type` (0A000) inside a transaction returns a typed e… |
 | R-0720 | code | 14 | 1523 | - SQL for `get` and `delete` by primary key is a compile-time `&'static str`, as are a mod… |
 | R-0721 | code | 18 | 1524 | - `= ANY($1)` instead of `IN` lists, so list length doesn't create statement variants. |
@@ -990,10 +990,10 @@ Totals: 1269 requirements, 317 test obligations.
 | R-0978 | code | 56 | 0 | - **Enum binding needs no OID.** morm writes `ToSql` and `FromSql` for `PgEnum` itself and… |
 | R-0979 | code | 56 | 0 | - **A label the binary doesn't know** returns `Error::UnknownEnumValue`, with the type and… |
 | R-0980 | code | 56 | 0 | - **Renamed labels.** `#[pg_enum(was = "old")]` on a variant decodes both labels to it and… |
-| R-0981 | code | 14 | 0 | - **Stale server state.** Three errors, from any statement, mean a session holds compiled … |
-| R-0982 | code | 14 | 0 | - **Telling the rest of the pool.** A confirmed stale statement raises a statement generat… |
+| R-0981 | code | 14 | 0 | **Stale sessions straight to Postgres: the session class and the epoch.** R-1245's session… |
+| R-0982 | code | 14 | 0 | **The one gate for pool-wide actions.** Three actions reach the whole pool: *clear*, which… |
 | R-0983 | code | 14 | 0 | - **Retrying is safe.** Postgres rolls back a failed statement outside a transaction, so a… |
-| R-0984 | code | 20 | 0 | - **Stale statements inside a transaction.** The stale errors that step 14 retries can't b… |
+| R-0984 | code | 20 | 0 | - **Stale statements and sessions inside a transaction.** Postgres has already failed the … |
 | R-0985 | code | 20 | 0 | - `.retry(n)` also retries `Error::SchemaChanged`, because the next attempt runs on fresh … |
 | R-0986 | code | 29 | 0 | - **Enum catalog reads.** Labels come from `pg_enum` directly, ordered by `enumsortorder`.… |
 | R-0987 | code | 30 | 0 | - **Step boundaries.** An op can declare that its step ends after it, so the planner puts … |
@@ -1254,7 +1254,7 @@ Totals: 1269 requirements, 317 test obligations.
 | R-1242 | code | 16 | 0 | - **Raw SQL reads enum and composite columns as text.** morm can't add a cast to SQL you w… |
 | R-1243 | code | 45 | 0 | - **T5, result columns read as text.** The typing pass also reads each query's result colu… |
 | R-1244 | code | 12 | 0 | **CI's `standby` job.** This step adds a job to `ci.yml` that runs on every push and pull … |
-| R-1245 | code | 14 | 0 | **Recognising a stale error in any language.** `lc_messages` translates every message but … |
+| R-1245 | code | 14 | 0 | **The stale-session signals, recognised in any language.** `lc_messages` translates every … |
 | R-1246 | code | 14 | 0 | **Behind PgBouncer, a statement generation every process shares.** PgBouncer keeps one ser… |
 | R-1247 | code | 20 | 0 | - **A hot standby ends a connection inside a transaction.** Replaying DDL on a hot standby… |
 | R-1248 | code | 33 | 0 | - **Every `tx` step ends with a reset.** Postgres marks a cached plan invalid when an obje… |
@@ -1262,7 +1262,7 @@ Totals: 1269 requirements, 317 test obligations.
 | R-1250 | doc | 50 | 0 | The README shows this notice loudly, beside the managed function rows: > **Functions morm … |
 | R-1251 | doc | 50 | 0 | The README shows this notice loudly, beside the online swap: > **A transaction open across… |
 | R-1252 | doc | 50 | 0 | The README shows this notice loudly, beside transactions: > **On a hot standby, a migratio… |
-| R-1253 | doc | 50 | 0 | The README shows this notice loudly, beside `pooler = "transaction"`: > **Behind PgBouncer… |
+| R-1253 | doc | 50 | 0 | The README shows this notice loudly, beside `pooler = "transaction"`, and it covers both m… |
 | R-1254 | doc | 50 | 0 | The README shows this notice loudly, beside raw SQL with `db.sql()`: > **In raw SQL, read … |
 | R-1255 | doc | 50 | 0 | The README shows this notice loudly, beside the migration commands: > **The migrating role… |
 | R-1256 | code | 59 | 0 | - **Healing server sessions behind PgBouncer.** A function the migration couldn't refresh … |
@@ -1270,15 +1270,20 @@ Totals: 1269 requirements, 317 test obligations.
 | R-1258 | doc | 50 | 0 | The README shows this notice loudly, beside `pooler = "transaction"`: > **Behind PgBouncer… |
 | R-1259 | code | 10 | 0 | \| `MORM_POOL_STALE_COOLDOWN`, `MORM_POOL_STALE_COOLDOWN_MAX` \| `stale_cooldown`, `stale_… |
 | R-1260 | code | 10 | 0 | \| `MORM_POOL_STALE_PENDING_EXPIRY`, `MORM_POOL_STALE_PENDING_MAX` \| `stale_pending_expir… |
-| R-1261 | code | 10 | 0 | \| `MORM_POOL_STALE_FIRST_FAILURE_MAX` \| `stale_first_failure_max` \| |
-| R-1262 | code | 14 | 0 | **The stale-session settings.** Every tunable of the stale-session rules, these five, is a… |
-| R-1263 | doc | 50 | 0 | \| `stale_cooldown` \| Statements fed text holding a retired enum label, or whose confirmi… |
-| R-1264 | doc | 50 | 0 | \| `stale_cooldown_max` \| More than 64 statements in one pool can be fed such text at onc… |
-| R-1265 | doc | 50 | 0 | \| `stale_pending_expiry` \| Your transactions retry a failed call more than 60 seconds la… |
-| R-1266 | doc | 50 | 0 | \| `stale_pending_max` \| Changes made by hand can leave more than 64 statements in one po… |
-| R-1267 | doc | 50 | 0 | \| `stale_first_failure_max` \| More than 64 statements in one pool fail on a retired enum… |
+| R-1261 | info | 10 | 0 | There's no `stale_first_failure_max` setting and no `MORM_POOL_STALE_FIRST_FAILURE_MAX`: s… |
+| R-1262 | code | 14 | 0 | **The stale-session settings.** Every tunable of the stale-session machine, these four, is… |
+| R-1263 | doc | 50 | 0 | \| `stale_cooldown` \| You want stale-session handling, and the clearing of every connecti… |
+| R-1264 | doc | 50 | 0 | \| `stale_cooldown_max` \| Behind PgBouncer, more than 64 statements can be hitting stale … |
+| R-1265 | doc | 50 | 0 | \| `stale_pending_expiry` \| Your transactions retry a failed call later than a minute aft… |
+| R-1266 | doc | 50 | 0 | \| `stale_pending_max` \| More than 64 statements in one pool can be waiting for a confirm… |
+| R-1267 | info | 50 | 0 | The Extra calls table has no `stale_first_failure_max` line: the setting is gone, because … |
 | R-1268 | doc | 50 | 0 | The README shows this notice loudly, beside the pool settings: > **The stale-session setti… |
-| R-1269 | code | 48 | 0 | - **The pending check on the cached-statement path.** A cached statement's run with the po… |
+| R-1269 | code | 48 | 0 | - **The stale-session checks on the cached-statement path.** A cached statement's run with… |
+| R-1270 | code | 14 | 0 | **The stale-session machine is one pure module.** Every stale-statement and stale-session … |
+| R-1271 | code | 20 | 0 | - **What the stale-session machine guarantees, per pool.** Step 14's machine, with this st… |
+| R-1272 | doc | 50 | 0 | The README shows this notice loudly, beside `tx.set_local`: > **A `search_path` set per tr… |
+| R-1273 | code | 10 | 0 | **A commented settings template ships with morm.** `crates/morm-core/morm.example.toml`, p… |
+| R-1274 | doc | 50 | 0 | \| `morm.example.toml` \| You're writing or reviewing a `morm.toml` and want every setting… |
 
 ## Test obligations
 
@@ -1589,15 +1594,19 @@ Totals: 1269 requirements, 317 test obligations.
 | T-0303 | integration | 45 | **T5, on Postgres 15–18:** `check-sql` reports a registered `sql!` query returning an enum… |
 | T-0304 | integration | 15 | **Enum and composite reads behind PgBouncer with no prepared statements, in the `pooler` j… |
 | T-0305 | integration | 12 | **A held connection ended by a recovery conflict, in the `standby` job, on Postgres 15–18:… |
-| T-0306 | integration | 14 | **Stale statements behind PgBouncer, in the `pooler` job:** through 1.22 and 1.26.1 with `… |
+| T-0306 | integration | 14 | **Stale statements behind PgBouncer, rows C1 and C2, in the `pooler` job:** through 1.22 a… |
 | T-0307 | integration | 20 | **A recovery conflict inside a transaction, in the `standby` job step 12 adds, on Postgres… |
 | T-0308 | suite | 33 | **The reset, on Postgres 15–18:** after a `tx` step that, through a test-only op, swaps an… |
 | T-0309 | suite | 38 | **Retired enum labels, on Postgres 15–18:** retiring an enum type with its column renames … |
 | T-0310 | integration | 59 | **Hidden narrowings, on Postgres 15–18:** with `plpgsql_check` 2.10.16, a managed function… |
-| T-0311 | integration | 14 | **The stale `22P02`, both branches, on Postgres 15–18:** after a hand-run swap that keeps … |
-| T-0312 | integration | 20 | **The stale `22P02` inside a transaction, on Postgres 15–18:** after a hand-run swap that … |
+| T-0311 | integration | 14 | **Stale sessions straight to Postgres, rows A2 to A4, on Postgres 15–18:** after a hand-ru… |
+| T-0312 | integration | 20 | **Stale statements and sessions inside a transaction, rows B1 to B5 and D1 to D3, on Postg… |
 | T-0313 | integration | 41 | **The statement generation at a pool's start, in the `pooler` job:** behind 1.22 and 1.26.… |
-| T-0314 | integration | 14 | **The `22P02` cool-down, on Postgres 15–18:** after a function that converts a stored `_mo… |
+| T-0314 | integration | 14 | **The epoch and the cool-down, on Postgres 15–18 and in the `pooler` job:** straight to Po… |
 | T-0315 | suite | 52 | **Unit: mapping retired names:** with `_morm_retired_m2_s` mapped to `_morm_retired_m2_s_7… |
 | T-0316 | integration | 59 | **`RECONNECT` after a migration, in the `pooler` job:** behind the `RECONNECT` test's own … |
 | T-0317 | integration | 14 | **The stale-session settings:** with nothing set, a pool uses `stale_cooldown = "60s"`, `s… |
+| T-0318 | suite | 14 | **Unit: the stale-session machine, rows A, C and E:** a unit test in `crates/morm`, with n… |
+| T-0319 | suite | 20 | **The stale-session simulation:** a unit test in `crates/morm`, with no Postgres, generate… |
+| T-0320 | suite | 10 | **The settings template stays in step with the plan:** a unit test in `morm-core`, run in … |
+| T-0321 | suite | 50 | **The README and the settings template agree:** a check in `ci` reads the README's `morm.t… |
