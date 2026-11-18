@@ -7,8 +7,8 @@ Read this first when resuming. It's what the coordinating session needs that isn
 ## Where things stand
 
 - **Steps done:** 01 (PR #1, merged `ccd4413`) and 02 (PR #2, merged `34c81aa`), both approved by the owner.
-- **Step 55 is `in review`:** PR #3, branch `step-55-enum-proofs`, head `7f8d9b2`, ER1 to ER7 written in, CI green, checker 1284 R / 325 T, 0 problems. The owner answered the fix's two questions: `morm-admin` always carries TLS, and `0A000` requests once (INDEX Decisions "`morm-admin` always carries TLS" and "`0A000` requests a repair once"). A fix agent is writing both in ("Fix round" brief, new IDs from R-1285 / T-0326); if its commit isn't on the branch after a restart, start a fresh one. Next: record its IDs and choices in INDEX, then the fifteenth review (scope since `8abcd9d`).
-- **Next free IDs:** R-1285, T-0326.
+- **Step 55 is `in review`:** PR #3, branch `step-55-enum-proofs`, head `2e62d43`, the fourteenth review and both owner answers written in, CI green, checker 1285 R / 326 T, 0 problems; IDs and choices in INDEX Decisions. Two new open questions from the fix are with the owner: (1) does `morm-migrate` as a library carry TLS: (a) always rustls from step 29 (recommended), (b) own `tls` feature off by default, `morm-admin` turns it on, (c) `tls` feature on by default; (2) which `morm` features does the `morm-mgr` package `init` creates turn on: (a) always `features = ["tls"]` (recommended), (b) the app's own `morm` features, (c) left to the user with a notice. Once answered: record in INDEX, one fix agent, then the fifteenth review (scope since `8abcd9d`).
+- **Next free IDs:** R-1286, T-0327.
 - Step 55's open items, reviews and designs: `reviews/step-55-open-items.md`, `reviews/step-55-review.md` and `-review-2.md` to `-review-12.md`, `reviews/stale-statement-design.md`.
 
 ## How to resume after a restart
