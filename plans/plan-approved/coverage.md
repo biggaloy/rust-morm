@@ -1292,7 +1292,7 @@ Totals: 1287 requirements, 328 test obligations.
 | R-1280 | code | 42 | 0 | **The `morm.toml` and `.env.example` `init` writes, with a found socket written loudly.**… |
 | R-1281 | code | 42 | 0 | **`init`'s CI workflow connects without TLS, on purpose and loudly.** The CI workflow `ini… |
 | R-1282 | code | 10 | 0 | **A `[database]` value written in `morm.toml` that overrides `DATABASE_URL` is warned abou… |
-| R-1283 | doc | 50 | 0 | The README shows this notice loudly, beside the `morm.toml` settings and `[database]`'s `h… |
+| R-1283 | doc | 50 | 0 | The README shows this notice loudly, beside the `morm.toml` settings and `[database]`'s fi… |
 | R-1284 | doc | 50 | 0 | \| `host` and `port` written in `morm.toml` \| Every deployment of your app reaches Postgr… |
 | R-1285 | code | 33 | 0 | **`morm-admin` always carries TLS.** `morm-admin` always builds with rustls: its TLS depen… |
 | R-1286 | code | 29 | 0 | **`morm-migrate` always carries TLS.** `morm-migrate` always builds with rustls, from this… |
