@@ -7,7 +7,7 @@ Read this first when resuming. It's what the coordinating session needs that isn
 ## Where things stand
 
 - **Steps done:** 01 (PR #1, merged `ccd4413`) and 02 (PR #2, merged `34c81aa`), both approved by the owner.
-- **Step 55 is `in review`:** PR #3, branch `step-55-enum-proofs`, head `4431bf3`, CI green, checker 1287 R / 328 T, 0 problems; IDs and choices in INDEX Decisions. One open question from the fix is with the owner: is the `morm-mgr` package `init` creates a member of the app's Cargo workspace? (With it in, `cargo build --workspace` turns `tls` on for the app too, `cargo build -p app` doesn't.) (a) keep it in the workspace and say so in R-1287's comment and R-1278's notice, T-0328 checking both builds (recommended); (b) its own excluded workspace and `Cargo.lock`; (c) turn `tls` on for the app's `morm` too. Once answered: record in INDEX, one fix agent, then the fifteenth review (scope since `8abcd9d`).
+- **Step 55 is `in review`:** PR #3, branch `step-55-enum-proofs`, head `4431bf3`, CI green, checker 1287 R / 328 T, 0 problems. The owner chose (a) on the workspace question (INDEX Decisions "`morm-mgr` is a member of the app's workspace"). A fix agent is writing it in ("Fix round" brief, new IDs from R-1288 / T-0329); if its commit isn't on the branch after a restart, start a fresh one. Next: record its IDs and choices in INDEX, then the fifteenth review (scope since `8abcd9d`).
 - **Next free IDs:** R-1288, T-0329.
 - Step 55's open items, reviews and designs: `reviews/step-55-open-items.md`, `reviews/step-55-review.md` and `-review-2.md` to `-review-12.md`, `reviews/stale-statement-design.md`.
 
