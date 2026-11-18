@@ -4,7 +4,7 @@ Generated from the frozen plan. Each requirement and test obligation lives in ex
 
 Kinds: `code` needs a tagged test, `doc` is checked in the README step, `info` is context with nothing to build.
 
-Totals: 1285 requirements, 326 test obligations.
+Totals: 1287 requirements, 328 test obligations.
 
 ## Requirements
 
@@ -1295,6 +1295,8 @@ Totals: 1285 requirements, 326 test obligations.
 | R-1283 | doc | 50 | 0 | The README shows this notice loudly, beside the `morm.toml` settings and `[database]`'s `h… |
 | R-1284 | doc | 50 | 0 | \| `host` and `port` written in `morm.toml` \| Every deployment of your app reaches Postgr… |
 | R-1285 | code | 33 | 0 | **`morm-admin` always carries TLS.** `morm-admin` always builds with rustls: its TLS depen… |
+| R-1286 | code | 29 | 0 | **`morm-migrate` always carries TLS.** `morm-migrate` always builds with rustls, from this… |
+| R-1287 | code | 42 | 0 | **The `morm-mgr` package `init` creates turns on `morm`'s `tls`.** `init` always writes th… |
 
 ## Test obligations
 
@@ -1626,3 +1628,5 @@ Totals: 1285 requirements, 326 test obligations.
 | T-0324 | suite | 42 | **`init`'s files, with and without a found socket:** a test in `morm-admin` runs `init`'s… |
 | T-0325 | suite | 10 | **A `[database]` value written in `morm.toml` that overrides `DATABASE_URL` is warned abou… |
 | T-0326 | integration | 33 | **`morm-admin` always carries TLS, on Postgres 15–18:** `morm-admin` built with its defaul… |
+| T-0327 | integration | 29 | **`morm-migrate` always carries TLS, on Postgres 15–18:** `morm-migrate` built on its own,… |
+| T-0328 | suite | 42 | **The `morm-mgr` package `init` creates turns on `tls`:** a test in `morm-admin` runs `ini… |
