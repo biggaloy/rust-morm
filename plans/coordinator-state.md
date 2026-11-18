@@ -7,8 +7,8 @@ Read this first when resuming. It's what the coordinating session needs that isn
 ## Where things stand
 
 - **Steps done:** 01 (PR #1, merged `ccd4413`) and 02 (PR #2, merged `34c81aa`), both approved by the owner.
-- **Step 55 is `in review`:** PR #3, branch `step-55-enum-proofs`, head `8abcd9d`, CI green, checker 1279 R / 323 T, 0 problems. The fourteenth review is in (`reviews/step-55-review-14.md`, `9de5c94`): should fix ER1 to ER3, minor ER4 to ER7. The owner chose ER2 (a), recorded in INDEX Decisions "`init` writes a found socket loudly (ER2)" (`3c7e2fe`). A fix agent is writing ER1 to ER7 into PR #3 ("Fix round" brief, new IDs from R-1280 / T-0324). If its commit isn't on the branch after a restart, start a fresh one with that brief. Next: record its IDs and choices in INDEX, then the fifteenth review.
-- **Next free IDs:** R-1280, T-0324.
+- **Step 55 is `in review`:** PR #3, branch `step-55-enum-proofs`, head `7f8d9b2`, ER1 to ER7 of the fourteenth review written in, CI green, checker 1284 R / 325 T, 0 problems; IDs and the fix's choices in INDEX Decisions "`init` writes a found socket loudly (ER2)". Two open questions from the fix are with the owner: (1) does `morm-admin` carry TLS: (a) always rustls (recommended), (b) optional feature built into release binaries, (c) off, document `disable`; (2) `0A000` requests once like `42804`/`XX000`: (a) keep as written, (b) request once (recommended; changes R-0718, R-1270 to R-1272, T-0312, T-0318). Once answered: record in INDEX, one fix agent, then the fifteenth review (scope since `8abcd9d`).
+- **Next free IDs:** R-1285, T-0326.
 - Step 55's open items, reviews and designs: `reviews/step-55-open-items.md`, `reviews/step-55-review.md` and `-review-2.md` to `-review-12.md`, `reviews/stale-statement-design.md`.
 
 ## How to resume after a restart
