@@ -7,8 +7,8 @@ Read this first when resuming. It's what the coordinating session needs that isn
 ## Where things stand
 
 - **Steps done:** 01 (PR #1, merged `ccd4413`) and 02 (PR #2, merged `34c81aa`), both approved by the owner.
-- **Step 55 is `in review`:** PR #3, branch `step-55-enum-proofs`, head `7a3db77`: the stale-session rules rewritten once from `reviews/stale-session-state-machine.md` (MA to ME), plus the commented settings template `crates/morm-core/morm.example.toml`. CI green, mergeable, checker 1274 R / 321 T, 0 problems; IDs in Decisions. The owner decided unknown `morm.toml` keys are refused; a fix agent writes that in with the note that steps adding settings update the template, then one review (scoped to the changes since `0f26ba7`).
-- **Next free IDs:** R-1275, T-0322.
+- **Step 55 is `in review`:** PR #3, branch `step-55-enum-proofs`, head `564723e`: the stale-session rules rewritten once from `reviews/stale-session-state-machine.md` (MA to ME), the commented settings template `crates/morm-core/morm.example.toml`, and unknown `morm.toml` keys refused. CI green, mergeable, checker 1276 R / 322 T, 0 problems; IDs in Decisions. The thirteenth review is running on the changes since `0f26ba7`, findings EQ1, … to `reviews/step-55-review-13.md` (restart it with the "Review round" brief if it isn't on `main`).
+- **Next free IDs:** R-1277, T-0323.
 - Step 55's open items, reviews and designs: `reviews/step-55-open-items.md`, `reviews/step-55-review.md` and `-review-2.md` to `-review-12.md`, `reviews/stale-statement-design.md`.
 
 ## How to resume after a restart
