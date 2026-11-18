@@ -17,6 +17,7 @@ Remove or reorder enum values on a live table with no long lock.
 - The online swap as the default on existing tables, `--fast` for the one-transaction form, keyset copy, with a unique `NOT NULL` key for a table with no primary key, definitions read from Postgres on scratch, materialized views built beside the old ones, cutover, retired columns and types, refusals, recovery
 - Partitioned and inherited tables refused, shadow indexes under `_morm_new_<name>`, and step 39's index check on the one-transaction form
 - Inherited enum columns changed only through their top parent in the one-transaction form, with the form's other statements, foreign keys dropped and added back around an index rebuild, and the check for labels that would merge on a unique index
+- No setting of its own: it reads step 39's `cutover_lock_timeout`, `cutover_attempts` and `cutover_pause` and step 51's `max_rewrite_mb`. A setting it adds, or a change to what one of those does, goes into the config structs and `crates/morm-core/morm.example.toml` in the same PR, with its default, allowed values, environment variable or that it has none, and a comment on what it does and when to change it, as step 10's settings template requires; step 10's template test fails until it's there, and morm refuses any key the config structs don't read
 
 ## End-to-end check
 

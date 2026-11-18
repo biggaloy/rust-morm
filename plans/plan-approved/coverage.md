@@ -4,7 +4,7 @@ Generated from the frozen plan. Each requirement and test obligation lives in ex
 
 Kinds: `code` needs a tagged test, `doc` is checked in the README step, `info` is context with nothing to build.
 
-Totals: 1274 requirements, 321 test obligations.
+Totals: 1276 requirements, 322 test obligations.
 
 ## Requirements
 
@@ -1284,6 +1284,8 @@ Totals: 1274 requirements, 321 test obligations.
 | R-1272 | doc | 50 | 0 | The README shows this notice loudly, beside `tx.set_local`: > **A `search_path` set per tr… |
 | R-1273 | code | 10 | 0 | **A commented settings template ships with morm.** `crates/morm-core/morm.example.toml`, p… |
 | R-1274 | doc | 50 | 0 | \| `morm.example.toml` \| You're writing or reviewing a `morm.toml` and want every setting… |
+| R-1275 | code | 10 | 0 | **Every key morm doesn't read is refused.** Config loading refuses any key the config stru… |
+| R-1276 | doc | 50 | 0 | The README shows this notice loudly, beside the `morm.toml` settings: > **A key morm doesn… |
 
 ## Test obligations
 
@@ -1610,3 +1612,4 @@ Totals: 1274 requirements, 321 test obligations.
 | T-0319 | suite | 20 | **The stale-session simulation:** a unit test in `crates/morm`, with no Postgres, generate… |
 | T-0320 | suite | 10 | **The settings template stays in step with the plan:** a unit test in `morm-core`, run in … |
 | T-0321 | suite | 50 | **The README and the settings template agree:** a check in `ci` reads the README's `morm.t… |
+| T-0322 | integration | 10 | **Unknown keys are refused:** a misspelt key in each table, `[database]`, `[database.migra… |

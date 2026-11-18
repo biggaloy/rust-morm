@@ -15,6 +15,7 @@ Change a managed enum's values with exact inverses, including the changes Postgr
 ## Deliverables
 
 - The enum value diff, `ADD VALUE` ops, the reorder decision and its inverse, a plain swap as an add's inverse, the type swap in one transaction, owner, grant and comment copies, `ANALYZE`, `max_rewrite_mb`, `lint` findings, and the `ci.yml` job for logical replication
+- `[migrations] max_rewrite_mb` added to the config structs and to `crates/morm-core/morm.example.toml` in the same PR, with its default, allowed values, environment variable or that it has none, and a comment on what it does and when to change it, as step 10's settings template requires; step 10's template test fails until it's there, and morm refuses any key the config structs don't read
 
 ## End-to-end check
 

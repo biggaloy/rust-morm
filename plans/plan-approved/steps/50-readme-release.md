@@ -198,6 +198,14 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 >
 > **What you give up.** There's no session-local zone. In morm's sessions `current_date`, `now()::date`, `localtimestamp` and `date_trunc('day', now())` give the UTC day and time, and a `timestamptz` turned into text, as `fetch_raw` or a `::text` cast returns it, reads with `+00`. A column default or view that leans on the session's zone, such as `DEFAULT current_date`, works in UTC for rows morm writes and in the role's zone for other clients, such as `psql`, so write the zone into it, as in `DEFAULT (now() AT TIME ZONE 'Europe/Berlin')::date`.
 
+**R-1276** The README shows this notice loudly, beside the `morm.toml` settings:
+
+> **A key morm doesn't know stops your app at startup.** morm refuses any key it doesn't read, in any table of `morm.toml`, and any table it doesn't read: `Db::connect`, `morm-admin` and `morm-migrate` stop with `Error::Config`, naming the key and its table, and the setting it was probably meant to be when one is close. That's so a misspelt key, such as `stale_cooldwn`, or a key in the wrong table, such as `wait_timeout` under `[database]`, can't seem to work while morm uses the default.
+>
+> **What you give up.** `morm.toml` holds only morm's settings: keep notes in comments, and other tools' settings in their own files. A key copied from another tool or an earlier draft, such as `timezone` or `stale_first_failure_max`, is refused too, with a message saying why. Environment variables aren't checked, because the `${VAR}` names your file interpolates can start with `MORM_`.
+>
+> **How to fix it.** Find the key in `morm.example.toml`, which lists every setting under its table with its default, allowed values and environment variable, and correct its spelling or move it to its table; remove it if morm has no such setting.
+
 **R-1237** The README shows this notice loudly, beside `pooler = "transaction"`:
 
 > **Behind PgBouncer, morm needs PgBouncer 1.20 or later.** morm sends two settings when it connects: `application_name`, so `pg_stat_activity` shows your binary's name, and `TimeZone = 'UTC'` in the `options` startup parameter. PgBouncer passes both and keeps them per client, but only 1.20 and later accept `options`. An older PgBouncer refuses every connection with `unsupported startup parameter: options`, and morm stops at startup with `Error::Config` saying so. Upgrade PgBouncer, or, if you can't, add `options` to its `ignore_startup_parameters` and set the role's zone, `ALTER ROLE app SET timezone = 'UTC'`, which morm checks when the pool starts. Everything else morm would set at startup, such as `lock_timeout` and `search_path`, goes on the role. Prepared statements need 1.21 or later with `max_prepared_statements` set; on 1.20 set `statement_cache = 0` and `shape_cache = 0`.
