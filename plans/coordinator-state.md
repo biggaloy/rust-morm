@@ -7,7 +7,7 @@ Read this first when resuming. It's what the coordinating session needs that isn
 ## Where things stand
 
 - **Steps done:** 01 (PR #1, merged `ccd4413`) and 02 (PR #2, merged `34c81aa`), both approved by the owner.
-- **Step 55 is `in review`:** PR #3, branch `step-55-enum-proofs`, head `4431bf3`, CI green, checker 1287 R / 328 T, 0 problems. The owner chose (a) on the workspace question (INDEX Decisions "`morm-mgr` is a member of the app's workspace"). A fix agent is writing it in ("Fix round" brief, new IDs from R-1288 / T-0329); if its commit isn't on the branch after a restart, start a fresh one. Next: record its IDs and choices in INDEX, then the fifteenth review (scope since `8abcd9d`).
+- **Step 55 is `in review`:** PR #3, branch `step-55-enum-proofs`, head `80a671e`, the fourteenth review and all five owner answers since written in, CI green, checker 1287 R / 328 T, 0 problems; IDs and choices in INDEX Decisions; no open questions. The fifteenth review is running on the changes since `8abcd9d`, findings ES1, … to `reviews/step-55-review-15.md` (restart it with the "Review round" brief if it isn't on `main`).
 - **Next free IDs:** R-1288, T-0329.
 - Step 55's open items, reviews and designs: `reviews/step-55-open-items.md`, `reviews/step-55-review.md` and `-review-2.md` to `-review-12.md`, `reviews/stale-statement-design.md`.
 
