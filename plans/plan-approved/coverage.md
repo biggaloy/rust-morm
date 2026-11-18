@@ -1296,7 +1296,7 @@ Totals: 1287 requirements, 328 test obligations.
 | R-1284 | doc | 50 | 0 | \| `host` and `port` written in `morm.toml` \| Every deployment of your app reaches Postgr… |
 | R-1285 | code | 33 | 0 | **`morm-admin` always carries TLS.** `morm-admin` always builds with rustls: its TLS depen… |
 | R-1286 | code | 29 | 0 | **`morm-migrate` always carries TLS.** `morm-migrate` always builds with rustls, from this… |
-| R-1287 | code | 42 | 0 | **The `morm-mgr` package `init` creates turns on `morm`'s `tls`.** `init` always writes th… |
+| R-1287 | code | 42 | 0 | **The `morm-mgr` package `init` creates turns on `morm`'s `tls`.** `init` creates the `mor… |
 
 ## Test obligations
 
