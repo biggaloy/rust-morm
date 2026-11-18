@@ -1254,7 +1254,7 @@ Totals: 1277 requirements, 323 test obligations.
 | R-1242 | code | 16 | 0 | - **Raw SQL reads enum and composite columns as text.** morm can't add a cast to SQL you w… |
 | R-1243 | code | 45 | 0 | - **T5, result columns read as text.** The typing pass also reads each query's result colu… |
 | R-1244 | code | 12 | 0 | **CI's `standby` job.** This step adds a job to `ci.yml` that runs on every push and pull … |
-| R-1245 | code | 14 | 0 | **The stale-session signals, recognised in any language.** `lc_messages` translates every … |
+| R-1245 | code | 14 | 0 | **The stale-session signals, recognised in any language.** `lc_messages` translates every… |
 | R-1246 | code | 14 | 0 | **Behind PgBouncer, a statement generation every process shares.** PgBouncer keeps one ser… |
 | R-1247 | code | 20 | 0 | - **A hot standby ends a connection inside a transaction.** Replaying DDL on a hot standby… |
 | R-1248 | code | 33 | 0 | - **Every `tx` step ends with a reset.** Postgres marks a cached plan invalid when an obje… |
@@ -1279,7 +1279,7 @@ Totals: 1277 requirements, 323 test obligations.
 | R-1267 | info | 50 | 0 | The Extra calls table has no `stale_first_failure_max` line: the setting is gone, because … |
 | R-1268 | doc | 50 | 0 | The README shows this notice loudly, beside the pool settings: > **The stale-session setti… |
 | R-1269 | code | 48 | 0 | - **The stale-session checks on the cached-statement path.** A cached statement's run with… |
-| R-1270 | code | 14 | 0 | **The stale-session machine is one pure module.** Every stale-statement and stale-session … |
+| R-1270 | code | 14 | 0 | **The stale-session machine is one pure module.** Every stale-statement and stale-session… |
 | R-1271 | code | 20 | 0 | - **What the stale-session machine guarantees, per pool.** Step 14's machine, with this st… |
 | R-1272 | doc | 50 | 0 | The README shows this notice loudly, beside `tx.set_local`: > **A `search_path` set per tr… |
 | R-1273 | code | 10 | 0 | **morm ships a real `morm.toml`, with every setting at its default.** `crates/morm-core/mo… |
