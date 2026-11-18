@@ -7,7 +7,7 @@ Read this first when resuming. It's what the coordinating session needs that isn
 ## Where things stand
 
 - **Steps done:** 01 (PR #1, merged `ccd4413`) and 02 (PR #2, merged `34c81aa`), both approved by the owner.
-- **Step 55 is `in review`:** PR #3, branch `step-55-enum-proofs`, head `7ed642b`, ES1 to ES5 of the fifteenth review written in, CI green, checker 1287 R / 328 T, 0 problems; IDs and choices in INDEX Decisions "Fifteenth review fixed (ES1 to ES5)"; no open questions. The sixteenth review is running on the changes since `80a671e`, findings ET1, … to `reviews/step-55-review-16.md` (restart it with the "Review round" brief if it isn't on `main`). If clean, PR #3 goes to the owner.
+- **Step 55 is `in review`:** PR #3, branch `step-55-enum-proofs`, head `7ed642b`, CI green, checker 1287 R / 328 T, 0 problems. The sixteenth review is in (`reviews/step-55-review-16.md`, `fbeb368`): one should-fix, ET1 (a carried older `<n>` passes the gate, breaking I1 and R-0982's bound), no owner choice needed. A fix agent is writing it in ("Fix round" brief, new IDs from R-1288 / T-0329); if its commit isn't on the branch after a restart, start a fresh one. Next: record its IDs and choices in INDEX, then the seventeenth review (scope since `7ed642b`), then PR #3 to the owner if clean.
 - **Next free IDs:** R-1288, T-0329.
 - Step 55's open items, reviews and designs: `reviews/step-55-open-items.md`, `reviews/step-55-review.md` and `-review-2.md` to `-review-12.md`, `reviews/stale-statement-design.md`.
 
