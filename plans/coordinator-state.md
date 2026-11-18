@@ -8,7 +8,7 @@ Read this first when resuming. It's what the coordinating session needs that isn
 
 - **Steps done:** 01 (PR #1, merged `ccd4413`) and 02 (PR #2, merged `34c81aa`), both approved by the owner.
 - **Step 55 is `in review`:** PR #3, branch `step-55-enum-proofs`, head `0f26ba7`. CI green, mergeable, checker 1269 R / 317 T, 0 problems. Every owner decision is written in and recorded in INDEX's Decisions, through "Step 55 eleventh review, EO1 to EO10". Nothing is open with the owner.
-- **Twelfth review done:** `31fed21`, `reviews/step-55-review-12.md`, findings EP1 to EP8; the owner chose one consolidated redesign of the stale-session rules instead of more patching. The consolidated design is done (`7e8ae77`, `reviews/stale-session-state-machine.md`); its choices MA to ME are with the owner. Then one fresh fix agent rewrites the requirements on PR #3 from its rewrite plan (see `briefs/stale-session-state-machine.md`, last section), then one review.
+- **Twelfth review done:** `31fed21`, `reviews/step-55-review-12.md`, findings EP1 to EP8; the owner chose one consolidated redesign of the stale-session rules instead of more patching. The consolidated design is done (`7e8ae77`, `reviews/stale-session-state-machine.md`); the owner took every recommendation, MA to ME, and asked for a commented `morm.toml` settings template. A fresh fix agent rewrites the requirements on PR #3 from the design's rewrite plan and adds the template requirement. Then one fresh fix agent rewrites the requirements on PR #3 from its rewrite plan (see `briefs/stale-session-state-machine.md`, last section), then one review.
 - **Next free IDs:** R-1270, T-0318.
 - Step 55's open items, reviews and designs: `reviews/step-55-open-items.md`, `reviews/step-55-review.md` and `-review-2.md` to `-review-12.md`, `reviews/stale-statement-design.md`.
 
@@ -17,7 +17,7 @@ Read this first when resuming. It's what the coordinating session needs that isn
 1. Read `plan-approved/INDEX.md` ("The coordinating session" and "Decisions since the split") and this file. Stay thin: don't read code or the frozen plan.
 2. Set the wake-up again with `CronCreate`: cron `13,43 * * * *`, recurring, prompt as in `coordinator-briefs.md`. A restart removes it, and it expires after 7 days anyway. The current one (`b71ec56e`) expires about 2026-11-21.
 3. Check what landed: `gh pr view 3`, `git log origin/step-55-enum-proofs`, and `git log origin/main -- plans/reviews/`. Commits are the truth; unpushed agent work is lost in a crash.
-4. Background agents don't survive a restart. The consolidated design is complete on `main`; if the owner has answered MA to ME (check INDEX Decisions), start the fix agent as `briefs/stale-session-state-machine.md`'s last section says; otherwise bring MA to ME to the owner.
+4. Background agents don't survive a restart. The consolidated design is complete on `main`; the owner has answered MA to ME; if the fix agent's commit isn't on PR #3, start a fresh one as `briefs/stale-session-state-machine.md`'s last section says, adding the settings-template requirement from INDEX's MA to ME entry.
 5. Remove stale agent worktrees under `.claude/worktrees/` only after checking each has no uncommitted or unpushed work.
 
 ## The review loop (how step PRs go)
