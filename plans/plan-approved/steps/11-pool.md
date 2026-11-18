@@ -25,6 +25,7 @@ The pool, with sizing, budget and failure rules.
 Owned elsewhere, and quoted so this step needs no other file. Nothing here needs a test in this step.
 
 > ```toml
+> # Every setting at its default, with what it does: morm-core's shipped morm.toml
 > [database]
 > # Either a URL, or the separate fields below. Separate fields override URL parts.
 > url = "${DATABASE_URL}"
@@ -33,7 +34,7 @@ Owned elsewhere, and quoted so this step needs no other file. Nothing here needs
 > name = "app"
 > user = "app"                     # no password needed with peer auth on a Unix socket
 > password = "${MORM_DB_PASSWORD}" # keep secrets in the environment
-> sslmode = "disable"              # disable, prefer, require, verify-ca, verify-full
+> sslmode = "require"              # the default; TCP only, a Unix socket never uses TLS; disable, prefer, require, verify-ca, verify-full
 > target_session_attrs = "any"     # "read-write" finds the primary among several hosts
 > connect_timeout = "5s"
 > application_name = "auto"        # the binary's name; shows in pg_stat_activity

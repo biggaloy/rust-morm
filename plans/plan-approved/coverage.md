@@ -4,7 +4,7 @@ Generated from the frozen plan. Each requirement and test obligation lives in ex
 
 Kinds: `code` needs a tagged test, `doc` is checked in the README step, `info` is context with nothing to build.
 
-Totals: 1276 requirements, 322 test obligations.
+Totals: 1277 requirements, 323 test obligations.
 
 ## Requirements
 
@@ -69,7 +69,7 @@ Totals: 1276 requirements, 322 test obligations.
 | R-0057 | info | 42 | 101 | ``` morm-admin init [path] [--axum] # create a project morm-admin doctor # check Postgres,… |
 | R-0058 | code | 42 | 111 | `init` creates the `morm-mgr` package, `morm-migrations/`, `morm.toml`, `.env.example`, a … |
 | R-0059 | code | 10 | 115 | TOML is the Rust standard, with comments, real types and sections, and no indentation trap… |
-| R-0060 | code | 10 | 117 | ```toml [database] # Either a URL, or the separate fields below. Separate fields override … |
+| R-0060 | code | 10 | 117 | ```toml # Every setting at its default, with what it does: morm-core's shipped morm.toml [… |
 | R-0061 | code | 10 | 194 | A missing `morm.toml` isn't an error unless `MORM_CONFIG` names it, so a deployment can us… |
 | R-0062 | code | 10 | 196 | Precedence: defaults, then `morm.toml`, then environment variables, then code. There is on… |
 | R-0063 | info | 10 | 198 | **Environment variables:** |
@@ -1282,10 +1282,11 @@ Totals: 1276 requirements, 322 test obligations.
 | R-1270 | code | 14 | 0 | **The stale-session machine is one pure module.** Every stale-statement and stale-session … |
 | R-1271 | code | 20 | 0 | - **What the stale-session machine guarantees, per pool.** Step 14's machine, with this st… |
 | R-1272 | doc | 50 | 0 | The README shows this notice loudly, beside `tx.set_local`: > **A `search_path` set per tr… |
-| R-1273 | code | 10 | 0 | **A commented settings template ships with morm.** `crates/morm-core/morm.example.toml`, p… |
+| R-1273 | code | 10 | 0 | **morm ships a real `morm.toml`, with every setting at its default.** `crates/morm-core/mo… |
 | R-1274 | doc | 50 | 0 | \| `morm.example.toml` \| You're writing or reviewing a `morm.toml` and want every setting… |
 | R-1275 | code | 10 | 0 | **Every key morm doesn't read is refused.** Config loading refuses any key the config stru… |
 | R-1276 | doc | 50 | 0 | The README shows this notice loudly, beside the `morm.toml` settings: > **A key morm doesn… |
+| R-1277 | code | 10 | 0 | **`sslmode` defaults to `require`, and applies to TCP connections only.** With `sslmode` s… |
 
 ## Test obligations
 
@@ -1610,6 +1611,7 @@ Totals: 1276 requirements, 322 test obligations.
 | T-0317 | integration | 14 | **The stale-session settings:** with nothing set, a pool uses `stale_cooldown = "60s"`, `s… |
 | T-0318 | suite | 14 | **Unit: the stale-session machine, rows A, C and E:** a unit test in `crates/morm`, with n… |
 | T-0319 | suite | 20 | **The stale-session simulation:** a unit test in `crates/morm`, with no Postgres, generate… |
-| T-0320 | suite | 10 | **The settings template stays in step with the plan:** a unit test in `morm-core`, run in … |
+| T-0320 | suite | 10 | **The shipped `morm.toml` stays in step with the plan and loads as no file does:** a unit… |
 | T-0321 | suite | 50 | **The README and the settings template agree:** a check in `ci` reads the README's `morm.t… |
 | T-0322 | integration | 10 | **Unknown keys are refused:** a misspelt key in each table, `[database]`, `[database.migra… |
+| T-0323 | integration | 10 | **`sslmode` defaults to `require`, over TCP only, on Postgres 15–18:** against a server wi… |
