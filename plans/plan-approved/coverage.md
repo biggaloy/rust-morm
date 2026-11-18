@@ -4,7 +4,7 @@ Generated from the frozen plan. Each requirement and test obligation lives in ex
 
 Kinds: `code` needs a tagged test, `doc` is checked in the README step, `info` is context with nothing to build.
 
-Totals: 1287 requirements, 328 test obligations.
+Totals: 1288 requirements, 328 test obligations.
 
 ## Requirements
 
@@ -1297,6 +1297,7 @@ Totals: 1287 requirements, 328 test obligations.
 | R-1285 | code | 33 | 0 | **`morm-admin` always carries TLS.** `morm-admin` always builds with rustls: its TLS depen… |
 | R-1286 | code | 29 | 0 | **`morm-migrate` always carries TLS.** `morm-migrate` always builds with rustls, from this… |
 | R-1287 | code | 42 | 0 | **The `morm-mgr` package `init` creates turns on `morm`'s `tls`.** `init` creates the `mor… |
+| R-1288 | doc | 50 | 0 | The README shows this notice loudly, beside `read_only` and host lists: > **A pool that ca… |
 
 ## Test obligations
 
