@@ -4,7 +4,7 @@ Generated from the frozen plan. Each requirement and test obligation lives in ex
 
 Kinds: `code` needs a tagged test, `doc` is checked in the README step, `info` is context with nothing to build.
 
-Totals: 1288 requirements, 328 test obligations.
+Totals: 1291 requirements, 329 test obligations.
 
 ## Requirements
 
@@ -1297,7 +1297,10 @@ Totals: 1288 requirements, 328 test obligations.
 | R-1285 | code | 33 | 0 | **`morm-admin` always carries TLS.** `morm-admin` always builds with rustls: its TLS depen… |
 | R-1286 | code | 29 | 0 | **`morm-migrate` always carries TLS.** `morm-migrate` always builds with rustls, from this… |
 | R-1287 | code | 42 | 0 | **The `morm-mgr` package `init` creates turns on `morm`'s `tls`.** `init` creates the `mor… |
-| R-1288 | doc | 50 | 0 | The README shows this notice loudly, beside `read_only` and host lists: > **A pool that ca… |
+| R-1288 | doc | 50 | 0 | The README shows this notice loudly, beside `read_only`, host lists and `servers`: > **A p… |
+| R-1289 | code | 14 | 0 | **The `servers` pool setting.** Each pool says whether it can reach more than one Postgres… |
+| R-1290 | code | 10 | 0 | \| `MORM_POOL_SERVERS` \| `servers` \| |
+| R-1291 | doc | 50 | 0 | \| `servers = "several"`, `servers = "one"` \| `"several"`: your pool's one host reaches s… |
 
 ## Test obligations
 
@@ -1631,3 +1634,4 @@ Totals: 1288 requirements, 328 test obligations.
 | T-0326 | integration | 33 | **`morm-admin` always carries TLS, on Postgres 15–18:** `morm-admin` built with its defaul… |
 | T-0327 | integration | 29 | **`morm-migrate` always carries TLS, on Postgres 15–18:** `morm-migrate` built on its own,… |
 | T-0328 | suite | 42 | **The `morm-mgr` package `init` creates turns on `tls`:** a test in `morm-admin` runs `ini… |
+| T-0329 | suite | 14 | **The `servers` setting:** a unit test in `crates/morm`, with no Postgres, loads `morm.tom… |

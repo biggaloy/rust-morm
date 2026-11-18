@@ -74,6 +74,7 @@ Owned elsewhere, and quoted so this step needs no other file. Nothing here needs
 > stale_cooldown_max = 64          # cool-down entries per pool, behind a pooler only; 1 to 4096
 > stale_pending_expiry = "60s"     # how long a pending entry keeps a stale statement fresh; "off", or "0s" to 10m
 > stale_pending_max = 64           # pending entries per pool; 0 (off) to 4096
+> servers = "auto"                 # or "several" when one host reaches several servers, or "one"; read the README first
 >
 > [pools.replica]                  # a read replica
 > host = "db-replica.internal"
