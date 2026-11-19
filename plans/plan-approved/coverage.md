@@ -4,7 +4,7 @@ Generated from the frozen plan. Each requirement and test obligation lives in ex
 
 Kinds: `code` needs a tagged test, `doc` is checked in the README step, `info` is context with nothing to build.
 
-Totals: 1291 requirements, 329 test obligations.
+Totals: 1293 requirements, 329 test obligations.
 
 ## Requirements
 
@@ -450,7 +450,7 @@ Totals: 1291 requirements, 329 test obligations.
 | R-0438 | code | 20 | 957 | - Any Postgres error marks the transaction as failed. Further use returns that error, and … |
 | R-0439 | code | 20 | 958 | - `COMMIT` is sent as `SELECT 1; COMMIT` in one message. In a failed transaction the `SELE… |
 | R-0440 | code | 24 | 959 | - `after_commit` fires only after a confirmed commit. If the connection is lost during `CO… |
-| R-0441 | code | 20 | 961 | **Savepoints** clear the failed mark, except after a deadlock or serialization error, whic… |
+| R-0441 | code | 20 | 961 | **Savepoints** clear the failed mark, except after a deadlock or serialization error or an… |
 | R-0442 | code | 20 | 963 | **`.retry(n)`** goes before the closure, with `.isolation` and the per-transaction setting… |
 | R-0443 | code | 24 | 963 | Each attempt starts with no queued `after_commit` events. |
 | R-0444 | code | 20 | 965 | **Read-only pools:** Postgres refuses `SERIALIZABLE` on a hot standby, so `.isolation(Seri… |
@@ -1301,6 +1301,8 @@ Totals: 1291 requirements, 329 test obligations.
 | R-1289 | code | 14 | 0 | **The `servers` pool setting.** Each pool says whether it can reach more than one Postgres… |
 | R-1290 | code | 10 | 0 | \| `MORM_POOL_SERVERS` \| `servers` \| |
 | R-1291 | doc | 50 | 0 | \| `servers = "several"`, `servers = "one"` \| `"several"`: your pool's one host reaches s… |
+| R-1292 | doc | 50 | 0 | The README shows this notice loudly, beside transactions and `tx.transaction(..)`: > **A s… |
+| R-1293 | doc | 50 | 0 | The README shows this notice loudly, beside `db.hold()` and `sql_unchecked`: > **On a held… |
 
 ## Test obligations
 

@@ -217,7 +217,9 @@ impl Tx {
     // A savepoint: released when the closure returns Ok, rolled back to when it returns an
     // error (R-0441). There's no TxOptions on tx: no tx.isolation(..) or tx.retry(n), so
     // both are compile errors, because the isolation level is fixed before a transaction's
-    // first query, and a savepoint can't recover from 40001 or 40P01
+    // first query, and a savepoint can't recover from 40001 or 40P01; an Error::SchemaChanged
+    // inside it fails the whole transaction too: morm rolls the whole transaction back and sends
+    // nothing more on it (R-0441)
     pub async fn transaction<F, T>(&self, f: F) -> Result<T> where F: AsyncFnOnce(&Tx) -> Result<T>;
     // Each setting is immediate, one SET LOCAL, and holds for the rest of the transaction,
     // through savepoints that are released; rolling back to a savepoint opened before it
@@ -274,7 +276,8 @@ pub enum Error {
     PoolBusy, ConnectionLost, ReadOnly, OutOfRange, InvalidText,
                                                // ConnectionLost on a held connection names a recovery conflict when one ended it (SG, step 12)
     InvalidOrder, InvalidCursor, Decimal,
-    SchemaChanged,                             // a stale statement or session inside a transaction or on a held connection, after a type swap
+    SchemaChanged,                             // a stale statement or session inside a transaction or on a held connection, after a type swap;
+                                               // inside a transaction it fails the whole transaction, a savepoint's included (R-0441)
                                                // or a column type change, recognised by SQLSTATE with the routine, an identifier or an
                                                // untranslated elog message, never translated text (SC, R-1245): 0A000, the three plpgsql
                                                // 42804 routines, XX000 cache lookup, and 22P02 from enum_in naming a _morm_retired_ type
