@@ -1274,7 +1274,7 @@ Totals: 1291 requirements, 329 test obligations.
 | R-1262 | code | 14 | 0 | **The stale-session settings.** Every tunable of the stale-session machine, these four, is… |
 | R-1263 | doc | 50 | 0 | \| `stale_cooldown` \| You want stale-session handling, and the clearing of every connecti… |
 | R-1264 | doc | 50 | 0 | \| `stale_cooldown_max` \| Behind PgBouncer, more than 64 statements can be hitting stale … |
-| R-1265 | doc | 50 | 0 | \| `stale_pending_expiry` \| Your transactions retry a failed call later than a minute aft… |
+| R-1265 | doc | 50 | 0 | \| `stale_pending_expiry` \| Your transactions without `.retry(n)`, or your own retry loop… |
 | R-1266 | doc | 50 | 0 | \| `stale_pending_max` \| More than 64 statements in one pool can be waiting for a confirm… |
 | R-1267 | info | 50 | 0 | The Extra calls table has no `stale_first_failure_max` line: the setting is gone, because … |
 | R-1268 | doc | 50 | 0 | The README shows this notice loudly, beside the pool settings: > **The stale-session setti… |
