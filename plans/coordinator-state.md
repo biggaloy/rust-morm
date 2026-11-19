@@ -7,8 +7,8 @@ Read this first when resuming. It's what the coordinating session needs that isn
 ## Where things stand
 
 - **Steps done:** 01 (PR #1, merged `ccd4413`) and 02 (PR #2, merged `34c81aa`), both approved by the owner.
-- **Step 55 is `in review`:** PR #3, branch `step-55-enum-proofs`, head `a365aa5`, CI green, checker 1291 R / 329 T, 0 problems. The nineteenth review (`reviews/step-55-review-19.md`, `ec1e42a`) is answered: EW1 (a) and EW2 (a) (INDEX Decisions "`SchemaChanged` fails the whole transaction; held connections never read `<n>` (EW1, EW2)"). A fix agent is writing EW1 to EW7 in with the model re-run ("Fix round" brief, new IDs from R-1292 / T-0330); if its commit isn't on the branch after a restart, start a fresh one. Next: record its IDs and choices in INDEX, then the twentieth review (scope since `a365aa5`, with its own model), then PR #3 to the owner if clean.
-- **Next free IDs:** R-1292, T-0330.
+- **Step 55 is `in review`:** PR #3, branch `step-55-enum-proofs`, head `81f53c3`, EW1 to EW7 written in, CI green, checker 1293 R / 329 T, 0 problems; IDs and choices in INDEX Decisions "`SchemaChanged` fails the whole transaction; held connections never read `<n>` (EW1, EW2)". One open question with the owner: should a stale-session error morm returns as it is inside a savepoint (row B4) fail the whole transaction? (a) keep as written, one rule for every read inside a transaction (recommended); (b) inside a savepoint B3 and B4 judge R-0981 by the last-read `<n>` with no read, so B4 needs no rollback. Once answered: record in INDEX; if (b), one fix agent; then the twentieth review (scope since `a365aa5`, with its own model).
+- **Next free IDs:** R-1294, T-0330.
 - Step 55's open items, reviews and designs: `reviews/step-55-open-items.md`, `reviews/step-55-review.md` and `-review-2.md` to `-review-12.md`, `reviews/stale-statement-design.md`.
 
 ## How to resume after a restart
