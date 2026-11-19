@@ -7,7 +7,7 @@ Read this first when resuming. It's what the coordinating session needs that isn
 ## Where things stand
 
 - **Steps done:** 01 (PR #1, merged `ccd4413`) and 02 (PR #2, merged `34c81aa`), both approved by the owner.
-- **Step 55 is `in review`:** PR #3, branch `step-55-enum-proofs`, head `13bdab6`, CI green, checker 1291 R / 329 T, 0 problems. The eighteenth review (`reviews/step-55-review-18.md`, `d200484`) is answered: EV2 (a) and EV4 (a) (INDEX Decisions "No `<n>` read inside a transaction; a failed start read fails the pool (EV2, EV4)"). A fix agent is writing EV1 to EV7 in with the model re-run ("Fix round" brief, new IDs from R-1292 / T-0330); if its commit isn't on the branch after a restart, start a fresh one. Next: record its IDs and choices in INDEX, then the nineteenth review (scope since `13bdab6`, with its own concurrent model), then PR #3 to the owner if clean.
+- **Step 55 is `in review`:** PR #3, branch `step-55-enum-proofs`, head `a365aa5`, EV1 to EV7 written in, CI green, checker 1291 R / 329 T, 0 problems; IDs and choices in INDEX Decisions "No `<n>` read inside a transaction; a failed start read fails the pool (EV2, EV4)" (choice 130 confirmed by the owner); no open questions. The nineteenth review is running on the changes since `13bdab6`, with its own concurrent model, findings EW1, … to `reviews/step-55-review-19.md` (restart it with the "Review round" brief if it isn't on `main`). If clean, PR #3 goes to the owner.
 - **Next free IDs:** R-1292, T-0330.
 - Step 55's open items, reviews and designs: `reviews/step-55-open-items.md`, `reviews/step-55-review.md` and `-review-2.md` to `-review-12.md`, `reviews/stale-statement-design.md`.
 
