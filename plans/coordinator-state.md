@@ -7,7 +7,7 @@ Read this first when resuming. It's what the coordinating session needs that isn
 ## Where things stand
 
 - **Steps done:** 01 (PR #1, merged `ccd4413`) and 02 (PR #2, merged `34c81aa`), both approved by the owner.
-- **Step 55 is `in review`:** PR #3, branch `step-55-enum-proofs`, head `7c12f96`, CI green, checker 1291 R / 329 T, 0 problems. The owner chose (a) on all three of the stale-copy round's questions (INDEX Decisions "Retries run unnamed; one attempt per stale thing; open in slot after `53300`"). A fix agent is writing them in with the model re-run ("Fix round" brief, new IDs from R-1292 / T-0330); if its commit isn't on the branch after a restart, start a fresh one. Next: record its IDs and choices in INDEX, then the eighteenth review (scope since `8b45b7e`, with its own concurrent model), then PR #3 to the owner if clean.
+- **Step 55 is `in review`:** PR #3, branch `step-55-enum-proofs`, head `13bdab6`, the consolidated read-and-gate rewrite and every owner answer since written in, CI green, checker 1291 R / 329 T, 0 problems; IDs and choices in INDEX Decisions; no open questions. The eighteenth review is running on the changes since `8b45b7e`, with its own concurrent model, findings EV1, … to `reviews/step-55-review-18.md` (restart it with the "Review round" brief if it isn't on `main`). If clean, PR #3 goes to the owner.
 - **Next free IDs:** R-1292, T-0330.
 - Step 55's open items, reviews and designs: `reviews/step-55-open-items.md`, `reviews/step-55-review.md` and `-review-2.md` to `-review-12.md`, `reviews/stale-statement-design.md`.
 
