@@ -1301,7 +1301,7 @@ Totals: 1293 requirements, 329 test obligations.
 | R-1289 | code | 14 | 0 | **The `servers` pool setting.** Each pool says whether it can reach more than one Postgres… |
 | R-1290 | code | 10 | 0 | \| `MORM_POOL_SERVERS` \| `servers` \| |
 | R-1291 | doc | 50 | 0 | \| `servers = "several"`, `servers = "one"` \| `"several"`: your pool's one host reaches s… |
-| R-1292 | doc | 50 | 0 | The README shows this notice loudly, beside transactions and `tx.transaction(..)`: > **A s… |
+| R-1292 | doc | 50 | 0 | The README shows this notice loudly, beside transactions and `tx.transaction(..)`: > **`Er… |
 | R-1293 | doc | 50 | 0 | The README shows this notice loudly, beside `db.hold()` and `sql_unchecked`: > **On a held… |
 
 ## Test obligations
