@@ -1,6 +1,6 @@
 # Brief: step 55, the B4 savepoint fix round
 
-Started 2026-11-20 as a background agent. If its commit isn't on `origin/step-55-enum-proofs` after a restart, start a fresh agent (`isolation: worktree`, background) with the brief below, unchanged. Before that, check the old worktree under `.claude/worktrees/` for uncommitted work (`git status`) and keep anything useful.
+Started 2026-11-20 as a background agent. If its commit isn't on `origin/step-55-enum-proofs` after a restart, start a fresh agent (`isolation: worktree`, background) with the brief below, unchanged. Before that, check the remote branch `wip/step-55-b4`, where the agent pushes its work in progress, and the old worktree under `.claude/worktrees/` for uncommitted work (`git status`). If `wip/step-55-b4` exists, tell the new agent to start from it (`git checkout -B fix-b4 origin/wip/step-55-b4`) and to keep pushing work in progress there; it deletes the branch once its work is on `step-55-enum-proofs`.
 
 ---
 
