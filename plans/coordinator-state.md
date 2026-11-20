@@ -2,12 +2,12 @@
 
 Read this first when resuming. It's what the coordinating session needs that isn't in `plan-approved/INDEX.md`. The coordinator updates and pushes it after each milestone. Agent briefs to reuse are in `coordinator-briefs.md`.
 
-**Last updated:** 2026-11-18, fourteenth review in, ER2 with the owner.
+**Last updated:** 2026-11-20, B4 fix round running, before a weekly usage limit.
 
 ## Where things stand
 
 - **Steps done:** 01 (PR #1, merged `ccd4413`) and 02 (PR #2, merged `34c81aa`), both approved by the owner.
-- **Step 55 is `in review`:** PR #3, branch `step-55-enum-proofs`, head `81f53c3`, CI green, checker 1293 R / 329 T, 0 problems. The owner chose (b) on row B4 (INDEX Decisions "A stale-session error inside a savepoint stays catchable (B4)"). A fix agent is writing it in with the model re-run ("Fix round" brief, new IDs from R-1294 / T-0330); if its commit isn't on the branch after a restart, start a fresh one. Next: record its IDs and choices in INDEX, then the twentieth review (scope since `a365aa5`, with its own model), then PR #3 to the owner if clean.
+- **Step 55 is `in review`:** PR #3, branch `step-55-enum-proofs`, head `81f53c3`, CI green, checker 1293 R / 329 T, 0 problems. The owner chose (b) on row B4 (INDEX Decisions "A stale-session error inside a savepoint stays catchable (B4)"). A fix agent was started on 2026-11-20 to write it in; its full brief and what to do after it reports are in `briefs/step-55-b4-savepoint-fix.md`. **On a restart:** if `origin/step-55-enum-proofs` has no commit after `81f53c3`, check `.claude/worktrees/agent-ad3c483f7083a9543` for uncommitted work, then start a fresh agent with that brief. If it has, read the PR body's newest section to see what landed and whether the agent finished. Next: record its IDs and choices in INDEX, then the twentieth review (scope since `a365aa5`, with its own model), then PR #3 to the owner if clean.
 - **Next free IDs:** R-1294, T-0330.
 - Step 55's open items, reviews and designs: `reviews/step-55-open-items.md`, `reviews/step-55-review.md` and `-review-2.md` to `-review-12.md`, `reviews/stale-statement-design.md`.
 
@@ -16,7 +16,7 @@ Read this first when resuming. It's what the coordinating session needs that isn
 1. Read `plan-approved/INDEX.md` ("The coordinating session" and "Decisions since the split") and this file. Stay thin: don't read code or the frozen plan.
 2. Set the wake-up again with `CronCreate`: cron `13,43 * * * *`, recurring, prompt as in `coordinator-briefs.md`. A restart removes it, and it expires after 7 days anyway. The current one (`ca486a50`, set 2026-11-19) expires about 2026-11-26.
 3. Check what landed: `gh pr view 3`, `git log origin/step-55-enum-proofs`, and `git log origin/main -- plans/reviews/`. Commits are the truth; unpushed agent work is lost in a crash.
-4. Background agents don't survive a restart. The consolidated design is complete on `main`; the owner has answered MA to ME; if the fix agent's commit isn't on PR #3, start a fresh one as `briefs/stale-session-state-machine.md`'s last section says, adding the settings-template requirement from INDEX's MA to ME entry.
+4. Background agents don't survive a restart. Restart whatever the "Where things stand" line names as running, from its brief in `briefs/` (or the matching template in `coordinator-briefs.md`), after checking its old worktree for uncommitted work.
 5. Remove stale agent worktrees under `.claude/worktrees/` only after checking each has no uncommitted or unpushed work.
 
 ## The review loop (how step PRs go)
@@ -29,7 +29,7 @@ Read this first when resuming. It's what the coordinating session needs that isn
 
 ## What comes next
 
-1. Step 55: act on the fourteenth review, repeat until clean, then PR #3 to the owner.
+1. Step 55: finish the B4 fix round, then the twentieth review, repeat until clean, then PR #3 to the owner.
 2. Step 03 (freeze the contracts) depends on 55. Then follow the order in `INDEX.md`.
 
 ## Rules that hold for every agent
