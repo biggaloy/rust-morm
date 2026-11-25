@@ -1,0 +1,20 @@
+round robin 0
+17.11
+   alone, the same client connection reaches server 1 session(s) in 20 transactions
+   alone: first call 22P02 ; run again on the same client connection ['22P02', '22P02', '22P02', '22P02', '22P02']
+   with 3 other clients busy: 153 stale first runs of 400; the run again on the same client connection answered 139 times, failed 14
+round robin 1
+17.11
+   alone, the same client connection reaches server 1 session(s) in 20 transactions
+   alone: first call 22P02 ; run again on the same client connection ['22P02', '22P02', '22P02', '22P02', '22P02']
+   with 3 other clients busy: 160 stale first runs of 400; the run again on the same client connection answered 155 times, failed 5
+round robin 0
+18.6
+   alone, the same client connection reaches server 1 session(s) in 20 transactions
+   alone: first call 22P02 ; run again on the same client connection ['22P02', '22P02', '22P02', '22P02', '22P02']
+   with 3 other clients busy: 158 stale first runs of 400; the run again on the same client connection answered 152 times, failed 6
+round robin 1
+18.6
+   alone, the same client connection reaches server 1 session(s) in 20 transactions
+   alone: first call 22P02 ; run again on the same client connection ['22P02', '22P02', '22P02', '22P02', '22P02']
+   with 3 other clients busy: 169 stale first runs of 400; the run again on the same client connection answered 157 times, failed 12

@@ -13,21 +13,24 @@ pub fn draw(s: &mut Sim) -> Spec {
     let k = match s.c.only {
         Some(x) => x,
         None => {
-            let n = s.rng.n(6) as u8;
-            if n == H && s.c.both_stmt { BOTH } else if n == COL && s.c.trig { TRIG } else { n }
+            let k = 6 + s.c.both_stmt as u64 + s.c.trig as u64;
+            let n = s.rng.n(k) as u8;
+            if n == 6 && !s.c.both_stmt { TRIG } else { n }
         }
     };
     let val = s.rng.n(8) as u8;
     let u = s.rng.f();
     let label = if !s.c.client {
-        if u < 0.78 { Label::Shared } else { Label::Newest }
+        if u < 0.78 { Label::Shared } else if u < 0.95 { Label::Newest } else { Label::NewName }
     } else if u < 0.70 {
         Label::Shared
-    } else if u < 0.90 {
+    } else if u < 0.85 {
         Label::Newest
+    } else if u < 0.90 {
+        Label::NewName
     } else if u < 0.95 {
         Label::Bad
-    } else if s.c.retired_real && s.rng.p(0.5) {
+    } else if (s.c.retired_real || s.c.fault == 40) && s.rng.p(0.5) {
         Label::RetReal
     } else {
         Label::RetX
@@ -178,6 +181,8 @@ fn world(s: &mut Sim) {
                 s.db.last_change = now;
                 if !s.c.noreset {
                     s.db.resets += 1;
+                } else {
+                    s.noreset_at.insert(i as u32, now);
                 }
                 s.inc("hand relabels");
             }
@@ -281,6 +286,13 @@ pub fn end_checks(s: &mut Sim) {
         }
         for (k, a, b) in bad {
             s.fail(k, format!("{} {}", a, b));
+        }
+        // I12
+        if p == 0 {
+            let left = s.tasks.iter().filter(|t| t.is_some()).count();
+            if left > 0 {
+                s.fail("I12 a call that never ends", format!("{}", left));
+            }
         }
         // I4
         let max = s.c.max as u32;

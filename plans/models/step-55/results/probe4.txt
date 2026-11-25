@@ -1,0 +1,24 @@
+17.11
+a rename with no reset, and the reset run later, alone
+   no reset
+   cached cast, 'a': 22P02 enum_in invalid input value for enum _morm_retired_byhand_st: "a"
+   cached cast, 'c': 22P02 enum_in invalid input value for enum _morm_retired_byhand_st: "c"
+   cached constant: ok '_morm_retired_7c1e9a04b52fd386_a'
+   function with a constant: ok '_morm_retired_7c1e9a04b52fd386_a'
+   after the reset alone
+   cached cast, 'a': ok 'a'
+   cached cast, 'c': ok 'c'
+   cached constant: ok 'a'
+   function with a constant: 22P02 enum_in invalid input value for enum _morm_retired_byhand_st: "a"
+18.6
+a rename with no reset, and the reset run later, alone
+   no reset
+   cached cast, 'a': 22P02 enum_in invalid input value for enum _morm_retired_byhand_st: "a"
+   cached cast, 'c': 22P02 enum_in invalid input value for enum _morm_retired_byhand_st: "c"
+   cached constant: ok '_morm_retired_7c1e9a04b52fd386_a'
+   function with a constant: ok '_morm_retired_7c1e9a04b52fd386_a'
+   after the reset alone
+   cached cast, 'a': ok 'a'
+   cached cast, 'c': ok 'c'
+   cached constant: ok 'a'
+   function with a constant: 22P02 enum_in invalid input value for enum _morm_retired_byhand_st: "a"

@@ -5,6 +5,10 @@ use crate::core::*;
 use crate::machine::*;
 
 pub async fn checkout(p: usize, _other: bool) -> Conn {
+    checkout_but(p, 0, false).await
+}
+// a checkout that takes a connection other than `own` when one is idle; `holding`: its call keeps one meanwhile
+pub async fn checkout_but(p: usize, own: u64, holding: bool) -> Conn {
     let mut conn;
     loop {
         let (idle, can) = {
@@ -13,7 +17,12 @@ pub async fn checkout(p: usize, _other: bool) -> Conn {
         };
         if idle > 0 {
             let s = w();
-            let k = s.rng.n(idle as u64) as usize;
+            let mut k = s.rng.n(idle as u64) as usize;
+            if s.pools[p].idle[k].id == own && idle > 1 && s.c.fault == 44 {
+                s.fail("I12 its own connection again, with another idle", String::new());
+            } else if s.pools[p].idle[k].id == own && idle > 1 {
+                k = (k + 1) % idle;
+            }
             conn = s.pools[p].idle.swap_remove(k);
             break;
         }
@@ -30,6 +39,9 @@ pub async fn checkout(p: usize, _other: bool) -> Conn {
                     continue;
                 }
             }
+        }
+        if holding {
+            w().fail("I12 a call waits for a connection while it holds one", String::new());
         }
         if w().pools[p].slots < w().c.max {
             // the budget is full for the moment: an extra is open
@@ -113,6 +125,9 @@ pub async fn machine_checkout(p: usize, conn: &mut Conn) {
                     // the slot stays this call's; the pool's backoff
                     loop {
                         sleep(20 * MS).await;
+                        if w().pools[p].open >= w().c.budget {
+                            continue;
+                        }
                         if let Ok(o) = open_try(p).await {
                             *conn = mk_conn(p, o);
                             break;
@@ -167,7 +182,7 @@ fn bound_lit(s: &Sim) -> u64 {
 }
 fn loud_lit(s: &Sim, sp: &Spec, o: &Out, v: u32) -> bool {
     let since = s.db.types[v as usize].1;
-    let newlab = matches!(sp.label, Label::New(x) if x > v && x <= s.cur_ver()) || sp.label == Label::Newest;
+    let newlab = matches!(sp.label, Label::New(x) if x > v && x <= s.cur_ver()) || matches!(sp.label, Label::Newest | Label::NewName);
     matches!(o.cause, Cause::Kept(_)) && o.comp.is_some_and(|c| c.at <= since) && matches!(sp.stmt, F | TRIG) && newlab && o.sess_opened <= since
 }
 
@@ -233,11 +248,51 @@ pub fn check_pg(p: usize, cx: &Cx, sp: &Spec, o: &Out, at: At) {
         }
     }
     match o.cause {
-        Cause::Stmt(_) if vis => match at {
-            At::Out | At::Held => s.fail("I7 outside a transaction", d),
-            At::HeldApp => s.inc("stale statement's error in the app's transaction"),
-            _ => s.fail("I7 in a transaction, as it is", d),
-        },
+        Cause::Stmt(_) if vis => {
+            // the case given up: a kept type renamed by hand without the reset
+            if let Err::P22 { named: Named::Ret(v), .. } = err {
+                if let Some(t0) = s.noreset_at.get(&v).copied() {
+                    s.inc("a stale cast over a type renamed without the reset, visible");
+                    if !pooled {
+                        if cx.ptest {
+                            return;
+                        }
+                        if !notold && now >= s.db.last_refusal_end + wd {
+                            s.fail("R-1271 given up, not judged not old", d.clone());
+                        }
+                        if now >= t0 + wd && now >= s.db.last_refusal_end + wd && now >= s.db.refused_until {
+                            s.fail("R-1271 given up, from t0+W on", d);
+                        }
+                    } else {
+                        match at {
+                            At::Out | At::Held => s.inc("given up, pooled, outside a transaction"),
+                            At::Tx { retry: 0 } | At::Sp { retry: 0 } => s.inc("given up, pooled, in a transaction with no retry"),
+                            _ => s.inc("given up, pooled, in a transaction under retry"),
+                        }
+                        let b = cx.att.min(cx.started);
+                        if (s.db.last_reconnect > t0 && b > s.db.last_reconnect) || b > t0 + 4 * S {
+                            s.fail("R-1271 given up, pooled, after RECONNECT or server_lifetime", d.clone());
+                        }
+                        if !cx.cool {
+                            s.fail("R-1271 given up, pooled, not from the cool-down", d);
+                        }
+                    }
+                    return;
+                }
+            }
+            match at {
+                At::Out | At::Held => s.fail("I7 outside a transaction", d),
+                At::HeldApp => {
+                    s.inc("stale statement's error in the app's transaction");
+                    if let Some(id) = o.copy {
+                        if !s.app_copy.insert(id) {
+                            s.fail("I7 held, a stale copy failing twice", d);
+                        }
+                    }
+                }
+                _ => s.fail("I7 in a transaction, as it is", d),
+            }
+        }
         Cause::Path if vis => match at {
             At::Out | At::Held => s.fail("I8 search_path visible outside", d),
             At::HeldApp => s.inc("search_path's 0A000 in the app's transaction"),
@@ -246,6 +301,9 @@ pub fn check_pg(p: usize, cx: &Cx, sp: &Spec, o: &Out, at: At) {
         Cause::Sess(t0) => {
             if pooled {
                 if vis {
+                    if matches!(at, At::Out) && !cx.cool && !cx.other && !cx.ptest {
+                        s.fail("I8 pooled, outside a transaction, as it is with no cool-down and no retry", d.clone());
+                    }
                     s.inc("stale sessions' errors as they are, pooled");
                     if s.db.last_reconnect > t0 && now > s.db.last_reconnect {
                         s.fail("lit I8 never visible after RECONNECT", d.clone());
@@ -347,12 +405,19 @@ pub fn check_ok(p: usize, cx: &Cx, sp: &Spec, o: &Out, _at: At) {
     let (st, since, left) = s.db.types[v as usize];
     // judged at the run's own instant: a change since can't have helped it
     let at = if sp.stmt == CAST { o.copy_at } else { o.comp.map_or(0, |c| c.at) };
-    let d = format!("t={} stmt={} ver={} state={:?} label={:?}", s.now, sp.stmt, v, st, sp.label);
+    let d = format!("t={} run={} since={} left={} at={} stmt={} ver={} state={:?} label={:?}", s.now, o.t, since, left, at, sp.stmt, v, st, sp.label);
     if st == TS::Retired && matches!(sp.label, Label::RetReal) {
-        s.fail("R-1271 a third silent case: a relabelled type's own label", d);
+        // only text copied from the retired type's own labels, through plpgsql compiled before the relabel
+        if !s.c.retired_real || s.c.fault == 40 {
+            s.fail("I9 a renamed label guessed", d);
+        } else if !o.comp.is_some_and(|c| c.at <= since) {
+            s.fail("I9 a copied label, not plpgsql compiled before the relabel", d);
+        } else {
+            s.inc("copied labels taken");
+        }
         return;
     }
-    if !(left <= o.t && at <= left && (st == TS::Kept || since > o.t)) {
+    if !(left <= o.t && at <= left && (st == TS::Kept || since >= o.t)) {
         s.fail("I9 silent", d);
         return;
     }
@@ -381,6 +446,9 @@ pub fn check_sc(p: usize, cx: &Cx, sp: &Spec, o: &Out, at: At, conn: u64) {
     let now = s.now;
     let d = format!("t={} stmt={} {:?} {:?}", now, sp.stmt, o.cause, at);
     let retry0 = matches!(at, At::Tx { retry: 0 } | At::Sp { retry: 0 });
+    if matches!(o.r, Err(Err::P22 { named: Named::Cur, .. })) && matches!(sp.stmt, CAST | TRIG) && o.comp.is_none() {
+        s.fail("I14 an error that names the cast's own type taken for a stale statement", d.clone());
+    }
     match o.cause {
         Cause::Sess(t0) => {
             if !s.c.pooled && retry0 && now >= bound_lit(s) {
@@ -457,9 +525,12 @@ pub async fn call_out(p: usize, sp: Spec) {
         sleep(g).await;
     }
     let r = run_call(p, &mut conn, &mut cx, &sp).await;
+    if cx.runs > 3 {
+        w().fail("R-1271 more than three runs of a call", String::new());
+    }
     if cx.reads > 1 {
         w().inc("calls outside with two reads");
-        if !cx.confirm_run {
+        if !cx.confirm_run && !cx.fresh_sess {
             w().fail("R-1271 more than one catalog read", String::new());
         }
         if cx.reads > 2 {

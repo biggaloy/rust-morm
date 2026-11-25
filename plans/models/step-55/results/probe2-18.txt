@@ -1,0 +1,118 @@
+18.6
+1. the cutover's labels with a random part
+   A, compiled before: f('a'): ok 'a'
+   A, compiled before: k(): ok 'a'
+   A, compiled before: less: ok True
+   A, stale, f('a'): 22P02 enum_in invalid input value for enum _morm_retired_m2_st: "a"
+   B, new session, f('a'): ok 'a'
+   A, stale, f('c'): 22P02 enum_in invalid input value for enum _morm_retired_m2_st: "c"
+   B, new session, f('c'): ok 'c'
+   A, stale, f('_morm_retired_a'): 22P02 enum_in invalid input value for enum _morm_retired_m2_st: "_morm_retired_a"
+   B, new session, f('_morm_retired_a'): 22P02 enum_in invalid input value for enum st: "_morm_retired_a"
+   A, stale, f('_morm_retired_7c1e9a04b52fd386_a'): ok '_morm_retired_7c1e9a04b52fd386_a'
+   B, new session, f('_morm_retired_7c1e9a04b52fd386_a'): 22P02 enum_in invalid input value for enum st: "_morm_retired_7c1e9a04b52fd386_a"
+   A, stale, k(), a constant: 22P02 enum_in invalid input value for enum _morm_retired_m2_st: "a"
+   A, stale, less('a','b'): 22P02 enum_in invalid input value for enum _morm_retired_m2_st: "a"
+   the retired column: ok '_morm_retired_7c1e9a04b52fd386_a,_morm_retired_7c1e9a04b52fd386_b'
+   A, stale, f of the retired column's own text: ok '_morm_retired_7c1e9a04b52fd386_a'
+   any role reads pg_enum: 42704 parseTypeString type "_morm_retired_m2_st" does not exist
+   down maps each label by the recorded part: ok 'a,b'
+2. 63 bytes
+   the prefix takes 31 bytes, leaving 32
+   a 32-byte label renamed with the whole prefix, 63 bytes: ok 'ALTER TYPE'
+   a 33-byte label renamed with the whole prefix, 64 bytes: 42602 RenameEnumLabel invalid enum label "_morm_retired_7c1e9a04b52fd386_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+DETAIL:  Labels must be 63 bytes or less.
+   a 63-byte label renamed with the whole prefix, 94 bytes: 42602 RenameEnumLabel invalid enum label "_morm_retired_7c1e9a04b52fd386_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+DETAIL:  Labels must be 63 bytes or less.
+   a 63-byte label through the name function -> '_morm_retired_7c1e9a04b52fd386_yyyyyyyyyyyyyyyyyyyyyyy_07b50b98': ok 'ALTER TYPE'
+   a 63-byte label through the name function -> '_morm_retired_7c1e9a04b52fd386_yyyyyyyyyyyyyyyyyyyyyyy_12cce6ed': ok 'ALTER TYPE'
+   both: ok 2
+   a 64-byte label in CREATE TYPE: 42602 EnumValuesCreate invalid enum label "zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz"
+DETAIL:  Labels must be 63 bytes or less.
+   two labels renamed to one: 42710 RenameEnumLabel enum label "_morm_retired_7c1e9a04b52fd386_yyyyyyyyyyyyyyyyyyyyyyy_12cce6ed" already exists
+3. how the message prints the type's name and the value
+   type 'st', kept as 'st_old', cached cast of 'c': 22P02 enum_in invalid input value for enum st_old: "c"
+   type 'st', kept as 'st old', cached cast of 'c': 22P02 enum_in invalid input value for enum "st old": "c"
+   type 'st', kept as 'my st old', cached cast of 'c': 22P02 enum_in invalid input value for enum "my st old": "c"
+   type 'st', kept as 'St', cached cast of 'c': 22P02 enum_in invalid input value for enum "St": "c"
+   type 'st', kept as 'st"x', cached cast of 'c': 22P02 enum_in invalid input value for enum "st""x": "c"
+   type 'value', kept as 'value_old', cached cast of 'c': 22P02 enum_in invalid input value for enum value_old: "c"
+   type 'enum', kept as 'enum_old', cached cast of 'c': 22P02 enum_in invalid input value for enum enum_old: "c"
+   type 'input', kept as 'input_old', cached cast of 'c': 22P02 enum_in invalid input value for enum input_old: "c"
+   type 'for', kept as 'for_old', cached cast of 'c': 22P02 enum_in invalid input value for enum for_old: "c"
+   type '名', kept as '名old', cached cast of 'c': 22P02 enum_in invalid input value for enum "名old": "c"
+   kept by SET SCHEMA old, cached cast of 'c': 22P02 enum_in invalid input value for enum old.st: "c"
+   a bad label, the type in a schema off the search_path: 22P02 enum_in invalid input value for enum old.st: "zzz"
+4. the value as the input function got it: scalar, list, composite, domain
+   scalar 'in st': 22P02 enum_in invalid input value for enum st: "in st"
+   list ['a', 'in st']: 22P02 enum_in invalid input value for enum st: "in st"
+   composite field 'in st', bound as (1,"in st",): 22P02 enum_in invalid input value for enum st: "in st"
+   list in a composite 'in st': 22P02 enum_in invalid input value for enum st: "in st"
+   domain 'in st': 22P02 enum_in invalid input value for enum st: "in st"
+   scalar 'x "st"': 22P02 enum_in invalid input value for enum st: "x "st""
+   list ['a', 'x "st"']: 22P02 enum_in invalid input value for enum st: "x "st""
+   composite field 'x "st"', bound as (1,"x ""st""",): 22P02 enum_in invalid input value for enum st: "x "st""
+   list in a composite 'x "st"': 22P02 enum_in invalid input value for enum st: "x "st""
+   domain 'x "st"': 22P02 enum_in invalid input value for enum st: "x "st""
+   scalar 'a\\b, (st)': 22P02 enum_in invalid input value for enum st: "a\b, (st)"
+   list ['a', 'a\\b, (st)']: 22P02 enum_in invalid input value for enum st: "a\b, (st)"
+   composite field 'a\\b, (st)', bound as (1,"a\\b, (st)",): 22P02 enum_in invalid input value for enum st: "a\b, (st)"
+   list in a composite 'a\\b, (st)': 22P02 enum_in invalid input value for enum st: "a\b, (st)"
+   domain 'a\\b, (st)': 22P02 enum_in invalid input value for enum st: "a\b, (st)"
+   scalar '': 22P02 enum_in invalid input value for enum st: ""
+   list ['a', '']: 22P02 enum_in invalid input value for enum st: ""
+   composite field '', bound as (1,"",): 22P02 enum_in invalid input value for enum st: ""
+   list in a composite '': 22P02 enum_in invalid input value for enum st: ""
+   domain '': 22P02 enum_in invalid input value for enum st: ""
+   scalar 'st: "bad': 22P02 enum_in invalid input value for enum st: "st: "bad"
+   list ['a', 'st: "bad']: 22P02 enum_in invalid input value for enum st: "st: "bad"
+   composite field 'st: "bad', bound as (1,"st: ""bad",): 22P02 enum_in invalid input value for enum st: "st: "bad"
+   list in a composite 'st: "bad': 22P02 enum_in invalid input value for enum st: "st: "bad"
+   domain 'st: "bad': 22P02 enum_in invalid input value for enum st: "st: "bad"
+   scalar '»st«': 22P02 enum_in invalid input value for enum st: "»st«"
+   list ['a', '»st«']: 22P02 enum_in invalid input value for enum st: "»st«"
+   composite field '»st«', bound as (1,"»st«",): 22P02 enum_in invalid input value for enum st: "»st«"
+   list in a composite '»st«': 22P02 enum_in invalid input value for enum st: "»st«"
+   domain '»st«': 22P02 enum_in invalid input value for enum st: "»st«"
+   scalar 'é st': 22P02 enum_in invalid input value for enum st: "é st"
+   list ['a', 'é st']: 22P02 enum_in invalid input value for enum st: "é st"
+   composite field 'é st', bound as (1,"é st",): 22P02 enum_in invalid input value for enum st: "é st"
+   list in a composite 'é st': 22P02 enum_in invalid input value for enum st: "é st"
+   domain 'é st': 22P02 enum_in invalid input value for enum st: "é st"
+5. a cached cast of stored text, the value not bound by the call
+   cached on st: ok <Record c='a' text='a'>
+   cached, kept type, stored 'in st': 22P02 enum_in invalid input value for enum kept: "in st"
+   fresh: ok <Record c='in st' text='a'>
+6. real messages in other languages
+   C: 22P02 enum_in invalid input value for enum st: "in st"
+   de_DE.utf8: 22P02 enum_in ungültiger Eingabewert für Enum st: »in st«
+   es_ES.utf8: 22P02 enum_in la sintaxis de entrada no es válida para el enum st: «in st»
+   fr_FR.utf8: 22P02 enum_in valeur en entrée invalide pour le enum st : « in st »
+   it_IT.utf8: 22P02 enum_in la sintassi per l'enumerazione st non è valida: "in st"
+   ja_JP.utf8: 22P02 enum_in 列挙型stの不正な入力構文: "in st"
+   ka_GE.utf8: 22P02 enum_in არასწორი შეყვანილი მნიშვნელობა ჩამონათვალისთვის st: "in st"
+   ko_KR.utf8: 22P02 enum_in st 열거형의 입력 값이 잘못됨: "in st"
+   pl_PL.utf8: 22P02 enum_in nieprawidłowa wartość wejścia dla enumeracji st: "in st"
+   ru_RU.utf8: 22P02 enum_in неверное значение для перечисления st: "in st"
+   sv_SE.utf8: 22P02 enum_in ogiltigt indata-värde för enum st: "in st"
+   tr_TR.utf8: 22P02 enum_in st enum tipi için geçersiz değer: "in st"
+   uk_UA.utf8: 22P02 enum_in неприпустиме вхідне значення для переліку st: "in st"
+7. a kept type renamed by hand with a random part, with the reset and without, a cast cached before
+   with the reset
+   the cached cast, 'c': ok 'c'
+   the cached cast, 'a': ok 'a'
+   the function, 'a': 22P02 enum_in invalid input value for enum _morm_retired_byhand_st: "a"
+   the function, '_morm_retired_a': 22P02 enum_in invalid input value for enum _morm_retired_byhand_st: "_morm_retired_a"
+   a new session, the cast, 'c': ok 'c'
+   without the reset
+   the cached cast, 'c': 22P02 enum_in invalid input value for enum _morm_retired_byhand_st: "c"
+   the cached cast, 'a': 22P02 enum_in invalid input value for enum _morm_retired_byhand_st: "a"
+   the function, 'a': 22P02 enum_in invalid input value for enum _morm_retired_byhand_st: "a"
+   the function, '_morm_retired_a': 22P02 enum_in invalid input value for enum _morm_retired_byhand_st: "_morm_retired_a"
+   a new session, the cast, 'c': ok 'c'
+   16 hex digits from md5(gen_random_uuid()): 16
+8. a fresh run that ends in a session-class error whatever the first was
+   cached cast and function: ok <Record text='a' g='x'>
+   cached, 'c': the cast's: 22P02 enum_in invalid input value for enum kept: "c"
+   fresh, 'c': the function's: 42804 plpgsql_param_eval_recfield type of parameter 4 (bigint) does not match that when preparing the plan (integer)
+   new session, 'c': ok <Record text='c' g='x'>

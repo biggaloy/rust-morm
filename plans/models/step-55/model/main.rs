@@ -31,6 +31,14 @@ fn settings(pooled: bool) -> Vec<Cfg> {
         Cfg { name: "slow", gap: 800_000.0, world: 0.2, mix: [1., 0., 0., 0., 4., 0., 0., 0., 0.], mig_refresh: 0.0, ..b() },
         Cfg { name: "transactions without retry", tx: 0.8, retry0: true, held: 0.0, ..b() },
     ];
+    v.push(Cfg { name: "max 1", max: 1, budget: 2, ..b() });
+    v.push(Cfg { name: "max 1, budget 1", max: 1, budget: 1, ..b() });
+    v.push(Cfg { name: "max 1, quick", max: 1, budget: 2, gap: 60_000.0, ..b() });
+    v.push(Cfg { name: "max 2, budget 2, heavy", max: 2, budget: 2, world: 0.15, ..b() });
+    v.push(Cfg { name: "hand relabels without the reset", mix: [2., 1., 1., 4., 1., 1., 2., 1., 4.], noreset: true, ..b() });
+    v.push(Cfg { name: "hand relabels without the reset, casts", only: Some(CAST), world: 0.03, mix: [0., 0., 0., 4., 0., 0., 0., 0., 4.], noreset: true, ..b() });
+    v.push(Cfg { name: "old labels copied", retired_real: true, ..b() });
+    v.push(Cfg { name: "record and column statements", both_stmt: true, trig: false, ..b() });
     if pooled {
         v.push(Cfg { name: "two processes", procs: 2, ..b() });
         v.push(Cfg { name: "three processes, heavy", procs: 3, world: 0.15, ..b() });
@@ -60,7 +68,8 @@ fn fault_setting(f: u32, pooled: bool) -> Cfg {
         14 => Cfg { name: "f14", servers: 2, several: true, ..b() },
         15 => Cfg { name: "f15", rr: 1.0, tx: 0.6, two: 1.0, gap2: 300 * MS, gap: 30_000.0, world: 0.3, mix: [3., 0., 0., 3.5, 3.5, 0., 0., 0., 0.], one_value: true, ..b() },
         16 => Cfg { name: "f16", tx: 0.9, two: 1.0, gap2: 300 * MS, sp: 1.0, gap: 40_000.0, world: 0.2, held: 0.05, ..b() },
-        17 => Cfg { name: "f17", gap: 30_000.0, held: 0.4, held_app: 1.0, held_two: 1.0, held_gap: 300 * MS, tx: 0.36, two: 1.0, gap2: 300 * MS, rr: 1.0, world: 0.3, mix: [3., 0., 0., 3.5, 3.5, 0., 0., 0., 0.], one_value: true, ..b() },
+        17 => Cfg { name: "f17", only: Some(CAST), gap: 30_000.0, held: 0.4, held_app: 1.0, held_two: 1.0, held_gap: 300 * MS, tx: 0.36, two: 1.0, gap2: 300 * MS, rr: 1.0, world: 0.3, mix: [3., 0., 0., 3.5, 3.5, 0., 0., 0., 0.], one_value: true, ..b() },
+        18 => Cfg { name: "f18", splitgap: 20 * MS, ..b() },
         21 => Cfg { name: "f21", land: 1.0, ..b() },
         22 => Cfg { name: "f22", land: 1.0, tx: 0.9, two: 1.0, gap: 50_000.0, world: 0.2, mix: [0., 0., 0., 1., 1., 0., 0., 0., 0.], ..b() },
         23 => Cfg { name: "f23", lockwait: 20 * MS, tx: 0.0, held: 0.0, world: 0.2, mix: [0., 0., 1., 0., 1., 0., 0., 0., 0.], ..b() },
@@ -71,6 +80,9 @@ fn fault_setting(f: u32, pooled: bool) -> Cfg {
         29 => Cfg { name: "f29", two: 1.0, world: 0.2, ser: 0.25, retry2: true, ..b() },
         30 => Cfg { name: "f30", role_limit: 4, ..b() },
         31 => Cfg { name: "f31", tx: 0.6, two: 0.9, gap2: 300 * MS, sp: 0.9, gap: 80_000.0, world: 0.2, mix: [1., 0.5, 0.5, 0.5, 0.5, 0.25, 6., 0.25, 0.], ..b() },
+        34 => Cfg { name: "f34", held: 0.4, held_app: 1.0, held_rerun: 0.9, held_two: 1.0, held_gap: 300 * MS, gap: 40_000.0, ..b() },
+        36 => Cfg { name: "f36", only: Some(CAST), tx: 0.8, held: if pooled { 0. } else { 0.1 }, world: 0.1, mix: [1., 0., 0., 4., 0., 0., 0., 0., 0.], ..b() },
+        38 => Cfg { name: "f38", only: Some(TRIG), held: 0.4, held_app: 1.0, held_two: 1.0, held_gap: 300 * MS, gap: 40_000.0, mig_refresh: 0.0, world: 0.1, mix: [4., 0., 0., 0., 0., 0., 0., 0., 0.], ..b() },
         132 => Cfg { name: "f132", long: 1.0, gap: 120_000.0, ..b() },
         _ => Cfg { name: "defaults", ..b() },
     }
@@ -133,10 +145,10 @@ fn main() {
         return;
     }
     if which == "faults" {
-        let pl = [1, 6, 7, 8, 9, 10, 14, 20, 22, 23, 25, 26, 27, 28, 29, 33];
-        for f in (0..34u32).chain([132]) {
+        let pl = [1, 6, 7, 8, 9, 10, 14, 20, 22, 23, 25, 26, 27, 28, 29, 33, 35, 36, 37, 38, 39, 40];
+        for f in (0..41u32).chain([132]) {
             for pooled in [false, true] {
-                if (pooled && !pl.contains(&f)) || (!pooled && [22, 23, 26, 27].contains(&f)) || f == 0 {
+                if (pooled && !pl.contains(&f)) || (!pooled && [22, 23, 26, 27, 35].contains(&f)) || f == 0 {
                     continue;
                 }
                 let mut c = fault_setting(f, pooled);
@@ -159,15 +171,14 @@ fn main() {
                 continue;
             }
             c.fault = fault;
-            for f in ["row7", "noreset", "a1s", "real", "trig", "both"] {
+            for f in ["noreset", "real", "notrig", "noboth", "pooled2"] {
                 if std::env::var("OPT").is_ok_and(|o| o.split(',').any(|x| x == f)) {
                     match f {
-                        "row7" => c.row7_first = true,
-                        "a1s" => c.a1_session = true,
-                        "real" => c.retired_real = true,
-                        "trig" => c.trig = true,
                         "noreset" => c.noreset = true,
-                        _ => c.both_stmt = true,
+                        "real" => c.retired_real = true,
+                        "pooled2" => c.pooled2 = pooled,
+                        "notrig" => c.trig = false,
+                        _ => c.both_stmt = false,
                     }
                 }
             }

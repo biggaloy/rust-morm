@@ -1,0 +1,20 @@
+REL_15_STABLE 12 de es fr it ja ka ko ru sv uk zh_CN zh_TW
+REL_16_STABLE 16 de es fr id it ja ka ko pl pt_BR ru sv tr uk zh_CN zh_TW
+REL_17_STABLE 16 de es fr id it ja ka ko pl pt_BR ru sv tr uk zh_CN zh_TW
+REL_18_STABLE 16 de es fr id it ja ka ko pl pt_BR ru sv tr uk zh_CN zh_TW
+de 15-18 {'ungültiger Eingabewert für Enum %s: »%s«'} FITS
+es 15-18 {'la sintaxis de entrada no es válida para el enum %s: «%s»'} FITS
+fr 15-18 {'valeur en entrée invalide pour le enum %s : « %s »'} FITS
+id 15-18 {'nilai masukan tidak valid untuk enum %s : « %s »'} FITS
+it 15-18 {'la sintassi per l\'enumerazione %s non è valida: \\"%s\\"'} FITS
+ja 15-18 {'列挙型%sの不正な入力構文: \\"%s\\"'} FITS
+ka 15-18 {'არასწორი შეყვანილი მნიშვნელობა ჩამონათვალისთვის %s: \\"%s\\"'} FITS
+ko 15-18 {'%s 열거형의 입력 값이 잘못됨: \\"%s\\"'} FITS
+pl 15-18 {'nieprawidłowa wartość wejścia dla enumeracji %s: \\"%s\\"'} FITS
+pt_BR 15-18 {'valor de entrada é inválido para enum %s: \\"%s\\"'} FITS
+ru 15-18 {'неверное значение для перечисления %s: \\"%s\\"'} FITS
+sv 15-18 {'ogiltigt indata-värde för enum %s: \\"%s\\"'} FITS
+tr 15-18 {'%s enum tipi için geçersiz değer: \\"%s\\"'} FITS
+uk 15-18 {'неприпустиме вхідне значення для переліку %s: \\"%s\\"'} FITS
+zh_CN 15-18 {'枚举 %s 的输入值无效: \\"%s\\"'} FITS
+zh_TW 15-18 {'列舉 %s 的輸入值無效: \\"%s\\"'} FITS

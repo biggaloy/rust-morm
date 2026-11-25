@@ -139,8 +139,9 @@ pub struct Cfg {
     pub both_stmt: bool,
     pub trig: bool,
     pub noreset: bool,
-    pub row7_first: bool,
-    pub a1_session: bool,
+    pub splitgap: u64,
+    pub pooled2: bool,
+    pub wait_at: u64,
     pub fault: u32,
     pub readfail: f64,
     pub proc_lag: bool,
@@ -193,11 +194,12 @@ impl Cfg {
             client: true,
             co_gap: 0,
             retired_real: false,
-            both_stmt: false,
-            trig: false,
+            both_stmt: true,
+            trig: true,
             noreset: false,
-            row7_first: false,
-            a1_session: false,
+            splitgap: 500,
+            pooled2: false,
+            wait_at: 0,
             fault: 0,
             readfail: 0.01,
             proc_lag: false,
@@ -219,6 +221,7 @@ pub enum Label {
     Shared,
     New(u32),
     Newest,
+    NewName, // as Newest, its text holding the type's name
     Bad,
     RetX,
     RetReal,
@@ -234,7 +237,7 @@ pub enum Err {
     A0,
     XX,
     D42804,
-    P22 { named: Named, ret: bool },
+    P22 { named: Named, ret: bool, nm: bool },
     T57,
     S40,
     F25,
@@ -310,6 +313,7 @@ pub struct Sess {
     pub f: Option<Comp>,
     pub s: Option<Comp>,
     pub h: Option<(u8, u32, u32, u64)>,
+    pub b: Option<(u32, u32)>,
     pub copies: Vec<(Text, Copy)>,
 }
 #[derive(Clone, Debug)]
@@ -355,6 +359,7 @@ pub struct Entry {
     pub bytes: Option<(u8, Label)>,
     pub err: u8,
     pub marked: bool,
+    pub xx: bool,
     pub replace: bool,
     pub expiry: u64,
     pub id: u64,
@@ -466,6 +471,8 @@ pub struct Sim {
     pub cnt: BTreeMap<&'static str, u64>,
     pub seen_copy: HashSet<u64>,
     pub sc_copy: HashSet<u64>,
+    pub app_copy: HashSet<u64>,
+    pub noreset_at: HashMap<u32, u64>,
     pub connfail: HashMap<u64, u32>,
 }
 
@@ -503,6 +510,8 @@ impl Sim {
             cnt: BTreeMap::new(),
             seen_copy: HashSet::new(),
             sc_copy: HashSet::new(),
+            app_copy: HashSet::new(),
+            noreset_at: HashMap::new(),
             connfail: HashMap::new(),
         });
         s.db.replay = (0..c.servers).map(|_| vec![(0, 1)]).collect();
@@ -523,7 +532,7 @@ impl Sim {
     }
     pub fn new_sess(&mut self) -> usize {
         let o = self.now;
-        self.sess.push(Sess { opened: o, f: None, s: None, h: None, copies: vec![] });
+        self.sess.push(Sess { opened: o, f: None, s: None, h: None, b: None, copies: vec![] });
         self.sess.len() - 1
     }
     pub fn fail(&mut self, k: &'static str, m: String) {
@@ -566,10 +575,10 @@ impl Sim {
             (TS::Retired, _) => false,
             (_, Label::Shared) => true,
             (_, Label::New(x)) => x <= v,
-            (_, Label::Newest) => v == self.cur_ver(),
+            (_, Label::Newest | Label::NewName) => v == self.cur_ver(),
             _ => false,
         };
-        if has { Ok(v) } else { Err(Err::P22 { named, ret: ret || matches!(named, Named::Ret(_)) }) }
+        if has { Ok(v) } else { Err(Err::P22 { named, ret: ret || matches!(named, Named::Ret(_)), nm: l == Label::NewName }) }
     }
     pub fn stored(&self) -> Label {
         if self.db.stored_bad { Label::RetX } else { Label::Shared }
@@ -588,7 +597,8 @@ impl Sim {
         match slot {
             Some(c) if c.refresh == rf => *c,
             _ => {
-                let c = Comp { ver: cur, refresh: rf, at: now };
+                let v = if self.c.fault == 41 { self.db.types.iter().rposition(|t| t.0 == TS::Retired).map_or(cur, |x| x as u32) } else { cur };
+                let c = Comp { ver: v, refresh: rf, at: now };
                 *slot = Some(c);
                 c
             }
@@ -670,11 +680,11 @@ impl Sim {
                     Some(x) => (Err(Err::A0), x),
                     None if sp.stmt == BOTH => {
                         let (cv, rf) = (self.db.col, self.db.refresh);
-                        match self.sess[sid].h {
-                            Some((_, c, r, _)) if r == rf && c != cv => (Err(Err::D42804), Cause::Sess(self.db.colhist[(c + 1) as usize])),
-                            Some((_, _, r, _)) if r == rf => (Ok(0), Cause::None),
+                        match self.sess[sid].b {
+                            Some((c, r)) if r == rf && c != cv => (Err(Err::D42804), Cause::Sess(self.db.colhist[(c + 1) as usize])),
+                            Some((_, r)) if r == rf => (Ok(0), Cause::None),
                             _ => {
-                                self.sess[sid].h = Some((0, cv, rf, now));
+                                self.sess[sid].b = Some((cv, rf));
                                 (Ok(0), Cause::None)
                             }
                         }

@@ -1,0 +1,82 @@
+-- break 101 [straight] defaults
+   FAIL   13/256 I7 held, a stale copy failing twice
+   FAIL   94/256 I7 in a transaction, as it is
+   FAIL  112/256 I7 outside a transaction
+   FAIL  174/256 I8 search_path as it is in a transaction
+   FAIL  101/256 I8 search_path visible outside
+-- break 102 [straight] defaults
+   FAIL  254/256 R-1271 before t0+W, not judged not old
+   FAIL    1/256 R-1271 from t0+W on
+   FAIL  189/256 new I8 held, before then
+-- break 103 [straight] defaults
+   FAIL  158/256 I7 held, a stale copy failing twice
+   FAIL  256/256 I7 outside a transaction
+   FAIL    1/256 I8 outside a transaction
+   FAIL  256/256 I8 search_path visible outside
+   FAIL  253/256 R-1271 before t0+W, not judged not old
+   FAIL    1/256 R-1271 from t0+W on
+   FAIL  186/256 new I8 held, before then
+   FAIL  182/256 new I9 loud half
+-- break 107 [straight] defaults
+   FAIL  256/256 I8 pending run cached
+   FAIL  243/256 new I8 a failure begun while its entry exists
+-- break 42 [straight] defaults
+   FAIL  180/256 I13 a confirming run that ends in another error doesn't confirm
+-- break 43 [straight] defaults
+   FAIL  253/256 I14 an error that names the cast's own type taken for a stale statement
+-- break 45 [straight] defaults
+   FAIL  256/256 R-1271 more than one catalog read
+   FAIL  256/256 R-1271 more than one catalog read in a transaction
+   FAIL  226/256 R-1271 more than two catalog reads
+-- break 101 [pooled] defaults
+   FAIL  181/256 I7 in a transaction, as it is
+   FAIL  208/256 I7 outside a transaction
+   FAIL  200/256 I8 search_path as it is in a transaction
+   FAIL  142/256 I8 search_path visible outside
+-- break 103 [pooled] defaults
+   FAIL  256/256 I7 outside a transaction
+   FAIL  256/256 I8 pooled, outside a transaction, as it is with no cool-down and no retry
+   FAIL  256/256 I8 search_path visible outside
+   FAIL  236/256 new I9 loud half
+-- break 105 [pooled] defaults
+   FAIL  247/256 new I8 never visible after RECONNECT
+-- break 106 [pooled] defaults
+   FAIL  254/256 new I8 never visible after RECONNECT
+   FAIL  251/256 new I8 never visible after server_lifetime
+-- break 107 [pooled] defaults
+   FAIL  256/256 I8 pending run cached
+   FAIL  256/256 new I8 a failure begun while its entry exists
+-- break 42 [pooled] defaults
+   FAIL  249/256 I13 a confirming run that ends in another error doesn't confirm
+-- break 43 [pooled] defaults
+   FAIL  254/256 I14 an error that names the cast's own type taken for a stale statement
+-- break 44 [pooled] defaults
+   FAIL  256/256 I12 its own connection again, with another idle
+-- break 46 [pooled] defaults
+   FAIL  256/256 R-1271 more than three runs of a call
+-- break 41 [straight] old labels copied
+   FAIL  256/256 I8 in a savepoint
+   FAIL  256/256 I8 in a transaction
+   FAIL  256/256 I8 outside a transaction
+   FAIL  256/256 I9 a copied label, not plpgsql compiled before the relabel
+   FAIL  256/256 R-1271 before t0+W, not judged not old
+   FAIL  256/256 R-1271 from t0+W on
+   FAIL  256/256 new I8 held, from then on
+-- break 41 [pooled] old labels copied
+   FAIL  256/256 I9 a copied label, not plpgsql compiled before the relabel
+   FAIL  226/256 new I8 never visible after server_lifetime
+-- break 4 [straight] hand relabels without the reset, casts
+   FAIL   32/256 R-1271 given up, from t0+W on
+-- break 5 [straight] hand relabels without the reset, casts
+   FAIL   74/256 R-1271 given up, from t0+W on
+   FAIL  136/256 R-1271 given up, not judged not old
+-- break 105 [pooled] hand relabels without the reset
+   FAIL  198/256 new I8 never visible after RECONNECT
+-- break 106 [pooled] hand relabels without the reset, casts
+   FAIL  150/256 R-1271 given up, pooled, after RECONNECT or server_lifetime
+-- break 35 [pooled] max 1
+   FAIL  256/256 I12 a call that never ends
+   FAIL  256/256 I12 a call waits for a connection while it holds one
+-- break 35 [pooled] defaults
+   FAIL  254/256 I12 a call that never ends
+   FAIL  256/256 I12 a call waits for a connection while it holds one

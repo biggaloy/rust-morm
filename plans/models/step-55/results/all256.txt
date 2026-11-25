@@ -1,0 +1,653 @@
+== defaults [straight] fault 0 seeds 0..256 (0.3s)
+   FAIL   13/256 ez I8 held, before then, every error
+   FAIL    3/256 ez I8 held, before then, visible errors
+   FAIL   34/256 lit I1
+   FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL  182/256 lit I8 held, before then
+   FAIL   32/256 lit I8 search_path once per E
+   FAIL  250/256 lit I9 loud half
+   FAIL   13/256 lit I9 loud: a request, entry or replacement
+   FAIL   15/256 lit R-1271 before t0+W, not judged not old (parameter test)
+== entries off [straight] fault 0 seeds 0..256 (0.3s)
+   FAIL   23/256 ez I8 held, before then, every error
+   FAIL    5/256 ez I8 held, before then, visible errors
+   FAIL   28/256 lit I1
+   FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL  176/256 lit I8 held, before then
+   FAIL  157/256 lit I8 search_path once per E
+   FAIL  245/256 lit I9 loud half
+   FAIL    6/256 lit I9 loud: a request, entry or replacement
+   FAIL   21/256 lit R-1271 before t0+W, not judged not old (parameter test)
+== caps of 1 [straight] fault 0 seeds 0..256 (0.4s)
+   FAIL   16/256 ez I8 held, before then, every error
+   FAIL    4/256 ez I8 held, before then, visible errors
+   FAIL   38/256 lit I1
+   FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL  183/256 lit I8 held, before then
+   FAIL   31/256 lit I8 search_path once per E
+   FAIL  252/256 lit I9 loud half
+   FAIL   13/256 lit I9 loud: a request, entry or replacement
+   FAIL   18/256 lit R-1271 before t0+W, not judged not old (parameter test)
+== W five times E [straight] fault 0 seeds 0..256 (0.3s)
+   FAIL   16/256 ez I8 held, before then, every error
+   FAIL    4/256 ez I8 held, before then, visible errors
+   FAIL   22/256 lit I1
+   FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL  172/256 lit I8 held, before then
+   FAIL    5/256 lit I8 search_path once per E
+   FAIL  250/256 lit I9 loud half
+   FAIL    7/256 lit I9 loud: a request, entry or replacement
+   FAIL   18/256 lit R-1271 before t0+W, not judged not old (parameter test)
+== budget 8 [straight] fault 0 seeds 0..256 (0.3s)
+   FAIL   13/256 ez I8 held, before then, every error
+   FAIL    3/256 ez I8 held, before then, visible errors
+   FAIL   34/256 lit I1
+   FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL  182/256 lit I8 held, before then
+   FAIL   32/256 lit I8 search_path once per E
+   FAIL  250/256 lit I9 loud half
+   FAIL   13/256 lit I9 loud: a request, entry or replacement
+   FAIL   15/256 lit R-1271 before t0+W, not judged not old (parameter test)
+== caches off [straight] fault 0 seeds 0..256 (0.3s)
+   FAIL   14/256 ez I8 held, before then, every error
+   FAIL    3/256 ez I8 held, before then, visible errors
+   FAIL    4/256 lit I1
+   FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL   14/256 lit I8 held, before then
+   FAIL  239/256 lit I9 loud half
+   FAIL    7/256 lit I9 loud: a request, entry or replacement
+   FAIL   22/256 lit R-1271 before t0+W, not judged not old (parameter test)
+== no client input [straight] fault 0 seeds 0..256 (0.3s)
+   FAIL   36/256 lit I1
+   FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL  161/256 lit I8 held, before then
+   FAIL   34/256 lit I8 search_path once per E
+   FAIL   36/256 lit I9 loud half
+== several, one server [straight] fault 0 seeds 0..256 (0.3s)
+   FAIL   23/256 ez I8 held, before then, every error
+   FAIL    4/256 ez I8 held, before then, visible errors
+   FAIL   13/256 lit I1 several (rose between them)
+   FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL  177/256 lit I8 held, before then
+   FAIL    5/256 lit I8 search_path once per E
+   FAIL  239/256 lit I9 loud half
+   FAIL    5/256 lit I9 loud: a request, entry or replacement
+   FAIL   13/256 lit R-1271 before t0+W, not judged not old (parameter test)
+== two servers [straight] fault 0 seeds 0..256 (0.3s)
+   FAIL   17/256 ez I8 held, before then, every error
+   FAIL    4/256 ez I8 held, before then, visible errors
+   FAIL   10/256 lit I1 several (rose between them)
+   FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL  182/256 lit I8 held, before then
+   FAIL   10/256 lit I8 search_path once per E
+   FAIL    1/256 lit I8 visible from then on (parameter test)
+   FAIL  244/256 lit I9 loud half
+   FAIL    7/256 lit I9 loud: a request, entry or replacement
+   FAIL   21/256 lit R-1271 before t0+W, not judged not old (parameter test)
+== three servers [straight] fault 0 seeds 0..256 (0.3s)
+   FAIL   29/256 ez I8 held, before then, every error
+   FAIL    7/256 ez I8 held, before then, visible errors
+   FAIL   20/256 lit I1 several (rose between them)
+   FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL  181/256 lit I8 held, before then
+   FAIL   11/256 lit I8 search_path once per E
+   FAIL  247/256 lit I9 loud half
+   FAIL    6/256 lit I9 loud: a request, entry or replacement
+   FAIL   28/256 lit R-1271 before t0+W, not judged not old (parameter test)
+== heavy [straight] fault 0 seeds 0..256 (0.3s)
+   FAIL   40/256 ez I8 held, before then, every error
+   FAIL    7/256 ez I8 held, before then, visible errors
+   FAIL   36/256 lit I1
+   FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL  219/256 lit I8 held, before then
+   FAIL   13/256 lit I8 search_path once per E
+   FAIL  252/256 lit I9 loud half
+   FAIL   41/256 lit I9 loud: a request, entry or replacement
+   FAIL   18/256 lit R-1271 before t0+W, not judged not old (parameter test)
+== landing always [straight] fault 0 seeds 0..256 (0.3s)
+   FAIL   22/256 ez I8 held, before then, every error
+   FAIL    4/256 ez I8 held, before then, visible errors
+   FAIL   57/256 lit I1
+   FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL  177/256 lit I8 held, before then
+   FAIL   23/256 lit I8 search_path once per E
+   FAIL  251/256 lit I9 loud half
+   FAIL   18/256 lit I9 loud: a request, entry or replacement
+   FAIL   19/256 lit R-1271 before t0+W, not judged not old (parameter test)
+== two servers, landing always, heavy [straight] fault 0 seeds 0..256 (0.3s)
+   FAIL   46/256 ez I8 held, before then, every error
+   FAIL    7/256 ez I8 held, before then, visible errors
+   FAIL   57/256 lit I1 several (rose between them)
+   FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL  225/256 lit I8 held, before then
+   FAIL    7/256 lit I8 search_path once per E
+   FAIL  256/256 lit I9 loud half
+   FAIL   32/256 lit I9 loud: a request, entry or replacement
+   FAIL   19/256 lit R-1271 before t0+W, not judged not old (parameter test)
+== savepoints [straight] fault 0 seeds 0..256 (0.5s)
+   FAIL   29/256 ez I8 held, before then, every error
+   FAIL    5/256 ez I8 held, before then, visible errors
+   FAIL   35/256 lit I1
+   FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL  161/256 lit I8 held, before then
+   FAIL   58/256 lit I8 search_path once per E
+   FAIL  254/256 lit I9 loud half
+   FAIL    5/256 lit I9 loud: a request, entry or replacement
+   FAIL   27/256 lit R-1271 before t0+W, not judged not old (parameter test)
+== RR and SERIALIZABLE only [straight] fault 0 seeds 0..256 (0.3s)
+   FAIL   13/256 ez I8 held, before then, every error
+   FAIL    3/256 ez I8 held, before then, visible errors
+   FAIL   34/256 lit I1
+   FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL  182/256 lit I8 held, before then
+   FAIL   32/256 lit I8 search_path once per E
+   FAIL  250/256 lit I9 loud half
+   FAIL   13/256 lit I9 loud: a request, entry or replacement
+   FAIL   15/256 lit R-1271 before t0+W, not judged not old (parameter test)
+== quiet [straight] fault 0 seeds 0..256 (0.4s)
+   FAIL   10/256 ez I8 held, before then, every error
+   FAIL    1/256 ez I8 held, before then, visible errors
+   FAIL    7/256 lit I1
+   FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL   50/256 lit I8 held, before then
+   FAIL    7/256 lit I8 search_path once per E
+   FAIL  233/256 lit I9 loud half
+   FAIL    4/256 lit R-1271 before t0+W, not judged not old (parameter test)
+== hand relabels [straight] fault 0 seeds 0..256 (0.3s)
+   FAIL   13/256 ez I8 held, before then, every error
+   FAIL    6/256 ez I8 held, before then, visible errors
+   FAIL   28/256 lit I1
+   FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL  109/256 lit I8 held, before then
+   FAIL   16/256 lit I8 search_path once per E
+   FAIL  256/256 lit I9 loud half
+   FAIL   11/256 lit I9 loud: a request, entry or replacement
+   FAIL   12/256 lit R-1271 before t0+W, not judged not old (parameter test)
+== long transactions [straight] fault 0 seeds 0..256 (0.3s)
+   FAIL    8/256 ez I8 held, before then, every error
+   FAIL    2/256 ez I8 held, before then, visible errors
+   FAIL   35/256 lit I1
+   FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL  119/256 lit I8 held, before then
+   FAIL    1/256 lit I8 held, from then on
+   FAIL    6/256 lit I8 search_path once per E
+   FAIL  228/256 lit I9 loud half
+   FAIL    6/256 lit I9 loud: a request, entry or replacement
+   FAIL   16/256 lit R-1271 before t0+W, not judged not old (parameter test)
+== slow [straight] fault 0 seeds 0..256 (0.2s)
+   FAIL   25/256 ez I8 held, before then, every error
+   FAIL   12/256 ez I8 held, before then, visible errors
+   FAIL   14/256 ez I8 held, from then on
+   FAIL    2/256 lit I1
+   FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL   25/256 lit I8 held, before then
+   FAIL   28/256 lit I8 held, from then on
+   FAIL   69/256 lit I8 visible from then on (parameter test)
+   FAIL  104/256 lit R-1271 before t0+W, not judged not old (parameter test)
+== transactions without retry [straight] fault 0 seeds 0..256 (0.3s)
+   FAIL   64/256 lit I1
+   FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL  198/256 lit I8 search_path once per E
+   FAIL  254/256 lit I9 loud half
+   FAIL    6/256 lit I9 loud: a request, entry or replacement
+   FAIL   26/256 lit R-1271 before t0+W, not judged not old (parameter test)
+== max 1 [straight] fault 0 seeds 0..256 (0.5s)
+   FAIL    7/256 ez I8 held, before then, every error
+   FAIL    2/256 ez I8 held, before then, visible errors
+   FAIL  109/256 lit I1
+   FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL   99/256 lit I8 held, before then
+   FAIL   36/256 lit I8 search_path once per E
+   FAIL  221/256 lit I9 loud half
+   FAIL    1/256 lit I9 loud: a request, entry or replacement
+   FAIL    7/256 lit R-1271 before t0+W, not judged not old (parameter test)
+== max 1, budget 1 [straight] fault 0 seeds 0..256 (0.4s)
+   FAIL    6/256 ez I8 held, before then, every error
+   FAIL    1/256 ez I8 held, before then, visible errors
+   FAIL   98/256 lit I1
+   FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL   95/256 lit I8 held, before then
+   FAIL   38/256 lit I8 search_path once per E
+   FAIL  218/256 lit I9 loud half
+   FAIL    1/256 lit I9 loud: a request, entry or replacement
+   FAIL    8/256 lit R-1271 before t0+W, not judged not old (parameter test)
+== max 1, quick [straight] fault 0 seeds 0..256 (0.3s)
+   FAIL   11/256 ez I8 held, before then, every error
+   FAIL    1/256 ez I8 held, before then, visible errors
+   FAIL   48/256 lit I1
+   FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL   91/256 lit I8 held, before then
+   FAIL   21/256 lit I8 search_path once per E
+   FAIL  216/256 lit I9 loud half
+   FAIL    8/256 lit R-1271 before t0+W, not judged not old (parameter test)
+== max 2, budget 2, heavy [straight] fault 0 seeds 0..256 (0.3s)
+   FAIL   13/256 ez I8 held, before then, every error
+   FAIL   63/256 lit I1
+   FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL  190/256 lit I8 held, before then
+   FAIL   32/256 lit I8 search_path once per E
+   FAIL  255/256 lit I9 loud half
+   FAIL   22/256 lit I9 loud: a request, entry or replacement
+   FAIL   11/256 lit R-1271 before t0+W, not judged not old (parameter test)
+== hand relabels without the reset [straight] fault 0 seeds 0..256 (0.4s)
+   FAIL   14/256 ez I8 held, before then, every error
+   FAIL    6/256 ez I8 held, before then, visible errors
+   FAIL   20/256 lit I1
+   FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL  115/256 lit I8 held, before then
+   FAIL   15/256 lit I8 search_path once per E
+   FAIL  256/256 lit I9 loud half
+   FAIL   11/256 lit I9 loud: a request, entry or replacement
+   FAIL    9/256 lit R-1271 before t0+W, not judged not old (parameter test)
+== hand relabels without the reset, casts [straight] fault 0 seeds 0..256 (0.3s)
+   FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL  256/256 lit I9 loud half
+== old labels copied [straight] fault 0 seeds 0..256 (0.3s)
+   FAIL   12/256 ez I8 held, before then, every error
+   FAIL    4/256 ez I8 held, before then, visible errors
+   FAIL   27/256 lit I1
+   FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL  173/256 lit I8 held, before then
+   FAIL   28/256 lit I8 search_path once per E
+   FAIL  244/256 lit I9 loud half
+   FAIL    7/256 lit I9 loud: a request, entry or replacement
+   FAIL   19/256 lit R-1271 before t0+W, not judged not old (parameter test)
+== record and column statements [straight] fault 0 seeds 0..256 (0.3s)
+   FAIL   19/256 ez I8 held, before then, every error
+   FAIL    4/256 ez I8 held, before then, visible errors
+   FAIL   30/256 lit I1
+   FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL  143/256 lit I8 held, before then
+   FAIL   32/256 lit I8 search_path once per E
+   FAIL  243/256 lit I9 loud half
+   FAIL    8/256 lit I9 loud: a request, entry or replacement
+   FAIL   24/256 lit R-1271 before t0+W, not judged not old (parameter test)
+== held [straight] fault 0 seeds 0..256 (0.4s)
+   FAIL   21/256 ez I8 held, before then, every error
+   FAIL    1/256 ez I8 held, before then, visible errors
+   FAIL   15/256 lit I1
+   FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL  223/256 lit I8 held, before then
+   FAIL   19/256 lit I8 search_path once per E
+   FAIL  222/256 lit I9 loud half
+   FAIL    2/256 lit I9 loud: a request, entry or replacement
+   FAIL    3/256 lit R-1271 before t0+W, not judged not old (parameter test)
+== held, quiet [straight] fault 0 seeds 0..256 (0.3s)
+   FAIL    5/256 ez I8 held, before then, every error
+   FAIL    1/256 ez I8 held, before then, visible errors
+   FAIL    4/256 lit I1
+   FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL   77/256 lit I8 held, before then
+   FAIL    9/256 lit I8 search_path once per E
+   FAIL  172/256 lit I9 loud half
+   FAIL    1/256 lit I9 loud: a request, entry or replacement
+   FAIL    1/256 lit R-1271 before t0+W, not judged not old (parameter test)
+== long holds [straight] fault 0 seeds 0..256 (0.3s)
+   FAIL   87/256 ez I8 held, before then, every error
+   FAIL   20/256 ez I8 held, before then, visible errors
+   FAIL    1/256 ez I8 held, from then on
+   FAIL   34/256 lit I1
+   FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL  248/256 lit I8 held, before then
+   FAIL   16/256 lit I8 held, from then on
+   FAIL    6/256 lit I8 search_path once per E
+   FAIL    3/256 lit I8 visible from then on (parameter test)
+   FAIL  237/256 lit I9 loud half
+   FAIL    1/256 lit I9 loud: a request, entry or replacement
+   FAIL   15/256 lit R-1271 before t0+W, not judged not old (parameter test)
+== long holds, held [straight] fault 0 seeds 0..256 (0.5s)
+   FAIL   72/256 ez I8 held, before then, every error
+   FAIL   14/256 ez I8 held, before then, visible errors
+   FAIL    8/256 ez I8 held, from then on
+   FAIL   28/256 lit I1
+   FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL  255/256 lit I8 held, before then
+   FAIL   27/256 lit I8 held, from then on
+   FAIL    2/256 lit I8 search_path once per E
+   FAIL    1/256 lit I8 visible from then on (parameter test)
+   FAIL  218/256 lit I9 loud half
+   FAIL    1/256 lit I9 loud: a request, entry or replacement
+   FAIL    3/256 lit R-1271 before t0+W, not judged not old (parameter test)
+== long holds, quiet [straight] fault 0 seeds 0..256 (0.4s)
+   FAIL   31/256 ez I8 held, before then, every error
+   FAIL   10/256 ez I8 held, before then, visible errors
+   FAIL    9/256 lit I1
+   FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL  188/256 lit I8 held, before then
+   FAIL    6/256 lit I8 held, from then on
+   FAIL    3/256 lit I8 search_path once per E
+   FAIL    1/256 lit I8 visible from then on (parameter test)
+   FAIL   97/256 lit I9 loud half
+   FAIL    2/256 lit R-1271 before t0+W, not judged not old (parameter test)
+== long holds, hand relabels [straight] fault 0 seeds 0..256 (0.5s)
+   FAIL   47/256 ez I8 held, before then, every error
+   FAIL   11/256 ez I8 held, before then, visible errors
+   FAIL    1/256 ez I8 held, from then on
+   FAIL   14/256 lit I1
+   FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL  203/256 lit I8 held, before then
+   FAIL   12/256 lit I8 held, from then on
+   FAIL    1/256 lit I8 search_path once per E
+   FAIL  253/256 lit I9 loud half
+   FAIL    1/256 lit I9 loud: a request, entry or replacement
+   FAIL    3/256 lit R-1271 before t0+W, not judged not old (parameter test)
+== role limit [straight] fault 0 seeds 0..256 (0.3s)
+   FAIL   16/256 ez I8 held, before then, every error
+   FAIL   32/256 lit I1
+   FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL  191/256 lit I8 held, before then
+   FAIL   15/256 lit I8 search_path once per E
+   FAIL  250/256 lit I9 loud half
+   FAIL    9/256 lit I9 loud: a request, entry or replacement
+   FAIL    6/256 lit R-1271 before t0+W, not judged not old (parameter test)
+== role limit, heavy [straight] fault 0 seeds 0..256 (0.3s)
+   FAIL   35/256 ez I8 held, before then, every error
+   FAIL    8/256 ez I8 held, before then, visible errors
+   FAIL   38/256 lit I1
+   FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL  220/256 lit I8 held, before then
+   FAIL   11/256 lit I8 search_path once per E
+   FAIL  253/256 lit I9 loud half
+   FAIL   42/256 lit I9 loud: a request, entry or replacement
+   FAIL    3/256 lit R-1271 before t0+W, not judged not old (parameter test)
+== refusals [straight] fault 0 seeds 0..256 (0.3s)
+   FAIL   29/256 ez I8 held, before then, every error
+   FAIL    4/256 ez I8 held, before then, visible errors
+   FAIL   48/256 lit I1
+   FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL  207/256 lit I8 held, before then
+   FAIL   15/256 lit I8 search_path once per E
+   FAIL  235/256 lit I9 loud half
+   FAIL   44/256 lit I9 loud: a request, entry or replacement
+== held, no rerun [straight] fault 0 seeds 0..256 (0.3s)
+   FAIL   11/256 ez I8 held, before then, every error
+   FAIL    2/256 ez I8 held, before then, visible errors
+   FAIL   29/256 lit I1
+   FAIL  255/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL  155/256 lit I8 held, before then
+   FAIL   18/256 lit I8 search_path once per E
+   FAIL  249/256 lit I9 loud half
+   FAIL    5/256 lit I9 loud: a request, entry or replacement
+   FAIL   10/256 lit R-1271 before t0+W, not judged not old (parameter test)
+== defaults [pooled] fault 0 seeds 0..256 (0.4s)
+   FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL  256/256 lit I2 (an adoption took its place)
+   FAIL  183/256 lit I8 never visible after RECONNECT
+   FAIL    2/256 lit I8 never visible after server_lifetime
+   FAIL  112/256 lit I8 search_path once per E
+   FAIL  155/256 lit I8 stale statement once per E
+   FAIL  256/256 lit I9 loud half
+   FAIL   70/256 lit I9 loud: a request, entry or replacement
+   FAIL   78/256 mid I8 stale statement once per E, running calls and actions apart
+== entries off [pooled] fault 0 seeds 0..256 (0.3s)
+   FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL  256/256 lit I2 (an adoption took its place)
+   FAIL  182/256 lit I8 never visible after RECONNECT
+   FAIL  244/256 lit I8 search_path once per E
+   FAIL  203/256 lit I8 stale statement once per E
+   FAIL  255/256 lit I9 loud half
+   FAIL   55/256 lit I9 loud: a request, entry or replacement
+   FAIL  130/256 mid I8 stale statement once per E, running calls and actions apart
+== caps of 1 [pooled] fault 0 seeds 0..256 (0.3s)
+   FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL  256/256 lit I2 (an adoption took its place)
+   FAIL  184/256 lit I8 never visible after RECONNECT
+   FAIL    1/256 lit I8 never visible after server_lifetime
+   FAIL  165/256 lit I8 search_path once per E
+   FAIL  195/256 lit I8 stale statement once per E
+   FAIL  256/256 lit I9 loud half
+   FAIL   69/256 lit I9 loud: a request, entry or replacement
+   FAIL  125/256 mid I8 stale statement once per E, running calls and actions apart
+== W five times E [pooled] fault 0 seeds 0..256 (0.3s)
+   FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL  256/256 lit I2 (an adoption took its place)
+   FAIL  184/256 lit I8 never visible after RECONNECT
+   FAIL    1/256 lit I8 never visible after server_lifetime
+   FAIL   17/256 lit I8 search_path once per E
+   FAIL  131/256 lit I8 stale statement once per E
+   FAIL  256/256 lit I9 loud half
+   FAIL   71/256 lit I9 loud: a request, entry or replacement
+   FAIL   30/256 mid I8 stale statement once per E, running calls and actions apart
+== budget 8 [pooled] fault 0 seeds 0..256 (0.3s)
+   FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL  256/256 lit I2 (an adoption took its place)
+   FAIL  183/256 lit I8 never visible after RECONNECT
+   FAIL    2/256 lit I8 never visible after server_lifetime
+   FAIL  112/256 lit I8 search_path once per E
+   FAIL  155/256 lit I8 stale statement once per E
+   FAIL  256/256 lit I9 loud half
+   FAIL   70/256 lit I9 loud: a request, entry or replacement
+   FAIL   78/256 mid I8 stale statement once per E, running calls and actions apart
+== caches off [pooled] fault 0 seeds 0..256 (0.3s)
+   FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL   98/256 lit I8 never visible after RECONNECT
+   FAIL  255/256 lit I9 loud half
+== no client input [pooled] fault 0 seeds 0..256 (0.3s)
+   FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL  256/256 lit I2 (an adoption took its place)
+   FAIL  194/256 lit I8 never visible after RECONNECT
+   FAIL    2/256 lit I8 never visible after server_lifetime
+   FAIL  123/256 lit I8 search_path once per E
+   FAIL  168/256 lit I8 stale statement once per E
+   FAIL   24/256 lit I9 loud: a request, entry or replacement
+   FAIL   80/256 mid I8 stale statement once per E, running calls and actions apart
+== several, one server [pooled] fault 0 seeds 0..256 (0.3s)
+   FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL  232/256 lit I2 (an adoption took its place)
+   FAIL  179/256 lit I8 never visible after RECONNECT
+   FAIL    1/256 lit I8 never visible after server_lifetime
+   FAIL   44/256 lit I8 search_path once per E
+   FAIL  171/256 lit I8 stale statement once per E
+   FAIL  256/256 lit I9 loud half
+   FAIL   78/256 lit I9 loud: a request, entry or replacement
+   FAIL   80/256 mid I8 stale statement once per E, running calls and actions apart
+== two servers [pooled] fault 0 seeds 0..256 (0.3s)
+   FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL  226/256 lit I2 (an adoption took its place)
+   FAIL  188/256 lit I8 never visible after RECONNECT
+   FAIL    1/256 lit I8 never visible after server_lifetime
+   FAIL   55/256 lit I8 search_path once per E
+   FAIL  188/256 lit I8 stale statement once per E
+   FAIL  256/256 lit I9 loud half
+   FAIL   73/256 lit I9 loud: a request, entry or replacement
+   FAIL   73/256 mid I8 stale statement once per E, running calls and actions apart
+== three servers [pooled] fault 0 seeds 0..256 (0.3s)
+   FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL  226/256 lit I2 (an adoption took its place)
+   FAIL  173/256 lit I8 never visible after RECONNECT
+   FAIL    2/256 lit I8 never visible after server_lifetime
+   FAIL   35/256 lit I8 search_path once per E
+   FAIL  169/256 lit I8 stale statement once per E
+   FAIL  254/256 lit I9 loud half
+   FAIL   60/256 lit I9 loud: a request, entry or replacement
+   FAIL   74/256 mid I8 stale statement once per E, running calls and actions apart
+== heavy [pooled] fault 0 seeds 0..256 (0.3s)
+   FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL  256/256 lit I2 (an adoption took its place)
+   FAIL  246/256 lit I8 never visible after RECONNECT
+   FAIL  116/256 lit I8 search_path once per E
+   FAIL  167/256 lit I8 stale statement once per E
+   FAIL  256/256 lit I9 loud half
+   FAIL  103/256 lit I9 loud: a request, entry or replacement
+   FAIL   99/256 mid I8 stale statement once per E, running calls and actions apart
+== landing always [pooled] fault 0 seeds 0..256 (0.3s)
+   FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL  256/256 lit I2 (an adoption took its place)
+   FAIL  188/256 lit I8 never visible after RECONNECT
+   FAIL  109/256 lit I8 search_path once per E
+   FAIL  159/256 lit I8 stale statement once per E
+   FAIL  256/256 lit I9 loud half
+   FAIL   65/256 lit I9 loud: a request, entry or replacement
+   FAIL   75/256 mid I8 stale statement once per E, running calls and actions apart
+== two servers, landing always, heavy [pooled] fault 0 seeds 0..256 (0.2s)
+   FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL  255/256 lit I2 (an adoption took its place)
+   FAIL  250/256 lit I8 never visible after RECONNECT
+   FAIL   41/256 lit I8 search_path once per E
+   FAIL  203/256 lit I8 stale statement once per E
+   FAIL  256/256 lit I9 loud half
+   FAIL  107/256 lit I9 loud: a request, entry or replacement
+   FAIL   86/256 mid I8 stale statement once per E, running calls and actions apart
+== savepoints [pooled] fault 0 seeds 0..256 (0.5s)
+   FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL  256/256 lit I2 (an adoption took its place)
+   FAIL  223/256 lit I8 never visible after RECONNECT
+   FAIL    4/256 lit I8 never visible after server_lifetime
+   FAIL  210/256 lit I8 search_path once per E
+   FAIL  237/256 lit I8 stale statement once per E
+   FAIL  256/256 lit I9 loud half
+   FAIL   44/256 lit I9 loud: a request, entry or replacement
+   FAIL  169/256 mid I8 stale statement once per E, running calls and actions apart
+== RR and SERIALIZABLE only [pooled] fault 0 seeds 0..256 (0.3s)
+   FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL  256/256 lit I2 (an adoption took its place)
+   FAIL  183/256 lit I8 never visible after RECONNECT
+   FAIL    2/256 lit I8 never visible after server_lifetime
+   FAIL  112/256 lit I8 search_path once per E
+   FAIL  155/256 lit I8 stale statement once per E
+   FAIL  256/256 lit I9 loud half
+   FAIL   70/256 lit I9 loud: a request, entry or replacement
+   FAIL   78/256 mid I8 stale statement once per E, running calls and actions apart
+== quiet [pooled] fault 0 seeds 0..256 (0.3s)
+   FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL  100/256 lit I2 (an adoption took its place)
+   FAIL   17/256 lit I8 never visible after RECONNECT
+   FAIL    1/256 lit I8 never visible after server_lifetime
+   FAIL   30/256 lit I8 search_path once per E
+   FAIL   69/256 lit I8 stale statement once per E
+   FAIL  256/256 lit I9 loud half
+   FAIL   17/256 lit I9 loud: a request, entry or replacement
+   FAIL    2/256 lit I9 silent past W of the first confirmation
+   FAIL   21/256 mid I8 stale statement once per E, running calls and actions apart
+== hand relabels [pooled] fault 0 seeds 0..256 (0.3s)
+   FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL  247/256 lit I2 (an adoption took its place)
+   FAIL   85/256 lit I8 never visible after RECONNECT
+   FAIL   86/256 lit I8 search_path once per E
+   FAIL  100/256 lit I8 stale statement once per E
+   FAIL  256/256 lit I9 loud half
+   FAIL   48/256 lit I9 loud: a request, entry or replacement
+   FAIL    1/256 lit I9 silent past W of the first confirmation
+   FAIL   25/256 mid I8 stale statement once per E, running calls and actions apart
+== long transactions [pooled] fault 0 seeds 0..256 (0.4s)
+   FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL  154/256 lit I2 (an adoption took its place)
+   FAIL   50/256 lit I8 never visible after RECONNECT
+   FAIL    3/256 lit I8 never visible after server_lifetime
+   FAIL   57/256 lit I8 search_path once per E
+   FAIL   45/256 lit I8 stale statement once per E
+   FAIL  256/256 lit I9 loud half
+   FAIL   20/256 lit I9 loud: a request, entry or replacement
+   FAIL    1/256 lit I9 silent past W of the first confirmation
+   FAIL   17/256 mid I8 stale statement once per E, running calls and actions apart
+== slow [pooled] fault 0 seeds 0..256 (0.2s)
+   FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL    2/256 lit I2 (an adoption took its place)
+   FAIL    1/256 lit I8 never visible after RECONNECT
+   FAIL    4/256 lit I8 search_path once per E
+   FAIL   14/256 lit I8 stale statement once per E
+== transactions without retry [pooled] fault 0 seeds 0..256 (0.4s)
+   FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL  256/256 lit I2 (an adoption took its place)
+   FAIL  239/256 lit I8 never visible after RECONNECT
+   FAIL    7/256 lit I8 never visible after server_lifetime
+   FAIL  256/256 lit I8 search_path once per E
+   FAIL  256/256 lit I8 stale statement once per E
+   FAIL  256/256 lit I9 loud half
+   FAIL   27/256 lit I9 loud: a request, entry or replacement
+   FAIL  253/256 mid I8 stale statement once per E, running calls and actions apart
+== max 1 [pooled] fault 0 seeds 0..256 (0.3s)
+   FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL  256/256 lit I2 (an adoption took its place)
+   FAIL  137/256 lit I8 never visible after RECONNECT
+   FAIL    2/256 lit I8 never visible after server_lifetime
+   FAIL  139/256 lit I8 search_path once per E
+   FAIL   46/256 lit I8 stale statement once per E
+   FAIL  256/256 lit I9 loud half
+   FAIL   46/256 lit I9 loud: a request, entry or replacement
+   FAIL   33/256 mid I8 stale statement once per E, running calls and actions apart
+== max 1, budget 1 [pooled] fault 0 seeds 0..256 (0.3s)
+   FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL  256/256 lit I2 (an adoption took its place)
+   FAIL  137/256 lit I8 never visible after RECONNECT
+   FAIL    2/256 lit I8 never visible after server_lifetime
+   FAIL  139/256 lit I8 search_path once per E
+   FAIL   46/256 lit I8 stale statement once per E
+   FAIL  256/256 lit I9 loud half
+   FAIL   46/256 lit I9 loud: a request, entry or replacement
+   FAIL   33/256 mid I8 stale statement once per E, running calls and actions apart
+== max 1, quick [pooled] fault 0 seeds 0..256 (0.2s)
+   FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL  172/256 lit I2 (an adoption took its place)
+   FAIL   46/256 lit I8 never visible after RECONNECT
+   FAIL   73/256 lit I8 search_path once per E
+   FAIL   14/256 lit I8 stale statement once per E
+   FAIL  256/256 lit I9 loud half
+   FAIL   41/256 lit I9 loud: a request, entry or replacement
+   FAIL    1/256 lit I9 silent past W of the first confirmation
+   FAIL   14/256 mid I8 stale statement once per E, running calls and actions apart
+== max 2, budget 2, heavy [pooled] fault 0 seeds 0..256 (0.3s)
+   FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL  256/256 lit I2 (an adoption took its place)
+   FAIL  239/256 lit I8 never visible after RECONNECT
+   FAIL    1/256 lit I8 never visible after server_lifetime
+   FAIL  130/256 lit I8 search_path once per E
+   FAIL  132/256 lit I8 stale statement once per E
+   FAIL  256/256 lit I9 loud half
+   FAIL  110/256 lit I9 loud: a request, entry or replacement
+   FAIL   83/256 mid I8 stale statement once per E, running calls and actions apart
+== hand relabels without the reset [pooled] fault 0 seeds 0..256 (0.3s)
+   FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL  251/256 lit I2 (an adoption took its place)
+   FAIL   88/256 lit I8 never visible after RECONNECT
+   FAIL    1/256 lit I8 never visible after server_lifetime
+   FAIL   95/256 lit I8 search_path once per E
+   FAIL  125/256 lit I8 stale statement once per E
+   FAIL  256/256 lit I9 loud half
+   FAIL   70/256 lit I9 loud: a request, entry or replacement
+   FAIL    1/256 lit I9 silent past W of the first confirmation
+   FAIL   36/256 mid I8 stale statement once per E, running calls and actions apart
+== hand relabels without the reset, casts [pooled] fault 0 seeds 0..256 (0.3s)
+   FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL  199/256 lit I8 stale statement once per E
+   FAIL  255/256 lit I9 loud half
+   FAIL    1/256 lit I9 silent past W of the first confirmation
+   FAIL   10/256 mid I8 stale statement once per E, running calls and actions apart
+== old labels copied [pooled] fault 0 seeds 0..256 (0.4s)
+   FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL  256/256 lit I2 (an adoption took its place)
+   FAIL  193/256 lit I8 never visible after RECONNECT
+   FAIL  110/256 lit I8 search_path once per E
+   FAIL  146/256 lit I8 stale statement once per E
+   FAIL  255/256 lit I9 loud half
+   FAIL   75/256 lit I9 loud: a request, entry or replacement
+   FAIL   56/256 mid I8 stale statement once per E, running calls and actions apart
+== record and column statements [pooled] fault 0 seeds 0..256 (0.3s)
+   FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL  256/256 lit I2 (an adoption took its place)
+   FAIL  180/256 lit I8 never visible after RECONNECT
+   FAIL    2/256 lit I8 never visible after server_lifetime
+   FAIL  132/256 lit I8 search_path once per E
+   FAIL  151/256 lit I8 stale statement once per E
+   FAIL  256/256 lit I9 loud half
+   FAIL   83/256 lit I9 loud: a request, entry or replacement
+   FAIL   56/256 mid I8 stale statement once per E, running calls and actions apart
+== two processes [pooled] fault 0 seeds 0..256 (0.4s)
+   FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL  255/256 lit I2 (an adoption took its place)
+   FAIL  174/256 lit I8 never visible after RECONNECT
+   FAIL    2/256 lit I8 never visible after server_lifetime
+   FAIL   76/256 lit I8 search_path once per E
+   FAIL  103/256 lit I8 stale statement once per E
+   FAIL  256/256 lit I9 loud half
+   FAIL   67/256 lit I9 loud: a request, entry or replacement
+   FAIL   40/256 mid I8 stale statement once per E, running calls and actions apart
+== three processes, heavy [pooled] fault 0 seeds 0..256 (0.3s)
+   FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL  256/256 lit I2 (an adoption took its place)
+   FAIL  240/256 lit I8 never visible after RECONNECT
+   FAIL   46/256 lit I8 search_path once per E
+   FAIL   90/256 lit I8 stale statement once per E
+   FAIL  256/256 lit I9 loud half
+   FAIL   75/256 lit I9 loud: a request, entry or replacement
+   FAIL   35/256 mid I8 stale statement once per E, running calls and actions apart
