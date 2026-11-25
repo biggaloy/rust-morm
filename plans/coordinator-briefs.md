@@ -19,11 +19,7 @@ Agents take the session's model and effort unless told otherwise, so set both ex
 | Work | Model | Effort |
 |---|---|---|
 | Coordinator (the session itself) | Opus 5.5 | medium |
-| Fixes, designs, and steps where a missed error is costly (concurrency, transactions, migrations and their recovery, proofs, contracts) | Opus 5.5 | high |
-| Routine steps (such as 04, 06, 09 and 23) | Opus 5.5 | medium |
-| Every review | Opus 5.5 | high |
-
-When unsure which kind a step is, use high.
+| Every agent: steps, fixes, designs and reviews | Opus 5.5 | high |
 
 ## Keeping models (owner decision, 2026-11-25)
 
