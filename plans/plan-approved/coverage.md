@@ -4,7 +4,7 @@ Generated from the frozen plan. Each requirement and test obligation lives in ex
 
 Kinds: `code` needs a tagged test, `doc` is checked in the README step, `info` is context with nothing to build.
 
-Totals: 1293 requirements, 329 test obligations.
+Totals: 1294 requirements, 329 test obligations.
 
 ## Requirements
 
@@ -1303,6 +1303,7 @@ Totals: 1293 requirements, 329 test obligations.
 | R-1291 | doc | 50 | 0 | \| `servers = "several"`, `servers = "one"` \| `"several"`: your pool's one host reaches s… |
 | R-1292 | doc | 50 | 0 | The README shows this notice loudly, beside transactions and `tx.transaction(..)`: > **`Er… |
 | R-1293 | doc | 50 | 0 | The README shows this notice loudly, beside `db.hold()` and `sql_unchecked`: > **On a held… |
+| R-1294 | doc | 50 | 0 | The README shows this notice loudly, beside the notice on schema changes made outside morm… |
 
 ## Test obligations
 
