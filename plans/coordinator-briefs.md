@@ -4,7 +4,7 @@ Templates the coordinating session uses to start agents, so a new session after 
 
 ## Common rules (put in every brief)
 
-- Commit and push as `Biggo Dev <biggodev@gmail.com>` (`git -c user.name="Biggo Dev" -c user.email=biggodev@gmail.com commit ...`), never neurobin. End every commit message with the session's attribution lines (`Co-Authored-By: ...` and `Claude-Session: ...`), and PR descriptions with the session's PR attribution lines.
+- Commit and push as `Biggo Dev <biggodev@gmail.com>` (`git -c user.name="Biggo Dev" -c user.email=biggodev@gmail.com commit ...`), never neurobin. End every commit message with the attribution lines the session currently gives (since 2026-11-25 only `Co-Authored-By: ...`, no `Claude-Session`), and PR descriptions with the session's PR attribution lines.
 - Never use `/tmp`; it is memory-backed. Keep working files, throwaway Postgres and PgBouncer servers in `.claude/scratch/` inside the worktree, with `TMPDIR` set there. Stop servers and delete scratch when done.
 - Commit and push in small steps during long work.
 - Never force-push, never merge, never change repository settings or publish crates.

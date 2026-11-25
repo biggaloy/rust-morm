@@ -2,12 +2,12 @@
 
 Read this first when resuming. It's what the coordinating session needs that isn't in `plan-approved/INDEX.md`. The coordinator updates and pushes it after each milestone. Agent briefs to reuse are in `coordinator-briefs.md`.
 
-**Last updated:** 2026-11-25, EY fix round in, twenty-second review running.
+**Last updated:** 2026-11-25, twenty-second review resumed after a session restart.
 
 ## Where things stand
 
 - **Steps done:** 01 (PR #1, merged `ccd4413`) and 02 (PR #2, merged `34c81aa`), both approved by the owner.
-- **Step 55 is `in review`:** PR #3, branch `step-55-enum-proofs`, head `93854c2`, CI green, checker 1294 R / 329 T, 0 problems. The twenty-first review's EY1 to EY3 are written in (INDEX Decisions "A hand-made enum swap without relabel is stated, not cured (EY2)"). Running: the twenty-second review ("Review round" brief, scope since `f25aefe`, findings `EZ1, …` to `reviews/step-55-review-22.md`). If it isn't on `main` after a restart, start it again. Then PR #3 to the owner if clean.
+- **Step 55 is `in review`:** PR #3, branch `step-55-enum-proofs`, head `93854c2`, CI green, checker 1294 R / 329 T, 0 problems. The twenty-first review's EY1 to EY3 are written in (INDEX Decisions "A hand-made enum swap without relabel is stated, not cured (EY2)"). Running: the twenty-second review ("Review round" brief, scope since `f25aefe`, findings `EZ1, …` to `reviews/step-55-review-22.md`). It pushes work in progress to `wip/step-55-review-22`. If it isn't on `main` after a restart, resume or start it again, from that branch and its worktree `agent-a488e307754574a65`. Then PR #3 to the owner if clean.
 - **Next free IDs:** R-1295, T-0330.
 - Step 55's open items, reviews and designs: `reviews/step-55-open-items.md`, `reviews/step-55-review.md` and `-review-2.md` to `-review-12.md`, `reviews/stale-statement-design.md`.
 
