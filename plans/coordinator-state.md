@@ -7,7 +7,7 @@ Read this first when resuming. It's what the coordinating session needs that isn
 ## Where things stand
 
 - **Steps done:** 01 (PR #1, merged `ccd4413`) and 02 (PR #2, merged `34c81aa`), both approved by the owner.
-- **Step 55 is `in review`:** PR #3, branch `step-55-enum-proofs`, head `f25aefe`, EX1 to EX6 written in, CI green, checker 1293 R / 329 T, 0 problems; IDs and choices in INDEX Decisions "Twentieth review fixed (EX1 to EX6)"; no open questions. A short twenty-first review is running on the changes since `5d111d3`, findings EY1, … to `reviews/step-55-review-21.md` (restart it with the "Review round" brief if it isn't on `main`). If clean, PR #3 goes to the owner.
+- **Step 55 is `in review`:** PR #3, branch `step-55-enum-proofs`, head `f25aefe`, CI green, checker 1293 R / 329 T, 0 problems. The twenty-first review is in (`reviews/step-55-review-21.md`, `5b25195`): EY1 (should fix: I8's held-connection check can't fail), EY2 (owner chose (a): INDEX Decisions "A hand-made enum swap without relabel is stated, not cured (EY2)"), EY3 (minor, PR body). Next: one fix agent for EY1 to EY3 ("Fix round" brief, new IDs from R-1294 / T-0330, pushing work in progress to `wip/step-55-ey`); then a short twenty-second review; then PR #3 to the owner if clean. If the fix agent isn't running after a restart, start it.
 - **Next free IDs:** R-1294, T-0330.
 - Step 55's open items, reviews and designs: `reviews/step-55-open-items.md`, `reviews/step-55-review.md` and `-review-2.md` to `-review-12.md`, `reviews/stale-statement-design.md`.
 
