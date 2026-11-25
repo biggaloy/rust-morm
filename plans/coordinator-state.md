@@ -15,7 +15,7 @@ Read this first when resuming. It's what the coordinating session needs that isn
 
 ## How to resume after a restart
 
-1. Read `plan-approved/INDEX.md` ("The coordinating session" and "Decisions since the split") and this file. Stay thin: don't read code or the frozen plan.
+1. The owner starts `claude` in the parent folder, `neurobin`, which isn't a git repo: `cd` into `rust-morm` first, so that agents' worktrees are made in this repo. Read `plan-approved/INDEX.md` ("The coordinating session" and "Decisions since the split") and this file. Stay thin: don't read code or the frozen plan.
 2. Set the wake-up again with `CronCreate`: cron `43 * * * *` (hourly), recurring, prompt as in `coordinator-briefs.md`. Check `CronList` first: reopening the same session brings it back, a fresh session doesn't. It expires after 7 days anyway. None is set: the last session cancelled its own when handing over. Record the new ID and expiry here.
 3. Check what landed: `gh pr view 3`, `git log origin/step-55-enum-proofs`, and `git log origin/main -- plans/reviews/`. Commits are the truth; unpushed agent work is lost in a crash.
 4. Background agents don't survive a restart. Restart whatever the "Where things stand" line names as running, from its brief in `briefs/` (or the matching template in `coordinator-briefs.md`), after checking its old worktree for uncommitted work.
