@@ -2,19 +2,19 @@
 
 Read this first when resuming. It's what the coordinating session needs that isn't in `plan-approved/INDEX.md`. The coordinator updates and pushes it after each milestone. Agent briefs to reuse are in `coordinator-briefs.md`.
 
-**Last updated:** 2026-11-25, twenty-second review in, EZ fix round running.
+**Last updated:** 2026-11-25, EZ fix round running, saved for a restart.
 
 ## Where things stand
 
 - **Steps done:** 01 (PR #1, merged `ccd4413`) and 02 (PR #2, merged `34c81aa`), both approved by the owner.
-- **Step 55 is `in review`:** PR #3, branch `step-55-enum-proofs`, head `93854c2`, CI green, checker 1294 R / 329 T, 0 problems. The twenty-second review is in (`reviews/step-55-review-22.md`, `55a720a`): EZ1 to EZ3 should fix, EZ4 to EZ6 minor, no owner choice needed. Running: one fix agent for EZ1 to EZ6 ("Fix round" brief, new IDs from R-1295 / T-0330, pushing work in progress to `wip/step-55-ez`). If it isn't running after a restart, start it. When it reports: record its IDs and choices in INDEX Decisions as a new entry "Twenty-second review fixed (EZ1 to EZ6)"; then a short twenty-third review (scope since `93854c2`, findings `FA1, …` to `reviews/step-55-review-23.md`); then PR #3 to the owner if clean.
+- **Step 55 is `in review`:** PR #3, branch `step-55-enum-proofs`, head `93854c2`, CI green, checker 1294 R / 329 T, 0 problems. The twenty-second review is in (`reviews/step-55-review-22.md`, `55a720a`): EZ1 to EZ3 should fix, EZ4 to EZ6 minor, no owner choice needed. Running: one fix agent for EZ1 to EZ6 (`briefs/step-55-ez-fix.md`, new IDs from R-1295 / T-0330, pushing work in progress to `wip/step-55-ez`). If it isn't running after a restart, follow that file's restart steps. When it reports: record its IDs and choices in INDEX Decisions as a new entry "Twenty-second review fixed (EZ1 to EZ6)"; then a short twenty-third review (scope since `93854c2`, findings `FA1, …` to `reviews/step-55-review-23.md`); then PR #3 to the owner if clean.
 - **Next free IDs:** R-1295, T-0330.
 - Step 55's open items, reviews and designs: `reviews/step-55-open-items.md`, `reviews/step-55-review.md` and `-review-2.md` to `-review-12.md`, `reviews/stale-statement-design.md`.
 
 ## How to resume after a restart
 
 1. Read `plan-approved/INDEX.md` ("The coordinating session" and "Decisions since the split") and this file. Stay thin: don't read code or the frozen plan.
-2. Set the wake-up again with `CronCreate`: cron `13,43 * * * *`, recurring, prompt as in `coordinator-briefs.md`. A restart removes it, and it expires after 7 days anyway. The current one (`a8c7905e`, set 2026-11-25) expires about 2026-12-02.
+2. Set the wake-up again with `CronCreate`: cron `13,43 * * * *`, recurring, prompt as in `coordinator-briefs.md`. Check `CronList` first: reopening the same session brings it back, a fresh session doesn't. It expires after 7 days anyway. The current one (`a8c7905e`, set 2026-11-25) expires about 2026-12-02.
 3. Check what landed: `gh pr view 3`, `git log origin/step-55-enum-proofs`, and `git log origin/main -- plans/reviews/`. Commits are the truth; unpushed agent work is lost in a crash.
 4. Background agents don't survive a restart. Restart whatever the "Where things stand" line names as running, from its brief in `briefs/` (or the matching template in `coordinator-briefs.md`), after checking its old worktree for uncommitted work.
 5. Remove stale agent worktrees under `.claude/worktrees/` only after checking each has no uncommitted or unpushed work.
