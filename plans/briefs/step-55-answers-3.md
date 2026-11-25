@@ -1,6 +1,6 @@
 # Brief: step 55, the owner's three answers
 
-Not started yet as of 2026-11-25: the next session starts it (`isolation: worktree`, background, Opus, high effort). If it has been started and its commits aren't on `origin/step-55-enum-proofs` after a restart: in the same session, resume it with `SendMessage`; otherwise check `origin/wip/step-55-answers-3` and the old worktree under `.claude/worktrees/` (commit and push any uncommitted work to that branch), then start a fresh agent with the brief below, from the wip branch if there is one. Use the attribution line the session then gives.
+Started 2026-11-25 (`isolation: worktree`, background, Opus, high effort). If its commits aren't on `origin/step-55-enum-proofs` after a restart: in the same session, resume it with `SendMessage`; otherwise check `origin/wip/step-55-answers-3` and the old worktree under `.claude/worktrees/` (commit and push any uncommitted work to that branch), then start a fresh agent with the brief below, from the wip branch if there is one. Use the attribution line the session then gives.
 
 ---
 
