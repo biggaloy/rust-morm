@@ -18,7 +18,7 @@ What parallel steps share. Signatures here are the starting point, taken from th
 - Rust 2024, MSRV 1.99.1, Tokio only, PostgreSQL 15 and later only.
 - Tool prefix `morm-`. Config `morm.toml`. Environment `MORM_*` and `DATABASE_URL`. Migrations in `morm-migrations/`. Ledger schema `_morm`.
 - `_morm` is owned by the migrating role and holds the database's statement generation in its comment, `morm statement generation <n>`, which any role reads from `pg_description` with no grant; a database with no `_morm` or no such comment reads as `0` (SE). Every migration `tx` step ends, in its own transaction, with the reset `CREATE OPERATOR _morm.### (LEFTARG = int4, RIGHTARG = int4, FUNCTION = int4eq); DROP OPERATOR _morm.### (int4, int4); COMMENT ON SCHEMA _morm IS 'morm statement generation <n>'`, `<n>` one more than before, which marks every cached plan in every session invalid at commit (SA, step 33). Behind a pooler with the statement caches on, the text of each cached statement starts with `/* morm g<n> */`, or `/* morm g<n>.<salt> */` after DDL made outside morm (SD, step 14).
-- Enum labels starting `_morm_` are reserved: a retired enum type's labels are renamed `_morm_retired_<label>` (SA, step 38).
+- Enum labels starting `_morm_` are reserved: a retired enum type's labels are renamed `_morm_retired_<random>_<label>`, `<random>` being the 16 hex digits the ledger records for the run that retired it (SA, step 38).
 - Exit codes: `0` ok, `1` error or drift, `2` refused by a guard, `3` open decisions. A run with both a refusal and an open decision exits `2`.
 - Generated SQL always quotes names. Generated code uses static dispatch.
 - Macro-generated items are public API: names below don't change without following `rules.md`.
