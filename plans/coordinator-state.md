@@ -2,13 +2,13 @@
 
 Read this first when resuming. It's what the coordinating session needs that isn't in `plan-approved/INDEX.md`. The coordinator updates and pushes it after each milestone. Agent briefs to reuse are in `coordinator-briefs.md`.
 
-**Last updated:** 2026-11-26, the fix agent for the three answers is running again after a usage limit.
+**Last updated:** 2026-11-26, the three answers are written in; two open questions are with the owner.
 
 ## Where things stand
 
 - **Steps done:** 01 (PR #1, merged `ccd4413`) and 02 (PR #2, merged `34c81aa`), both approved by the owner.
-- **Step 55 is `in review`:** PR #3, branch `step-55-enum-proofs`, head `a1a6d0b`, CI green, checker 1294 R / 329 T, 0 problems. The owner's five answers are written in (INDEX Decisions "The EZ fix round's five open questions (2026-11-25)"). The owner answered the three open questions after it, option (a) on each (INDEX Decisions "The five answers' three open questions (2026-11-25)"). **Running: the fix agent in `briefs/step-55-answers-3.md`** (started 2026-11-25, resumed 2026-11-26 with the text at `d240645` on the PR branch and the model at `fd35174` on the wip branch; its PR body update is still to come; after a restart check `origin/wip/step-55-answers-3` and its worktree first), then follow that file's "After it reports".
-- **PR body:** 136,976 bytes of GitHub's 262,144; the earlier rounds are in `reviews/step-55-pr-history.md`.
+- **Step 55 is `in review`:** PR #3, branch `step-55-enum-proofs`, head `1c27277`, CI green, checker 1294 R / 329 T, 0 problems. The owner's three answers are written in and recorded (INDEX Decisions "The five answers' three open questions (2026-11-25)"), and the model is in `plans/models/step-55/`. **Waiting on the owner:** the two open questions in the PR body's "Open questions" (no agent is running). Once answered: record the answers in INDEX, write a brief from `briefs/step-55-answers-3.md` as the pattern, start that fix agent, then the twenty-third review as that file's "After it reports" says.
+- **PR body:** 147,337 bytes of GitHub's 262,144; the earlier rounds are in `reviews/step-55-pr-history.md`.
 - **Token use, owner decisions (2026-11-25):** keep models in `plans/models/` (the EZ round's is in `plans/models/step-55/`), a fresh session at milestones, an hourly wake-up, and the models and efforts in `coordinator-briefs.md` (Opus 5.5 medium for the coordinator, high for every agent). Full review rounds stay, after wording-only fixes too.
 - **Next free IDs:** R-1295, T-0330.
 - Step 55's open items, reviews and designs: `reviews/step-55-open-items.md`, `reviews/step-55-review.md` and `-review-2.md` to `-review-12.md`, `reviews/stale-statement-design.md`.
@@ -31,7 +31,7 @@ Read this first when resuming. It's what the coordinating session needs that isn
 
 ## What comes next
 
-1. Step 55: write in the owner's three answers, then the twenty-third review; repeat until clean, then PR #3 to the owner.
+1. Step 55: the owner's answers to the two open questions, written in, then the twenty-third review; repeat until clean, then PR #3 to the owner.
 2. Step 03 (freeze the contracts) depends on 55. Then follow the order in `INDEX.md`.
 
 ## Rules that hold for every agent

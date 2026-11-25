@@ -1,0 +1,4 @@
+18.6:
+from Postgres: 14280 own, 14288 kept, 8 kept with the type named as a word of its message; 0 not as expected
+17.11:
+from Postgres: 14280 own, 14296 kept, 0 kept with the type named as a word of its message; 0 not as expected

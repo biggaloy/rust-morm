@@ -1,0 +1,119 @@
+17.11
+1. every language, name and value: the cast's own type's error, and a stale cast's on a kept type
+    C invalid input value for enum st_old: "c"
+    de_DE.utf8 invalid input value for enum st_old: "c"
+    es_ES.utf8 invalid input value for enum st_old: "c"
+    fr_FR.utf8 invalid input value for enum st_old: "c"
+    id_ID.utf8 invalid input value for enum st_old: "c"
+    it_IT.utf8 invalid input value for enum st_old: "c"
+    ja_JP.utf8 invalid input value for enum st_old: "c"
+    ka_GE.utf8 invalid input value for enum st_old: "c"
+    ko_KR.utf8 invalid input value for enum st_old: "c"
+    pl_PL.utf8 invalid input value for enum st_old: "c"
+    pt_BR.utf8 invalid input value for enum st_old: "c"
+    ru_RU.utf8 invalid input value for enum st_old: "c"
+    sv_SE.utf8 invalid input value for enum st_old: "c"
+    tr_TR.utf8 invalid input value for enum st_old: "c"
+    uk_UA.utf8 invalid input value for enum st_old: "c"
+    zh_CN.utf8 invalid input value for enum st_old: "c"
+    zh_TW.utf8 invalid input value for enum st_old: "c"
+    C invalid input value for enum "My: ""S".st_old: "c"
+    de_DE.utf8 invalid input value for enum "My: ""S".st_old: "c"
+    es_ES.utf8 invalid input value for enum "My: ""S".st_old: "c"
+    fr_FR.utf8 invalid input value for enum "My: ""S".st_old: "c"
+    id_ID.utf8 invalid input value for enum "My: ""S".st_old: "c"
+    it_IT.utf8 invalid input value for enum "My: ""S".st_old: "c"
+    ja_JP.utf8 invalid input value for enum "My: ""S".st_old: "c"
+    ka_GE.utf8 invalid input value for enum "My: ""S".st_old: "c"
+    ko_KR.utf8 invalid input value for enum "My: ""S".st_old: "c"
+    pl_PL.utf8 invalid input value for enum "My: ""S".st_old: "c"
+    pt_BR.utf8 invalid input value for enum "My: ""S".st_old: "c"
+    ru_RU.utf8 invalid input value for enum "My: ""S".st_old: "c"
+    sv_SE.utf8 invalid input value for enum "My: ""S".st_old: "c"
+    tr_TR.utf8 invalid input value for enum "My: ""S".st_old: "c"
+    uk_UA.utf8 invalid input value for enum "My: ""S".st_old: "c"
+    zh_CN.utf8 invalid input value for enum "My: ""S".st_old: "c"
+    zh_TW.utf8 invalid input value for enum "My: ""S".st_old: "c"
+    a type named as a word: es_ES ('22P02', 'enum_in', 'invalid input value for enum entrada_old: "c"')
+    a type named as a word: it_IT ('22P02', 'enum_in', 'invalid input value for enum l_old: "c"')
+    a type named as a word: fr_FR ('22P02', 'enum_in', 'invalid input value for enum valeur_old: "c"')
+    a type named as a word: tr_TR ('22P02', 'enum_in', 'invalid input value for enum tipi_old: "c"')
+    a type named as a word: id_ID ('22P02', 'enum_in', 'invalid input value for enum nilai_old: "c"')
+    a type named as a word: pl_PL ('22P02', 'enum_in', 'invalid input value for enum dla_old: "c"')
+    a type named as a word: pt_BR ('22P02', 'enum_in', 'invalid input value for enum valor_old: "c"')
+    a type named as a word: sv_SE ('22P02', 'enum_in', 'invalid input value for enum indata_old: "c"')
+   messages: {'own': 14280, 'kept': 14280, 'word': 8}
+2. a value the call didn't bind, and a type named as a word of the English message
+   cached, kept type, stored 'in st': ('22P02', 'enum_in', 'invalid input value for enum kept: "in st"')
+   fresh: ('ok', <Record c='in st' text='a'>)
+3. no parameter cast at all: a cached statement that converts a column, or a parameter bound as text, by SQL of the user's own
+   cached, run 1: ('22P02', 'enum_in', 'invalid input value for enum kept: "c"')
+   cached, run 2: ('22P02', 'enum_in', 'invalid input value for enum kept: "c"')
+   cached, run 3: ('22P02', 'enum_in', 'invalid input value for enum kept: "c"')
+   cached unnest, run 1: ('22P02', 'enum_in', 'invalid input value for enum kept: "c"')
+   fresh: ('ok', <Record c='c'>)
+   fresh unnest: ('ok', [<Record x='c'>])
+4. a statement that casts to two types whose names a hand change exchanged
+   cached, after the exchange, a label of the new st: ('22P02', 'enum_in', 'invalid input value for enum kind: "a2"')
+   fresh: ('ok', <Record text='a2' text='a'>)
+   and a composite kept under another name, beside its field's own type
+   cached: ('22P02', 'enum_in', 'invalid input value for enum st: "b"')
+   fresh: ('ok', <Record text='(b)' text='a'>)
+   and a domain the same way
+   cached: ('22P02', 'enum_in', 'invalid input value for enum st: "b"')
+   fresh: ('ok', <Record text='b' text='a'>)
+5. a cast written with a schema, its kept type moved to another schema on the search_path
+   search_path = app, old: cached, a new label: ('22P02', 'enum_in', 'invalid input value for enum old.st: "c"')
+   search_path = app, old: fresh, a bad label: ('22P02', 'enum_in', 'invalid input value for enum st: "zzz"')
+   search_path = old, app: cached, a new label: ('22P02', 'enum_in', 'invalid input value for enum st: "c"')
+   search_path = old, app: fresh, a bad label: ('22P02', 'enum_in', 'invalid input value for enum app.st: "zzz"')
+   search_path = public: cached, a new label: ('22P02', 'enum_in', 'invalid input value for enum old.st: "c"')
+   search_path = public: fresh, a bad label: ('22P02', 'enum_in', 'invalid input value for enum app.st: "zzz"')
+   search_path = old: cached, a new label: ('22P02', 'enum_in', 'invalid input value for enum st: "c"')
+   search_path = old: fresh, a bad label: ('22P02', 'enum_in', 'invalid input value for enum app.st: "zzz"')
+   and one written without, shadowed by a type made in a schema earlier on the search_path
+   cached, a new label: ('22P02', 'enum_in', 'invalid input value for enum old.st: "c"')
+   fresh: ('ok', 'c')
+6. a database whose encoding can't write a language's quote marks
+   LATIN2, C: ('22P02', 'enum_in', 'invalid input value for enum st: "zzz"')
+   LATIN2, de_DE.utf8: ('22P02', 'enum_in', 'invalid input value for enum st: "zzz"')
+   LATIN2, es_ES.utf8: ('22P02', 'enum_in', 'invalid input value for enum st: "zzz"')
+   LATIN2, fr_FR.utf8: ('22P02', 'enum_in', 'invalid input value for enum st: "zzz"')
+   LATIN2, ru_RU.utf8: ('22P02', 'enum_in', 'invalid input value for enum st: "zzz"')
+   LATIN2, ja_JP.utf8: ('22P02', 'enum_in', 'invalid input value for enum st: "zzz"')
+   WIN1251, C: ('22P02', 'enum_in', 'invalid input value for enum st: "zzz"')
+   WIN1251, de_DE.utf8: ('22P02', 'enum_in', 'invalid input value for enum st: "zzz"')
+   WIN1251, es_ES.utf8: ('22P02', 'enum_in', 'invalid input value for enum st: "zzz"')
+   WIN1251, fr_FR.utf8: ('22P02', 'enum_in', 'invalid input value for enum st: "zzz"')
+   WIN1251, ru_RU.utf8: ('22P02', 'enum_in', 'invalid input value for enum st: "zzz"')
+   WIN1251, ja_JP.utf8: ('22P02', 'enum_in', 'invalid input value for enum st: "zzz"')
+   SQL_ASCII, C: ('22P02', 'enum_in', 'invalid input value for enum st: "zzz"')
+   SQL_ASCII, de_DE.utf8: ('22P02', 'enum_in', 'invalid input value for enum st: "zzz"')
+   SQL_ASCII, es_ES.utf8: ('22P02', 'enum_in', 'invalid input value for enum st: "zzz"')
+   SQL_ASCII, fr_FR.utf8: ('22P02', 'enum_in', 'invalid input value for enum st: "zzz"')
+   SQL_ASCII, ru_RU.utf8: ('22P02', 'enum_in', 'invalid input value for enum st: "zzz"')
+   SQL_ASCII, ja_JP.utf8: ('22P02', 'enum_in', 'invalid input value for enum st: "zzz"')
+   KOI8R, C: ('22P02', 'enum_in', 'invalid input value for enum st: "zzz"')
+   KOI8R, de_DE.utf8: ('22P02', 'enum_in', 'invalid input value for enum st: "zzz"')
+   KOI8R, es_ES.utf8: ('22P02', 'enum_in', 'invalid input value for enum st: "zzz"')
+   KOI8R, fr_FR.utf8: ('22P02', 'enum_in', 'invalid input value for enum st: "zzz"')
+   KOI8R, ru_RU.utf8: ('22P02', 'enum_in', 'invalid input value for enum st: "zzz"')
+   KOI8R, ja_JP.utf8: ('22P02', 'enum_in', 'invalid input value for enum st: "zzz"')
+   EUC_KR, C: ('22P02', 'enum_in', 'invalid input value for enum st: "zzz"')
+   EUC_KR, de_DE.utf8: ('22P02', 'enum_in', 'invalid input value for enum st: "zzz"')
+   EUC_KR, es_ES.utf8: ('22P02', 'enum_in', 'invalid input value for enum st: "zzz"')
+   EUC_KR, fr_FR.utf8: ('22P02', 'enum_in', 'invalid input value for enum st: "zzz"')
+   EUC_KR, ru_RU.utf8: ('22P02', 'enum_in', 'invalid input value for enum st: "zzz"')
+   EUC_KR, ja_JP.utf8: ('22P02', 'enum_in', 'invalid input value for enum st: "zzz"')
+7. what else raises 22P02 for an enum: a function's own text, and the routine of a too-long label
+   RAISE with the same text: ('22P02', 'exec_stmt_raise', 'invalid input value for enum st: "x"')
+   re-raised by a handler: ('22P02', 'enum_in', 'invalid input value for enum st: "x"')
+   a 70-byte label: ('22P02', 'enum_in', 'invalid input value for enum st: "yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy"')
+   inside a function with a search_path of its own: ('22P02', 'enum_in', 'invalid input value for enum public.st: "x"')
+   an integer: ('22P02', 'pg_strtoint32_safe', 'invalid input syntax for type integer: "x"')
+   a new value not committed: ('55P04', 'check_safe_enum_use', 'unsafe use of new value "n" of enum type st\nHINT:  New enum values must be committed before they can be used.')
+8. the third silent case: text copied from pg_enum and from the retired column
+   stale, the retired column's text: ('ok', '_morm_retired_7c1e9a04b52fd386_a')
+   stale, pg_enum's text, read by a client and bound: ('ok', '_morm_retired_7c1e9a04b52fd386_b')
+   stale, a label of the old type: ('22P02', 'enum_in', 'invalid input value for enum _morm_retired_m2_st: "a"')
+   a new session, the retired column's text: ('22P02', 'enum_in', 'invalid input value for enum st: "_morm_retired_7c1e9a04b52fd386_a"')

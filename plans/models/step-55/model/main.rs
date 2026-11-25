@@ -2,6 +2,7 @@
 mod calls;
 mod core;
 mod machine;
+mod rule;
 mod world;
 use crate::core::*;
 use std::collections::BTreeMap;
@@ -38,7 +39,10 @@ fn settings(pooled: bool) -> Vec<Cfg> {
     v.push(Cfg { name: "hand relabels without the reset", mix: [2., 1., 1., 4., 1., 1., 2., 1., 4.], noreset: true, ..b() });
     v.push(Cfg { name: "hand relabels without the reset, casts", only: Some(CAST), world: 0.03, mix: [0., 0., 0., 4., 0., 0., 0., 0., 4.], noreset: true, ..b() });
     v.push(Cfg { name: "old labels copied", retired_real: true, ..b() });
-    v.push(Cfg { name: "record and column statements", both_stmt: true, trig: false, ..b() });
+    v.push(Cfg { name: "record and column statements", both_stmt: true, trig: false, stc: false, ..b() });
+    v.push(Cfg { name: "English, a type named as a word", english: true, ..b() });
+    v.push(Cfg { name: "a type named as a word", words: true, ..b() });
+    v.push(Cfg { name: "messages the test can't read", unread: true, ..b() });
     if pooled {
         v.push(Cfg { name: "two processes", procs: 2, ..b() });
         v.push(Cfg { name: "three processes, heavy", procs: 3, world: 0.15, ..b() });
@@ -81,6 +85,7 @@ fn fault_setting(f: u32, pooled: bool) -> Cfg {
         30 => Cfg { name: "f30", role_limit: 4, ..b() },
         31 => Cfg { name: "f31", tx: 0.6, two: 0.9, gap2: 300 * MS, sp: 0.9, gap: 80_000.0, world: 0.2, mix: [1., 0.5, 0.5, 0.5, 0.5, 0.25, 6., 0.25, 0.], ..b() },
         34 => Cfg { name: "f34", held: 0.4, held_app: 1.0, held_rerun: 0.9, held_two: 1.0, held_gap: 300 * MS, gap: 40_000.0, ..b() },
+        x if x >= 108 && x < 120 => Cfg { name: "f36 with the stored cast", only: Some(STC), tx: 0.8, held: if pooled { 0. } else { 0.1 }, world: 0.1, mix: [1., 0., 0., 4., 0., 0., 1., 0., 0.], unread: x == 114 || x == 118, english: x == 113, ..b() },
         36 => Cfg { name: "f36", only: Some(CAST), tx: 0.8, held: if pooled { 0. } else { 0.1 }, world: 0.1, mix: [1., 0., 0., 4., 0., 0., 0., 0., 0.], ..b() },
         38 => Cfg { name: "f38", only: Some(TRIG), held: 0.4, held_app: 1.0, held_two: 1.0, held_gap: 300 * MS, gap: 40_000.0, mig_refresh: 0.0, world: 0.1, mix: [4., 0., 0., 0., 0., 0., 0., 0., 0.], ..b() },
         132 => Cfg { name: "f132", long: 1.0, gap: 120_000.0, ..b() },
@@ -171,13 +176,17 @@ fn main() {
                 continue;
             }
             c.fault = fault;
-            for f in ["noreset", "real", "notrig", "noboth", "pooled2"] {
+            for f in ["noreset", "real", "notrig", "noboth", "pooled2", "nocast", "onpath", "wide", "strict"] {
                 if std::env::var("OPT").is_ok_and(|o| o.split(',').any(|x| x == f)) {
                     match f {
                         "noreset" => c.noreset = true,
                         "real" => c.retired_real = true,
                         "pooled2" => c.pooled2 = pooled,
                         "notrig" => c.trig = false,
+                        "nocast" => c.nocast = true,
+                        "onpath" => c.onpath = true,
+                        "wide" => c.wide = true,
+                        "strict" => c.strict = true,
                         _ => c.both_stmt = false,
                     }
                 }

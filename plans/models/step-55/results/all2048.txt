@@ -1,682 +1,739 @@
-== defaults [straight] fault 0 seeds 1000..3048 (2.4s)
-   FAIL  153/2048 ez I8 held, before then, every error
-   FAIL   34/2048 ez I8 held, before then, visible errors
-   FAIL  285/2048 lit I1
+== defaults [straight] fault 0 seeds 1000..3048 (1.1s)
+   FAIL  136/2048 ez I8 held, before then, every error
+   FAIL   35/2048 ez I8 held, before then, visible errors
+   FAIL  255/2048 lit I1
+   FAIL 2047/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 1272/2048 lit I8 held, before then
+   FAIL  174/2048 lit I8 search_path once per E
+   FAIL 1979/2048 lit I9 loud half
+   FAIL   42/2048 lit I9 loud: a request, entry or replacement
+   FAIL   98/2048 lit R-1271 before t0+W, not judged not old (parameter test)
+== entries off [straight] fault 0 seeds 1000..3048 (1.1s)
+   FAIL  138/2048 ez I8 held, before then, every error
+   FAIL   25/2048 ez I8 held, before then, visible errors
+   FAIL  148/2048 lit I1
    FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 1383/2048 lit I8 held, before then
-   FAIL  191/2048 lit I8 search_path once per E
-   FAIL 1985/2048 lit I9 loud half
-   FAIL   58/2048 lit I9 loud: a request, entry or replacement
-   FAIL  110/2048 lit R-1271 before t0+W, not judged not old (parameter test)
-== entries off [straight] fault 0 seeds 1000..3048 (2.2s)
-   FAIL  142/2048 ez I8 held, before then, every error
-   FAIL   27/2048 ez I8 held, before then, visible errors
-   FAIL  165/2048 lit I1
-   FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 1518/2048 lit I8 held, before then
-   FAIL 1313/2048 lit I8 search_path once per E
-   FAIL 1971/2048 lit I9 loud half
-   FAIL   53/2048 lit I9 loud: a request, entry or replacement
-   FAIL  132/2048 lit R-1271 before t0+W, not judged not old (parameter test)
-== caps of 1 [straight] fault 0 seeds 1000..3048 (2.1s)
-   FAIL  143/2048 ez I8 held, before then, every error
-   FAIL   26/2048 ez I8 held, before then, visible errors
-   FAIL  264/2048 lit I1
-   FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 1404/2048 lit I8 held, before then
-   FAIL  313/2048 lit I8 search_path once per E
-   FAIL 1974/2048 lit I9 loud half
-   FAIL   56/2048 lit I9 loud: a request, entry or replacement
-   FAIL  122/2048 lit R-1271 before t0+W, not judged not old (parameter test)
-== W five times E [straight] fault 0 seeds 1000..3048 (2.2s)
-   FAIL  146/2048 ez I8 held, before then, every error
-   FAIL   21/2048 ez I8 held, before then, visible errors
-   FAIL  204/2048 lit I1
-   FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 1399/2048 lit I8 held, before then
-   FAIL   32/2048 lit I8 search_path once per E
-   FAIL 1975/2048 lit I9 loud half
-   FAIL   40/2048 lit I9 loud: a request, entry or replacement
-   FAIL  145/2048 lit R-1271 before t0+W, not judged not old (parameter test)
-== budget 8 [straight] fault 0 seeds 1000..3048 (2.1s)
-   FAIL  153/2048 ez I8 held, before then, every error
-   FAIL   34/2048 ez I8 held, before then, visible errors
-   FAIL  285/2048 lit I1
-   FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 1383/2048 lit I8 held, before then
-   FAIL  191/2048 lit I8 search_path once per E
-   FAIL 1985/2048 lit I9 loud half
-   FAIL   58/2048 lit I9 loud: a request, entry or replacement
-   FAIL  110/2048 lit R-1271 before t0+W, not judged not old (parameter test)
-== caches off [straight] fault 0 seeds 1000..3048 (1.8s)
-   FAIL  145/2048 ez I8 held, before then, every error
-   FAIL   40/2048 ez I8 held, before then, visible errors
-   FAIL   63/2048 lit I1
-   FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL  145/2048 lit I8 held, before then
-   FAIL 1944/2048 lit I9 loud half
-   FAIL   57/2048 lit I9 loud: a request, entry or replacement
-   FAIL  109/2048 lit R-1271 before t0+W, not judged not old (parameter test)
-== no client input [straight] fault 0 seeds 1000..3048 (1.8s)
-   FAIL  226/2048 lit I1
-   FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 1229/2048 lit I8 held, before then
-   FAIL  342/2048 lit I8 search_path once per E
-   FAIL  348/2048 lit I9 loud half
-   FAIL    9/2048 lit I9 loud: a request, entry or replacement
-== several, one server [straight] fault 0 seeds 1000..3048 (2.2s)
-   FAIL  205/2048 ez I8 held, before then, every error
-   FAIL   38/2048 ez I8 held, before then, visible errors
-   FAIL  116/2048 lit I1 several (rose between them)
-   FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 1390/2048 lit I8 held, before then
-   FAIL   71/2048 lit I8 search_path once per E
-   FAIL 1994/2048 lit I9 loud half
-   FAIL   57/2048 lit I9 loud: a request, entry or replacement
-   FAIL  169/2048 lit R-1271 before t0+W, not judged not old (parameter test)
-== two servers [straight] fault 0 seeds 1000..3048 (2.1s)
-   FAIL  226/2048 ez I8 held, before then, every error
-   FAIL   53/2048 ez I8 held, before then, visible errors
-   FAIL  123/2048 lit I1 several (rose between them)
-   FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 1408/2048 lit I8 held, before then
-   FAIL   81/2048 lit I8 search_path once per E
-   FAIL    1/2048 lit I8 visible from then on (parameter test)
-   FAIL 1980/2048 lit I9 loud half
-   FAIL   49/2048 lit I9 loud: a request, entry or replacement
-   FAIL  212/2048 lit R-1271 before t0+W, not judged not old (parameter test)
-== three servers [straight] fault 0 seeds 1000..3048 (2.3s)
-   FAIL  217/2048 ez I8 held, before then, every error
-   FAIL   41/2048 ez I8 held, before then, visible errors
-   FAIL  127/2048 lit I1 several (rose between them)
-   FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 1416/2048 lit I8 held, before then
-   FAIL   74/2048 lit I8 search_path once per E
-   FAIL 1970/2048 lit I9 loud half
-   FAIL   66/2048 lit I9 loud: a request, entry or replacement
-   FAIL  162/2048 lit R-1271 before t0+W, not judged not old (parameter test)
-== heavy [straight] fault 0 seeds 1000..3048 (2.1s)
-   FAIL  293/2048 ez I8 held, before then, every error
-   FAIL   59/2048 ez I8 held, before then, visible errors
-   FAIL  261/2048 lit I1
-   FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 1734/2048 lit I8 held, before then
-   FAIL  128/2048 lit I8 search_path once per E
-   FAIL 2039/2048 lit I9 loud half
-   FAIL  330/2048 lit I9 loud: a request, entry or replacement
-   FAIL  150/2048 lit R-1271 before t0+W, not judged not old (parameter test)
-== landing always [straight] fault 0 seeds 1000..3048 (2.1s)
-   FAIL  149/2048 ez I8 held, before then, every error
-   FAIL   33/2048 ez I8 held, before then, visible errors
-   FAIL  453/2048 lit I1
-   FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 1371/2048 lit I8 held, before then
-   FAIL  184/2048 lit I8 search_path once per E
-   FAIL 1985/2048 lit I9 loud half
-   FAIL   59/2048 lit I9 loud: a request, entry or replacement
+   FAIL 1403/2048 lit I8 held, before then
+   FAIL 1068/2048 lit I8 search_path once per E
+   FAIL 1961/2048 lit I9 loud half
+   FAIL   41/2048 lit I9 loud: a request, entry or replacement
    FAIL  114/2048 lit R-1271 before t0+W, not judged not old (parameter test)
-== two servers, landing always, heavy [straight] fault 0 seeds 1000..3048 (1.9s)
-   FAIL  369/2048 ez I8 held, before then, every error
-   FAIL   80/2048 ez I8 held, before then, visible errors
-   FAIL  349/2048 lit I1 several (rose between them)
-   FAIL 2046/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 1835/2048 lit I8 held, before then
+== caps of 1 [straight] fault 0 seeds 1000..3048 (1.1s)
+   FAIL  131/2048 ez I8 held, before then, every error
+   FAIL   30/2048 ez I8 held, before then, visible errors
+   FAIL  272/2048 lit I1
+   FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 1331/2048 lit I8 held, before then
+   FAIL  261/2048 lit I8 search_path once per E
+   FAIL 1983/2048 lit I9 loud half
+   FAIL   48/2048 lit I9 loud: a request, entry or replacement
+   FAIL  103/2048 lit R-1271 before t0+W, not judged not old (parameter test)
+== W five times E [straight] fault 0 seeds 1000..3048 (1.1s)
+   FAIL  123/2048 ez I8 held, before then, every error
+   FAIL   22/2048 ez I8 held, before then, visible errors
+   FAIL  196/2048 lit I1
+   FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 1314/2048 lit I8 held, before then
+   FAIL   30/2048 lit I8 search_path once per E
+   FAIL 1958/2048 lit I9 loud half
+   FAIL   49/2048 lit I9 loud: a request, entry or replacement
+   FAIL  114/2048 lit R-1271 before t0+W, not judged not old (parameter test)
+== budget 8 [straight] fault 0 seeds 1000..3048 (1.1s)
+   FAIL  136/2048 ez I8 held, before then, every error
+   FAIL   35/2048 ez I8 held, before then, visible errors
+   FAIL  255/2048 lit I1
+   FAIL 2047/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 1272/2048 lit I8 held, before then
+   FAIL  174/2048 lit I8 search_path once per E
+   FAIL 1979/2048 lit I9 loud half
+   FAIL   42/2048 lit I9 loud: a request, entry or replacement
+   FAIL   98/2048 lit R-1271 before t0+W, not judged not old (parameter test)
+== caches off [straight] fault 0 seeds 1000..3048 (0.9s)
+   FAIL  122/2048 ez I8 held, before then, every error
+   FAIL   30/2048 ez I8 held, before then, visible errors
+   FAIL   53/2048 lit I1
+   FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL  122/2048 lit I8 held, before then
+   FAIL 1886/2048 lit I9 loud half
+   FAIL   39/2048 lit I9 loud: a request, entry or replacement
+   FAIL  115/2048 lit R-1271 before t0+W, not judged not old (parameter test)
+== no client input [straight] fault 0 seeds 1000..3048 (0.9s)
+   FAIL  211/2048 lit I1
+   FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 1211/2048 lit I8 held, before then
+   FAIL  292/2048 lit I8 search_path once per E
+   FAIL  583/2048 lit I9 loud half
+   FAIL    2/2048 lit I9 loud: a request, entry or replacement
+== several, one server [straight] fault 0 seeds 1000..3048 (1.1s)
+   FAIL  185/2048 ez I8 held, before then, every error
+   FAIL   32/2048 ez I8 held, before then, visible errors
+   FAIL  102/2048 lit I1 several (rose between them)
+   FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 1302/2048 lit I8 held, before then
    FAIL   58/2048 lit I8 search_path once per E
-   FAIL 2040/2048 lit I9 loud half
-   FAIL  255/2048 lit I9 loud: a request, entry or replacement
-   FAIL  195/2048 lit R-1271 before t0+W, not judged not old (parameter test)
-== savepoints [straight] fault 0 seeds 1000..3048 (2.7s)
-   FAIL  171/2048 ez I8 held, before then, every error
-   FAIL   36/2048 ez I8 held, before then, visible errors
-   FAIL  300/2048 lit I1
+   FAIL 1972/2048 lit I9 loud half
+   FAIL   46/2048 lit I9 loud: a request, entry or replacement
+   FAIL  153/2048 lit R-1271 before t0+W, not judged not old (parameter test)
+== two servers [straight] fault 0 seeds 1000..3048 (1.1s)
+   FAIL  197/2048 ez I8 held, before then, every error
+   FAIL   29/2048 ez I8 held, before then, visible errors
+   FAIL  115/2048 lit I1 several (rose between them)
+   FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 1305/2048 lit I8 held, before then
+   FAIL   61/2048 lit I8 search_path once per E
+   FAIL 1970/2048 lit I9 loud half
+   FAIL   53/2048 lit I9 loud: a request, entry or replacement
+   FAIL  162/2048 lit R-1271 before t0+W, not judged not old (parameter test)
+== three servers [straight] fault 0 seeds 1000..3048 (1.1s)
+   FAIL  196/2048 ez I8 held, before then, every error
+   FAIL   44/2048 ez I8 held, before then, visible errors
+   FAIL  114/2048 lit I1 several (rose between them)
    FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL 1309/2048 lit I8 held, before then
-   FAIL  527/2048 lit I8 search_path once per E
-   FAIL 2034/2048 lit I9 loud half
-   FAIL   57/2048 lit I9 loud: a request, entry or replacement
-   FAIL  226/2048 lit R-1271 before t0+W, not judged not old (parameter test)
-== RR and SERIALIZABLE only [straight] fault 0 seeds 1000..3048 (2.1s)
-   FAIL  153/2048 ez I8 held, before then, every error
-   FAIL   34/2048 ez I8 held, before then, visible errors
-   FAIL  285/2048 lit I1
-   FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 1383/2048 lit I8 held, before then
-   FAIL  191/2048 lit I8 search_path once per E
-   FAIL 1985/2048 lit I9 loud half
-   FAIL   58/2048 lit I9 loud: a request, entry or replacement
-   FAIL  110/2048 lit R-1271 before t0+W, not judged not old (parameter test)
-== quiet [straight] fault 0 seeds 1000..3048 (2.2s)
-   FAIL   29/2048 ez I8 held, before then, every error
-   FAIL   12/2048 ez I8 held, before then, visible errors
-   FAIL   57/2048 lit I1
-   FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL  416/2048 lit I8 held, before then
-   FAIL   62/2048 lit I8 search_path once per E
-   FAIL 1848/2048 lit I9 loud half
-   FAIL    1/2048 lit I9 loud: a request, entry or replacement
-   FAIL   25/2048 lit R-1271 before t0+W, not judged not old (parameter test)
-== hand relabels [straight] fault 0 seeds 1000..3048 (2.1s)
-   FAIL   99/2048 ez I8 held, before then, every error
-   FAIL   24/2048 ez I8 held, before then, visible errors
-   FAIL  154/2048 lit I1
-   FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL  900/2048 lit I8 held, before then
-   FAIL  131/2048 lit I8 search_path once per E
-   FAIL 2044/2048 lit I9 loud half
-   FAIL  103/2048 lit I9 loud: a request, entry or replacement
-   FAIL   85/2048 lit R-1271 before t0+W, not judged not old (parameter test)
-== long transactions [straight] fault 0 seeds 1000..3048 (2.5s)
-   FAIL   81/2048 ez I8 held, before then, every error
-   FAIL   21/2048 ez I8 held, before then, visible errors
-   FAIL    1/2048 ez I8 held, from then on
-   FAIL  242/2048 lit I1
-   FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL  945/2048 lit I8 held, before then
-   FAIL    4/2048 lit I8 held, from then on
-   FAIL   65/2048 lit I8 search_path once per E
-   FAIL    9/2048 lit I8 visible from then on (parameter test)
-   FAIL 1813/2048 lit I9 loud half
-   FAIL   18/2048 lit I9 loud: a request, entry or replacement
-   FAIL    2/2048 lit I9 silent past W of the first confirmation
-   FAIL  165/2048 lit R-1271 before t0+W, not judged not old (parameter test)
-== slow [straight] fault 0 seeds 1000..3048 (1.7s)
-   FAIL  200/2048 ez I8 held, before then, every error
-   FAIL   67/2048 ez I8 held, before then, visible errors
-   FAIL   88/2048 ez I8 held, from then on
-   FAIL   22/2048 lit I1
-   FAIL 2047/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL  200/2048 lit I8 held, before then
-   FAIL  232/2048 lit I8 held, from then on
-   FAIL    1/2048 lit I8 search_path once per E
-   FAIL  517/2048 lit I8 visible from then on (parameter test)
-   FAIL  812/2048 lit R-1271 before t0+W, not judged not old (parameter test)
-== transactions without retry [straight] fault 0 seeds 1000..3048 (2.1s)
-   FAIL  421/2048 lit I1
-   FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 1620/2048 lit I8 search_path once per E
-   FAIL 2036/2048 lit I9 loud half
-   FAIL  110/2048 lit I9 loud: a request, entry or replacement
-   FAIL  228/2048 lit R-1271 before t0+W, not judged not old (parameter test)
-== max 1 [straight] fault 0 seeds 1000..3048 (3.1s)
-   FAIL   49/2048 ez I8 held, before then, every error
-   FAIL   15/2048 ez I8 held, before then, visible errors
-   FAIL  808/2048 lit I1
-   FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL  675/2048 lit I8 held, before then
-   FAIL  309/2048 lit I8 search_path once per E
-   FAIL 1758/2048 lit I9 loud half
-   FAIL   35/2048 lit I9 loud: a request, entry or replacement
-   FAIL   48/2048 lit R-1271 before t0+W, not judged not old (parameter test)
-== max 1, budget 1 [straight] fault 0 seeds 1000..3048 (2.9s)
-   FAIL   44/2048 ez I8 held, before then, every error
-   FAIL   13/2048 ez I8 held, before then, visible errors
-   FAIL  804/2048 lit I1
-   FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL  671/2048 lit I8 held, before then
-   FAIL  305/2048 lit I8 search_path once per E
-   FAIL 1752/2048 lit I9 loud half
-   FAIL   33/2048 lit I9 loud: a request, entry or replacement
-   FAIL   45/2048 lit R-1271 before t0+W, not judged not old (parameter test)
-== max 1, quick [straight] fault 0 seeds 1000..3048 (2.0s)
-   FAIL   68/2048 ez I8 held, before then, every error
-   FAIL   17/2048 ez I8 held, before then, visible errors
-   FAIL  371/2048 lit I1
-   FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL  755/2048 lit I8 held, before then
-   FAIL  173/2048 lit I8 search_path once per E
-   FAIL 1726/2048 lit I9 loud half
-   FAIL   11/2048 lit I9 loud: a request, entry or replacement
-   FAIL   81/2048 lit R-1271 before t0+W, not judged not old (parameter test)
-== max 2, budget 2, heavy [straight] fault 0 seeds 1000..3048 (1.9s)
-   FAIL  191/2048 ez I8 held, before then, every error
-   FAIL   44/2048 ez I8 held, before then, visible errors
-   FAIL  491/2048 lit I1
-   FAIL 2047/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 1530/2048 lit I8 held, before then
-   FAIL  223/2048 lit I8 search_path once per E
-   FAIL 2031/2048 lit I9 loud half
-   FAIL  199/2048 lit I9 loud: a request, entry or replacement
-   FAIL  122/2048 lit R-1271 before t0+W, not judged not old (parameter test)
-== hand relabels without the reset [straight] fault 0 seeds 1000..3048 (2.1s)
-   FAIL  103/2048 ez I8 held, before then, every error
-   FAIL   28/2048 ez I8 held, before then, visible errors
-   FAIL  168/2048 lit I1
-   FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL  914/2048 lit I8 held, before then
-   FAIL  129/2048 lit I8 search_path once per E
-   FAIL 2047/2048 lit I9 loud half
-   FAIL   99/2048 lit I9 loud: a request, entry or replacement
-   FAIL   77/2048 lit R-1271 before t0+W, not judged not old (parameter test)
-== hand relabels without the reset, casts [straight] fault 0 seeds 1000..3048 (2.0s)
-   FAIL 2047/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 2043/2048 lit I9 loud half
-== old labels copied [straight] fault 0 seeds 1000..3048 (2.2s)
-   FAIL  111/2048 ez I8 held, before then, every error
-   FAIL   35/2048 ez I8 held, before then, visible errors
-   FAIL  273/2048 lit I1
-   FAIL 2047/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 1354/2048 lit I8 held, before then
-   FAIL  184/2048 lit I8 search_path once per E
-   FAIL 1961/2048 lit I9 loud half
-   FAIL   53/2048 lit I9 loud: a request, entry or replacement
-   FAIL  129/2048 lit R-1271 before t0+W, not judged not old (parameter test)
-== record and column statements [straight] fault 0 seeds 1000..3048 (2.2s)
-   FAIL  136/2048 ez I8 held, before then, every error
-   FAIL   28/2048 ez I8 held, before then, visible errors
-   FAIL  287/2048 lit I1
-   FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 1234/2048 lit I8 held, before then
-   FAIL  196/2048 lit I8 search_path once per E
-   FAIL 1973/2048 lit I9 loud half
-   FAIL   81/2048 lit I9 loud: a request, entry or replacement
-   FAIL  149/2048 lit R-1271 before t0+W, not judged not old (parameter test)
-== held [straight] fault 0 seeds 1000..3048 (2.3s)
-   FAIL  224/2048 ez I8 held, before then, every error
-   FAIL   38/2048 ez I8 held, before then, visible errors
-   FAIL  142/2048 lit I1
-   FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 1816/2048 lit I8 held, before then
-   FAIL  133/2048 lit I8 search_path once per E
-   FAIL 1770/2048 lit I9 loud half
-   FAIL   15/2048 lit I9 loud: a request, entry or replacement
-   FAIL   57/2048 lit R-1271 before t0+W, not judged not old (parameter test)
-== held, quiet [straight] fault 0 seeds 1000..3048 (2.4s)
-   FAIL   39/2048 ez I8 held, before then, every error
-   FAIL    6/2048 ez I8 held, before then, visible errors
-   FAIL   17/2048 lit I1
-   FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL  683/2048 lit I8 held, before then
-   FAIL   43/2048 lit I8 search_path once per E
-   FAIL 1514/2048 lit I9 loud half
-   FAIL    1/2048 lit I9 loud: a request, entry or replacement
-   FAIL    5/2048 lit R-1271 before t0+W, not judged not old (parameter test)
-== long holds [straight] fault 0 seeds 1000..3048 (3.1s)
-   FAIL  560/2048 ez I8 held, before then, every error
-   FAIL  145/2048 ez I8 held, before then, visible errors
-   FAIL   22/2048 ez I8 held, from then on
-   FAIL  255/2048 lit I1
-   FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 1976/2048 lit I8 held, before then
-   FAIL  111/2048 lit I8 held, from then on
-   FAIL   44/2048 lit I8 search_path once per E
-   FAIL   11/2048 lit I8 visible from then on (parameter test)
-   FAIL 1878/2048 lit I9 loud half
-   FAIL   11/2048 lit I9 loud: a request, entry or replacement
-   FAIL  108/2048 lit R-1271 before t0+W, not judged not old (parameter test)
-== long holds, held [straight] fault 0 seeds 1000..3048 (3.4s)
-   FAIL  667/2048 ez I8 held, before then, every error
-   FAIL  158/2048 ez I8 held, before then, visible errors
-   FAIL   28/2048 ez I8 held, from then on
-   FAIL  249/2048 lit I1
-   FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 1993/2048 lit I8 held, before then
-   FAIL  148/2048 lit I8 held, from then on
-   FAIL   11/2048 lit I8 search_path once per E
-   FAIL    2/2048 lit I8 visible from then on (parameter test)
-   FAIL 1758/2048 lit I9 loud half
-   FAIL    2/2048 lit I9 loud: a request, entry or replacement
-   FAIL   27/2048 lit R-1271 before t0+W, not judged not old (parameter test)
-== long holds, quiet [straight] fault 0 seeds 1000..3048 (2.6s)
-   FAIL  231/2048 ez I8 held, before then, every error
-   FAIL  109/2048 ez I8 held, before then, visible errors
-   FAIL   21/2048 ez I8 held, from then on
-   FAIL   80/2048 lit I1
-   FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 1454/2048 lit I8 held, before then
-   FAIL   65/2048 lit I8 held, from then on
-   FAIL    6/2048 lit I8 search_path once per E
-   FAIL    5/2048 lit I8 visible from then on (parameter test)
-   FAIL  903/2048 lit I9 loud half
-   FAIL   38/2048 lit R-1271 before t0+W, not judged not old (parameter test)
-== long holds, hand relabels [straight] fault 0 seeds 1000..3048 (3.0s)
-   FAIL  380/2048 ez I8 held, before then, every error
-   FAIL   85/2048 ez I8 held, before then, visible errors
-   FAIL   13/2048 ez I8 held, from then on
-   FAIL  123/2048 lit I1
-   FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 1712/2048 lit I8 held, before then
-   FAIL   78/2048 lit I8 held, from then on
-   FAIL    9/2048 lit I8 search_path once per E
-   FAIL    2/2048 lit I8 visible from then on (parameter test)
-   FAIL 2010/2048 lit I9 loud half
-   FAIL    3/2048 lit I9 loud: a request, entry or replacement
-   FAIL    2/2048 lit I9 silent past W of the first confirmation
-   FAIL   26/2048 lit R-1271 before t0+W, not judged not old (parameter test)
-== role limit [straight] fault 0 seeds 1000..3048 (2.1s)
-   FAIL  133/2048 ez I8 held, before then, every error
-   FAIL   30/2048 ez I8 held, before then, visible errors
-   FAIL  270/2048 lit I1
-   FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 1394/2048 lit I8 held, before then
-   FAIL  183/2048 lit I8 search_path once per E
-   FAIL 1970/2048 lit I9 loud half
-   FAIL   84/2048 lit I9 loud: a request, entry or replacement
-   FAIL   76/2048 lit R-1271 before t0+W, not judged not old (parameter test)
-== role limit, heavy [straight] fault 0 seeds 1000..3048 (2.0s)
-   FAIL  284/2048 ez I8 held, before then, every error
-   FAIL   69/2048 ez I8 held, before then, visible errors
-   FAIL  321/2048 lit I1
-   FAIL 2047/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 1724/2048 lit I8 held, before then
-   FAIL  127/2048 lit I8 search_path once per E
-   FAIL 2040/2048 lit I9 loud half
-   FAIL  396/2048 lit I9 loud: a request, entry or replacement
-   FAIL   60/2048 lit R-1271 before t0+W, not judged not old (parameter test)
-== refusals [straight] fault 0 seeds 1000..3048 (2.1s)
-   FAIL  237/2048 ez I8 held, before then, every error
+   FAIL   60/2048 lit I8 search_path once per E
+   FAIL 1955/2048 lit I9 loud half
+   FAIL   44/2048 lit I9 loud: a request, entry or replacement
+   FAIL  173/2048 lit R-1271 before t0+W, not judged not old (parameter test)
+== heavy [straight] fault 0 seeds 1000..3048 (1.0s)
+   FAIL  235/2048 ez I8 held, before then, every error
    FAIL   64/2048 ez I8 held, before then, visible errors
-   FAIL  431/2048 lit I1
+   FAIL  303/2048 lit I1
+   FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 1672/2048 lit I8 held, before then
+   FAIL   83/2048 lit I8 search_path once per E
+   FAIL 2037/2048 lit I9 loud half
+   FAIL  275/2048 lit I9 loud: a request, entry or replacement
+   FAIL  126/2048 lit R-1271 before t0+W, not judged not old (parameter test)
+== landing always [straight] fault 0 seeds 1000..3048 (1.1s)
+   FAIL  128/2048 ez I8 held, before then, every error
+   FAIL   31/2048 ez I8 held, before then, visible errors
+   FAIL  399/2048 lit I1
+   FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 1276/2048 lit I8 held, before then
+   FAIL  165/2048 lit I8 search_path once per E
+   FAIL 1976/2048 lit I9 loud half
+   FAIL   41/2048 lit I9 loud: a request, entry or replacement
+   FAIL   95/2048 lit R-1271 before t0+W, not judged not old (parameter test)
+== two servers, landing always, heavy [straight] fault 0 seeds 1000..3048 (1.0s)
+   FAIL  333/2048 ez I8 held, before then, every error
+   FAIL   64/2048 ez I8 held, before then, visible errors
+   FAIL  336/2048 lit I1 several (rose between them)
+   FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 1736/2048 lit I8 held, before then
+   FAIL   50/2048 lit I8 search_path once per E
+   FAIL 2042/2048 lit I9 loud half
+   FAIL  227/2048 lit I9 loud: a request, entry or replacement
+   FAIL  167/2048 lit R-1271 before t0+W, not judged not old (parameter test)
+== savepoints [straight] fault 0 seeds 1000..3048 (1.4s)
+   FAIL  140/2048 ez I8 held, before then, every error
+   FAIL   34/2048 ez I8 held, before then, visible errors
+   FAIL  290/2048 lit I1
+   FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 1181/2048 lit I8 held, before then
+   FAIL  537/2048 lit I8 search_path once per E
+   FAIL 2019/2048 lit I9 loud half
+   FAIL   44/2048 lit I9 loud: a request, entry or replacement
+   FAIL  232/2048 lit R-1271 before t0+W, not judged not old (parameter test)
+== RR and SERIALIZABLE only [straight] fault 0 seeds 1000..3048 (1.1s)
+   FAIL  136/2048 ez I8 held, before then, every error
+   FAIL   35/2048 ez I8 held, before then, visible errors
+   FAIL  255/2048 lit I1
    FAIL 2047/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 1662/2048 lit I8 held, before then
-   FAIL  148/2048 lit I8 search_path once per E
-   FAIL 1923/2048 lit I9 loud half
-   FAIL  385/2048 lit I9 loud: a request, entry or replacement
-   FAIL   13/2048 lit R-1271 before t0+W, not judged not old (parameter test)
-== held, no rerun [straight] fault 0 seeds 1000..3048 (2.1s)
-   FAIL  122/2048 ez I8 held, before then, every error
-   FAIL   17/2048 ez I8 held, before then, visible errors
-   FAIL  283/2048 lit I1
-   FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL 1272/2048 lit I8 held, before then
-   FAIL  177/2048 lit I8 search_path once per E
-   FAIL 1981/2048 lit I9 loud half
-   FAIL   45/2048 lit I9 loud: a request, entry or replacement
-   FAIL  117/2048 lit R-1271 before t0+W, not judged not old (parameter test)
-== defaults [pooled] fault 0 seeds 1000..3048 (2.4s)
+   FAIL  174/2048 lit I8 search_path once per E
+   FAIL 1979/2048 lit I9 loud half
+   FAIL   42/2048 lit I9 loud: a request, entry or replacement
+   FAIL   98/2048 lit R-1271 before t0+W, not judged not old (parameter test)
+== quiet [straight] fault 0 seeds 1000..3048 (1.1s)
+   FAIL   24/2048 ez I8 held, before then, every error
+   FAIL    4/2048 ez I8 held, before then, visible errors
+   FAIL   41/2048 lit I1
    FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 2047/2048 lit I2 (an adoption took its place)
-   FAIL 1468/2048 lit I8 never visible after RECONNECT
-   FAIL   10/2048 lit I8 never visible after server_lifetime
-   FAIL  896/2048 lit I8 search_path once per E
-   FAIL 1253/2048 lit I8 stale statement once per E
+   FAIL  370/2048 lit I8 held, before then
+   FAIL   52/2048 lit I8 search_path once per E
+   FAIL 1851/2048 lit I9 loud half
+   FAIL    2/2048 lit I9 loud: a request, entry or replacement
+   FAIL   35/2048 lit R-1271 before t0+W, not judged not old (parameter test)
+== hand relabels [straight] fault 0 seeds 1000..3048 (1.1s)
+   FAIL   78/2048 ez I8 held, before then, every error
+   FAIL   16/2048 ez I8 held, before then, visible errors
+   FAIL  149/2048 lit I1
+   FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL  806/2048 lit I8 held, before then
+   FAIL  108/2048 lit I8 search_path once per E
    FAIL 2043/2048 lit I9 loud half
-   FAIL  542/2048 lit I9 loud: a request, entry or replacement
-   FAIL  545/2048 mid I8 stale statement once per E, running calls and actions apart
-== entries off [pooled] fault 0 seeds 1000..3048 (2.4s)
+   FAIL   79/2048 lit I9 loud: a request, entry or replacement
+   FAIL   50/2048 lit R-1271 before t0+W, not judged not old (parameter test)
+== long transactions [straight] fault 0 seeds 1000..3048 (1.2s)
+   FAIL   94/2048 ez I8 held, before then, every error
+   FAIL   26/2048 ez I8 held, before then, visible errors
+   FAIL    1/2048 ez I8 held, from then on
+   FAIL  180/2048 lit I1
    FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 2048/2048 lit I2 (an adoption took its place)
-   FAIL 1489/2048 lit I8 never visible after RECONNECT
-   FAIL    8/2048 lit I8 never visible after server_lifetime
-   FAIL 1954/2048 lit I8 search_path once per E
-   FAIL 1651/2048 lit I8 stale statement once per E
+   FAIL  878/2048 lit I8 held, before then
+   FAIL    2/2048 lit I8 held, from then on
+   FAIL   56/2048 lit I8 search_path once per E
+   FAIL    9/2048 lit I8 visible from then on (parameter test)
+   FAIL 1792/2048 lit I9 loud half
+   FAIL   20/2048 lit I9 loud: a request, entry or replacement
+   FAIL    2/2048 lit I9 silent past W of the first confirmation
+   FAIL  129/2048 lit R-1271 before t0+W, not judged not old (parameter test)
+== slow [straight] fault 0 seeds 1000..3048 (0.9s)
+   FAIL  158/2048 ez I8 held, before then, every error
+   FAIL   67/2048 ez I8 held, before then, visible errors
+   FAIL   98/2048 ez I8 held, from then on
+   FAIL   22/2048 lit I1
+   FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL  158/2048 lit I8 held, before then
+   FAIL  211/2048 lit I8 held, from then on
+   FAIL    2/2048 lit I8 search_path once per E
+   FAIL  501/2048 lit I8 visible from then on (parameter test)
+   FAIL  751/2048 lit R-1271 before t0+W, not judged not old (parameter test)
+== transactions without retry [straight] fault 0 seeds 1000..3048 (1.1s)
+   FAIL  355/2048 lit I1
+   FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 1569/2048 lit I8 search_path once per E
+   FAIL 2015/2048 lit I9 loud half
+   FAIL   77/2048 lit I9 loud: a request, entry or replacement
+   FAIL  230/2048 lit R-1271 before t0+W, not judged not old (parameter test)
+== max 1 [straight] fault 0 seeds 1000..3048 (1.4s)
+   FAIL   42/2048 ez I8 held, before then, every error
+   FAIL    8/2048 ez I8 held, before then, visible errors
+   FAIL  768/2048 lit I1
+   FAIL 2047/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL  663/2048 lit I8 held, before then
+   FAIL  260/2048 lit I8 search_path once per E
+   FAIL 1726/2048 lit I9 loud half
+   FAIL   29/2048 lit I9 loud: a request, entry or replacement
+   FAIL   50/2048 lit R-1271 before t0+W, not judged not old (parameter test)
+== max 1, budget 1 [straight] fault 0 seeds 1000..3048 (1.4s)
+   FAIL   39/2048 ez I8 held, before then, every error
+   FAIL    8/2048 ez I8 held, before then, visible errors
+   FAIL  744/2048 lit I1
+   FAIL 2047/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL  673/2048 lit I8 held, before then
+   FAIL  233/2048 lit I8 search_path once per E
+   FAIL 1722/2048 lit I9 loud half
+   FAIL   23/2048 lit I9 loud: a request, entry or replacement
+   FAIL   52/2048 lit R-1271 before t0+W, not judged not old (parameter test)
+== max 1, quick [straight] fault 0 seeds 1000..3048 (0.9s)
+   FAIL   63/2048 ez I8 held, before then, every error
+   FAIL   13/2048 ez I8 held, before then, visible errors
+   FAIL  317/2048 lit I1
+   FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL  680/2048 lit I8 held, before then
+   FAIL  116/2048 lit I8 search_path once per E
+   FAIL 1682/2048 lit I9 loud half
+   FAIL   11/2048 lit I9 loud: a request, entry or replacement
+   FAIL   65/2048 lit R-1271 before t0+W, not judged not old (parameter test)
+== max 2, budget 2, heavy [straight] fault 0 seeds 1000..3048 (1.0s)
+   FAIL  180/2048 ez I8 held, before then, every error
+   FAIL   61/2048 ez I8 held, before then, visible errors
+   FAIL  512/2048 lit I1
+   FAIL 2047/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 1378/2048 lit I8 held, before then
+   FAIL  200/2048 lit I8 search_path once per E
+   FAIL 2025/2048 lit I9 loud half
+   FAIL  214/2048 lit I9 loud: a request, entry or replacement
+   FAIL  119/2048 lit R-1271 before t0+W, not judged not old (parameter test)
+== hand relabels without the reset [straight] fault 0 seeds 1000..3048 (1.1s)
+   FAIL   76/2048 ez I8 held, before then, every error
+   FAIL   10/2048 ez I8 held, before then, visible errors
+   FAIL  166/2048 lit I1
+   FAIL 2047/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL  803/2048 lit I8 held, before then
+   FAIL   97/2048 lit I8 search_path once per E
+   FAIL 2046/2048 lit I9 loud half
+   FAIL   78/2048 lit I9 loud: a request, entry or replacement
+   FAIL   61/2048 lit R-1271 before t0+W, not judged not old (parameter test)
+== hand relabels without the reset, casts [straight] fault 0 seeds 1000..3048 (1.0s)
+   FAIL 2047/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL 2045/2048 lit I9 loud half
-   FAIL  475/2048 lit I9 loud: a request, entry or replacement
-   FAIL 1139/2048 mid I8 stale statement once per E, running calls and actions apart
-== caps of 1 [pooled] fault 0 seeds 1000..3048 (3.2s)
+== old labels copied [straight] fault 0 seeds 1000..3048 (1.1s)
+   FAIL  106/2048 ez I8 held, before then, every error
+   FAIL   32/2048 ez I8 held, before then, visible errors
+   FAIL  226/2048 lit I1
    FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 2048/2048 lit I2 (an adoption took its place)
-   FAIL 1399/2048 lit I8 never visible after RECONNECT
-   FAIL    9/2048 lit I8 never visible after server_lifetime
-   FAIL 1350/2048 lit I8 search_path once per E
-   FAIL 1431/2048 lit I8 stale statement once per E
-   FAIL 2041/2048 lit I9 loud half
-   FAIL  459/2048 lit I9 loud: a request, entry or replacement
-   FAIL  766/2048 mid I8 stale statement once per E, running calls and actions apart
-== W five times E [pooled] fault 0 seeds 1000..3048 (2.5s)
+   FAIL 1262/2048 lit I8 held, before then
+   FAIL  155/2048 lit I8 search_path once per E
+   FAIL 1965/2048 lit I9 loud half
+   FAIL   47/2048 lit I9 loud: a request, entry or replacement
+   FAIL  125/2048 lit R-1271 before t0+W, not judged not old (parameter test)
+== record and column statements [straight] fault 0 seeds 1000..3048 (1.1s)
+   FAIL  141/2048 ez I8 held, before then, every error
+   FAIL   35/2048 ez I8 held, before then, visible errors
+   FAIL  258/2048 lit I1
    FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 2048/2048 lit I2 (an adoption took its place)
-   FAIL 1447/2048 lit I8 never visible after RECONNECT
-   FAIL   12/2048 lit I8 never visible after server_lifetime
-   FAIL  127/2048 lit I8 search_path once per E
-   FAIL 1022/2048 lit I8 stale statement once per E
-   FAIL 2044/2048 lit I9 loud half
-   FAIL  555/2048 lit I9 loud: a request, entry or replacement
-   FAIL  225/2048 mid I8 stale statement once per E, running calls and actions apart
-== budget 8 [pooled] fault 0 seeds 1000..3048 (2.5s)
+   FAIL 1282/2048 lit I8 held, before then
+   FAIL    1/2048 lit I8 held, from then on
+   FAIL  215/2048 lit I8 search_path once per E
+   FAIL 1965/2048 lit I9 loud half
+   FAIL   67/2048 lit I9 loud: a request, entry or replacement
+   FAIL  165/2048 lit R-1271 before t0+W, not judged not old (parameter test)
+== English, a type named as a word [straight] fault 0 seeds 1000..3048 (1.0s)
+   FAIL  136/2048 ez I8 held, before then, every error
+   FAIL   35/2048 ez I8 held, before then, visible errors
+   FAIL  255/2048 lit I1
+   FAIL 2047/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 1272/2048 lit I8 held, before then
+   FAIL  174/2048 lit I8 search_path once per E
+   FAIL 1979/2048 lit I9 loud half
+   FAIL   42/2048 lit I9 loud: a request, entry or replacement
+   FAIL   98/2048 lit R-1271 before t0+W, not judged not old (parameter test)
+== a type named as a word [straight] fault 0 seeds 1000..3048 (1.1s)
+   FAIL  133/2048 ez I8 held, before then, every error
+   FAIL   25/2048 ez I8 held, before then, visible errors
+   FAIL  234/2048 lit I1
    FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 2047/2048 lit I2 (an adoption took its place)
-   FAIL 1468/2048 lit I8 never visible after RECONNECT
-   FAIL   10/2048 lit I8 never visible after server_lifetime
-   FAIL  896/2048 lit I8 search_path once per E
-   FAIL 1253/2048 lit I8 stale statement once per E
-   FAIL 2043/2048 lit I9 loud half
-   FAIL  542/2048 lit I9 loud: a request, entry or replacement
-   FAIL  545/2048 mid I8 stale statement once per E, running calls and actions apart
-== caches off [pooled] fault 0 seeds 1000..3048 (1.8s)
+   FAIL 1290/2048 lit I8 held, before then
+   FAIL  176/2048 lit I8 search_path once per E
+   FAIL 2038/2048 lit I9 loud half
+   FAIL   47/2048 lit I9 loud: a request, entry or replacement
+   FAIL   99/2048 lit R-1271 before t0+W, not judged not old (parameter test)
+== messages the test can't read [straight] fault 0 seeds 1000..3048 (1.0s)
+   FAIL  118/2048 ez I8 held, before then, every error
+   FAIL   24/2048 ez I8 held, before then, visible errors
+   FAIL  250/2048 lit I1
    FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL  804/2048 lit I8 never visible after RECONNECT
-   FAIL 2043/2048 lit I9 loud half
-== no client input [pooled] fault 0 seeds 1000..3048 (2.3s)
+   FAIL 1282/2048 lit I8 held, before then
+   FAIL  143/2048 lit I8 search_path once per E
+   FAIL 1966/2048 lit I9 loud half
+   FAIL   51/2048 lit I9 loud: a request, entry or replacement
+   FAIL  116/2048 lit R-1271 before t0+W, not judged not old (parameter test)
+== held [straight] fault 0 seeds 1000..3048 (1.2s)
+   FAIL  160/2048 ez I8 held, before then, every error
+   FAIL   33/2048 ez I8 held, before then, visible errors
+   FAIL  110/2048 lit I1
    FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 2048/2048 lit I2 (an adoption took its place)
-   FAIL 1516/2048 lit I8 never visible after RECONNECT
-   FAIL   15/2048 lit I8 never visible after server_lifetime
-   FAIL  925/2048 lit I8 search_path once per E
-   FAIL 1261/2048 lit I8 stale statement once per E
-   FAIL  178/2048 lit I9 loud: a request, entry or replacement
+   FAIL 1703/2048 lit I8 held, before then
+   FAIL   90/2048 lit I8 search_path once per E
+   FAIL 1751/2048 lit I9 loud half
+   FAIL    8/2048 lit I9 loud: a request, entry or replacement
+   FAIL   43/2048 lit R-1271 before t0+W, not judged not old (parameter test)
+== held, quiet [straight] fault 0 seeds 1000..3048 (1.2s)
+   FAIL   23/2048 ez I8 held, before then, every error
+   FAIL    6/2048 ez I8 held, before then, visible errors
+   FAIL   20/2048 lit I1
+   FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL  545/2048 lit I8 held, before then
+   FAIL   40/2048 lit I8 search_path once per E
+   FAIL 1478/2048 lit I9 loud half
+   FAIL   11/2048 lit R-1271 before t0+W, not judged not old (parameter test)
+== long holds [straight] fault 0 seeds 1000..3048 (1.3s)
+   FAIL  536/2048 ez I8 held, before then, every error
+   FAIL  139/2048 ez I8 held, before then, visible errors
+   FAIL   17/2048 ez I8 held, from then on
+   FAIL  210/2048 lit I1
+   FAIL 2047/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 1962/2048 lit I8 held, before then
+   FAIL  100/2048 lit I8 held, from then on
+   FAIL   27/2048 lit I8 search_path once per E
+   FAIL   12/2048 lit I8 visible from then on (parameter test)
+   FAIL 1903/2048 lit I9 loud half
+   FAIL   12/2048 lit I9 loud: a request, entry or replacement
+   FAIL    2/2048 lit I9 silent past W of the first confirmation
+   FAIL   91/2048 lit R-1271 before t0+W, not judged not old (parameter test)
+== long holds, held [straight] fault 0 seeds 1000..3048 (1.9s)
+   FAIL  579/2048 ez I8 held, before then, every error
+   FAIL  133/2048 ez I8 held, before then, visible errors
+   FAIL   28/2048 ez I8 held, from then on
+   FAIL  198/2048 lit I1
+   FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 1986/2048 lit I8 held, before then
+   FAIL  109/2048 lit I8 held, from then on
+   FAIL    5/2048 lit I8 search_path once per E
+   FAIL    5/2048 lit I8 visible from then on (parameter test)
+   FAIL 1798/2048 lit I9 loud half
+   FAIL    1/2048 lit I9 loud: a request, entry or replacement
+   FAIL   23/2048 lit R-1271 before t0+W, not judged not old (parameter test)
+== long holds, quiet [straight] fault 0 seeds 1000..3048 (1.5s)
+   FAIL  200/2048 ez I8 held, before then, every error
+   FAIL   71/2048 ez I8 held, before then, visible errors
+   FAIL   22/2048 ez I8 held, from then on
+   FAIL   67/2048 lit I1
+   FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 1368/2048 lit I8 held, before then
+   FAIL   60/2048 lit I8 held, from then on
+   FAIL   13/2048 lit I8 search_path once per E
+   FAIL    3/2048 lit I8 visible from then on (parameter test)
+   FAIL  947/2048 lit I9 loud half
+   FAIL   22/2048 lit R-1271 before t0+W, not judged not old (parameter test)
+== long holds, hand relabels [straight] fault 0 seeds 1000..3048 (1.6s)
+   FAIL  297/2048 ez I8 held, before then, every error
+   FAIL   65/2048 ez I8 held, before then, visible errors
+   FAIL   16/2048 ez I8 held, from then on
+   FAIL   62/2048 lit I1
+   FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 1634/2048 lit I8 held, before then
+   FAIL   72/2048 lit I8 held, from then on
+   FAIL    9/2048 lit I8 search_path once per E
+   FAIL    4/2048 lit I8 visible from then on (parameter test)
+   FAIL 2021/2048 lit I9 loud half
+   FAIL    3/2048 lit I9 loud: a request, entry or replacement
    FAIL    1/2048 lit I9 silent past W of the first confirmation
-   FAIL  558/2048 mid I8 stale statement once per E, running calls and actions apart
-== several, one server [pooled] fault 0 seeds 1000..3048 (2.4s)
+   FAIL   21/2048 lit R-1271 before t0+W, not judged not old (parameter test)
+== role limit [straight] fault 0 seeds 1000..3048 (1.1s)
+   FAIL  129/2048 ez I8 held, before then, every error
+   FAIL   27/2048 ez I8 held, before then, visible errors
+   FAIL  259/2048 lit I1
    FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 1850/2048 lit I2 (an adoption took its place)
-   FAIL 1508/2048 lit I8 never visible after RECONNECT
-   FAIL    5/2048 lit I8 never visible after server_lifetime
-   FAIL  382/2048 lit I8 search_path once per E
-   FAIL 1447/2048 lit I8 stale statement once per E
+   FAIL 1291/2048 lit I8 held, before then
+   FAIL  154/2048 lit I8 search_path once per E
+   FAIL 1961/2048 lit I9 loud half
+   FAIL   71/2048 lit I9 loud: a request, entry or replacement
+   FAIL   60/2048 lit R-1271 before t0+W, not judged not old (parameter test)
+== role limit, heavy [straight] fault 0 seeds 1000..3048 (1.0s)
+   FAIL  247/2048 ez I8 held, before then, every error
+   FAIL   61/2048 ez I8 held, before then, visible errors
+   FAIL  295/2048 lit I1
+   FAIL 2046/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 1689/2048 lit I8 held, before then
+   FAIL   92/2048 lit I8 search_path once per E
+   FAIL 2033/2048 lit I9 loud half
+   FAIL  333/2048 lit I9 loud: a request, entry or replacement
+   FAIL   44/2048 lit R-1271 before t0+W, not judged not old (parameter test)
+== refusals [straight] fault 0 seeds 1000..3048 (1.1s)
+   FAIL  224/2048 ez I8 held, before then, every error
+   FAIL   48/2048 ez I8 held, before then, visible errors
+   FAIL  424/2048 lit I1
+   FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 1576/2048 lit I8 held, before then
+   FAIL  128/2048 lit I8 search_path once per E
+   FAIL 1892/2048 lit I9 loud half
+   FAIL  375/2048 lit I9 loud: a request, entry or replacement
+   FAIL   13/2048 lit R-1271 before t0+W, not judged not old (parameter test)
+== held, no rerun [straight] fault 0 seeds 1000..3048 (1.1s)
+   FAIL  146/2048 ez I8 held, before then, every error
+   FAIL   33/2048 ez I8 held, before then, visible errors
+   FAIL  293/2048 lit I1
+   FAIL 2047/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 1199/2048 lit I8 held, before then
+   FAIL  147/2048 lit I8 search_path once per E
+   FAIL 1955/2048 lit I9 loud half
+   FAIL   45/2048 lit I9 loud: a request, entry or replacement
+   FAIL  108/2048 lit R-1271 before t0+W, not judged not old (parameter test)
+== defaults [pooled] fault 0 seeds 1000..3048 (1.3s)
+   FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 2047/2048 lit I2 (an adoption took its place)
+   FAIL 1387/2048 lit I8 never visible after RECONNECT
+   FAIL   13/2048 lit I8 never visible after server_lifetime
+   FAIL  767/2048 lit I8 search_path once per E
+   FAIL 1192/2048 lit I8 stale statement once per E
    FAIL 2045/2048 lit I9 loud half
-   FAIL  574/2048 lit I9 loud: a request, entry or replacement
-   FAIL  672/2048 mid I8 stale statement once per E, running calls and actions apart
-== two servers [pooled] fault 0 seeds 1000..3048 (2.2s)
+   FAIL  508/2048 lit I9 loud: a request, entry or replacement
+   FAIL  450/2048 mid I8 stale statement once per E, running calls and actions apart
+== entries off [pooled] fault 0 seeds 1000..3048 (1.3s)
+   FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 2048/2048 lit I2 (an adoption took its place)
+   FAIL 1390/2048 lit I8 never visible after RECONNECT
+   FAIL   14/2048 lit I8 never visible after server_lifetime
+   FAIL 1858/2048 lit I8 search_path once per E
+   FAIL 1703/2048 lit I8 stale statement once per E
+   FAIL 2042/2048 lit I9 loud half
+   FAIL  460/2048 lit I9 loud: a request, entry or replacement
+   FAIL 1192/2048 mid I8 stale statement once per E, running calls and actions apart
+== caps of 1 [pooled] fault 0 seeds 1000..3048 (1.3s)
+   FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 2048/2048 lit I2 (an adoption took its place)
+   FAIL 1332/2048 lit I8 never visible after RECONNECT
+   FAIL    9/2048 lit I8 never visible after server_lifetime
+   FAIL 1174/2048 lit I8 search_path once per E
+   FAIL 1403/2048 lit I8 stale statement once per E
+   FAIL 2039/2048 lit I9 loud half
+   FAIL  478/2048 lit I9 loud: a request, entry or replacement
+   FAIL  755/2048 mid I8 stale statement once per E, running calls and actions apart
+== W five times E [pooled] fault 0 seeds 1000..3048 (1.3s)
+   FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 2048/2048 lit I2 (an adoption took its place)
+   FAIL 1350/2048 lit I8 never visible after RECONNECT
+   FAIL    7/2048 lit I8 never visible after server_lifetime
+   FAIL   97/2048 lit I8 search_path once per E
+   FAIL  985/2048 lit I8 stale statement once per E
+   FAIL 2043/2048 lit I9 loud half
+   FAIL  539/2048 lit I9 loud: a request, entry or replacement
+   FAIL  136/2048 mid I8 stale statement once per E, running calls and actions apart
+== budget 8 [pooled] fault 0 seeds 1000..3048 (1.3s)
+   FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 2047/2048 lit I2 (an adoption took its place)
+   FAIL 1387/2048 lit I8 never visible after RECONNECT
+   FAIL   13/2048 lit I8 never visible after server_lifetime
+   FAIL  767/2048 lit I8 search_path once per E
+   FAIL 1192/2048 lit I8 stale statement once per E
+   FAIL 2045/2048 lit I9 loud half
+   FAIL  508/2048 lit I9 loud: a request, entry or replacement
+   FAIL  450/2048 mid I8 stale statement once per E, running calls and actions apart
+== caches off [pooled] fault 0 seeds 1000..3048 (0.9s)
+   FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL  722/2048 lit I8 never visible after RECONNECT
+   FAIL 2042/2048 lit I9 loud half
+== no client input [pooled] fault 0 seeds 1000..3048 (1.1s)
+   FAIL 2047/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 2048/2048 lit I2 (an adoption took its place)
+   FAIL 1420/2048 lit I8 never visible after RECONNECT
+   FAIL    6/2048 lit I8 never visible after server_lifetime
+   FAIL  791/2048 lit I8 search_path once per E
+   FAIL 1232/2048 lit I8 stale statement once per E
+   FAIL  172/2048 lit I9 loud: a request, entry or replacement
+   FAIL  485/2048 mid I8 stale statement once per E, running calls and actions apart
+== several, one server [pooled] fault 0 seeds 1000..3048 (1.3s)
+   FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 1859/2048 lit I2 (an adoption took its place)
+   FAIL 1416/2048 lit I8 never visible after RECONNECT
+   FAIL    9/2048 lit I8 never visible after server_lifetime
+   FAIL  337/2048 lit I8 search_path once per E
+   FAIL 1372/2048 lit I8 stale statement once per E
+   FAIL 2045/2048 lit I9 loud half
+   FAIL  556/2048 lit I9 loud: a request, entry or replacement
+   FAIL    2/2048 lit I9 silent past W of the first confirmation
+   FAIL  505/2048 mid I8 stale statement once per E, running calls and actions apart
+== two servers [pooled] fault 0 seeds 1000..3048 (1.3s)
    FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL 1867/2048 lit I2 (an adoption took its place)
-   FAIL 1513/2048 lit I8 never visible after RECONNECT
-   FAIL    6/2048 lit I8 never visible after server_lifetime
-   FAIL  374/2048 lit I8 search_path once per E
-   FAIL 1420/2048 lit I8 stale statement once per E
+   FAIL 1374/2048 lit I8 never visible after RECONNECT
+   FAIL    8/2048 lit I8 never visible after server_lifetime
+   FAIL  307/2048 lit I8 search_path once per E
+   FAIL 1361/2048 lit I8 stale statement once per E
    FAIL 2046/2048 lit I9 loud half
-   FAIL  583/2048 lit I9 loud: a request, entry or replacement
-   FAIL    1/2048 lit I9 silent past W of the first confirmation
-   FAIL  596/2048 mid I8 stale statement once per E, running calls and actions apart
-== three servers [pooled] fault 0 seeds 1000..3048 (2.3s)
-   FAIL 2046/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 1880/2048 lit I2 (an adoption took its place)
-   FAIL 1479/2048 lit I8 never visible after RECONNECT
-   FAIL    7/2048 lit I8 never visible after server_lifetime
-   FAIL  378/2048 lit I8 search_path once per E
-   FAIL 1374/2048 lit I8 stale statement once per E
-   FAIL 2045/2048 lit I9 loud half
-   FAIL  560/2048 lit I9 loud: a request, entry or replacement
-   FAIL    2/2048 lit I9 silent past W of the first confirmation
-   FAIL  606/2048 mid I8 stale statement once per E, running calls and actions apart
-== heavy [pooled] fault 0 seeds 1000..3048 (2.2s)
+   FAIL  544/2048 lit I9 loud: a request, entry or replacement
+   FAIL  506/2048 mid I8 stale statement once per E, running calls and actions apart
+== three servers [pooled] fault 0 seeds 1000..3048 (1.3s)
    FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 2048/2048 lit I2 (an adoption took its place)
-   FAIL 1983/2048 lit I8 never visible after RECONNECT
+   FAIL 1862/2048 lit I2 (an adoption took its place)
+   FAIL 1419/2048 lit I8 never visible after RECONNECT
    FAIL    1/2048 lit I8 never visible after server_lifetime
-   FAIL  961/2048 lit I8 search_path once per E
-   FAIL 1349/2048 lit I8 stale statement once per E
-   FAIL 2048/2048 lit I9 loud half
-   FAIL  779/2048 lit I9 loud: a request, entry or replacement
-   FAIL  737/2048 mid I8 stale statement once per E, running calls and actions apart
-== landing always [pooled] fault 0 seeds 1000..3048 (2.8s)
-   FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 2048/2048 lit I2 (an adoption took its place)
-   FAIL 1480/2048 lit I8 never visible after RECONNECT
-   FAIL    9/2048 lit I8 never visible after server_lifetime
-   FAIL  919/2048 lit I8 search_path once per E
-   FAIL 1293/2048 lit I8 stale statement once per E
-   FAIL 2043/2048 lit I9 loud half
-   FAIL  538/2048 lit I9 loud: a request, entry or replacement
-   FAIL  592/2048 mid I8 stale statement once per E, running calls and actions apart
-== two servers, landing always, heavy [pooled] fault 0 seeds 1000..3048 (2.1s)
-   FAIL 2047/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 2042/2048 lit I2 (an adoption took its place)
-   FAIL 1999/2048 lit I8 never visible after RECONNECT
-   FAIL  396/2048 lit I8 search_path once per E
-   FAIL 1620/2048 lit I8 stale statement once per E
-   FAIL 2048/2048 lit I9 loud half
-   FAIL  841/2048 lit I9 loud: a request, entry or replacement
-   FAIL  709/2048 mid I8 stale statement once per E, running calls and actions apart
-== savepoints [pooled] fault 0 seeds 1000..3048 (3.6s)
-   FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 2048/2048 lit I2 (an adoption took its place)
-   FAIL 1780/2048 lit I8 never visible after RECONNECT
-   FAIL   19/2048 lit I8 never visible after server_lifetime
-   FAIL 1548/2048 lit I8 search_path once per E
-   FAIL 1939/2048 lit I8 stale statement once per E
-   FAIL 2047/2048 lit I9 loud half
-   FAIL  367/2048 lit I9 loud: a request, entry or replacement
-   FAIL 1468/2048 mid I8 stale statement once per E, running calls and actions apart
-== RR and SERIALIZABLE only [pooled] fault 0 seeds 1000..3048 (2.3s)
-   FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 2047/2048 lit I2 (an adoption took its place)
-   FAIL 1468/2048 lit I8 never visible after RECONNECT
-   FAIL   10/2048 lit I8 never visible after server_lifetime
-   FAIL  896/2048 lit I8 search_path once per E
-   FAIL 1253/2048 lit I8 stale statement once per E
-   FAIL 2043/2048 lit I9 loud half
-   FAIL  542/2048 lit I9 loud: a request, entry or replacement
-   FAIL  545/2048 mid I8 stale statement once per E, running calls and actions apart
-== quiet [pooled] fault 0 seeds 1000..3048 (2.1s)
-   FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL  861/2048 lit I2 (an adoption took its place)
-   FAIL  153/2048 lit I8 never visible after RECONNECT
-   FAIL    5/2048 lit I8 never visible after server_lifetime
-   FAIL  271/2048 lit I8 search_path once per E
-   FAIL  542/2048 lit I8 stale statement once per E
-   FAIL 2041/2048 lit I9 loud half
-   FAIL  152/2048 lit I9 loud: a request, entry or replacement
-   FAIL   22/2048 lit I9 silent past W of the first confirmation
-   FAIL  142/2048 mid I8 stale statement once per E, running calls and actions apart
-== hand relabels [pooled] fault 0 seeds 1000..3048 (2.2s)
-   FAIL 2047/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 1962/2048 lit I2 (an adoption took its place)
-   FAIL  669/2048 lit I8 never visible after RECONNECT
-   FAIL    4/2048 lit I8 never visible after server_lifetime
-   FAIL  648/2048 lit I8 search_path once per E
-   FAIL  901/2048 lit I8 stale statement once per E
-   FAIL 2048/2048 lit I9 loud half
-   FAIL  412/2048 lit I9 loud: a request, entry or replacement
-   FAIL  282/2048 mid I8 stale statement once per E, running calls and actions apart
-== long transactions [pooled] fault 0 seeds 1000..3048 (3.8s)
-   FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 1277/2048 lit I2 (an adoption took its place)
-   FAIL  557/2048 lit I8 never visible after RECONNECT
-   FAIL   28/2048 lit I8 never visible after server_lifetime
-   FAIL  461/2048 lit I8 search_path once per E
-   FAIL  389/2048 lit I8 stale statement once per E
+   FAIL  329/2048 lit I8 search_path once per E
+   FAIL 1320/2048 lit I8 stale statement once per E
    FAIL 2045/2048 lit I9 loud half
-   FAIL  132/2048 lit I9 loud: a request, entry or replacement
-   FAIL   13/2048 lit I9 silent past W of the first confirmation
-   FAIL  102/2048 mid I8 stale statement once per E, running calls and actions apart
-== slow [pooled] fault 0 seeds 1000..3048 (1.4s)
-   FAIL 2046/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL   12/2048 lit I2 (an adoption took its place)
-   FAIL    7/2048 lit I8 never visible after RECONNECT
-   FAIL   22/2048 lit I8 search_path once per E
-   FAIL   99/2048 lit I8 stale statement once per E
-== transactions without retry [pooled] fault 0 seeds 1000..3048 (2.9s)
-   FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL  554/2048 lit I9 loud: a request, entry or replacement
+   FAIL  469/2048 mid I8 stale statement once per E, running calls and actions apart
+== heavy [pooled] fault 0 seeds 1000..3048 (1.1s)
+   FAIL 2047/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL 2048/2048 lit I2 (an adoption took its place)
-   FAIL 1924/2048 lit I8 never visible after RECONNECT
-   FAIL   39/2048 lit I8 never visible after server_lifetime
-   FAIL 2048/2048 lit I8 search_path once per E
-   FAIL 2048/2048 lit I8 stale statement once per E
-   FAIL 2041/2048 lit I9 loud half
-   FAIL  197/2048 lit I9 loud: a request, entry or replacement
-   FAIL    1/2048 lit I9 silent past W of the first confirmation
-   FAIL 2000/2048 mid I8 stale statement once per E, running calls and actions apart
-== max 1 [pooled] fault 0 seeds 1000..3048 (2.5s)
-   FAIL 2047/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 2047/2048 lit I2 (an adoption took its place)
-   FAIL 1157/2048 lit I8 never visible after RECONNECT
-   FAIL    7/2048 lit I8 never visible after server_lifetime
-   FAIL 1194/2048 lit I8 search_path once per E
-   FAIL  386/2048 lit I8 stale statement once per E
-   FAIL 2045/2048 lit I9 loud half
-   FAIL  463/2048 lit I9 loud: a request, entry or replacement
-   FAIL    1/2048 lit I9 silent past W of the first confirmation
-   FAIL  302/2048 mid I8 stale statement once per E, running calls and actions apart
-== max 1, budget 1 [pooled] fault 0 seeds 1000..3048 (2.3s)
-   FAIL 2047/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 2047/2048 lit I2 (an adoption took its place)
-   FAIL 1157/2048 lit I8 never visible after RECONNECT
-   FAIL    7/2048 lit I8 never visible after server_lifetime
-   FAIL 1194/2048 lit I8 search_path once per E
-   FAIL  386/2048 lit I8 stale statement once per E
-   FAIL 2045/2048 lit I9 loud half
-   FAIL  463/2048 lit I9 loud: a request, entry or replacement
-   FAIL    1/2048 lit I9 silent past W of the first confirmation
-   FAIL  302/2048 mid I8 stale statement once per E, running calls and actions apart
-== max 1, quick [pooled] fault 0 seeds 1000..3048 (1.9s)
-   FAIL 2047/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 1457/2048 lit I2 (an adoption took its place)
-   FAIL  404/2048 lit I8 never visible after RECONNECT
-   FAIL    4/2048 lit I8 never visible after server_lifetime
-   FAIL  584/2048 lit I8 search_path once per E
-   FAIL  120/2048 lit I8 stale statement once per E
-   FAIL 2042/2048 lit I9 loud half
-   FAIL  332/2048 lit I9 loud: a request, entry or replacement
-   FAIL   11/2048 lit I9 silent past W of the first confirmation
-   FAIL  106/2048 mid I8 stale statement once per E, running calls and actions apart
-== max 2, budget 2, heavy [pooled] fault 0 seeds 1000..3048 (2.3s)
-   FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 2048/2048 lit I2 (an adoption took its place)
-   FAIL 1939/2048 lit I8 never visible after RECONNECT
-   FAIL    2/2048 lit I8 never visible after server_lifetime
-   FAIL 1142/2048 lit I8 search_path once per E
-   FAIL 1056/2048 lit I8 stale statement once per E
-   FAIL 2048/2048 lit I9 loud half
-   FAIL  834/2048 lit I9 loud: a request, entry or replacement
-   FAIL  658/2048 mid I8 stale statement once per E, running calls and actions apart
-== hand relabels without the reset [pooled] fault 0 seeds 1000..3048 (2.2s)
-   FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 1976/2048 lit I2 (an adoption took its place)
-   FAIL  690/2048 lit I8 never visible after RECONNECT
-   FAIL   11/2048 lit I8 never visible after server_lifetime
-   FAIL  649/2048 lit I8 search_path once per E
-   FAIL 1045/2048 lit I8 stale statement once per E
-   FAIL 2048/2048 lit I9 loud half
-   FAIL  404/2048 lit I9 loud: a request, entry or replacement
-   FAIL    2/2048 lit I9 silent past W of the first confirmation
-   FAIL  353/2048 mid I8 stale statement once per E, running calls and actions apart
-== hand relabels without the reset, casts [pooled] fault 0 seeds 1000..3048 (1.9s)
-   FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 1537/2048 lit I8 stale statement once per E
-   FAIL 2045/2048 lit I9 loud half
-   FAIL    1/2048 lit I9 silent past W of the first confirmation
-   FAIL   87/2048 mid I8 stale statement once per E, running calls and actions apart
-== old labels copied [pooled] fault 0 seeds 1000..3048 (2.7s)
-   FAIL 2047/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 2047/2048 lit I2 (an adoption took its place)
-   FAIL 1442/2048 lit I8 never visible after RECONNECT
-   FAIL    6/2048 lit I8 never visible after server_lifetime
-   FAIL  915/2048 lit I8 search_path once per E
+   FAIL 1966/2048 lit I8 never visible after RECONNECT
+   FAIL  825/2048 lit I8 search_path once per E
    FAIL 1245/2048 lit I8 stale statement once per E
-   FAIL 2047/2048 lit I9 loud half
-   FAIL  543/2048 lit I9 loud: a request, entry or replacement
-   FAIL    1/2048 lit I9 silent past W of the first confirmation
-   FAIL  561/2048 mid I8 stale statement once per E, running calls and actions apart
-== record and column statements [pooled] fault 0 seeds 1000..3048 (2.5s)
-   FAIL 2047/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 2048/2048 lit I9 loud half
+   FAIL  666/2048 lit I9 loud: a request, entry or replacement
+   FAIL  611/2048 mid I8 stale statement once per E, running calls and actions apart
+== landing always [pooled] fault 0 seeds 1000..3048 (1.3s)
+   FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL 2048/2048 lit I2 (an adoption took its place)
-   FAIL 1381/2048 lit I8 never visible after RECONNECT
-   FAIL    2/2048 lit I8 never visible after server_lifetime
-   FAIL 1046/2048 lit I8 search_path once per E
-   FAIL 1215/2048 lit I8 stale statement once per E
-   FAIL 2045/2048 lit I9 loud half
-   FAIL  623/2048 lit I9 loud: a request, entry or replacement
-   FAIL  512/2048 mid I8 stale statement once per E, running calls and actions apart
-== two processes [pooled] fault 0 seeds 1000..3048 (3.1s)
+   FAIL 1375/2048 lit I8 never visible after RECONNECT
+   FAIL    9/2048 lit I8 never visible after server_lifetime
+   FAIL  753/2048 lit I8 search_path once per E
+   FAIL 1209/2048 lit I8 stale statement once per E
+   FAIL 2044/2048 lit I9 loud half
+   FAIL  518/2048 lit I9 loud: a request, entry or replacement
+   FAIL  436/2048 mid I8 stale statement once per E, running calls and actions apart
+== two servers, landing always, heavy [pooled] fault 0 seeds 1000..3048 (1.1s)
+   FAIL 2047/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 2037/2048 lit I2 (an adoption took its place)
+   FAIL 1969/2048 lit I8 never visible after RECONNECT
+   FAIL  323/2048 lit I8 search_path once per E
+   FAIL 1575/2048 lit I8 stale statement once per E
+   FAIL 2048/2048 lit I9 loud half
+   FAIL  763/2048 lit I9 loud: a request, entry or replacement
+   FAIL  661/2048 mid I8 stale statement once per E, running calls and actions apart
+== savepoints [pooled] fault 0 seeds 1000..3048 (1.9s)
+   FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 2048/2048 lit I2 (an adoption took its place)
+   FAIL 1765/2048 lit I8 never visible after RECONNECT
+   FAIL   26/2048 lit I8 never visible after server_lifetime
+   FAIL 1478/2048 lit I8 search_path once per E
+   FAIL 1915/2048 lit I8 stale statement once per E
+   FAIL 2044/2048 lit I9 loud half
+   FAIL  352/2048 lit I9 loud: a request, entry or replacement
+   FAIL 1333/2048 mid I8 stale statement once per E, running calls and actions apart
+== RR and SERIALIZABLE only [pooled] fault 0 seeds 1000..3048 (1.3s)
    FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL 2047/2048 lit I2 (an adoption took its place)
-   FAIL 1411/2048 lit I8 never visible after RECONNECT
-   FAIL   16/2048 lit I8 never visible after server_lifetime
-   FAIL  713/2048 lit I8 search_path once per E
-   FAIL  847/2048 lit I8 stale statement once per E
+   FAIL 1387/2048 lit I8 never visible after RECONNECT
+   FAIL   13/2048 lit I8 never visible after server_lifetime
+   FAIL  767/2048 lit I8 search_path once per E
+   FAIL 1192/2048 lit I8 stale statement once per E
+   FAIL 2045/2048 lit I9 loud half
+   FAIL  508/2048 lit I9 loud: a request, entry or replacement
+   FAIL  450/2048 mid I8 stale statement once per E, running calls and actions apart
+== quiet [pooled] fault 0 seeds 1000..3048 (1.2s)
+   FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL  874/2048 lit I2 (an adoption took its place)
+   FAIL  135/2048 lit I8 never visible after RECONNECT
+   FAIL    8/2048 lit I8 never visible after server_lifetime
+   FAIL  250/2048 lit I8 search_path once per E
+   FAIL  561/2048 lit I8 stale statement once per E
    FAIL 2043/2048 lit I9 loud half
-   FAIL  483/2048 lit I9 loud: a request, entry or replacement
-   FAIL    8/2048 lit I9 silent past W of the first confirmation
-   FAIL  274/2048 mid I8 stale statement once per E, running calls and actions apart
-   FAIL    1/2048 mid I9 silent past W of the first request, another process's copy
-== three processes, heavy [pooled] fault 0 seeds 1000..3048 (2.6s)
+   FAIL  123/2048 lit I9 loud: a request, entry or replacement
+   FAIL    3/2048 lit I9 silent past W of the first confirmation
+   FAIL   91/2048 mid I8 stale statement once per E, running calls and actions apart
+== hand relabels [pooled] fault 0 seeds 1000..3048 (1.3s)
+   FAIL 2047/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 1965/2048 lit I2 (an adoption took its place)
+   FAIL  597/2048 lit I8 never visible after RECONNECT
+   FAIL    5/2048 lit I8 never visible after server_lifetime
+   FAIL  562/2048 lit I8 search_path once per E
+   FAIL  959/2048 lit I8 stale statement once per E
+   FAIL 2048/2048 lit I9 loud half
+   FAIL  409/2048 lit I9 loud: a request, entry or replacement
+   FAIL    2/2048 lit I9 silent past W of the first confirmation
+   FAIL  237/2048 mid I8 stale statement once per E, running calls and actions apart
+== long transactions [pooled] fault 0 seeds 1000..3048 (1.8s)
+   FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 1196/2048 lit I2 (an adoption took its place)
+   FAIL  495/2048 lit I8 never visible after RECONNECT
+   FAIL   36/2048 lit I8 never visible after server_lifetime
+   FAIL  398/2048 lit I8 search_path once per E
+   FAIL  352/2048 lit I8 stale statement once per E
+   FAIL 2040/2048 lit I9 loud half
+   FAIL  154/2048 lit I9 loud: a request, entry or replacement
+   FAIL    5/2048 lit I9 silent past W of the first confirmation
+   FAIL   64/2048 mid I8 stale statement once per E, running calls and actions apart
+== slow [pooled] fault 0 seeds 1000..3048 (0.7s)
+   FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL    5/2048 lit I2 (an adoption took its place)
+   FAIL    4/2048 lit I8 never visible after RECONNECT
+   FAIL    7/2048 lit I8 search_path once per E
+   FAIL   88/2048 lit I8 stale statement once per E
+== transactions without retry [pooled] fault 0 seeds 1000..3048 (1.5s)
+   FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 2048/2048 lit I2 (an adoption took its place)
+   FAIL 1894/2048 lit I8 never visible after RECONNECT
+   FAIL   32/2048 lit I8 never visible after server_lifetime
+   FAIL 2045/2048 lit I8 search_path once per E
+   FAIL 2048/2048 lit I8 stale statement once per E
+   FAIL 2044/2048 lit I9 loud half
+   FAIL  178/2048 lit I9 loud: a request, entry or replacement
+   FAIL    1/2048 lit I9 silent past W of the first confirmation
+   FAIL 1973/2048 mid I8 stale statement once per E, running calls and actions apart
+== max 1 [pooled] fault 0 seeds 1000..3048 (1.2s)
+   FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 2048/2048 lit I2 (an adoption took its place)
+   FAIL 1108/2048 lit I8 never visible after RECONNECT
+   FAIL    5/2048 lit I8 never visible after server_lifetime
+   FAIL 1030/2048 lit I8 search_path once per E
+   FAIL  283/2048 lit I8 stale statement once per E
+   FAIL 2042/2048 lit I9 loud half
+   FAIL  425/2048 lit I9 loud: a request, entry or replacement
+   FAIL  217/2048 mid I8 stale statement once per E, running calls and actions apart
+== max 1, budget 1 [pooled] fault 0 seeds 1000..3048 (1.2s)
+   FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 2048/2048 lit I2 (an adoption took its place)
+   FAIL 1108/2048 lit I8 never visible after RECONNECT
+   FAIL    5/2048 lit I8 never visible after server_lifetime
+   FAIL 1030/2048 lit I8 search_path once per E
+   FAIL  283/2048 lit I8 stale statement once per E
+   FAIL 2042/2048 lit I9 loud half
+   FAIL  425/2048 lit I9 loud: a request, entry or replacement
+   FAIL  217/2048 mid I8 stale statement once per E, running calls and actions apart
+== max 1, quick [pooled] fault 0 seeds 1000..3048 (1.0s)
+   FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 1360/2048 lit I2 (an adoption took its place)
+   FAIL  405/2048 lit I8 never visible after RECONNECT
+   FAIL    5/2048 lit I8 never visible after server_lifetime
+   FAIL  523/2048 lit I8 search_path once per E
+   FAIL   98/2048 lit I8 stale statement once per E
+   FAIL 2036/2048 lit I9 loud half
+   FAIL  305/2048 lit I9 loud: a request, entry or replacement
+   FAIL    4/2048 lit I9 silent past W of the first confirmation
+   FAIL   89/2048 mid I8 stale statement once per E, running calls and actions apart
+== max 2, budget 2, heavy [pooled] fault 0 seeds 1000..3048 (1.1s)
+   FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 2048/2048 lit I2 (an adoption took its place)
+   FAIL 1877/2048 lit I8 never visible after RECONNECT
+   FAIL    1/2048 lit I8 never visible after server_lifetime
+   FAIL 1002/2048 lit I8 search_path once per E
+   FAIL  961/2048 lit I8 stale statement once per E
+   FAIL 2048/2048 lit I9 loud half
+   FAIL  765/2048 lit I9 loud: a request, entry or replacement
+   FAIL  564/2048 mid I8 stale statement once per E, running calls and actions apart
+== hand relabels without the reset [pooled] fault 0 seeds 1000..3048 (1.3s)
+   FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 1982/2048 lit I2 (an adoption took its place)
+   FAIL  600/2048 lit I8 never visible after RECONNECT
+   FAIL    8/2048 lit I8 never visible after server_lifetime
+   FAIL  587/2048 lit I8 search_path once per E
+   FAIL 1049/2048 lit I8 stale statement once per E
+   FAIL 2048/2048 lit I9 loud half
+   FAIL  453/2048 lit I9 loud: a request, entry or replacement
+   FAIL    3/2048 lit I9 silent past W of the first confirmation
+   FAIL  256/2048 mid I8 stale statement once per E, running calls and actions apart
+== hand relabels without the reset, casts [pooled] fault 0 seeds 1000..3048 (1.2s)
+   FAIL 2047/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 1541/2048 lit I8 stale statement once per E
+   FAIL 2047/2048 lit I9 loud half
+   FAIL    1/2048 lit I9 silent past W of the first confirmation
+   FAIL   85/2048 mid I8 stale statement once per E, running calls and actions apart
+== old labels copied [pooled] fault 0 seeds 1000..3048 (1.3s)
+   FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 2048/2048 lit I2 (an adoption took its place)
+   FAIL 1343/2048 lit I8 never visible after RECONNECT
+   FAIL    3/2048 lit I8 never visible after server_lifetime
+   FAIL  792/2048 lit I8 search_path once per E
+   FAIL 1204/2048 lit I8 stale statement once per E
+   FAIL 2045/2048 lit I9 loud half
+   FAIL  548/2048 lit I9 loud: a request, entry or replacement
+   FAIL    2/2048 lit I9 silent past W of the first confirmation
+   FAIL  484/2048 mid I8 stale statement once per E, running calls and actions apart
+== record and column statements [pooled] fault 0 seeds 1000..3048 (1.2s)
+   FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 2048/2048 lit I2 (an adoption took its place)
+   FAIL 1394/2048 lit I8 never visible after RECONNECT
+   FAIL   11/2048 lit I8 never visible after server_lifetime
+   FAIL 1083/2048 lit I8 search_path once per E
+   FAIL 1122/2048 lit I8 stale statement once per E
+   FAIL 2043/2048 lit I9 loud half
+   FAIL  602/2048 lit I9 loud: a request, entry or replacement
+   FAIL    1/2048 lit I9 silent past W of the first confirmation
+   FAIL  468/2048 mid I8 stale statement once per E, running calls and actions apart
+== English, a type named as a word [pooled] fault 0 seeds 1000..3048 (1.2s)
+   FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 2047/2048 lit I2 (an adoption took its place)
+   FAIL 1387/2048 lit I8 never visible after RECONNECT
+   FAIL   13/2048 lit I8 never visible after server_lifetime
+   FAIL  767/2048 lit I8 search_path once per E
+   FAIL 1192/2048 lit I8 stale statement once per E
+   FAIL 2045/2048 lit I9 loud half
+   FAIL  508/2048 lit I9 loud: a request, entry or replacement
+   FAIL  450/2048 mid I8 stale statement once per E, running calls and actions apart
+== a type named as a word [pooled] fault 0 seeds 1000..3048 (1.2s)
+   FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 2048/2048 lit I2 (an adoption took its place)
+   FAIL 1388/2048 lit I8 never visible after RECONNECT
+   FAIL    9/2048 lit I8 never visible after server_lifetime
+   FAIL  767/2048 lit I8 search_path once per E
+   FAIL 1073/2048 lit I8 stale statement once per E
+   FAIL 2048/2048 lit I9 loud half
+   FAIL  534/2048 lit I9 loud: a request, entry or replacement
+   FAIL  399/2048 mid I8 stale statement once per E, running calls and actions apart
+== messages the test can't read [pooled] fault 0 seeds 1000..3048 (1.2s)
    FAIL 2047/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL 2048/2048 lit I2 (an adoption took its place)
-   FAIL 1923/2048 lit I8 never visible after RECONNECT
-   FAIL    2/2048 lit I8 never visible after server_lifetime
-   FAIL  395/2048 lit I8 search_path once per E
-   FAIL  701/2048 lit I8 stale statement once per E
-   FAIL 2047/2048 lit I9 loud half
-   FAIL  628/2048 lit I9 loud: a request, entry or replacement
-   FAIL    3/2048 lit I9 silent past W of the first confirmation
-   FAIL  272/2048 mid I8 stale statement once per E, running calls and actions apart
+   FAIL 1372/2048 lit I8 never visible after RECONNECT
+   FAIL    5/2048 lit I8 never visible after server_lifetime
+   FAIL  746/2048 lit I8 search_path once per E
+   FAIL 1203/2048 lit I8 stale statement once per E
+   FAIL 2042/2048 lit I9 loud half
+   FAIL  493/2048 lit I9 loud: a request, entry or replacement
+   FAIL  475/2048 mid I8 stale statement once per E, running calls and actions apart
+== two processes [pooled] fault 0 seeds 1000..3048 (1.5s)
+   FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 2048/2048 lit I2 (an adoption took its place)
+   FAIL 1380/2048 lit I8 never visible after RECONNECT
+   FAIL   14/2048 lit I8 never visible after server_lifetime
+   FAIL  551/2048 lit I8 search_path once per E
+   FAIL  812/2048 lit I8 stale statement once per E
+   FAIL 2046/2048 lit I9 loud half
+   FAIL  473/2048 lit I9 loud: a request, entry or replacement
+   FAIL    9/2048 lit I9 silent past W of the first confirmation
+   FAIL  225/2048 mid I8 stale statement once per E, running calls and actions apart
+   FAIL    1/2048 mid I9 silent past W of the first request, another process's copy
+== three processes, heavy [pooled] fault 0 seeds 1000..3048 (1.4s)
+   FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 2048/2048 lit I2 (an adoption took its place)
+   FAIL 1875/2048 lit I8 never visible after RECONNECT
+   FAIL    1/2048 lit I8 never visible after server_lifetime
+   FAIL  316/2048 lit I8 search_path once per E
+   FAIL  689/2048 lit I8 stale statement once per E
+   FAIL 2048/2048 lit I9 loud half
+   FAIL  550/2048 lit I9 loud: a request, entry or replacement
+   FAIL    1/2048 lit I9 silent past W of the first confirmation
+   FAIL  245/2048 mid I8 stale statement once per E, running calls and actions apart

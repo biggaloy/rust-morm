@@ -432,11 +432,17 @@ impl Sim {
         }
     }
     pub fn class(&self, e: Err, cached: bool, sp: &Spec, out: bool) -> Cls {
-        let casts = sp.stmt == CAST || sp.stmt == TRIG;
+        let casts = casts(sp.stmt);
         match e {
             Err::A0 if cached => Cls::Stmt,
-            Err::P22 { named, ret, nm } => {
-                let r2 = cached && casts && (named != Named::Cur || self.c.fault == 43) && !(nm && self.c.fault == 36);
+            Err::P22 { ret, .. } => {
+                // the decided test, on the message as the server writes it
+                let br = self.c.fault;
+                let r2 = cached && (casts || self.c.wide) && (br == 43 || !casts || (self.c.strict && self.ty.schema.is_some()) || {
+                    let m = self.message(e, sp.val);
+                    let bound = if matches!(sp.stmt, CAST | TRIG | STC) { vec![self.text(sp.label, sp.val)] } else { vec![] };
+                    crate::rule::second(&m, std::slice::from_ref(&self.ty), br, &bound)
+                });
                 if r2 && self.c.pooled2 {
                     return Cls::Stmt;
                 }
@@ -915,7 +921,7 @@ pub async fn run_call(p: usize, conn: &mut Conn, cx: &mut Cx, sp: &Spec) -> Res 
     let (r0, q0) = (cx.reqs, o.clone());
     let res = on_error(p, conn, cx, sp, o, fresh).await;
     if let Err::P22 { named: Named::Kept(_), ret: false, .. } = q0.r.unwrap_err() {
-        if matches!(q0.cause, Cause::Kept(_)) && sp.stmt != CAST && sp.stmt != TRIG && w().visible(&q0) {
+        if matches!(q0.cause, Cause::Kept(_)) && !casts(sp.stmt) && sp.stmt != NOC && w().visible(&q0) {
             let same = matches!(&res, Res::Pg(x) if x.r == q0.r && x.t == q0.t);
             if !same || cx.reqs > r0 || cx.made_entry || cx.replaced || cx.cool || cx.other {
                 w().fail("new I9 loud: returned as it is with nothing requested, entered, retried or replaced", format!("{:?}", q0));

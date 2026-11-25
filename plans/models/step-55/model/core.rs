@@ -146,6 +146,14 @@ pub struct Cfg {
     pub readfail: f64,
     pub proc_lag: bool,
     pub path_out: bool,
+    pub words: bool,    // Spanish, a type named `entrada`
+    pub unread: bool,   // messages the test can't read
+    pub nocast: bool,   // a statement that casts no parameter beside the others
+    pub onpath: bool,   // a cast written with a schema, its kept type moved ahead on the search_path
+    pub stc: bool,
+    pub wide: bool,   // open question 2 (a): any cached statement's
+    pub strict: bool, // open question 1 (a): a cast written with a schema, printed without one, is the second row's
+    pub english: bool, // English, a type named as a word of its message
 }
 impl Cfg {
     pub fn base(pooled: bool) -> Cfg {
@@ -204,6 +212,14 @@ impl Cfg {
             readfail: 0.01,
             proc_lag: false,
             path_out: false,
+            words: false,
+            unread: false,
+            nocast: false,
+            onpath: false,
+            stc: true,
+            english: false,
+            wide: false,
+            strict: false,
         }
     }
 }
@@ -237,7 +253,7 @@ pub enum Err {
     A0,
     XX,
     D42804,
-    P22 { named: Named, ret: bool, nm: bool },
+    P22 { named: Named, ret: bool, lab: Label, stored: bool },
     T57,
     S40,
     F25,
@@ -266,6 +282,14 @@ pub const ST: u8 = 4;
 pub const H: u8 = 5;
 pub const BOTH: u8 = 6;
 pub const TRIG: u8 = 7;
+pub const STC: u8 = 8; // SELECT (c::st)::text, (($1::text)::st)::text: a column's text beside the parameter's cast
+pub const NOC: u8 = 9; // SELECT (c::st)::text: no parameter cast
+pub fn casts(k: u8) -> bool {
+    matches!(k, CAST | TRIG | STC)
+}
+pub fn castlike(k: u8) -> bool {
+    matches!(k, CAST | STC | NOC)
+}
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
 pub enum Cause {
@@ -342,6 +366,7 @@ pub struct Db {
     pub resets: u32,
     pub refresh: u32,
     pub stored_bad: bool,
+    pub stored_nm: bool,
     pub last_change: u64,
     pub refused_until: u64,
     pub last_refusal_end: u64,
@@ -474,6 +499,12 @@ pub struct Sim {
     pub app_copy: HashSet<u64>,
     pub noreset_at: HashMap<u32, u64>,
     pub connfail: HashMap<u64, u32>,
+    pub lang: usize,
+    pub unread: usize,
+    pub ty: crate::rule::Cast,
+    pub own_path: bool, // a type written with a schema is on the search_path
+    pub qall: bool,
+    pub how: HashMap<u32, u8>,
 }
 
 impl Sim {
@@ -496,6 +527,7 @@ impl Sim {
                 resets: 0,
                 refresh: 0,
                 stored_bad: false,
+                stored_nm: false,
                 last_change: 0,
                 refused_until: 0,
                 last_refusal_end: 0,
@@ -513,7 +545,14 @@ impl Sim {
             app_copy: HashSet::new(),
             noreset_at: HashMap::new(),
             connfail: HashMap::new(),
+            lang: 0,
+            unread: 0,
+            ty: crate::rule::Cast { schema: None, name: "st".into() },
+            own_path: false,
+            qall: false,
+            how: HashMap::new(),
         });
+        s.speak(seed);
         s.db.replay = (0..c.servers).map(|_| vec![(0, 1)]).collect();
         for _ in 0..c.procs {
             s.pools.push(Pool { n: 1, tickets: 1, horizon: 1, highest: 1, marker: (1, 0), step_n0: 1, ..Pool::default() });
@@ -525,6 +564,82 @@ impl Sim {
             }
         }
         s
+    }
+    // the server's language and the type's name, per sequence, from a generator of its own so the load's draws stay
+    pub fn speak(&mut self, seed: u64) {
+        let mut g = Rng(seed ^ 0x7151_AB1E);
+        self.lang = g.n(crate::rule::LANGS.len() as u64) as usize;
+        self.unread = g.n(crate::rule::UNREADABLE.len() as u64) as usize;
+        self.qall = g.p(0.125);
+        self.own_path = g.p(0.5);
+        let names: [(Option<&str>, &str); 14] = [(None, "st"), (None, "St"), (None, "st old"), (None, "a: \"b"), (None, "»x: «y"), (None, "value"), (None, "input"), (None, "enum"), (None, "l"), (None, "入力"), (None, "a.b"), (Some("billing"), "order_state"), (Some("My: \"S"), "st"), (None, ": \"")];
+        let ws = crate::rule::words(crate::rule::LANGS[self.lang].1);
+        loop {
+            let (s, n) = names[g.n(names.len() as u64) as usize];
+            if self.lang != 0 && ws.iter().any(|w| w == n) {
+                continue;
+            }
+            self.ty = crate::rule::Cast { schema: s.map(String::from), name: n.into() };
+            break;
+        }
+        if self.c.english {
+            self.lang = 0;
+            self.ty = crate::rule::Cast { schema: None, name: ["value", "input", "enum", "invalid"][g.n(4) as usize].into() };
+        }
+        if self.c.words {
+            self.lang = 2;
+            self.ty = crate::rule::Cast { schema: None, name: "entrada".into() };
+            self.qall = false;
+        }
+        if self.c.onpath {
+            self.ty = crate::rule::Cast { schema: Some("app".into()), name: "st".into() };
+            self.own_path = false;
+        }
+    }
+    // a type's name as Postgres prints it
+    pub fn printed(&self, n: Named) -> String {
+        use crate::rule::qi;
+        let q = |x: &str| qi(x, self.qall);
+        let name = &self.ty.name;
+        let sch = match (&self.ty.schema, self.own_path) {
+            (Some(s), false) => format!("{}.", q(s)),
+            _ => String::new(),
+        };
+        match n {
+            Named::Cur => format!("{sch}{}", q(name)),
+            Named::Ret(v) => format!("{sch}{}", q(&format!("_morm_retired_m{v}_{name}"))),
+            Named::Kept(v) => match self.how.get(&v).copied().unwrap_or(0) {
+                0 => format!("{sch}{}", q(&format!("{name}_old{v}"))),
+                1 => format!("{sch}{}", q(&format!("{name} old {v}"))),
+                _ if self.c.onpath => q(name),
+                _ => format!("{}.{}", q(&format!("old{v}")), q(name)),
+            },
+        }
+    }
+    pub fn text(&self, l: Label, val: u8) -> String {
+        let n = &self.ty.name;
+        match l {
+            Label::Shared => "a".into(),
+            Label::New(x) => format!("n{x}"),
+            Label::Newest => "c".into(),
+            Label::NewName | Label::Bad => match val {
+                0 => format!("in {n}"),
+                1 => format!("x \"{n}\""),
+                2 => format!("{n}: \"bad"),
+                3 => format!("»{n}«"),
+                4 => format!(": \"{n}\""),
+                5 => format!(": «{n} "),
+                6 => format!("invalid input value for enum {n}: \"z"),
+                _ => n.clone(),
+            },
+            Label::RetX => "_morm_retired_x".into(),
+            Label::RetReal => "_morm_retired_7c1e9a04b52fd386_a".into(),
+        }
+    }
+    pub fn message(&self, e: Err, val: u8) -> String {
+        let Err::P22 { named, lab, .. } = e else { return String::new() };
+        let t = if self.c.unread { crate::rule::UNREADABLE[self.unread] } else { crate::rule::LANGS[self.lang].1 };
+        crate::rule::fill(t, &self.printed(named), &self.text(lab, val))
     }
     pub fn id(&mut self) -> u64 {
         self.ids += 1;
@@ -578,16 +693,21 @@ impl Sim {
             (_, Label::Newest | Label::NewName) => v == self.cur_ver(),
             _ => false,
         };
-        if has { Ok(v) } else { Err(Err::P22 { named, ret: ret || matches!(named, Named::Ret(_)), nm: l == Label::NewName }) }
+        if has { Ok(v) } else { Err(Err::P22 { named, ret: ret || matches!(named, Named::Ret(_)), lab: l, stored: false }) }
     }
     pub fn stored(&self) -> Label {
         if self.db.stored_bad { Label::RetX } else { Label::Shared }
+    }
+    pub fn stored2(&self) -> Label {
+        if self.db.stored_nm { Label::NewName } else { Label::Shared }
     }
     pub fn oracle(&self, sp: &Spec) -> Result<u32, u8> {
         let cur = self.cur_ver();
         match sp.stmt {
             CAST | F | TRIG => self.enum_in(cur, sp.label).map_err(|e| e.code()),
             ST => self.enum_in(cur, self.stored()).map_err(|e| e.code()),
+            STC => self.enum_in(cur, self.stored2()).and_then(|_| self.enum_in(cur, sp.label)).map_err(|e| e.code()),
+            NOC => self.enum_in(cur, self.stored2()).map_err(|e| e.code()),
             _ => Ok(0),
         }
     }
@@ -645,6 +765,17 @@ impl Sim {
                 let v = copy.as_ref().map_or(cur, |c| c.ty);
                 ver = v;
                 let r = self.enum_in(v, sp.label);
+                let cause = match r {
+                    Err(_) if v != cur => Cause::Stmt(self.db.types[v as usize].1),
+                    _ => Cause::None,
+                };
+                (r, cause)
+            }
+            STC | NOC => {
+                let v = copy.as_ref().map_or(cur, |c| c.ty);
+                ver = v;
+                let stored = |e| if let Err::P22 { named, ret, lab, .. } = e { Err::P22 { named, ret, lab, stored: true } } else { e };
+                let r = self.enum_in(v, self.stored2()).map_err(stored).and_then(|x| if sp.stmt == STC { self.enum_in(v, sp.label) } else { Ok(x) });
                 let cause = match r {
                     Err(_) if v != cur => Cause::Stmt(self.db.types[v as usize].1),
                     _ => Cause::None,
@@ -726,7 +857,7 @@ impl Sim {
                 }
             }
         };
-        if !matches!(sp.stmt, CAST | F | ST | TRIG) {
+        if !matches!(sp.stmt, CAST | F | ST | TRIG | STC | NOC) {
             ver = 0;
         }
         Out {
@@ -753,7 +884,7 @@ impl Sim {
     // the change that left the copy a run used stale, if any
     pub fn copy_change(&self, sp: &Spec, o: &Out) -> Option<u64> {
         match sp.stmt {
-            CAST if o.cached && o.ver != self.cur_ver() => Some(self.db.types[o.ver as usize].2),
+            CAST | STC | NOC if o.cached && o.ver != self.cur_ver() => Some(self.db.types[o.ver as usize].2),
             COL | PATH | BOTH => match o.cause {
                 Cause::Stmt(t) if o.r == Err(Err::A0) => Some(t),
                 _ => None,

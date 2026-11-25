@@ -13,9 +13,13 @@ pub fn draw(s: &mut Sim) -> Spec {
     let k = match s.c.only {
         Some(x) => x,
         None => {
-            let k = 6 + s.c.both_stmt as u64 + s.c.trig as u64;
-            let n = s.rng.n(k) as u8;
-            if n == 6 && !s.c.both_stmt { TRIG } else { n }
+            let mut v = vec![CAST, COL, PATH, F, ST, H];
+            for (on, x) in [(s.c.both_stmt, BOTH), (s.c.trig, TRIG), (s.c.stc, STC), (s.c.nocast, NOC)] {
+                if on {
+                    v.push(x);
+                }
+            }
+            v[s.rng.n(v.len() as u64) as usize]
         }
     };
     let val = s.rng.n(8) as u8;
@@ -160,10 +164,18 @@ fn world(s: &mut Sim) {
             }
         }
         2 => swap(s, TS::Dropped),
-        3 => swap(s, TS::Kept),
+        3 => {
+            let h = s.rng.n(3) as u8;
+            let v = s.cur_ver();
+            s.how.insert(v, if s.c.onpath { 2 } else { h });
+            swap(s, TS::Kept)
+        }
         4 => col(s),
         5 => {}
-        6 => s.db.stored_bad = s.c.client && !s.db.stored_bad,
+        6 => {
+            s.db.stored_bad = s.c.client && !s.db.stored_bad;
+            s.db.stored_nm = s.rng.p(0.5);
+        }
         7 => {
             if !s.c.pooled {
                 let d = s.rng.r(0, 500 * MS);

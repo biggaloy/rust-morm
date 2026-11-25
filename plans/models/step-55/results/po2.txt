@@ -1,0 +1,37 @@
+enum.c, 58 releases, REL_15_0 REL_15_1 REL_15_2 REL_15_3 REL_15_4 REL_15_5 REL_15_6 REL_15_7 REL_15_8 REL_15_9 REL_15_10 REL_15_11 REL_15_12 REL_15_13 REL_15_14 REL_15_15 REL_15_16 REL_15_17 REL_15_18 REL_15_19 REL_15_20 REL_16_0 REL_16_1 REL_16_2 REL_16_3 REL_16_4 REL_16_5 REL_16_6 REL_16_7 REL_16_8 REL_16_9 REL_16_10 REL_16_11 REL_16_12 REL_16_13 REL_16_14 REL_16_15 REL_16_16 REL_17_0 REL_17_1 REL_17_2 REL_17_3 REL_17_4 REL_17_5 REL_17_6 REL_17_7 REL_17_8 REL_17_9 REL_17_10 REL_17_11 REL_17_12 REL_18_0 REL_18_1 REL_18_2 REL_18_3 REL_18_4 REL_18_6 REL_18_7:
+    check_safe_enum_use (errcode(ERRCODE_UNSAFE_NEW_ENUM_VALUE_USAGE),
+    enum_in (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
+    enum_in errmsg("invalid input value for enum %s: \"%s\"",
+    enum_in (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
+    enum_in errmsg("invalid input value for enum %s: \"%s\"",
+    enum_out (errcode(ERRCODE_INVALID_BINARY_REPRESENTATION),
+    enum_recv (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
+    enum_recv errmsg("invalid input value for enum %s: \"%s\"",
+    enum_recv (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
+    enum_recv errmsg("invalid input value for enum %s: \"%s\"",
+    enum_send (errcode(ERRCODE_INVALID_BINARY_REPRESENTATION),
+    enum_cmp_internal (errcode(ERRCODE_INVALID_BINARY_REPRESENTATION),
+    enum_first (errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
+    enum_first (errcode(ERRCODE_OBJECT_NOT_IN_PREREQUISITE_STATE),
+    enum_last (errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
+    enum_last (errcode(ERRCODE_OBJECT_NOT_IN_PREREQUISITE_STATE),
+    enum_range_bounds (errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
+    enum_range_all (errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
+de: 15:21 16:17 17:13 18:7: ungültiger Eingabewert für Enum %s: »%s«   ['0xbb', '0xab']
+es: 15:21 16:17 17:13 18:7: la sintaxis de entrada no es válida para el enum %s: «%s»   ['0xab', '0xbb']
+fr: 15:21 16:17 17:13 18:7: valeur en entrée invalide pour le enum %s : « %s »   ['0xab', '0xbb']
+id: 16:17 17:13 18:7: nilai masukan tidak valid untuk enum %s : « %s »   ['0xab', '0xbb']
+it: 15:20 16:17 17:13 18:7: la sintassi per l'enumerazione %s non è valida: \"%s\"   []
+ja: 15:21 16:17 17:13 18:7: 列挙型%sの不正な入力構文: \"%s\"   []
+ka: 15:16 16:17 17:13 18:7: არასწორი შეყვანილი მნიშვნელობა ჩამონათვალისთვის %s: \"%s\"   []
+ko: 15:21 16:17 17:13 18:7: %s 열거형의 입력 값이 잘못됨: \"%s\"   []
+pl: 16:17 17:13 18:7: nieprawidłowa wartość wejścia dla enumeracji %s: \"%s\"   []
+pt_BR: 16:17 17:13 18:7: valor de entrada é inválido para enum %s: \"%s\"   []
+ru: 15:21 16:17 17:13 18:7: неверное значение для перечисления %s: \"%s\"   []
+sv: 15:21 16:17 17:13 18:7: ogiltigt indata-värde för enum %s: \"%s\"   []
+tr: 16:17 17:13 18:7: %s enum tipi için geçersiz değer: \"%s\"   []
+uk: 15:21 16:17 17:13 18:7: неприпустиме вхідне значення для переліку %s: \"%s\"   []
+zh_CN: 15:20 16:16 17:12 18:6: 对于枚举%s的输入值无效: \"%s\"   []
+zh_CN: 15:1 16:1 17:1 18:1: 枚举 %s 的输入值无效: \"%s\"   []
+zh_TW: 15:1 16:1 17:1 18:1: 列舉 %s 的輸入值無效: \"%s\"   []
+releases: 58 files: 784 distinct files: 285

@@ -219,7 +219,7 @@ pub fn check_pg(p: usize, cx: &Cx, sp: &Spec, o: &Out, at: At) {
             s.fail("lit I9 loud half", d.clone());
             if !vis {
                 s.inc("lit I9 loud: not visible");
-            } else if app && sp.stmt == CAST {
+            } else if app && castlike(sp.stmt) {
                 s.inc("lit I9 loud: cast in the app's transaction");
             } else {
                 s.inc("lit I9 loud: other");
@@ -227,8 +227,9 @@ pub fn check_pg(p: usize, cx: &Cx, sp: &Spec, o: &Out, at: At) {
         }
         if vis {
             let cp = o.copy.unwrap_or(0);
-            let ez = loud_lit(s, sp, o, v) || (app && matches!(sp.stmt, CAST | TRIG) && cx.cached_mode && o.copy_at <= since && s.seen_copy.insert(cp));
-            if !ez {
+            let ez = loud_lit(s, sp, o, v) || (app && casts(sp.stmt) && cx.cached_mode && o.copy_at <= since && s.seen_copy.insert(cp));
+            let cant = s.c.words && casts(sp.stmt) && cx.cached_mode && o.copy_at <= since && matches!(at, At::Tx { .. } | At::Sp { .. });
+            if !ez && !cant {
                 s.fail("new I9 loud half", d.clone());
             }
             if loud_lit(s, sp, o, v) {
@@ -243,7 +244,7 @@ pub fn check_pg(p: usize, cx: &Cx, sp: &Spec, o: &Out, at: At) {
                 s.inc("cast's 22P02 naming the kept type in the app's transaction");
             }
         }
-        if !matches!(sp.stmt, CAST | TRIG) && (cx.reqs > 0 || cx.made_entry || cx.replaced) {
+        if !casts(sp.stmt) && (cx.reqs > 0 || cx.made_entry || cx.replaced) {
             s.fail("lit I9 loud: a request, entry or replacement", format!("{} reqs={} entry={} repl={} other={} confirm={}", d, cx.reqs, cx.made_entry, cx.replaced, cx.other, cx.confirm_run));
         }
     }
@@ -279,6 +280,14 @@ pub fn check_pg(p: usize, cx: &Cx, sp: &Spec, o: &Out, at: At) {
                     }
                     return;
                 }
+            }
+            // what the test can't tell: a type named as a word of a message in another language
+            if s.c.words && matches!(err, Err::P22 { named: Named::Kept(_), .. }) && casts(sp.stmt) && matches!(at, At::Tx { .. } | At::Sp { .. }) {
+                s.inc("a type named as a word: as it is, inside a transaction");
+                if !o.cached || o.copy_at > s.db.types[o.ver as usize].2 {
+                    s.fail("R-1271 can't tell, not from a copy prepared before the swap", d);
+                }
+                return;
             }
             match at {
                 At::Out | At::Held => s.fail("I7 outside a transaction", d),
@@ -392,7 +401,7 @@ pub fn check_pg(p: usize, cx: &Cx, sp: &Spec, o: &Out, at: At) {
 }
 pub fn check_ok(p: usize, cx: &Cx, sp: &Spec, o: &Out, _at: At) {
     let s = w();
-    if !matches!(sp.stmt, CAST | F | ST) {
+    if !matches!(sp.stmt, CAST | F | ST | STC | NOC) {
         return;
     }
     let v = match o.r {
@@ -404,7 +413,7 @@ pub fn check_ok(p: usize, cx: &Cx, sp: &Spec, o: &Out, _at: At) {
     }
     let (st, since, left) = s.db.types[v as usize];
     // judged at the run's own instant: a change since can't have helped it
-    let at = if sp.stmt == CAST { o.copy_at } else { o.comp.map_or(0, |c| c.at) };
+    let at = if castlike(sp.stmt) { o.copy_at } else { o.comp.map_or(0, |c| c.at) };
     let d = format!("t={} run={} since={} left={} at={} stmt={} ver={} state={:?} label={:?}", s.now, o.t, since, left, at, sp.stmt, v, st, sp.label);
     if st == TS::Retired && matches!(sp.label, Label::RetReal) {
         // only text copied from the retired type's own labels, through plpgsql compiled before the relabel
@@ -422,13 +431,14 @@ pub fn check_ok(p: usize, cx: &Cx, sp: &Spec, o: &Out, _at: At) {
         return;
     }
     s.inc("silent wrong answers");
-    if sp.stmt == CAST && o.cached {
+    if castlike(sp.stmt) && o.cached {
         if let Some((c, _)) = s.pools[p].confs.iter().find(|c| c.0 > left) {
             if o.t > c + s.c.w {
                 let dd = format!("{} run={} left={} conf={} copy_at={} cid={:?} acts={:?} adopts={:?}", d, o.t, left, c, o.copy_at, o.copy, s.pools[p].acts.iter().map(|a| (a.t, a.kind)).filter(|a| a.0 > left).take(4).collect::<Vec<_>>(), s.pools[p].adopts.iter().filter(|a| **a > left).take(4).collect::<Vec<_>>());
                 s.fail("lit I9 silent past W of the first confirmation", dd);
                 let f = s.pools[p].req_t.iter().find(|c| **c > left);
-                if f.is_some_and(|f| { let e = f + s.c.w; let k = s.pools[p].co_t.partition_point(|x| *x <= e); k < s.pools[p].co_t.len() && s.pools[p].co_t[k] < cx.started }) {
+                // the first checkout after that, its take finished
+                if f.is_some_and(|f| { let e = f + s.c.w; let k = s.pools[p].co_t.partition_point(|x| *x <= e); k < s.pools[p].co_t.len() && s.pools[p].co_t[k] + s.c.lockwait < cx.started }) {
                     if o.copy_by == p {
                         let dd = format!("{} run={} left={} req={:?} acts={:?} adopts={:?} copy_at={}", d, o.t, left, f, s.pools[p].acts.iter().map(|a| a.t).filter(|a| *a > left).take(4).collect::<Vec<_>>(), s.pools[p].adopts.iter().filter(|a| **a > left).take(4).collect::<Vec<_>>(), o.copy_at);
                         s.fail("new I9 silent past W of the first request", dd);
@@ -446,7 +456,9 @@ pub fn check_sc(p: usize, cx: &Cx, sp: &Spec, o: &Out, at: At, conn: u64) {
     let now = s.now;
     let d = format!("t={} stmt={} {:?} {:?}", now, sp.stmt, o.cause, at);
     let retry0 = matches!(at, At::Tx { retry: 0 } | At::Sp { retry: 0 });
-    if matches!(o.r, Err(Err::P22 { named: Named::Cur, .. })) && matches!(sp.stmt, CAST | TRIG) && o.comp.is_none() {
+    if matches!(o.r, Err(Err::P22 { named: Named::Cur, .. })) && casts(sp.stmt) && o.comp.is_none() && s.c.unread {
+        s.inc("a bad label whose message the test can't read: SchemaChanged");
+    } else if matches!(o.r, Err(Err::P22 { named: Named::Cur, .. })) && casts(sp.stmt) && o.comp.is_none() {
         s.fail("I14 an error that names the cast's own type taken for a stale statement", d.clone());
     }
     match o.cause {

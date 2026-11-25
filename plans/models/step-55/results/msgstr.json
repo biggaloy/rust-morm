@@ -1,0 +1,51 @@
+{
+ "de": [
+  "ungültiger Eingabewert für Enum %s: »%s«"
+ ],
+ "es": [
+  "la sintaxis de entrada no es válida para el enum %s: «%s»"
+ ],
+ "fr": [
+  "valeur en entrée invalide pour le enum %s : « %s »"
+ ],
+ "ja": [
+  "列挙型%sの不正な入力構文: \\\"%s\\\""
+ ],
+ "ko": [
+  "%s 열거형의 입력 값이 잘못됨: \\\"%s\\\""
+ ],
+ "ru": [
+  "неверное значение для перечисления %s: \\\"%s\\\""
+ ],
+ "sv": [
+  "ogiltigt indata-värde för enum %s: \\\"%s\\\""
+ ],
+ "uk": [
+  "неприпустиме вхідне значення для переліку %s: \\\"%s\\\""
+ ],
+ "zh_CN": [
+  "对于枚举%s的输入值无效: \\\"%s\\\"",
+  "枚举 %s 的输入值无效: \\\"%s\\\""
+ ],
+ "it": [
+  "la sintassi per l'enumerazione %s non è valida: \\\"%s\\\""
+ ],
+ "ka": [
+  "არასწორი შეყვანილი მნიშვნელობა ჩამონათვალისთვის %s: \\\"%s\\\""
+ ],
+ "zh_TW": [
+  "列舉 %s 的輸入值無效: \\\"%s\\\""
+ ],
+ "id": [
+  "nilai masukan tidak valid untuk enum %s : « %s »"
+ ],
+ "pl": [
+  "nieprawidłowa wartość wejścia dla enumeracji %s: \\\"%s\\\""
+ ],
+ "pt_BR": [
+  "valor de entrada é inválido para enum %s: \\\"%s\\\""
+ ],
+ "tr": [
+  "%s enum tipi için geçersiz değer: \\\"%s\\\""
+ ]
+}
