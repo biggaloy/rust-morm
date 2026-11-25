@@ -1,0 +1,1204 @@
+// R-1270's procedure, step by step, and rows A to D.
+use crate::core::*;
+use std::collections::HashMap;
+
+#[derive(Default, Clone, Debug)]
+pub struct Cx {
+    pub out: bool,
+    pub held: bool,
+    pub sp: bool,
+    pub app: bool,
+    pub app_failed: bool,
+    pub rr: bool,
+    pub tx_snap: Option<u64>,
+    pub rolled: bool,
+    pub retried: bool,
+    pub srv: Option<usize>,
+    pub discard: Option<u64>, // the epoch whose test decided it
+    pub mark_next: Option<(Spec, u8)>, // row B2's or B3's mark, for the transaction's next attempt
+    pub due_mark: Option<(Spec, u8)>,  // the same, on this attempt
+    pub cached_mode: bool,
+    pub conn: u64,
+    pub nomark: bool,
+    // what the last call did, for the checks
+    pub tested: Option<bool>,
+    pub reqs: u32,
+    pub made_entry: bool,
+    pub replaced: bool,
+    pub reads: u32,
+    pub cool: bool,
+    pub other: bool,
+    pub confirm_run: bool,
+    pub ptest: bool,
+    pub started: u64,
+    pub att: u64,
+    pub first: Option<Result<u32, Err>>,
+    pub carry: i64,
+}
+impl Cx {
+    pub fn fresh_call(&mut self) {
+        self.tested = None;
+        self.reqs = 0;
+        self.made_entry = false;
+        self.replaced = false;
+        self.reads = 0;
+        self.cool = false;
+        self.other = false;
+        self.confirm_run = false;
+        self.ptest = false;
+        self.started = w().now;
+        self.first = None;
+        self.carry = w().pools[0].n.max(0);
+    }
+}
+#[derive(Clone, Debug)]
+pub enum Res {
+    Ok(Out),
+    Pg(Out),
+    Sc(Out),
+}
+#[derive(Clone, Copy, PartialEq)]
+pub enum Mode {
+    Cached(Text),
+    Keep(Text),
+    Unnamed,
+}
+#[derive(Clone, Copy, PartialEq, Debug)]
+pub enum Cls {
+    None,
+    Stmt,
+    Sess,
+}
+
+impl Sim {
+    pub fn begin_step(&mut self, p: usize) {
+        let q = &mut self.pools[p];
+        q.step_n0 = q.n;
+        q.step_snap = q.snap;
+        q.step_rise = q.rises;
+        let now = self.now;
+        q.entries.retain(|e| e.expiry > now);
+        q.cool.retain(|e| e.1 > now);
+    }
+    fn win_open(&self, p: usize) -> bool {
+        match self.pools[p].win {
+            None => true,
+            Some((_, _, end)) => self.now >= end,
+        }
+    }
+    // a checkout's compare-and-swap landing between a step's reading of the word and its own
+    // fault 21: the checkout's compare-and-swap takes the bits and raises the generation, and only then, later, starts the window
+    pub fn cas21(&mut self, p: usize) {
+        let (a, n, sn, ri) = {
+            let q = &self.pools[p];
+            (q.due, q.n, q.snap, q.rises)
+        };
+        self.pools[p].due = Act::None;
+        self.rec_act(p, a, n, sn, ri);
+        let (lw, wd) = (self.c.lockwait, self.c.w);
+        let d = self.rng.r(0, lw);
+        let at = self.now + d;
+        self.spawn(
+            Box::pin(async move {
+                let s = w();
+                s.begin_step(p);
+                if a == Act::Replace { s.pools[p].cgen += 1 } else { s.pools[p].sgen += 1 }
+                let (t, n) = (s.now, s.pools[p].n);
+                s.pools[p].win = Some((t, n, t + wd));
+                s.clear_tables(p);
+            }),
+            at,
+        );
+    }
+    fn landing(&mut self, p: usize) -> bool {
+        self.landing_at(p, false)
+    }
+    fn landing_at(&mut self, p: usize, entry: bool) -> bool {
+        if self.pools[p].due != Act::None && !self.pools[p].starting && self.win_open(p) && self.c.land > 0.0 && {
+            let l = self.c.land;
+            self.rng.p(l)
+        } {
+            if self.c.fault == 22 {
+                // the step's plain store overwrites the checkout's starting bit
+                if entry && self.pools[p].owed.iter().any(|o| !o.2 && o.1 <= self.now) {
+                    self.fail("I2", "a checkout's starting bit overwritten".into());
+                }
+                return false;
+            }
+            if self.c.fault == 21 {
+                self.cas21(p);
+                return true;
+            }
+            self.pools[p].starting = true;
+            if self.c.fault == 23 {
+                self.pools[p].sgen += 1;
+            }
+            self.inc("landings");
+            let lw = self.c.lockwait;
+            let d = self.rng.r(0, lw);
+            let at = self.now + d;
+            self.spawn(
+                Box::pin(async move {
+                    let s = w();
+                    s.begin_step(p);
+                    s.finish_take(p);
+                }),
+                at,
+            );
+            return true;
+        }
+        false
+    }
+    fn rec_act(&mut self, p: usize, a: Act, n: i64, snap: u64, rise: u64) {
+        let now = self.now;
+        let q = &mut self.pools[p];
+        let cg = q.cgen;
+        q.acts.push(ActRec { t: now, n, snap, snap_lit: q.snap, lr_lit: q.n, rise, rise_lit: q.rises, kind: a, cgen: cg });
+        q.acts_t.push(now);
+        q.owed.clear();
+        self.inc("actions");
+    }
+    fn clear_tables(&mut self, p: usize) {
+        let now = self.now;
+        let st: Vec<u8> = self.pools[p].entries.iter().map(|e| e.stmt).collect();
+        for s in st {
+            self.pools[p].removals.entry(s).or_default().push(now);
+        }
+        self.pools[p].entries.clear();
+        self.pools[p].cool.clear();
+    }
+    fn do_take(&mut self, p: usize, a: Act, n: i64, snap: u64, rise: u64) {
+        self.do_take_at(p, a, n, snap, rise, false)
+    }
+    pub fn do_take_at(&mut self, p: usize, a: Act, n: i64, snap: u64, rise: u64, ft: bool) {
+        let fault = self.c.fault;
+        let salt = self.id();
+        let (wd, pooled, now) = (self.c.w, self.c.pooled, self.now);
+        let q = &mut self.pools[p];
+        if pooled {
+            q.marker = (n, salt);
+        }
+        let raised = ft && fault == 23;
+        if a == Act::Replace { q.cgen += 1 } else if !raised { q.sgen += 1 }
+        q.due = Act::None;
+        q.starting = false;
+        q.win = Some((now, n, now + wd));
+        self.clear_tables(p);
+        self.rec_act(p, a, n, snap, rise);
+    }
+    pub fn finish_take(&mut self, p: usize) {
+        if self.pools[p].starting {
+            let (a, n0, sn, ri) = {
+                let q = &self.pools[p];
+                (q.due, q.step_n0, q.step_snap, q.step_rise)
+            };
+            if a == Act::None {
+                self.pools[p].starting = false;
+                return;
+            }
+            self.do_take_at(p, a, n0, sn, ri, true);
+        }
+    }
+    fn gate_open(&mut self, p: usize) -> bool {
+        if self.pools[p].starting {
+            self.finish_take(p);
+        }
+        if self.c.fault == 1 {
+            return true;
+        }
+        self.win_open(p) || self.pools[p].n != self.pools[p].win.unwrap().1
+    }
+    // a request judged in this step; true when taken
+    fn req_step(&mut self, p: usize, a: Act, reading: bool) -> bool {
+        loop {
+            if self.gate_open(p) {
+                if self.landing(p) {
+                    self.finish_take(p);
+                    continue;
+                }
+                let (d, n, sn, ri) = {
+                    let q = &self.pools[p];
+                    (q.due, q.n, q.snap, q.rises)
+                };
+                self.do_take(p, a.max(d), n, sn, ri);
+                return true;
+            }
+            if reading {
+                return false;
+            }
+            if self.landing(p) {
+                self.finish_take(p);
+                continue;
+            }
+            let end = self.pools[p].win.map_or(0, |x| x.2);
+            let now = self.now;
+            if self.c.fault == 6 {
+                self.pools[p].owed.push((now, end, false));
+                return false;
+            }
+            let q = &mut self.pools[p];
+            q.due = q.due.max(a);
+            q.owed.push((now, end, false));
+            self.inc("deferred");
+            return false;
+        }
+    }
+    fn on_moved(&mut self, p: usize, r: i64) {
+        let (wd, pooled, now) = (self.c.w, self.c.pooled, self.now);
+        self.pools[p].n = r;
+        let sn = self.pools[p].snap;
+        self.pools[p].moved.push((now, r, sn));
+        if !pooled && !self.pools[p].entries.is_empty() && self.landing(p) {
+            self.finish_take(p);
+        }
+        self.clear_tables(p);
+        if pooled {
+            let salt = self.id();
+            let fr = self.c.fault == 26;
+            // a checkout's compare-and-swap landing here takes nothing
+            let _ = self.landing(p);
+            let q = &mut self.pools[p];
+            if r > q.highest {
+                q.marker = (r, 0);
+                q.highest = r;
+            } else {
+                q.marker = (r, if fr { 0 } else { salt });
+            }
+            q.sgen += 1;
+            if q.due != Act::None {
+                for o in q.owed.iter_mut() {
+                    o.2 = true;
+                }
+            }
+            q.due = Act::None;
+            q.starting = false;
+            q.win = Some((now, r, now + wd));
+            q.adopts.push(now);
+            q.acts_t.push(now);
+            self.inc("adoptions");
+        }
+    }
+    fn arrive(&mut self, p: usize, t: u64, r: i64, snap: u64, sent: u64, over: bool) -> bool {
+        let really = self.c.several;
+        let several = match self.c.fault { 10 => true, 14 => false, _ => really };
+        let lit = self.pools[p].n;
+        let fault = self.c.fault;
+        if t < self.pools[p].horizon && fault == 13 && r > lit {
+            // an overlapping read counts when its <n> is greater
+            self.pools[p].rises += 1;
+            if snap <= self.pools[p].applied_snap {
+                self.fail("I10 newer", String::new());
+            }
+            self.pools[p].snap = snap;
+            self.pools[p].applied_snap = self.pools[p].applied_snap.max(snap);
+            self.on_moved(p, r);
+            return true;
+        }
+        if t < self.pools[p].horizon && fault != 9 {
+            self.inc("overlapping reads refused");
+            return false;
+        }
+        let mvd = r > lit || (r < lit && !several);
+        if fault == 11 {
+            self.pools[p].horizon = t + 1;
+        } else if fault != 12 || mvd {
+            self.pools[p].horizon = self.pools[p].tickets;
+        }
+        if snap < sent {
+            let m = format!("{} snap {} sent {}", self.now, snap, sent);
+            self.fail("I10 snapshot", m);
+        }
+        let mut mv = false;
+        if r > lit || (r < lit && !several) {
+            if snap <= self.pools[p].applied_snap && lit != r {
+                let m = format!("{} older snapshot", self.now);
+                self.fail("I10 newer", m);
+            }
+            if r > lit {
+                self.pools[p].rises += 1;
+            }
+            self.pools[p].snap = snap;
+            self.on_moved(p, r);
+            mv = true;
+        } else if r == lit {
+            self.pools[p].snap = snap;
+        }
+        self.pools[p].applied_snap = self.pools[p].applied_snap.max(snap);
+        if !over {
+            let n = self.pools[p].n;
+            if (!really && n != r) || (really && r > lit && n != r) {
+                let m = format!("{} read {} last {}", self.now, r, n);
+                self.fail("I10 sets", m);
+            }
+        }
+        if really && self.pools[p].n < lit {
+            self.fail("I10 down", String::new());
+        }
+        mv
+    }
+    fn n_at(&mut self, snap: u64) -> i64 {
+        let hist = if self.c.servers > 1 {
+            let k = self.rng.n(self.c.servers as u64) as usize;
+            &self.db.replay[k]
+        } else {
+            &self.db.nhist
+        };
+        hist.iter().rev().find(|x| x.0 < snap || x.0 == 0).unwrap().1
+    }
+    fn old(&mut self, p: usize, conn: &Conn, cx: &mut Cx) -> bool {
+        let (wd, now) = (self.c.w, self.now);
+        let q = &mut self.pools[p];
+        let start = match &q.epoch {
+            None => true,
+            Some(e) => (now >= e.end && self.c.fault != 4) || (e.n != q.n && self.c.fault != 4),
+        };
+        if start {
+            q.epoch_seq += 1;
+            q.epoch = Some(Epoch { id: q.epoch_seq, t: now, n: q.n, end: now + wd, susp: false, noextra: false });
+            let x = (q.epoch_seq, now, q.snap, q.rises, q.open as u64);
+            q.epochs.push(x);
+            self.inc("epochs");
+        }
+        let e = self.pools[p].epoch.as_ref().unwrap();
+        let r = conn.opened < e.t && !e.susp;
+        let id = e.id;
+        cx.discard = Some(id);
+        cx.tested = Some(r);
+        if self.c.fault == 2 {
+            cx.tested = Some(true);
+            return true;
+        }
+        if self.c.fault == 5 && !cx.held {
+            return false;
+        }
+        r
+    }
+    fn entry(&mut self, p: usize, sp: &Spec, err: Err, marked: bool) {
+        let (mx, e, now) = (self.c.pend_max, self.c.e, self.now);
+        if mx == 0 || e == 0 {
+            return;
+        }
+        if let Some(x) = self.pools[p].entries.iter_mut().find(|x| x.stmt == sp.stmt) {
+            x.bytes = Some(sp.bytes());
+            x.err = err.code();
+            x.marked = marked;
+            x.replace = false;
+            return;
+        }
+        if self.landing_at(p, true) {
+            self.finish_take(p);
+        }
+        let id = self.id();
+        if self.pools[p].entries.len() >= mx {
+            let d = self.pools[p].entries.pop_front().unwrap();
+            self.pools[p].removals.entry(d.stmt).or_default().push(now);
+        }
+        self.pools[p].created.entry(sp.stmt).or_default().push(now);
+        self.pools[p].entries.push_back(Entry { stmt: sp.stmt, bytes: Some(sp.bytes()), err: err.code(), marked, replace: false, expiry: now + e, id });
+        if self.pools[p].entries.len() > mx {
+            self.fail("I6", String::new());
+        }
+    }
+    fn expect_confirm(&mut self, p: usize, sp: &Spec, err: u8, cx: &mut Cx) {
+        if let Some(x) = self.pools[p].entries.iter_mut().find(|x| x.stmt == sp.stmt && x.bytes == Some(sp.bytes())) {
+            x.replace = true;
+        } else {
+            cx.mark_next = Some((*sp, err));
+        }
+    }
+    fn suspend(&mut self, p: usize, ep: u64) {
+        if let Some(e) = self.pools[p].epoch.as_mut() {
+            if e.id == ep {
+                e.susp = true;
+            }
+        }
+        self.inc("suspended");
+    }
+    pub fn check_open(&mut self, p: usize) {
+        let (m, b) = (self.c.max, self.c.budget);
+        let q = &self.pools[p];
+        if q.slots > m || q.open > m + 1 || q.open > b {
+            let t = format!("slots {} open {}", q.slots, q.open);
+            self.fail("I5", t);
+        }
+    }
+    pub fn class(&self, e: Err, cached: bool, sp: &Spec, out: bool) -> Cls {
+        let casts = sp.stmt == CAST || sp.stmt == TRIG;
+        match e {
+            Err::A0 if cached => Cls::Stmt,
+            Err::P22 { named, ret } => {
+                let r2 = cached && casts && named != Named::Cur;
+                if self.c.row7_first && ret {
+                    return Cls::Sess;
+                }
+                if r2 {
+                    return Cls::Stmt;
+                }
+                if ret {
+                    return Cls::Sess;
+                }
+                if cached && casts && out {
+                    return Cls::Stmt; // choice I
+                }
+                if self.c.fault == 33 { Cls::Sess } else { Cls::None }
+            }
+            Err::XX => {
+                if cached { Cls::Stmt } else { Cls::Sess }
+            }
+            Err::D42804 => Cls::Sess,
+            _ => Cls::None,
+        }
+    }
+    fn confirms(&self, r: &Result<u32, Err>, first: u8) -> bool {
+        match r {
+            Ok(_) => true,
+            Err(e) => !e.noconf() && e.code() != first,
+        }
+    }
+}
+
+// ---- I/O ----
+pub async fn read(p: usize, cx: &mut Cx, snap_over: Option<u64>) -> bool {
+    cx.reads += 1;
+    let (lat, off, fail, t, sent) = {
+        let s = w();
+        s.inc("reads");
+        let lat = s.rng.r(MS, 200 * MS);
+        let off = s.rng.r(0, lat);
+        let rf = s.c.readfail;
+        let fail = s.rng.p(rf);
+        let t = s.pools[p].tickets;
+        s.pools[p].tickets += 1;
+        // overlap bookkeeping
+        let over = !s.pools[p].inflight.is_empty();
+        let fl = s.pools[p].inflight.clone();
+        for x in fl {
+            s.pools[p].overl.insert(x, true);
+        }
+        s.pools[p].inflight.push(t);
+        s.pools[p].overl.insert(t, over);
+        (lat, off, fail, t, s.now)
+    };
+    let failed_app = cx.held && cx.app && cx.app_failed;
+    if failed_app {
+        sleep(MS).await;
+        let s = w();
+        s.begin_step(p);
+        s.pools[p].inflight.retain(|x| *x != t);
+        return false;
+    }
+    sleep(off).await;
+    let (v, snap) = {
+        let s = w();
+        let snap = snap_over.unwrap_or(s.now);
+        (s.n_at(snap), snap)
+    };
+    sleep(lat - off).await;
+    let s = w();
+    s.begin_step(p);
+    s.pools[p].inflight.retain(|x| *x != t);
+    let over = s.pools[p].overl.remove(&t).unwrap_or(false);
+    if fail {
+        return false;
+    }
+    if s.pools[p].starting {
+        s.finish_take(p);
+    }
+    cx.carry = v;
+    if s.c.fault == 18 {
+        // the read order's test and its effect in steps of their own
+        let d = s.rng.r(0, 500);
+        let late = t < s.pools[p].horizon;
+        sleep(d).await;
+        let s = w();
+        if late {
+            return false;
+        }
+        // judged against the horizon as the step first read it
+        s.pools[p].horizon = s.pools[p].horizon.min(t);
+        return s.arrive(p, t, v, snap, sent, over);
+    }
+    s.arrive(p, t, v, snap, sent, over)
+}
+
+async fn request(p: usize, a: Act, unread: bool, cx: &mut Cx, snap: Option<u64>) -> bool {
+    cx.reqs += 1;
+    {
+        let s = w();
+        let now = s.now;
+        s.pools[p].req_t.push(now);
+    }
+    let pooled = {
+        let s = w();
+        s.inc("requests");
+        s.c.pooled
+    };
+    if unread && !pooled {
+        let (taken, _) = {
+            let s = w();
+            (s.req_step(p, a, true), 0)
+        };
+        if taken {
+            return false;
+        }
+        let mv = read(p, cx, snap).await;
+        w().req_step(p, a, false);
+        return mv;
+    }
+    let f = w().c.fault;
+    if f == 8 {
+        // judged by the <n> the call carried
+        let c = cx.carry;
+        let s = w();
+        let n = s.pools[p].n;
+        let open = s.win_open(p) || s.pools[p].win.unwrap().1 != c;
+        if open {
+            let (d, sn, ri) = (s.pools[p].due, s.pools[p].snap, s.pools[p].rises);
+            s.do_take(p, a.max(d), n, sn, ri);
+            if let Some(x) = s.pools[p].win.as_mut() {
+                x.1 = c;
+            }
+        } else {
+            s.req_step(p, a, false);
+        }
+        return false;
+    }
+    if f == 18 {
+        let (open, d) = {
+            let s = w();
+            (s.gate_open(p), s.rng.r(0, 500))
+        };
+        sleep(d).await;
+        let s = w();
+        if open {
+            let (due, n, sn, ri) = (s.pools[p].due, s.pools[p].n, s.pools[p].snap, s.pools[p].rises);
+            s.do_take(p, a.max(due), n, sn, ri);
+        } else {
+            s.pools[p].due = s.pools[p].due.max(a);
+        }
+        return false;
+    }
+    w().req_step(p, a, false);
+    false
+}
+
+pub async fn acquire(prefer: usize) -> usize {
+    loop {
+        {
+            let s = w();
+            let mut k = prefer;
+            if s.rng.p(0.3) {
+                k = (prefer + 1 + s.rng.n(2) as usize) % 3;
+            }
+            for d in 0..3 {
+                let j = (k + d) % 3;
+                if !s.srv[j].busy {
+                    let o = s.srv[j].sess;
+                    if (s.now - s.sess[o].opened >= 4 * S && s.c.fault != 106) {
+                        s.srv[j].sess = s.new_sess();
+                    }
+                    s.srv[j].busy = true;
+                    return j;
+                }
+            }
+        }
+        sleep(500).await;
+    }
+}
+pub fn release_srv(j: usize) {
+    let s = w();
+    s.srv[j].busy = false;
+    let o = s.srv[j].sess;
+    if s.srv[j].kill || (s.now - s.sess[o].opened >= 4 * S && s.c.fault != 106) {
+        s.srv[j].kill = false;
+        s.srv[j].sess = s.new_sess();
+    }
+}
+fn evict(conn: &mut Conn, sp: &Spec) {
+    let s = w();
+    s.sess[conn.sess].copies.retain(|(t, _)| t.0 != sp.stmt);
+}
+fn clear_caches(conn: &mut Conn) {
+    let s = w();
+    if s.c.pooled { conn.cache.clear() } else { s.sess[conn.sess].copies.clear() }
+}
+
+pub async fn run_once(p: usize, conn: &mut Conn, cx: &mut Cx, sp: &Spec, mode: Mode) -> Out {
+    let (lat, inj) = {
+        let s = w();
+        s.inc("runs");
+        let lat = s.rng.r(MS, 10 * MS);
+        let (t, se) = (s.c.timeout, s.c.ser);
+        let inj = if cx.app && cx.app_failed {
+            Some(Err::F25)
+        } else if s.rng.p(t) {
+            Some(Err::T57)
+        } else if !cx.out && s.rng.p(se) {
+            Some(Err::S40)
+        } else {
+            None
+        };
+        (lat, inj)
+    };
+    sleep(lat / 2).await;
+    let pooled = w().c.pooled;
+    let out = {
+        if let Some(e) = inj {
+            let s = w();
+            let oracle = s.oracle(sp);
+            Out { r: Err(e), cause: Cause::Inj, oracle, cached: false, copy: None, copy_at: 0, copy_by: p, comp: None, sess_opened: 0, t: s.now, ver: 0 }
+        } else {
+            let (how, keep) = match mode {
+                Mode::Cached(t) => (Some(t), None),
+                Mode::Keep(t) => (None, Some(t)),
+                Mode::Unnamed => (None, None),
+            };
+            if pooled {
+                match cx.srv {
+                    Some(j) => {
+                        let s = w();
+                        let sid = s.srv[j].sess;
+                        s.exec(sid, sp, how, keep, p)
+                    }
+                    None => {
+                        let j = acquire(conn.last_srv).await;
+                        conn.last_srv = j;
+                        let o = {
+                            let s = w();
+                            let sid = s.srv[j].sess;
+                            s.exec(sid, sp, how, keep, p)
+                        };
+                        release_srv(j);
+                        o
+                    }
+                }
+            } else {
+                let s = w();
+                s.exec(conn.sess, sp, how, keep, p)
+            }
+        }
+    };
+    if (!cx.out || cx.app) && cx.tx_snap.is_none() {
+        cx.tx_snap = Some(w().now);
+    }
+    sleep(lat - lat / 2).await;
+    if cx.app && out.r.is_err() {
+        cx.app_failed = true;
+    }
+    if out.oracle.is_ok() && out.r.is_err() {
+        // nothing
+    }
+    out
+}
+
+pub async fn run_call(p: usize, conn: &mut Conn, cx: &mut Cx, sp: &Spec) -> Res {
+    cx.fresh_call();
+    let (mode, ent, tw) = {
+        let s = w();
+        let f25 = s.c.fault == 25;
+        let (sg, cg) = (s.pools[p].sgen, s.pools[p].cgen);
+        if conn.cc != (sg, cg) && !f25 {
+            clear_caches(conn);
+            conn.cc = (sg, cg);
+            conn.sgen = sg;
+        }
+        let now = s.now;
+        let ent = s.pools[p].entries.iter().find(|e| e.stmt == sp.stmt && e.expiry > now).map(|e| (e.id, e.bytes, e.err, e.marked, e.replace));
+        let retried = cx.retried && s.c.fault != 28;
+        let pend = ent.is_some() && s.c.fault != 107;
+        let mode = if pend || retried || !s.c.caches {
+            Mode::Unnamed
+        } else if s.c.pooled {
+            let m = s.pools[p].marker;
+            let t = *conn.cache.entry(sp.stmt).or_insert((sp.stmt, m.0, m.1));
+            Mode::Cached(t)
+        } else {
+            Mode::Cached((sp.stmt, 0, 0))
+        };
+        (mode, ent, now)
+    };
+    cx.cached_mode = matches!(mode, Mode::Cached(_));
+    cx.conn = conn.id;
+    let o = run_once(p, conn, cx, sp, mode).await;
+    cx.first = Some(o.r);
+    {
+        let s = w();
+        if matches!(mode, Mode::Cached(_)) {
+            if cx.retried {
+                s.fail("I7 retried attempt runs cached", String::new());
+            }
+            if let Some(ch) = s.copy_change(sp, &o) {
+                if s.pools[p].acts_t.iter().any(|a| *a > ch && *a < tw && o.copy_at < ch) {
+                    if o.copy_by == p {
+                        s.fail("I8 clearing", format!("{} stmt {}", s.now, sp.stmt));
+                    } else {
+                        s.inc("clearing clause broken by another process's copy");
+                    }
+                    s.inc("I8lit clearing");
+                }
+            }
+        }
+        if ent.is_some() && o.cached {
+            s.fail("I8 pending run cached", String::new());
+        }
+    }
+    let fresh = !matches!(mode, Mode::Cached(_));
+    // the confirming run
+    if let Some((id, bytes, ferr, marked, repl)) = ent {
+        if bytes == Some(sp.bytes()) {
+            cx.confirm_run = true;
+            w().begin_step(p);
+            let conf = w().confirms(&o.r, ferr);
+            if cx.held { w().inc("held confirming runs"); if conf && !marked { w().inc("held confirming runs that request"); } }
+            if conf {
+                let now = w().now;
+                w().pools[p].confs.push((now, true));
+                if !marked {
+                    let (pooled, f15, f17) = {
+                        let s = w();
+                        (s.c.pooled, s.c.fault == 15, s.c.fault == 17)
+                    };
+                    let unread = (cx.out || f15) && (!cx.held || f17) && !pooled;
+                    let snap = if (!cx.out || (cx.held && cx.app)) && cx.rr { cx.tx_snap } else { None };
+                    request(p, if repl { Act::Replace } else { Act::Clear }, unread, cx, snap).await;
+                }
+            } else {
+                let s = w();
+                let f27 = s.c.fault == 27;
+                if f27 {
+                    s.pools[p].entries.retain(|e| e.id != id);
+                } else if let Some(e) = s.pools[p].entries.iter_mut().find(|e| e.stmt == sp.stmt) {
+                    if e.bytes == bytes {
+                        e.bytes = None;
+                    }
+                }
+                if let Err(e) = o.r {
+                    if e.noconf() {
+                        return Res::Pg(o);
+                    }
+                }
+            }
+        }
+    }
+    // row B3's or B2's mark on the next attempt's run
+    if let Some((ms, first)) = cx.due_mark {
+        if ms.stmt == sp.stmt && ms.bytes() == sp.bytes() && ent.is_none_or(|e| e.1 != Some(sp.bytes())) {
+            cx.due_mark = None;
+            if w().confirms(&o.r, first) {
+                w().begin_step(p);
+                request(p, Act::Replace, false, cx, None).await;
+            }
+        }
+    }
+    if o.r.is_ok() {
+        return Res::Ok(o);
+    }
+    let (r0, q0) = (cx.reqs, o.clone());
+    let res = on_error(p, conn, cx, sp, o, fresh).await;
+    if let Err::P22 { named: Named::Kept(_), ret: false } = q0.r.unwrap_err() {
+        if matches!(q0.cause, Cause::Kept(_)) && sp.stmt != CAST && sp.stmt != TRIG && w().visible(&q0) {
+            let same = matches!(&res, Res::Pg(x) if x.r == q0.r && x.t == q0.t);
+            if !same || cx.reqs > r0 || cx.made_entry || cx.replaced || cx.cool || cx.other {
+                w().fail("new I9 loud: returned as it is with nothing requested, entered, retried or replaced", format!("{:?}", q0));
+            }
+        }
+    }
+    res
+}
+
+async fn on_error(p: usize, conn: &mut Conn, cx: &mut Cx, sp: &Spec, o: Out, fresh: bool) -> Res {
+    w().begin_step(p);
+    let err = o.r.unwrap_err();
+    let holds = matches!(err, Err::P22 { ret: true, .. });
+    let ptest = matches!(sp.label, Label::RetX | Label::RetReal);
+    if ptest && (holds || w().c.fault == 101) {
+        cx.ptest = true;
+        return Res::Pg(o);
+    }
+    let cls = w().class(err, !fresh, sp, cx.out);
+    if cls == Cls::Sess {
+        return session(p, conn, cx, sp, o).await;
+    }
+    if cls != Cls::Stmt {
+        return Res::Pg(o);
+    }
+    let (pooled, caches) = {
+        let s = w();
+        (s.c.pooled, s.c.caches)
+    };
+    if cx.out {
+        {
+            let s = w();
+            if s.c.fault == 103 {
+                return Res::Pg(o);
+            }
+            if s.c.fault == 7 && !s.pools[p].win.is_none_or(|x| s.now >= x.2) {
+                return Res::Pg(o);
+            }
+        }
+        // A1, C1: the fresh run
+        let r = if pooled {
+            run_once(p, conn, cx, sp, Mode::Unnamed).await
+        } else {
+            if !(w().c.fault == 104 && cx.app) {
+                evict(conn, sp);
+            }
+            if caches { run_once(p, conn, cx, sp, Mode::Keep((sp.stmt, 0, 0))).await } else { run_once(p, conn, cx, sp, Mode::Unnamed).await }
+        };
+        w().begin_step(p);
+        if w().confirms(&r.r, err.code()) || err == Err::A0 {
+            if pooled {
+                let mv = read(p, cx, None).await;
+                let now = w().now;
+                w().pools[p].confs.push((now, true));
+                if !mv {
+                    w().pools[p].unconfs.push(now);
+                    request(p, Act::Clear, false, cx, None).await;
+                }
+            } else {
+                let now = w().now;
+                w().pools[p].confs.push((now, true));
+                let f17 = w().c.fault == 17;
+                let snap = if cx.held && cx.app && cx.rr { cx.tx_snap } else { None };
+                request(p, Act::Clear, !cx.held || f17, cx, snap).await;
+            }
+        }
+        if r.r == Err(Err::F25) {
+            return Res::Pg(o);
+        }
+        if let (Err::XX, Err(Err::XX)) = (err, r.r) {
+            if w().c.fault == 102 {
+                return Res::Pg(r);
+            }
+            return session(p, conn, cx, sp, r).await;
+        }
+        if r.r.is_ok() {
+            return Res::Ok(r);
+        }
+        if w().c.a1_session {
+            let e2 = r.r.unwrap_err();
+            let c2 = w().class(e2, false, sp, cx.out);
+            let h2 = matches!(e2, Err::P22 { ret: true, .. });
+            if c2 == Cls::Sess && !(ptest && h2) {
+                return session(p, conn, cx, sp, r).await;
+            }
+        }
+        return Res::Pg(r);
+    }
+    // B1, B2, D1
+    let (f16, f3) = {
+        let s = w();
+        (s.c.fault == 16, s.c.fault == 3)
+    };
+    let _ = f3;
+    let spsnap = if f16 && cx.sp && cx.rr { cx.tx_snap } else { None };
+    cx.rolled = true;
+    sleep(MS).await;
+    w().begin_step(p);
+    if !pooled {
+        evict(conn, sp);
+    }
+    let mut mv = false;
+    if pooled || err == Err::XX {
+        mv = read(p, cx, spsnap).await;
+        w().begin_step(p);
+    }
+    if err == Err::A0 {
+        let now = w().now;
+        w().pools[p].confs.push((now, false));
+    }
+    if !mv && err == Err::A0 {
+        if pooled {
+            let now = w().now;
+            w().pools[p].unconfs.push(now);
+        }
+        mv = request(p, Act::Clear, !pooled, cx, spsnap).await;
+    }
+    if !mv {
+        w().entry(p, sp, err, err == Err::A0);
+        cx.made_entry = w().c.pend_max > 0 && w().c.e > 0;
+    }
+    cx.discard = None;
+    if !pooled && err == Err::XX {
+        let old = w().old(p, conn, cx);
+        if old {
+            w().expect_confirm(p, sp, err.code(), cx);
+            return Res::Sc(o);
+        }
+        cx.discard = None;
+    }
+    Res::Sc(o)
+}
+
+async fn session(p: usize, conn: &mut Conn, cx: &mut Cx, sp: &Spec, o: Out) -> Res {
+    let err = o.r.unwrap_err();
+    let pooled = w().c.pooled;
+    cx.discard = None;
+    if pooled {
+        let (incool, wd, cm) = {
+            let s = w();
+            let now = s.now;
+            let had = s.pools[p].entries.iter().any(|e| e.stmt == sp.stmt);
+            if had {
+                s.pools[p].entries.retain(|e| e.stmt != sp.stmt);
+                s.pools[p].removals.entry(sp.stmt).or_default().push(now);
+            }
+            (s.pools[p].cool.iter().any(|x| x.0 == sp.stmt && x.1 > now), s.c.w, s.c.cool_max)
+        };
+        if incool {
+            return Res::Pg(o);
+        }
+        let add = || {
+            let s = w();
+            let now = s.now;
+            if s.pools[p].cool.iter().any(|x| x.0 == sp.stmt) {
+                return;
+            }
+            if s.pools[p].cool.len() >= cm {
+                s.pools[p].cool.pop_front();
+            }
+            s.pools[p].cool.push_back((sp.stmt, now + wd));
+        };
+        if cx.out {
+            cx.other = true;
+            // another client connection: a random server session, with nothing cached
+            let other = {
+                let s = w();
+                s.pools[p].idle.pop()
+            };
+            let r = match other {
+                Some(mut c2) => {
+                    crate::calls::machine_checkout(p, &mut c2).await;
+                    let r = run_once(p, &mut c2, cx, sp, Mode::Unnamed).await;
+                    crate::calls::release(p, c2);
+                    r
+                }
+                None => run_once(p, conn, cx, sp, Mode::Unnamed).await,
+            };
+            w().begin_step(p);
+            return match r.r {
+                Ok(_) => Res::Ok(r),
+                Err(e) => {
+                    if e.code() == err.code() {
+                        add();
+                        cx.cool = true;
+                    }
+                    Res::Pg(r)
+                }
+            };
+        }
+        add();
+        cx.cool = true;
+        cx.rolled = true;
+        sleep(MS).await;
+        return Res::Sc(o);
+    }
+    let sp_bit = cx.sp && w().c.fault != 31;
+    if !cx.out && !sp_bit {
+        cx.rolled = true;
+        sleep(MS).await;
+        w().begin_step(p);
+    }
+    let (f15, f16) = {
+        let s = w();
+        (s.c.fault == 15, s.c.fault == 16)
+    };
+    let _ = f15;
+    if !sp_bit || f16 {
+        let snap = if f16 && cx.sp && cx.rr { cx.tx_snap } else { None };
+        read(p, cx, snap).await;
+    }
+    let f = w().c.fault;
+    if f == 19 || f == 18 {
+        let carry = if f == 19 { cx.carry } else { w().pools[p].n };
+        let start = {
+            let s = w();
+            match &s.pools[p].epoch { None => true, Some(e) => s.now >= e.end || e.n != carry }
+        };
+        let d = w().rng.r(0, 500);
+        if f == 18 {
+            sleep(d).await;
+        }
+        let d2 = w().rng.r(0, 500);
+        if f == 18 && start {
+            sleep(d2).await;
+        }
+        if start {
+            let s = w();
+            let (wd, now) = (s.c.w, s.now);
+            let q = &mut s.pools[p];
+            q.epoch_seq += 1;
+            q.epoch = Some(Epoch { id: q.epoch_seq, t: now, n: carry, end: now + wd, susp: false, noextra: false });
+            let x = (q.epoch_seq, now, q.snap, q.rises, q.open as u64);
+            q.epochs.push(x);
+        }
+        if f == 19 {
+            // the machine's own test is left out: the epoch is the one above
+            let s = w();
+            let n = s.pools[p].epoch.as_ref().unwrap().n;
+            let keep = s.pools[p].n;
+            s.pools[p].n = n;
+            let r = s.old(p, conn, cx);
+            s.pools[p].n = keep;
+            cx.tested = Some(r);
+        }
+    }
+    let isold = if f == 19 { cx.tested == Some(true) } else { w().old(p, conn, cx) };
+    if !isold {
+        if !cx.out && cx.sp && cx.rolled {
+            w().fail("I11", "B4 rolled the whole transaction back".into());
+        }
+        cx.discard = None;
+        return Res::Pg(o);
+    }
+    let ep = cx.discard.unwrap();
+    let sure = matches!(err, Err::D42804 | Err::XX);
+    if sure {
+        if w().c.fault == 3 {
+            let s = w();
+            let (n, sn, ri) = (s.pools[p].n, s.pools[p].snap, s.pools[p].rises);
+            s.do_take(p, Act::Replace, n, sn, ri);
+        } else {
+            request(p, Act::Replace, false, cx, None).await;
+        }
+    }
+    if cx.held {
+        cx.discard = None;
+        conn.mark = Some(ep);
+        cx.replaced = true;
+        if w().c.fault == 32 {
+            return Res::Pg(o);
+        }
+        w().inc("A4 SchemaChanged");
+        return Res::Sc(o);
+    }
+    if cx.out {
+        cx.discard = None;
+        cx.replaced = true;
+        // A2
+        match replace(p, conn, cx, sp, ep).await {
+            None => return Res::Pg(o),
+            Some(r) => {
+                w().begin_step(p);
+                if !sure && w().confirms(&r.r, err.code()) {
+                    request(p, Act::Replace, false, cx, None).await;
+                }
+                return if r.r.is_ok() { Res::Ok(r) } else { Res::Pg(r) };
+            }
+        }
+    }
+    cx.replaced = true;
+    if !sure {
+        w().expect_confirm(p, sp, err.code(), cx);
+    }
+    if cx.sp {
+        cx.rolled = true;
+        sleep(MS).await;
+    }
+    Res::Sc(o)
+}
+
+// try to open one connection; Ok(sess, opened), Err(is 53300)
+pub async fn open_try(p: usize) -> Result<(usize, u64, u64, u64), bool> {
+    let (lat, sg, cg) = {
+        let s = w();
+        s.pools[p].open += 1;
+        s.check_open(p);
+        (s.rng.r(5 * MS, 25 * MS), s.pools[p].sgen, s.pools[p].cgen)
+    };
+    sleep(lat).await;
+    let s = w();
+    if !s.c.pooled {
+        if s.now < s.db.refused_until {
+            s.pools[p].open -= 1;
+            s.inc("refused opens");
+            return Err(false);
+        }
+        if s.pools[p].open > s.c.role_limit {
+            s.pools[p].open -= 1;
+            s.db.last_refusal_end = s.db.last_refusal_end.max(s.now);
+            s.inc("53300");
+            return Err(true);
+        }
+    }
+    let sess = if s.c.pooled { 0 } else { s.new_sess() };
+    Ok((sess, s.now, sg, cg))
+}
+pub fn mk_conn(p: usize, o: (usize, u64, u64, u64)) -> Conn {
+    let s = w();
+    let id = s.id();
+    let _ = p;
+    let srv = s.rng.n(3) as usize;
+    Conn { id, opened: o.1, sgen: o.2, cgen: o.3, cc: (o.2, o.3), sess: o.0, cache: HashMap::new(), last_srv: srv, mark: None }
+}
+fn count_open(p: usize, ep: u64) {
+    let s = w();
+    let now = s.now;
+    s.pools[p].sopens.push(now);
+    *s.pools[p].ep_open.entry(ep).or_insert(0) += 1;
+}
+
+async fn replace(p: usize, conn: &mut Conn, cx: &mut Cx, sp: &Spec, ep: u64) -> Option<Out> {
+    let beside = {
+        let s = w();
+        let f24 = s.c.fault == 24;
+        let no = s.pools[p].epoch.as_ref().is_some_and(|e| e.id == ep && e.noextra);
+        let ok = (s.pools[p].extra == 0 || f24) && s.pools[p].open < s.c.budget && !no;
+        if ok {
+            s.pools[p].extra += 1;
+        }
+        ok
+    };
+    if beside {
+        count_open(p, ep);
+        match open_try(p).await {
+            Ok(o) => {
+                let mut nc = mk_conn(p, o);
+                let mode = if w().c.caches { Mode::Keep((sp.stmt, 0, 0)) } else { Mode::Unnamed };
+                let r = run_once(p, &mut nc, cx, sp, mode).await;
+                let s = w();
+                s.pools[p].extra -= 1;
+                s.pools[p].open -= 1; // the old one closes
+                *s.pools[p].ep_repl.entry(ep).or_insert(0) += 1;
+                *conn = nc;
+                return Some(r);
+            }
+            Err(limit) => {
+                let s = w();
+                s.begin_step(p);
+                s.pools[p].extra -= 1;
+                if !limit {
+                    s.suspend(p, ep);
+                    return None;
+                }
+                if s.c.fault != 30 {
+                    if let Some(e) = s.pools[p].epoch.as_mut() {
+                        if e.id == ep {
+                            e.noextra = true;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    // in the slot
+    w().pools[p].open -= 1;
+    count_open(p, ep);
+    match open_try(p).await {
+        Ok(o) => {
+            let mut nc = mk_conn(p, o);
+            let mode = if w().c.caches { Mode::Keep((sp.stmt, 0, 0)) } else { Mode::Unnamed };
+            let r = run_once(p, &mut nc, cx, sp, mode).await;
+            *w().pools[p].ep_repl.entry(ep).or_insert(0) += 1;
+            *conn = nc;
+            Some(r)
+        }
+        Err(_) => {
+            let s = w();
+            s.begin_step(p);
+            s.suspend(p, ep);
+            conn.id = 0; // the slot is empty
+            None
+        }
+    }
+}
