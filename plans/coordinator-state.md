@@ -2,12 +2,12 @@
 
 Read this first when resuming. It's what the coordinating session needs that isn't in `plan-approved/INDEX.md`. The coordinator updates and pushes it after each milestone. Agent briefs to reuse are in `coordinator-briefs.md`.
 
-**Last updated:** 2026-11-25, five answers written in, three open questions with the owner; safe to switch to a fresh session.
+**Last updated:** 2026-11-25, owner answered the three questions; a fresh session starts the fix agent.
 
 ## Where things stand
 
 - **Steps done:** 01 (PR #1, merged `ccd4413`) and 02 (PR #2, merged `34c81aa`), both approved by the owner.
-- **Step 55 is `in review`:** PR #3, branch `step-55-enum-proofs`, head `a1a6d0b`, CI green, checker 1294 R / 329 T, 0 problems. The owner's five answers are written in (INDEX Decisions "The EZ fix round's five open questions (2026-11-25)"). No agent is running. **Waiting on the owner:** the three open questions in the PR body's "Open questions" (recommended (a) on each). When answered: record in INDEX Decisions; if any answer changes the text, one fix agent writes them in (copy `briefs/step-55-ez-answers.md`'s shape: start from `plans/models/step-55/`, work in progress on `wip/step-55-fa`, own choices from 204); then the twenty-third review (scope since `93854c2`, findings `FA1, …` to `reviews/step-55-review-23.md`, asked also to check that nothing was lost in the PR body's move, from GitHub's edit history of the body); then PR #3 to the owner if clean.
+- **Step 55 is `in review`:** PR #3, branch `step-55-enum-proofs`, head `a1a6d0b`, CI green, checker 1294 R / 329 T, 0 problems. The owner's five answers are written in (INDEX Decisions "The EZ fix round's five open questions (2026-11-25)"). The owner answered the three open questions after it, option (a) on each (INDEX Decisions "The five answers' three open questions (2026-11-25)"). **Next: start the fix agent in `briefs/step-55-answers-3.md`** (not started as of 2026-11-25; check `origin/wip/step-55-answers-3` first), then follow that file's "After it reports".
 - **PR body:** 136,976 bytes of GitHub's 262,144; the earlier rounds are in `reviews/step-55-pr-history.md`.
 - **Token use, owner decisions (2026-11-25):** keep models in `plans/models/` (the EZ round's is in `plans/models/step-55/`), a fresh session at milestones, an hourly wake-up, and the models and efforts in `coordinator-briefs.md` (Opus 5.5 medium for the coordinator, high for every agent). Full review rounds stay, after wording-only fixes too.
 - **Next free IDs:** R-1295, T-0330.
@@ -16,7 +16,7 @@ Read this first when resuming. It's what the coordinating session needs that isn
 ## How to resume after a restart
 
 1. Read `plan-approved/INDEX.md` ("The coordinating session" and "Decisions since the split") and this file. Stay thin: don't read code or the frozen plan.
-2. Set the wake-up again with `CronCreate`: cron `43 * * * *` (hourly), recurring, prompt as in `coordinator-briefs.md`. Check `CronList` first: reopening the same session brings it back, a fresh session doesn't. It expires after 7 days anyway. The current one (`e6b984e4`, set 2026-11-25) expires about 2026-12-02.
+2. Set the wake-up again with `CronCreate`: cron `43 * * * *` (hourly), recurring, prompt as in `coordinator-briefs.md`. Check `CronList` first: reopening the same session brings it back, a fresh session doesn't. It expires after 7 days anyway. None is set: the last session cancelled its own when handing over. Record the new ID and expiry here.
 3. Check what landed: `gh pr view 3`, `git log origin/step-55-enum-proofs`, and `git log origin/main -- plans/reviews/`. Commits are the truth; unpushed agent work is lost in a crash.
 4. Background agents don't survive a restart. Restart whatever the "Where things stand" line names as running, from its brief in `briefs/` (or the matching template in `coordinator-briefs.md`), after checking its old worktree for uncommitted work.
 5. Remove stale agent worktrees under `.claude/worktrees/` only after checking each has no uncommitted or unpushed work.
@@ -31,7 +31,7 @@ Read this first when resuming. It's what the coordinating session needs that isn
 
 ## What comes next
 
-1. Step 55: the owner's three answers, then the twenty-third review; repeat until clean, then PR #3 to the owner.
+1. Step 55: write in the owner's three answers, then the twenty-third review; repeat until clean, then PR #3 to the owner.
 2. Step 03 (freeze the contracts) depends on 55. Then follow the order in `INDEX.md`.
 
 ## Rules that hold for every agent
