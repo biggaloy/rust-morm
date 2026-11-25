@@ -2,12 +2,15 @@
 
 Read this first when resuming. It's what the coordinating session needs that isn't in `plan-approved/INDEX.md`. The coordinator updates and pushes it after each milestone. Agent briefs to reuse are in `coordinator-briefs.md`.
 
-**Last updated:** 2026-11-25, EZ fix round running, saved for a restart.
+**Last updated:** 2026-11-25, EZ fix round in, five open questions with the owner.
 
 ## Where things stand
 
 - **Steps done:** 01 (PR #1, merged `ccd4413`) and 02 (PR #2, merged `34c81aa`), both approved by the owner.
-- **Step 55 is `in review`:** PR #3, branch `step-55-enum-proofs`, head `93854c2`, CI green, checker 1294 R / 329 T, 0 problems. The twenty-second review is in (`reviews/step-55-review-22.md`, `55a720a`): EZ1 to EZ3 should fix, EZ4 to EZ6 minor, no owner choice needed. Running: one fix agent for EZ1 to EZ6 (`briefs/step-55-ez-fix.md`, new IDs from R-1295 / T-0330, pushing work in progress to `wip/step-55-ez`). If it isn't running after a restart, follow that file's restart steps. When it reports: record its IDs and choices in INDEX Decisions as a new entry "Twenty-second review fixed (EZ1 to EZ6)"; then a short twenty-third review (scope since `93854c2`, findings `FA1, …` to `reviews/step-55-review-23.md`); then PR #3 to the owner if clean.
+- **Step 55 is `in review`:** PR #3, branch `step-55-enum-proofs`, head `19be048`, CI green, checker 1294 R / 329 T, 0 problems. EZ1 to EZ6 are written in (INDEX Decisions "Twenty-second review fixed (EZ1 to EZ6)"). No agent is running. **Waiting on the owner:** the five open questions in the PR body's "Open questions" (recommended (a) on each), and the coordinator's proposals on token use (below). When answered: record in INDEX Decisions; one fix agent writes the answers in, pushing work in progress to `wip/step-55-ez-answers`; then the twenty-third review (scope since `93854c2`, findings `FA1, …` to `reviews/step-55-review-23.md`); then PR #3 to the owner if clean.
+- **PR body is at GitHub's size limit** (261,451 of 262,144 bytes). The next fix agent first moves the older rounds' sections, word for word, to `plans/reviews/step-55-pr-history.md` on `main`, linked from the body; the choices and open questions stay in the body.
+- **The EZ round's model and probe** (Rust) are saved only on this machine, local branch `step-55-model-local` (`c3cbeb4`, under `plans/wip/`), until the owner decides whether to keep models in the repo.
+- **Proposals on token use, unanswered:** (1) keep the model in the repo for later fix agents; reviewers still build their own; (2) no full review after wording-only fixes; (3) a fresh session at milestones; (4) wake up hourly; coordinator on Sonnet 5.5 medium, agents on Opus 5.5 high.
 - **Next free IDs:** R-1295, T-0330.
 - Step 55's open items, reviews and designs: `reviews/step-55-open-items.md`, `reviews/step-55-review.md` and `-review-2.md` to `-review-12.md`, `reviews/stale-statement-design.md`.
 
@@ -29,7 +32,7 @@ Read this first when resuming. It's what the coordinating session needs that isn
 
 ## What comes next
 
-1. Step 55: the EZ fix round, then the twenty-third review; repeat until clean, then PR #3 to the owner.
+1. Step 55: the owner's five answers written in, then the twenty-third review; repeat until clean, then PR #3 to the owner.
 2. Step 03 (freeze the contracts) depends on 55. Then follow the order in `INDEX.md`.
 
 ## Rules that hold for every agent
