@@ -2,12 +2,12 @@
 
 Read this first when resuming. It's what the coordinating session needs that isn't in `plan-approved/INDEX.md`. The coordinator updates and pushes it after each milestone. Agent briefs to reuse are in `coordinator-briefs.md`.
 
-**Last updated:** 2026-11-26, the owner's last answer is written in; the twenty-third review is running.
+**Last updated:** 2026-11-26, the twenty-third review found FA1 to FA4 (wording, no owner choice); their fix agent is running.
 
 ## Where things stand
 
 - **Steps done:** 01 (PR #1, merged `ccd4413`) and 02 (PR #2, merged `34c81aa`), both approved by the owner.
-- **Step 55 is `in review`:** PR #3, branch `step-55-enum-proofs`, head `e417bc8`, CI green, checker 1294 R / 329 T, 0 problems, no open questions. Every owner answer since `93854c2` is written in and recorded in INDEX Decisions, the last in "The two answers' open question (2026-11-26)", and the model is in `plans/models/step-55/`. **Running: the twenty-third review in `briefs/step-55-review-23.md`** (started 2026-11-26; after a restart check `plans/reviews/step-55-review-23.md` on `main` and its worktree first), then follow that file's "After it reports".
+- **Step 55 is `in review`:** PR #3, branch `step-55-enum-proofs`, head `e417bc8`, CI green, checker 1294 R / 329 T, 0 problems, no open questions. Every owner answer since `93854c2` is written in and recorded in INDEX Decisions, the last in "The two answers' open question (2026-11-26)", and the model is in `plans/models/step-55/`. The twenty-third review is in (`reviews/step-55-review-23.md`, `b3d89cf`): FA1 to FA4, three should-fix and one minor, all wording, none needing an owner choice. **Running: the fix agent in `briefs/step-55-review-23-fix.md`** (started 2026-11-26; after a restart check its worktree first), then follow that file's "After it reports".
 - **PR body:** 159,986 bytes of GitHub's 262,144; the earlier rounds are in `reviews/step-55-pr-history.md`.
 - **Token use, owner decisions (2026-11-25):** keep models in `plans/models/` (the EZ round's is in `plans/models/step-55/`), a fresh session at milestones, an hourly wake-up, and the models and efforts in `coordinator-briefs.md` (Opus 5.5 medium for the coordinator, high for every agent). Full review rounds stay, after wording-only fixes too.
 - **Next free IDs:** R-1295, T-0330.
@@ -31,7 +31,7 @@ Read this first when resuming. It's what the coordinating session needs that isn
 
 ## What comes next
 
-1. Step 55: the twenty-third review, running; repeat until clean, then PR #3 to the owner.
+1. Step 55: the twenty-third review's fix, running, then the twenty-fourth review; repeat until clean, then PR #3 to the owner.
 2. Step 03 (freeze the contracts) depends on 55. Then follow the order in `INDEX.md`.
 
 ## Rules that hold for every agent
