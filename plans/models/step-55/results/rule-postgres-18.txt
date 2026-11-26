@@ -1,0 +1,1 @@
+from Postgres: 14280 own, 14288 kept, 8 kept with the type named as a word of its message, 0 the second row's always, 0 the case left; 0 not as expected

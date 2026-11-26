@@ -16,4 +16,4 @@ uk: words a type could be named as: []
 zh_CN: words a type could be named as: []
 zh_CN before 18.7, 17.12, 16.16 and 15.20: words a type could be named as: []
 zh_TW: words a type could be named as: []
-messages read: 97020, 9900 of the cast's own type, 87120 of a kept one, 1980 of those with the type named as a word of its message
+messages read: 97020, 8712 of the cast's own type, 88308 of a kept one, 1980 of those with the type named as a word of its message

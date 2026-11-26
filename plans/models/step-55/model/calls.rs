@@ -227,7 +227,7 @@ pub fn check_pg(p: usize, cx: &Cx, sp: &Spec, o: &Out, at: At) {
         }
         if vis {
             let cp = o.copy.unwrap_or(0);
-            let ez = loud_lit(s, sp, o, v) || (app && casts(sp.stmt) && cx.cached_mode && o.copy_at <= since && s.seen_copy.insert(cp));
+            let ez = loud_lit(s, sp, o, v) || (app && (casts(sp.stmt) || castlike(sp.stmt)) && cx.cached_mode && o.copy_at <= since && s.seen_copy.insert(cp));
             let cant = s.c.words && casts(sp.stmt) && cx.cached_mode && o.copy_at <= since && matches!(at, At::Tx { .. } | At::Sp { .. });
             if !ez && !cant {
                 s.fail("new I9 loud half", d.clone());
@@ -265,6 +265,12 @@ pub fn check_pg(p: usize, cx: &Cx, sp: &Spec, o: &Out, at: At) {
                             s.fail("R-1271 given up, from t0+W on", d);
                         }
                     } else {
+                        if cx.ptest {
+                            // the parameter test's, as straight to Postgres: a call whose own bound text holds
+                            // _morm_retired_, met now that a statement converting a column's text takes the row
+                            s.inc("given up, pooled, by the parameter test");
+                            return;
+                        }
                         match at {
                             At::Out | At::Held => s.inc("given up, pooled, outside a transaction"),
                             At::Tx { retry: 0 } | At::Sp { retry: 0 } => s.inc("given up, pooled, in a transaction with no retry"),
@@ -401,7 +407,7 @@ pub fn check_pg(p: usize, cx: &Cx, sp: &Spec, o: &Out, at: At) {
 }
 pub fn check_ok(p: usize, cx: &Cx, sp: &Spec, o: &Out, _at: At) {
     let s = w();
-    if !matches!(sp.stmt, CAST | F | ST | STC | NOC) {
+    if !matches!(sp.stmt, CAST | F | ST | STC | NOC | TWO) {
         return;
     }
     let v = match o.r {
@@ -456,10 +462,33 @@ pub fn check_sc(p: usize, cx: &Cx, sp: &Spec, o: &Out, at: At, conn: u64) {
     let now = s.now;
     let d = format!("t={} stmt={} {:?} {:?}", now, sp.stmt, o.cause, at);
     let retry0 = matches!(at, At::Tx { retry: 0 } | At::Sp { retry: 0 });
+    // the four answers: the second row always takes a statement that casts parameters to two types, and a name
+    // printed with no schema never names a cast written with one
+    let always = sp.stmt == TWO || (s.ty.schema.is_some() && s.own_path);
     if matches!(o.r, Err(Err::P22 { named: Named::Cur, .. })) && casts(sp.stmt) && o.comp.is_none() && s.c.unread {
         s.inc("a bad label whose message the test can't read: SchemaChanged");
+    } else if matches!(o.r, Err(Err::P22 { named: Named::Cur, .. })) && casts(sp.stmt) && o.comp.is_none() && always {
+        s.inc("a bad label the second row always takes: SchemaChanged");
     } else if matches!(o.r, Err(Err::P22 { named: Named::Cur, .. })) && casts(sp.stmt) && o.comp.is_none() {
         s.fail("I14 an error that names the cast's own type taken for a stale statement", d.clone());
+    }
+    // the two answers' cost: a bad label or bad stored text the second row takes, a kept type's stale function's
+    // error among them, gets Error::SchemaChanged first, and never from a run begun while its statement's entry
+    // exists, so at most once per E per statement beyond calls already running, and once more after anything that
+    // ends the entry sooner
+    if matches!(o.r, Err(Err::P22 { ret: false, .. })) && !matches!(o.cause, Cause::Stmt(_) | Cause::Sess(_) | Cause::Path) {
+        s.inc(if matches!(o.cause, Cause::Kept(_)) { "SchemaChanged for a kept function's error" } else { "SchemaChanged for bad text" });
+        if retry0 {
+            s.inc("SchemaChanged for bad text or a kept function's error, no retry");
+            let (st, e) = (cx.started, s.c.e);
+            let cr = s.pools[p].created.get(&sp.stmt).cloned().unwrap_or_default();
+            if let Some(c) = cr.iter().rev().find(|c| **c < st) {
+                let rem = s.pools[p].removals.get(&sp.stmt).cloned().unwrap_or_default();
+                if st < c + e && !rem.iter().any(|r| *r >= *c && *r <= st) {
+                    s.fail("R-1271 cost: a bad text's SchemaChanged in a run begun while its entry exists", d.clone());
+                }
+            }
+        }
     }
     match o.cause {
         Cause::Sess(t0) => {

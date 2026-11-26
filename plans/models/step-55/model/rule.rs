@@ -120,7 +120,8 @@ fn name(cs: &[char], i: usize, br: u32) -> Option<(Vec<String>, usize)> {
 }
 fn is(n: &[String], casts: &[Cast], br: u32) -> bool {
     casts.iter().any(|c| match n {
-        [a] => *a == c.name,
+        // the four answers: a name printed with no schema names only a cast written with none (break 121: any)
+        [a] => *a == c.name && (br == 121 || c.schema.is_none()),
         [s, a] => *a == c.name && (br == 115 || c.schema.as_deref() == Some(s)),
         _ => false,
     })
@@ -229,8 +230,11 @@ pub fn exhaustive() {
         for (sch, nm) in casts {
             let cast = [Cast { schema: sch.map(String::from), name: nm.to_string() }];
             for all in [false, true] {
+                // a cast written with its schema is named only by a name printed with it: printed with none, as
+                // its own type prints with its schema on the search_path or a kept one moved where the path finds
+                // it, the message can mean either, so it's the second row's
                 let own_prints: Vec<String> = match sch {
-                    Some(s) => vec![format!("{}.{}", qi(s, all), qi(nm, all)), qi(nm, all)],
+                    Some(s) => vec![format!("{}.{}", qi(s, all), qi(nm, all))],
                     None => vec![qi(nm, all)],
                 };
                 let mut kept: Vec<String> = [format!("{nm}_old"), format!("{nm} old"), format!("my {nm}"), format!("x_{nm}"), format!("{nm}2"), format!("{nm}: \"{nm}"), format!("{nm}.{nm}"), format!("«{nm}»")].iter().map(|k| qi(k, all)).collect();
@@ -240,6 +244,7 @@ pub fn exhaustive() {
                 } else {
                     kept.push(format!("{}.{}", qi("old", all), qi(nm, all)));
                     kept.push(format!("{}.{}", qi(sch.unwrap(), all), qi("other", all)));
+                    kept.push(qi(nm, all));
                 }
                 for v in values(nm) {
                     for p in &own_prints {
@@ -252,7 +257,7 @@ pub fn exhaustive() {
                         let m = fill(t, p, &v);
                         n += 1;
                         stale += 1;
-                        let is_word = lang != "en" && ws.iter().any(|w| w == nm);
+                        let is_word = sch.is_none() && lang != "en" && ws.iter().any(|w| w == nm);
                         if is_word {
                             kept_word += 1;
                             assert_eq!(read(&m, &cast, 0), Some(true), "a word of its message: {lang} {m}");
@@ -277,7 +282,7 @@ pub fn exhaustive() {
 }
 /// lines of: kind<TAB>schema or empty<TAB>name<TAB>message with \n and \t escaped; own or kept
 pub fn from_file(f: &str) {
-    let (mut own, mut kept, mut words_, mut bad) = (0, 0, 0, 0);
+    let (mut own, mut kept, mut words_, mut bad, mut second_, mut left) = (0, 0, 0, 0, 0, 0);
     for l in std::fs::read_to_string(f).unwrap().lines() {
         let x: Vec<&str> = l.split('\t').collect();
         let c = [Cast { schema: if x[1].is_empty() { None } else { Some(x[1].into()) }, name: x[2].into() }];
@@ -286,12 +291,17 @@ pub fn from_file(f: &str) {
             "own" => own += (r == Some(true)) as u32,
             "kept" => kept += (r == Some(false)) as u32,
             "word" => words_ += (r == Some(true)) as u32,
+            // the four answers: a cast written with its schema, its name printed with none
+            "second" => second_ += (r != Some(true)) as u32,
+            // what the four answers leave: a stale conversion of the user's own SQL naming the cast's type
+            "left" => left += (r == Some(true)) as u32,
             _ => panic!("{l}"),
         }
-        if r != Some(x[0] != "kept") {
+        let want = match x[0] { "kept" => r == Some(false), "second" => r != Some(true), _ => r == Some(true) };
+        if !want {
             bad += 1;
             println!("NOT AS EXPECTED {r:?} {l}");
         }
     }
-    println!("from Postgres: {own} own, {kept} kept, {words_} kept with the type named as a word of its message; {bad} not as expected");
+    println!("from Postgres: {own} own, {kept} kept, {words_} kept with the type named as a word of its message, {second_} the second row's always, {left} the case left; {bad} not as expected");
 }

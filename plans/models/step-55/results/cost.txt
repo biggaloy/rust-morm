@@ -1,0 +1,97 @@
+== defaults [straight] fault 0 seeds 0..256 (0.7s)
+        SchemaChanged for a kept function's error = 96
+        SchemaChanged for bad text = 1019
+        SchemaChanged for bad text or a kept function's error, no retry = 1115
+        a bad label the second row always takes: SchemaChanged = 598
+        calls = 871661
+        kept function's error, cached, in a transaction = 162
+        kept function's error, cached, outside a transaction = 277
+        kept function's error: SchemaChanged first = 162
+        runs = 1043167
+== defaults [pooled] fault 0 seeds 0..256 (0.7s)
+        SchemaChanged for a kept function's error = 686
+        SchemaChanged for bad text = 818
+        SchemaChanged for bad text or a kept function's error, no retry = 1504
+        a bad label the second row always takes: SchemaChanged = 661
+        calls = 869851
+        kept function's error, cached, in a transaction = 943
+        kept function's error, cached, outside a transaction = 1404
+        kept function's error: SchemaChanged first = 943
+        runs = 1060979
+== defaults [straight] fault 120 seeds 0..256 (0.5s)
+   FAIL  177/256 ANY   e.g. 
+   FAIL   15/256 I7 held, a stale copy failing twice   e.g. seed 29: t=15482104 stmt=9 P22 { named: Kept(31), ret: false, lab: NewName, stored: true } Stmt(15411728) HeldApp tested=None ptest=false
+   FAIL  135/256 I7 in a transaction, as it is   e.g. seed 0: t=37406748 stmt=9 P22 { named: Kept(48), ret: false, lab: NewName, stored: true } Stmt(37371421) Tx { retry: 1 } tested=None ptest=false
+   FAIL  141/256 I7 outside a transaction   e.g. seed 1: t=16657195 stmt=9 P22 { named: Kept(28), ret: false, lab: NewName, stored: true } Stmt(16651510) Out tested=None ptest=false
+   FAIL  177/256 new I9 loud half   e.g. seed 0: t=37406748 stmt=9 P22 { named: Kept(48), ret: false, lab: NewName, stored: true } Stmt(37371421) Tx { retry: 1 } tested=None ptest=false
+        SchemaChanged for a kept function's error = 30
+        SchemaChanged for bad text = 549
+        SchemaChanged for bad text or a kept function's error, no retry = 579
+        a bad label the second row always takes: SchemaChanged = 579
+        calls = 871030
+        kept function's error, cached, in a transaction = 190
+        kept function's error, cached, outside a transaction = 347
+        runs = 1037694
+== defaults [pooled] fault 120 seeds 0..256 (0.7s)
+   FAIL  211/256 ANY   e.g. 
+   FAIL  185/256 I7 in a transaction, as it is   e.g. seed 3: t=12153189 stmt=9 P22 { named: Kept(12), ret: false, lab: NewName, stored: true } Stmt(11732727) Tx { retry: 1 } tested=None ptest=false
+   FAIL  194/256 I7 outside a transaction   e.g. seed 2: t=12296614 stmt=9 P22 { named: Kept(12), ret: false, lab: NewName, stored: true } Stmt(12225262) Out tested=None ptest=false
+   FAIL  211/256 new I9 loud half   e.g. seed 2: t=12296614 stmt=9 P22 { named: Kept(12), ret: false, lab: NewName, stored: true } Stmt(12225262) Out tested=None ptest=false
+        SchemaChanged for a kept function's error = 272
+        SchemaChanged for bad text = 593
+        SchemaChanged for bad text or a kept function's error, no retry = 865
+        a bad label the second row always takes: SchemaChanged = 677
+        calls = 869934
+        kept function's error, cached, in a transaction = 1254
+        kept function's error, cached, outside a transaction = 1983
+        runs = 1056481
+== defaults [straight] fault 121 seeds 0..256 (0.7s)
+   FAIL    6/256 ANY   e.g. 
+   FAIL    6/256 I7 in a transaction, as it is   e.g. seed 26: t=19040180 stmt=8 P22 { named: Kept(23), ret: false, lab: Newest, stored: false } Stmt(18860796) Tx { retry: 0 } tested=None ptest=false
+   FAIL    6/256 new I9 loud half   e.g. seed 26: t=19040180 stmt=8 P22 { named: Kept(23), ret: false, lab: Newest, stored: false } Stmt(18860796) Tx { retry: 0 } tested=None ptest=false
+        SchemaChanged for a kept function's error = 102
+        SchemaChanged for bad text = 907
+        SchemaChanged for bad text or a kept function's error, no retry = 1009
+        a bad label the second row always takes: SchemaChanged = 479
+        calls = 871394
+        kept function's error, cached, in a transaction = 158
+        kept function's error, cached, outside a transaction = 269
+        kept function's error: SchemaChanged first = 158
+        runs = 1042505
+== defaults [pooled] fault 121 seeds 0..256 (0.6s)
+   FAIL    6/256 ANY   e.g. 
+   FAIL    6/256 I7 in a transaction, as it is   e.g. seed 26: t=15149635 stmt=8 P22 { named: Kept(28), ret: false, lab: NewName, stored: true } Stmt(14952798) Sp { retry: 1 } tested=None ptest=false
+   FAIL    6/256 new I9 loud half   e.g. seed 26: t=15149635 stmt=8 P22 { named: Kept(28), ret: false, lab: NewName, stored: true } Stmt(14952798) Sp { retry: 1 } tested=None ptest=false
+        SchemaChanged for a kept function's error = 689
+        SchemaChanged for bad text = 687
+        SchemaChanged for bad text or a kept function's error, no retry = 1376
+        a bad label the second row always takes: SchemaChanged = 533
+        calls = 869912
+        kept function's error, cached, in a transaction = 948
+        kept function's error, cached, outside a transaction = 1392
+        kept function's error: SchemaChanged first = 948
+        runs = 1060734
+== defaults [straight] fault 122 seeds 0..256 (0.6s)
+   FAIL   54/256 ANY   e.g. 
+   FAIL   54/256 I7 in a transaction, as it is   e.g. seed 2: t=26015071 stmt=10 P22 { named: Cur, ret: false, lab: Newest, stored: false } Stmt(25492581) Tx { retry: 2 } tested=None ptest=false
+        SchemaChanged for a kept function's error = 111
+        SchemaChanged for bad text = 615
+        SchemaChanged for bad text or a kept function's error, no retry = 726
+        a bad label the second row always takes: SchemaChanged = 158
+        calls = 872364
+        kept function's error, cached, in a transaction = 173
+        kept function's error, cached, outside a transaction = 294
+        kept function's error: SchemaChanged first = 173
+        runs = 1043227
+== defaults [pooled] fault 122 seeds 0..256 (0.6s)
+   FAIL  120/256 ANY   e.g. 
+   FAIL  120/256 I7 in a transaction, as it is   e.g. seed 0: t=28100739 stmt=10 P22 { named: Cur, ret: false, lab: NewName, stored: false } Stmt(28093795) Sp { retry: 0 } tested=None ptest=false
+        SchemaChanged for a kept function's error = 714
+        SchemaChanged for bad text = 430
+        SchemaChanged for bad text or a kept function's error, no retry = 1144
+        a bad label the second row always takes: SchemaChanged = 178
+        calls = 871390
+        kept function's error, cached, in a transaction = 999
+        kept function's error, cached, outside a transaction = 1603
+        kept function's error: SchemaChanged first = 999
+        runs = 1062841

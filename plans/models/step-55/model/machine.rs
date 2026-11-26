@@ -438,9 +438,13 @@ impl Sim {
             Err::P22 { ret, .. } => {
                 // the decided test, on the message as the server writes it
                 let br = self.c.fault;
-                let r2 = cached && (casts || self.c.wide) && (br == 43 || !casts || (self.c.strict && self.ty.schema.is_some()) || {
+                // the four answers: any cached statement's (break 120: only one that casts a parameter); always one
+                // that casts no parameter, or parameters to two types (break 122: the name test reads it); and a
+                // cast written with its schema is named only with it (break 121, in rule.rs)
+                let always = !casts || (sp.stmt == TWO && br != 122);
+                let r2 = cached && (casts || br != 120) && (br == 43 || always || {
                     let m = self.message(e, sp.val);
-                    let bound = if matches!(sp.stmt, CAST | TRIG | STC) { vec![self.text(sp.label, sp.val)] } else { vec![] };
+                    let bound = if matches!(sp.stmt, CAST | TRIG | STC | TWO) { vec![self.text(sp.label, sp.val)] } else { vec![] };
                     crate::rule::second(&m, std::slice::from_ref(&self.ty), br, &bound)
                 });
                 if r2 && self.c.pooled2 {
@@ -918,13 +922,33 @@ pub async fn run_call(p: usize, conn: &mut Conn, cx: &mut Cx, sp: &Spec) -> Res 
     if o.r.is_ok() {
         return Res::Ok(o);
     }
-    let (r0, q0) = (cx.reqs, o.clone());
+    let (r0, q0, e0) = (cx.reqs, o.clone(), cx.made_entry);
+    let c0 = cx.cached_mode;
     let res = on_error(p, conn, cx, sp, o, fresh).await;
     if let Err::P22 { named: Named::Kept(_), ret: false, .. } = q0.r.unwrap_err() {
         if matches!(q0.cause, Cause::Kept(_)) && !casts(sp.stmt) && sp.stmt != NOC && w().visible(&q0) {
-            let same = matches!(&res, Res::Pg(x) if x.r == q0.r && x.t == q0.t);
-            if !same || cx.reqs > r0 || cx.made_entry || cx.replaced || cx.cool || cx.other {
-                w().fail("new I9 loud: returned as it is with nothing requested, entered, retried or replaced", format!("{:?}", q0));
+            // the four answers' loud half: a kept type's stale function's error reached through a cached statement
+            // that casts no parameter gets the second row's handling, one fresh run outside a transaction and
+            // Error::SchemaChanged and a pending entry inside one, and then returns as it is; nothing session-class
+            // is done for it, and nothing is requested unless that fresh run confirms
+            // the fresh run's own outcome, a session-class error or a timeout among them, counts as any server
+            // error's does
+            let ok = match &res {
+                Res::Pg(x) => x.r != q0.r || cx.reqs == r0 || cx.fresh_sess || cx.other,
+                Res::Ok(_) => true,
+                Res::Sc(_) => !cx.out || cx.fresh_sess, // row A4 on a held connection, after the fresh run met a stale session
+            };
+            let second = c0 && !cx.out;
+            let entered = cx.made_entry && !e0;
+            let own = w().class(q0.r.unwrap_err(), c0, sp, cx.out) == Cls::Sess;
+            if !ok || own || (entered && !second) || (!c0 && (cx.reqs > r0 || entered || !matches!(&res, Res::Pg(x) if x.r == q0.r && x.t == q0.t))) {
+                w().fail("I9 loud: more than the second row's, or not as it is after it", format!("{:?} out={} reqs={} entry={} repl={} cool={} other={} fs={} res={:?}", q0, cx.out, cx.reqs - r0, cx.made_entry, cx.replaced, cx.cool, cx.other, cx.fresh_sess, match &res { Res::Ok(x) => format!("ok {:?}", x.r), Res::Pg(x) => format!("pg {:?}", x.r), Res::Sc(x) => format!("sc {:?}", x.r) }));
+            }
+            if c0 {
+                w().inc(if cx.out { "kept function's error, cached, outside a transaction" } else { "kept function's error, cached, in a transaction" });
+                if matches!(&res, Res::Sc(_)) {
+                    w().inc("kept function's error: SchemaChanged first");
+                }
             }
         }
     }

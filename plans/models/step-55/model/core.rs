@@ -148,11 +148,10 @@ pub struct Cfg {
     pub path_out: bool,
     pub words: bool,    // Spanish, a type named `entrada`
     pub unread: bool,   // messages the test can't read
-    pub nocast: bool,   // a statement that casts no parameter beside the others
-    pub onpath: bool,   // a cast written with a schema, its kept type moved ahead on the search_path
+    pub nocast: bool,   // statement 9, which casts no parameter, in the load
+    pub twot: bool,     // statement 10, which casts parameters to two types, in the load
+    pub onpath: bool,   // every type written with a schema, its kept type moved by SET SCHEMA where the search_path finds it
     pub stc: bool,
-    pub wide: bool,   // open question 2 (a): any cached statement's
-    pub strict: bool, // open question 1 (a): a cast written with a schema, printed without one, is the second row's
     pub english: bool, // English, a type named as a word of its message
 }
 impl Cfg {
@@ -214,12 +213,11 @@ impl Cfg {
             path_out: false,
             words: false,
             unread: false,
-            nocast: false,
+            nocast: true,
+            twot: true,
             onpath: false,
             stc: true,
             english: false,
-            wide: false,
-            strict: false,
         }
     }
 }
@@ -284,11 +282,14 @@ pub const BOTH: u8 = 6;
 pub const TRIG: u8 = 7;
 pub const STC: u8 = 8; // SELECT (c::st)::text, (($1::text)::st)::text: a column's text beside the parameter's cast
 pub const NOC: u8 = 9; // SELECT (c::st)::text: no parameter cast
+// INSERT ... ($1::st, $2::kind) or ($1::st, $2::pair): parameters cast to two types, or to a composite or domain over
+// st beside st; after a hand-made change its stale cast's message names a type the statement also casts to
+pub const TWO: u8 = 10;
 pub fn casts(k: u8) -> bool {
-    matches!(k, CAST | TRIG | STC)
+    matches!(k, CAST | TRIG | STC | TWO)
 }
 pub fn castlike(k: u8) -> bool {
-    matches!(k, CAST | STC | NOC)
+    matches!(k, CAST | STC | NOC | TWO)
 }
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
@@ -505,6 +506,7 @@ pub struct Sim {
     pub own_path: bool, // a type written with a schema is on the search_path
     pub qall: bool,
     pub how: HashMap<u32, u8>,
+    pub moved_ok: bool,
 }
 
 impl Sim {
@@ -551,6 +553,7 @@ impl Sim {
             own_path: false,
             qall: false,
             how: HashMap::new(),
+            moved_ok: false,
         });
         s.speak(seed);
         s.db.replay = (0..c.servers).map(|_| vec![(0, 1)]).collect();
@@ -595,6 +598,9 @@ impl Sim {
             self.ty = crate::rule::Cast { schema: Some("app".into()), name: "st".into() };
             self.own_path = false;
         }
+        // a kept type moved by SET SCHEMA to a schema the search_path finds, its name printing with none, needs a
+        // cast written with a schema and that schema off the path
+        self.moved_ok = self.ty.schema.is_some() && !self.own_path;
     }
     // a type's name as Postgres prints it
     pub fn printed(&self, n: Named) -> String {
@@ -611,7 +617,7 @@ impl Sim {
             Named::Kept(v) => match self.how.get(&v).copied().unwrap_or(0) {
                 0 => format!("{sch}{}", q(&format!("{name}_old{v}"))),
                 1 => format!("{sch}{}", q(&format!("{name} old {v}"))),
-                _ if self.c.onpath => q(name),
+                3 => q(name),
                 _ => format!("{}.{}", q(&format!("old{v}")), q(name)),
             },
         }
@@ -704,7 +710,7 @@ impl Sim {
     pub fn oracle(&self, sp: &Spec) -> Result<u32, u8> {
         let cur = self.cur_ver();
         match sp.stmt {
-            CAST | F | TRIG => self.enum_in(cur, sp.label).map_err(|e| e.code()),
+            CAST | F | TRIG | TWO => self.enum_in(cur, sp.label).map_err(|e| e.code()),
             ST => self.enum_in(cur, self.stored()).map_err(|e| e.code()),
             STC => self.enum_in(cur, self.stored2()).and_then(|_| self.enum_in(cur, sp.label)).map_err(|e| e.code()),
             NOC => self.enum_in(cur, self.stored2()).map_err(|e| e.code()),
@@ -761,10 +767,17 @@ impl Sim {
         let mut comp = None;
         let mut ver = cur;
         let (r, cause) = match sp.stmt {
-            CAST => {
+            CAST | TWO => {
                 let v = copy.as_ref().map_or(cur, |c| c.ty);
                 ver = v;
-                let r = self.enum_in(v, sp.label);
+                let mut r = self.enum_in(v, sp.label);
+                if sp.stmt == TWO {
+                    // the stale cast's type is kept under a name the statement's other cast has, or inside a kept
+                    // composite or domain whose field or base type is the one the statement also casts to
+                    if let Err(Err::P22 { named: Named::Kept(_), ret, lab, stored }) = r {
+                        r = Err(Err::P22 { named: Named::Cur, ret, lab, stored });
+                    }
+                }
                 let cause = match r {
                     Err(_) if v != cur => Cause::Stmt(self.db.types[v as usize].1),
                     _ => Cause::None,
@@ -857,7 +870,7 @@ impl Sim {
                 }
             }
         };
-        if !matches!(sp.stmt, CAST | F | ST | TRIG | STC | NOC) {
+        if !matches!(sp.stmt, CAST | F | ST | TRIG | STC | NOC | TWO) {
             ver = 0;
         }
         Out {
@@ -884,7 +897,7 @@ impl Sim {
     // the change that left the copy a run used stale, if any
     pub fn copy_change(&self, sp: &Spec, o: &Out) -> Option<u64> {
         match sp.stmt {
-            CAST | STC | NOC if o.cached && o.ver != self.cur_ver() => Some(self.db.types[o.ver as usize].2),
+            CAST | STC | NOC | TWO if o.cached && o.ver != self.cur_ver() => Some(self.db.types[o.ver as usize].2),
             COL | PATH | BOTH => match o.cause {
                 Cause::Stmt(t) if o.r == Err(Err::A0) => Some(t),
                 _ => None,

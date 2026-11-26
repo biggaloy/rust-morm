@@ -1,0 +1,20 @@
+== defaults [straight] fault 43 seeds 0..256 (1.5s)
+   FAIL  232/256 ANY   e.g. 
+   FAIL  232/256 I14 an error that names the cast's own type taken for a stale statement   e.g. seed 0: t=8624629 stmt=0 None Tx { retry: 0 }
+        SchemaChanged for bad text = 2161
+        SchemaChanged for bad text or a kept function's error, no retry = 2260
+        calls = 871910
+        runs = 1044267
+== defaults [pooled] fault 43 seeds 0..256 (1.8s)
+   FAIL  231/256 ANY   e.g. 
+   FAIL  231/256 I14 an error that names the cast's own type taken for a stale statement   e.g. seed 0: t=23105661 stmt=0 None Tx { retry: 0 }
+        SchemaChanged for bad text = 2036
+        SchemaChanged for bad text or a kept function's error, no retry = 2674
+        calls = 869809
+        runs = 1066141
+256 lit I11 (a serialization failure returned as it is fails the whole transaction) e.g. seed 0: 
+232 ANY e.g. 
+232 I7 in a transaction, as it is e.g. seed 0: t=66255 stmt=10 P22 { named: Cur, ret: false, lab: Newest, stored: false } Stmt(53583) Sp { retry: 2 } tested=None ptest=false
+6 lit I1 e.g. seed 22: 15785830 15785830
+256 lit I11 (a serialization failure returned as it is fails the whole transaction) e.g. seed 0: 
+256 lit I11 (a serialization failure returned as it is fails the whole transaction) e.g. seed 1: 

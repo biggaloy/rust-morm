@@ -14,7 +14,7 @@ pub fn draw(s: &mut Sim) -> Spec {
         Some(x) => x,
         None => {
             let mut v = vec![CAST, COL, PATH, F, ST, H];
-            for (on, x) in [(s.c.both_stmt, BOTH), (s.c.trig, TRIG), (s.c.stc, STC), (s.c.nocast, NOC)] {
+            for (on, x) in [(s.c.both_stmt, BOTH), (s.c.trig, TRIG), (s.c.stc, STC), (s.c.nocast, NOC), (s.c.twot, TWO)] {
                 if on {
                     v.push(x);
                 }
@@ -165,9 +165,11 @@ fn world(s: &mut Sim) {
         }
         2 => swap(s, TS::Dropped),
         3 => {
-            let h = s.rng.n(3) as u8;
+            // 0 a bare new name, 1 one that needs quotes, 2 SET SCHEMA off the path, 3 SET SCHEMA to a schema the
+            // search_path finds, printing with none, only for a cast written with its schema
+            let h = if s.moved_ok { s.rng.n(4) } else { s.rng.n(3) } as u8;
             let v = s.cur_ver();
-            s.how.insert(v, if s.c.onpath { 2 } else { h });
+            s.how.insert(v, if s.c.onpath { 3 } else { h });
             swap(s, TS::Kept)
         }
         4 => col(s),
