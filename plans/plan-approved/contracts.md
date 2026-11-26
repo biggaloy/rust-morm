@@ -281,7 +281,7 @@ pub enum Error {
                                                // or a column type change, recognised by SQLSTATE with the routine, an identifier or an
                                                // untranslated elog message, never translated text (SC, R-1245): 0A000, the three plpgsql
                                                // 42804 routines, XX000 cache lookup, and 22P02 from enum_in naming a _morm_retired_ type
-                                               // or another enum than the statement's cast (proofs 14 to 17). Returned when the next
+                                               // or from any cached statement (proofs 14 to 17). Returned when the next
                                                // attempt may succeed: where morm repaired something for it (a statement evicted, a pending
                                                // entry made, or a connection discarded or marked for replacement); behind PgBouncer on a
                                                // session-class failure's first time (row D2), whose next attempt may reach another server
