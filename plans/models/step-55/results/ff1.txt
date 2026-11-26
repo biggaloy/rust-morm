@@ -1,0 +1,94 @@
+== stored text only, no schema change [straight] fault 0 seeds 0..256 (0.1s)
+   FAIL  219/256 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span   e.g. seed 6: 9 replacements in 28909508..29896927, 6 an epoch's, 0 changes
+        FF1 most of an epoch's in a span (max) = 8
+        FF1 most replacements in a span (max) = 11
+        FF1 replace requested: a confirming next attempt, row B3 = 1027
+        FF1 replace requested: a confirming run on the new connection, row A2 = 4110
+        FF1 replacements: a replace action's = 11299
+        FF1 replacements: an epoch's = 30654
+        most stale-driven opens in a span (max) = 11
+        ms simulated = 10329269
+== record shapes only, no schema change [straight] fault 0 seeds 0..256 (0.1s)
+   FAIL  255/256 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span   e.g. seed 5: 9 replacements in 4349418..5334026, 5 an epoch's, 0 changes
+        FF1 most of an epoch's in a span (max) = 7
+        FF1 most replacements in a span (max) = 11
+        FF1 replace requested: a 42804 or XX000 at its failure = 39037
+        FF1 replacements: a replace action's = 30416
+        FF1 replacements: an epoch's = 37794
+        most stale-driven opens in a span (max) = 11
+        ms simulated = 10352112
+== defaults [straight] fault 0 seeds 0..256 (0.1s)
+   FAIL   30/256 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span   e.g. seed 6: 17 replacements in 17017234..18003285, 7 an epoch's, 2 changes
+        FF1 most of an epoch's in a span (max) = 15
+        FF1 most replacements in a span (max) = 19
+        FF1 replace requested: a 42804 or XX000 at its failure = 7766
+        FF1 replace requested: a confirming next attempt, row B3 = 521
+        FF1 replace requested: a confirming run on the new connection, row A2 = 1217
+        FF1 replacements: a replace action's = 18690
+        FF1 replacements: an epoch's = 22481
+        most stale-driven opens in a span (max) = 16
+        ms simulated = 10251483
+== transactions without retry [straight] fault 0 seeds 0..256 (0.1s)
+   FAIL  156/256 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span   e.g. seed 6: 9 replacements in 36949679..37946063, 5 an epoch's, 0 changes
+        FF1 most of an epoch's in a span (max) = 16
+        FF1 most replacements in a span (max) = 21
+        FF1 replace requested: a 42804 or XX000 at its failure = 12466
+        FF1 replace requested: a confirming run on the new connection, row A2 = 693
+        FF1 replacements: a replace action's = 23610
+        FF1 replacements: an epoch's = 31400
+        most stale-driven opens in a span (max) = 14
+        ms simulated = 10280273
+== heavy [straight] fault 0 seeds 0..256 (0.1s)
+        FF1 most of an epoch's in a span (max) = 22
+        FF1 most replacements in a span (max) = 26
+        FF1 replace requested: a 42804 or XX000 at its failure = 8947
+        FF1 replace requested: a confirming next attempt, row B3 = 1248
+        FF1 replace requested: a confirming run on the new connection, row A2 = 2513
+        FF1 replacements: a replace action's = 24027
+        FF1 replacements: an epoch's = 29977
+        most stale-driven opens in a span (max) = 21
+        ms simulated = 10265620
+== max 1 [straight] fault 0 seeds 0..256 (0.2s)
+   FAIL   40/256 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span   e.g. seed 21: 4 replacements in 11369193..12198667, 2 an epoch's, 1 changes
+        FF1 most of an epoch's in a span (max) = 5
+        FF1 most replacements in a span (max) = 6
+        FF1 replace requested: a 42804 or XX000 at its failure = 4988
+        FF1 replace requested: a confirming next attempt, row B3 = 206
+        FF1 replace requested: a confirming run on the new connection, row A2 = 376
+        FF1 replacements: a replace action's = 2410
+        FF1 replacements: an epoch's = 12020
+        most stale-driven opens in a span (max) = 6
+        ms simulated = 12696770
+== max 2, budget 2, heavy [straight] fault 0 seeds 0..256 (0.1s)
+   FAIL    7/256 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span   e.g. seed 92: 5 replacements in 22529523..23207173, 3 an epoch's, 0 changes
+        FF1 most of an epoch's in a span (max) = 11
+        FF1 most replacements in a span (max) = 14
+        FF1 replace requested: a 42804 or XX000 at its failure = 6809
+        FF1 replace requested: a confirming next attempt, row B3 = 814
+        FF1 replace requested: a confirming run on the new connection, row A2 = 1588
+        FF1 replacements: a replace action's = 9169
+        FF1 replacements: an epoch's = 21750
+        most stale-driven opens in a span (max) = 13
+        ms simulated = 10309206
+== role limit [straight] fault 0 seeds 0..256 (0.1s)
+   FAIL   28/256 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span   e.g. seed 9: 9 replacements in 19790216..20727031, 5 an epoch's, 0 changes
+        FF1 most of an epoch's in a span (max) = 15
+        FF1 most replacements in a span (max) = 19
+        FF1 replace requested: a 42804 or XX000 at its failure = 7885
+        FF1 replace requested: a confirming next attempt, row B3 = 449
+        FF1 replace requested: a confirming run on the new connection, row A2 = 1155
+        FF1 replacements: a replace action's = 18249
+        FF1 replacements: an epoch's = 22179
+        most stale-driven opens in a span (max) = 20
+        ms simulated = 10282261
+== refusals [straight] fault 0 seeds 0..256 (0.1s)
+   FAIL    6/256 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span   e.g. seed 68: 9 replacements in 15818837..16779614, 4 an epoch's, 0 changes
+        FF1 most of an epoch's in a span (max) = 14
+        FF1 most replacements in a span (max) = 20
+        FF1 replace requested: a 42804 or XX000 at its failure = 7619
+        FF1 replace requested: a confirming next attempt, row B3 = 567
+        FF1 replace requested: a confirming run on the new connection, row A2 = 1201
+        FF1 replacements: a replace action's = 17276
+        FF1 replacements: an epoch's = 19816
+        most stale-driven opens in a span (max) = 20
+        ms simulated = 10282016

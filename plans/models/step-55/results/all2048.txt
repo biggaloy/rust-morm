@@ -2,6 +2,7 @@
    FAIL  113/2048 ez I8 held, before then, every error
    FAIL   17/2048 ez I8 held, before then, visible errors
    FAIL  418/2048 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL  289/2048 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
    FAIL  243/2048 lit I1
    FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL 1103/2048 lit I8 held, before then
@@ -12,6 +13,7 @@
 == entries off [straight] fault 0 seeds 1000..3048 (1.0s)
    FAIL  105/2048 ez I8 held, before then, every error
    FAIL   22/2048 ez I8 held, before then, visible errors
+   FAIL  277/2048 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
    FAIL  136/2048 lit I1
    FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL 1183/2048 lit I8 held, before then
@@ -23,6 +25,7 @@
    FAIL  103/2048 ez I8 held, before then, every error
    FAIL   21/2048 ez I8 held, before then, visible errors
    FAIL  425/2048 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL  300/2048 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
    FAIL  256/2048 lit I1
    FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL 1151/2048 lit I8 held, before then
@@ -34,6 +37,7 @@
    FAIL  125/2048 ez I8 held, before then, every error
    FAIL   20/2048 ez I8 held, before then, visible errors
    FAIL  470/2048 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL  257/2048 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
    FAIL  191/2048 lit I1
    FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL 1115/2048 lit I8 held, before then
@@ -45,6 +49,7 @@
    FAIL  113/2048 ez I8 held, before then, every error
    FAIL   17/2048 ez I8 held, before then, visible errors
    FAIL  418/2048 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL  289/2048 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
    FAIL  243/2048 lit I1
    FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL 1103/2048 lit I8 held, before then
@@ -52,9 +57,10 @@
    FAIL 1894/2048 lit I9 loud half
    FAIL   48/2048 lit I9 loud: a request, entry or replacement
    FAIL   93/2048 lit R-1271 before t0+W, not judged not old (parameter test)
-== caches off [straight] fault 0 seeds 1000..3048 (0.9s)
+== caches off [straight] fault 0 seeds 1000..3048 (0.8s)
    FAIL  105/2048 ez I8 held, before then, every error
    FAIL   24/2048 ez I8 held, before then, visible errors
+   FAIL  126/2048 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
    FAIL   28/2048 lit I1
    FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL  105/2048 lit I8 held, before then
@@ -63,6 +69,7 @@
    FAIL  103/2048 lit R-1271 before t0+W, not judged not old (parameter test)
 == no client input [straight] fault 0 seeds 1000..3048 (0.8s)
    FAIL  463/2048 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL   31/2048 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
    FAIL  177/2048 lit I1
    FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL 1022/2048 lit I8 held, before then
@@ -73,6 +80,7 @@
    FAIL  128/2048 ez I8 held, before then, every error
    FAIL   30/2048 ez I8 held, before then, visible errors
    FAIL  430/2048 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL  291/2048 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
    FAIL   90/2048 lit I1 several (rose between them)
    FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL 1128/2048 lit I8 held, before then
@@ -84,6 +92,7 @@
    FAIL  155/2048 ez I8 held, before then, every error
    FAIL   29/2048 ez I8 held, before then, visible errors
    FAIL  440/2048 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL  245/2048 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
    FAIL  101/2048 lit I1 several (rose between them)
    FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL 1124/2048 lit I8 held, before then
@@ -95,6 +104,7 @@
    FAIL  166/2048 ez I8 held, before then, every error
    FAIL   30/2048 ez I8 held, before then, visible errors
    FAIL  455/2048 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL  232/2048 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
    FAIL   91/2048 lit I1 several (rose between them)
    FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL 1101/2048 lit I8 held, before then
@@ -106,6 +116,7 @@
    FAIL  224/2048 ez I8 held, before then, every error
    FAIL   51/2048 ez I8 held, before then, visible errors
    FAIL  340/2048 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL    3/2048 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
    FAIL  315/2048 lit I1
    FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL 1500/2048 lit I8 held, before then
@@ -117,6 +128,7 @@
    FAIL  110/2048 ez I8 held, before then, every error
    FAIL   17/2048 ez I8 held, before then, visible errors
    FAIL  427/2048 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL  300/2048 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
    FAIL  356/2048 lit I1
    FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL 1087/2048 lit I8 held, before then
@@ -128,6 +140,7 @@
    FAIL  259/2048 ez I8 held, before then, every error
    FAIL   56/2048 ez I8 held, before then, visible errors
    FAIL  390/2048 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL    3/2048 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
    FAIL  307/2048 lit I1 several (rose between them)
    FAIL 2047/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL 1599/2048 lit I8 held, before then
@@ -139,6 +152,7 @@
    FAIL  134/2048 ez I8 held, before then, every error
    FAIL   28/2048 ez I8 held, before then, visible errors
    FAIL  655/2048 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL  536/2048 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
    FAIL  314/2048 lit I1
    FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL 1004/2048 lit I8 held, before then
@@ -150,6 +164,7 @@
    FAIL  113/2048 ez I8 held, before then, every error
    FAIL   17/2048 ez I8 held, before then, visible errors
    FAIL  418/2048 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL  289/2048 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
    FAIL  243/2048 lit I1
    FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL 1103/2048 lit I8 held, before then
@@ -161,6 +176,7 @@
    FAIL   23/2048 ez I8 held, before then, every error
    FAIL    1/2048 ez I8 held, before then, visible errors
    FAIL  492/2048 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL  683/2048 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
    FAIL   38/2048 lit I1
    FAIL 2047/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL  325/2048 lit I8 held, before then
@@ -172,6 +188,7 @@
    FAIL   76/2048 ez I8 held, before then, every error
    FAIL   22/2048 ez I8 held, before then, visible errors
    FAIL  436/2048 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL  565/2048 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
    FAIL  138/2048 lit I1
    FAIL 2047/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL  700/2048 lit I8 held, before then
@@ -183,6 +200,7 @@
    FAIL   73/2048 ez I8 held, before then, every error
    FAIL   18/2048 ez I8 held, before then, visible errors
    FAIL  340/2048 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL  334/2048 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
    FAIL  144/2048 lit I1
    FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL  773/2048 lit I8 held, before then
@@ -198,6 +216,7 @@
    FAIL   59/2048 ez I8 held, before then, visible errors
    FAIL   83/2048 ez I8 held, from then on
    FAIL  209/2048 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL    6/2048 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
    FAIL   14/2048 lit I1
    FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL  137/2048 lit I8 held, before then
@@ -206,6 +225,7 @@
    FAIL  660/2048 lit R-1271 before t0+W, not judged not old (parameter test)
 == transactions without retry [straight] fault 0 seeds 1000..3048 (1.0s)
    FAIL 1926/2048 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL 1167/2048 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
    FAIL  340/2048 lit I1
    FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL 1442/2048 lit I8 search_path once per E
@@ -213,14 +233,16 @@
    FAIL   58/2048 lit I9 loud: a request, entry or replacement
    FAIL  194/2048 lit R-1271 before t0+W, not judged not old (parameter test)
 == transactions without retry, entries off [straight] fault 0 seeds 1000..3048 (1.0s)
+   FAIL 1121/2048 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
    FAIL  213/2048 lit I1
    FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL 2048/2048 lit I8 search_path once per E
    FAIL 1968/2048 lit I9 loud half
    FAIL   52/2048 lit I9 loud: a request, entry or replacement
    FAIL  190/2048 lit R-1271 before t0+W, not judged not old (parameter test)
-== transactions without retry, E a fifth of W [straight] fault 0 seeds 1000..3048 (1.0s)
+== transactions without retry, E a fifth of W [straight] fault 0 seeds 1000..3048 (1.1s)
    FAIL 1993/2048 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL 1137/2048 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
    FAIL  282/2048 lit I1
    FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL  364/2048 lit I8 search_path once per E
@@ -233,15 +255,22 @@
 == search_path only, no retry, entries off [straight] fault 0 seeds 1000..3048 (0.6s)
    FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL 2048/2048 lit I8 search_path once per E
-== search_path only, no retry, E off by 0s [straight] fault 0 seeds 1000..3048 (0.7s)
+== search_path only, no retry, E off by 0s [straight] fault 0 seeds 1000..3048 (0.6s)
    FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
 == search_path only, no retry, up to 100 ms to the run [straight] fault 0 seeds 1000..3048 (0.5s)
    FAIL 1982/2048 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
    FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
-== max 1 [straight] fault 0 seeds 1000..3048 (1.3s)
+== stored text only, no schema change [straight] fault 0 seeds 1000..3048 (1.1s)
+   FAIL 1748/2048 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
+   FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
+== record shapes only, no schema change [straight] fault 0 seeds 1000..3048 (1.2s)
+   FAIL 2039/2048 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
+   FAIL 2047/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
+== max 1 [straight] fault 0 seeds 1000..3048 (1.4s)
    FAIL   46/2048 ez I8 held, before then, every error
    FAIL   10/2048 ez I8 held, before then, visible errors
    FAIL  442/2048 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL  235/2048 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
    FAIL  689/2048 lit I1
    FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL  542/2048 lit I8 held, before then
@@ -253,6 +282,7 @@
    FAIL   49/2048 ez I8 held, before then, every error
    FAIL   11/2048 ez I8 held, before then, visible errors
    FAIL  444/2048 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL  263/2048 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
    FAIL  690/2048 lit I1
    FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL  549/2048 lit I8 held, before then
@@ -264,6 +294,7 @@
    FAIL   46/2048 ez I8 held, before then, every error
    FAIL   11/2048 ez I8 held, before then, visible errors
    FAIL   47/2048 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL  211/2048 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
    FAIL  201/2048 lit I1
    FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL  571/2048 lit I8 held, before then
@@ -276,6 +307,7 @@
    FAIL  132/2048 ez I8 held, before then, every error
    FAIL   31/2048 ez I8 held, before then, visible errors
    FAIL  349/2048 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL   52/2048 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
    FAIL  448/2048 lit I1
    FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL 1194/2048 lit I8 held, before then
@@ -287,6 +319,7 @@
    FAIL   75/2048 ez I8 held, before then, every error
    FAIL   18/2048 ez I8 held, before then, visible errors
    FAIL  431/2048 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL  548/2048 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
    FAIL  158/2048 lit I1
    FAIL 2047/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL  693/2048 lit I8 held, before then
@@ -301,6 +334,7 @@
    FAIL   80/2048 ez I8 held, before then, every error
    FAIL   21/2048 ez I8 held, before then, visible errors
    FAIL  422/2048 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL  277/2048 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
    FAIL  240/2048 lit I1
    FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL 1089/2048 lit I8 held, before then
@@ -312,6 +346,7 @@
    FAIL  110/2048 ez I8 held, before then, every error
    FAIL   25/2048 ez I8 held, before then, visible errors
    FAIL  548/2048 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL  399/2048 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
    FAIL  290/2048 lit I1
    FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL 1003/2048 lit I8 held, before then
@@ -326,6 +361,7 @@
    FAIL  134/2048 ez I8 held, before then, every error
    FAIL   33/2048 ez I8 held, before then, visible errors
    FAIL  153/2048 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL   18/2048 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
    FAIL   88/2048 lit I1
    FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL 1499/2048 lit I8 held, before then
@@ -337,6 +373,7 @@
    FAIL   33/2048 ez I8 held, before then, every error
    FAIL    4/2048 ez I8 held, before then, visible errors
    FAIL  149/2048 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL   41/2048 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
    FAIL   15/2048 lit I1
    FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL  448/2048 lit I8 held, before then
@@ -348,6 +385,7 @@
    FAIL   69/2048 ez I8 held, before then, visible errors
    FAIL   15/2048 ez I8 held, from then on
    FAIL  300/2048 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL   75/2048 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
    FAIL  133/2048 lit I1
    FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL 1876/2048 lit I8 held, before then
@@ -363,6 +401,7 @@
    FAIL  113/2048 ez I8 held, before then, visible errors
    FAIL   21/2048 ez I8 held, from then on
    FAIL   66/2048 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL   16/2048 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
    FAIL  121/2048 lit I1
    FAIL 2047/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL 1916/2048 lit I8 held, before then
@@ -384,11 +423,12 @@
    FAIL    9/2048 lit I8 visible from then on (parameter test)
    FAIL  832/2048 lit I9 loud half
    FAIL   21/2048 lit R-1271 before t0+W, not judged not old (parameter test)
-== long holds, hand relabels [straight] fault 0 seeds 1000..3048 (1.7s)
+== long holds, hand relabels [straight] fault 0 seeds 1000..3048 (1.4s)
    FAIL  241/2048 ez I8 held, before then, every error
    FAIL   51/2048 ez I8 held, before then, visible errors
    FAIL    8/2048 ez I8 held, from then on
    FAIL  154/2048 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL   39/2048 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
    FAIL   64/2048 lit I1
    FAIL 2047/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL 1494/2048 lit I8 held, before then
@@ -403,6 +443,7 @@
    FAIL  118/2048 ez I8 held, before then, every error
    FAIL   29/2048 ez I8 held, before then, visible errors
    FAIL  417/2048 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL  256/2048 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
    FAIL  231/2048 lit I1
    FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL 1091/2048 lit I8 held, before then
@@ -414,6 +455,7 @@
    FAIL  211/2048 ez I8 held, before then, every error
    FAIL   52/2048 ez I8 held, before then, visible errors
    FAIL  346/2048 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL    7/2048 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
    FAIL  315/2048 lit I1
    FAIL 2047/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL 1479/2048 lit I8 held, before then
@@ -425,6 +467,7 @@
    FAIL  202/2048 ez I8 held, before then, every error
    FAIL   64/2048 ez I8 held, before then, visible errors
    FAIL  430/2048 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL   21/2048 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
    FAIL  384/2048 lit I1
    FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL 1463/2048 lit I8 held, before then
@@ -436,6 +479,7 @@
    FAIL   99/2048 ez I8 held, before then, every error
    FAIL   16/2048 ez I8 held, before then, visible errors
    FAIL  422/2048 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL  291/2048 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
    FAIL  241/2048 lit I1
    FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL 1026/2048 lit I8 held, before then
@@ -455,7 +499,7 @@
    FAIL 2040/2048 lit I9 loud half
    FAIL  485/2048 lit I9 loud: a request, entry or replacement
    FAIL  304/2048 mid I8 stale statement once per E, running calls and actions apart
-== entries off [pooled] fault 0 seeds 1000..3048 (1.1s)
+== entries off [pooled] fault 0 seeds 1000..3048 (1.2s)
    FAIL 2048/2048 lit FE1 R-1249 and R-1258, a stale session's SchemaChanged once per stale_cooldown
    FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL 2048/2048 lit I2 (an adoption took its place)
@@ -466,7 +510,7 @@
    FAIL 2038/2048 lit I9 loud half
    FAIL  424/2048 lit I9 loud: a request, entry or replacement
    FAIL 1075/2048 mid I8 stale statement once per E, running calls and actions apart
-== caps of 1 [pooled] fault 0 seeds 1000..3048 (1.3s)
+== caps of 1 [pooled] fault 0 seeds 1000..3048 (1.2s)
    FAIL  630/2048 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
    FAIL 2048/2048 lit FE1 R-1249 and R-1258, a stale session's SchemaChanged once per stale_cooldown
    FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
@@ -567,7 +611,7 @@
    FAIL 2048/2048 lit I9 loud half
    FAIL  611/2048 lit I9 loud: a request, entry or replacement
    FAIL  473/2048 mid I8 stale statement once per E, running calls and actions apart
-== landing always [pooled] fault 0 seeds 1000..3048 (1.3s)
+== landing always [pooled] fault 0 seeds 1000..3048 (1.1s)
    FAIL  598/2048 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
    FAIL 2048/2048 lit FE1 R-1249 and R-1258, a stale session's SchemaChanged once per stale_cooldown
    FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
@@ -579,7 +623,7 @@
    FAIL 2038/2048 lit I9 loud half
    FAIL  505/2048 lit I9 loud: a request, entry or replacement
    FAIL  290/2048 mid I8 stale statement once per E, running calls and actions apart
-== two servers, landing always, heavy [pooled] fault 0 seeds 1000..3048 (1.0s)
+== two servers, landing always, heavy [pooled] fault 0 seeds 1000..3048 (0.9s)
    FAIL  431/2048 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
    FAIL 2048/2048 lit FE1 R-1249 and R-1258, a stale session's SchemaChanged once per stale_cooldown
    FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
@@ -703,10 +747,14 @@
 == search_path only, no retry, entries off [pooled] fault 0 seeds 1000..3048 (1.5s)
    FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL 2048/2048 lit I8 search_path once per E
-== search_path only, no retry, E off by 0s [pooled] fault 0 seeds 1000..3048 (1.6s)
+== search_path only, no retry, E off by 0s [pooled] fault 0 seeds 1000..3048 (1.5s)
    FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
 == search_path only, no retry, up to 100 ms to the run [pooled] fault 0 seeds 1000..3048 (0.5s)
    FAIL 2048/2048 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
+== stored text only, no schema change [pooled] fault 0 seeds 1000..3048 (1.0s)
+   FAIL 2046/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
+== record shapes only, no schema change [pooled] fault 0 seeds 1000..3048 (0.9s)
    FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
 == max 1 [pooled] fault 0 seeds 1000..3048 (1.0s)
    FAIL  459/2048 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
@@ -770,14 +818,14 @@
    FAIL  388/2048 lit I9 loud: a request, entry or replacement
    FAIL    4/2048 lit I9 silent past W of the first confirmation
    FAIL  184/2048 mid I8 stale statement once per E, running calls and actions apart
-== hand relabels without the reset, casts [pooled] fault 0 seeds 1000..3048 (1.0s)
+== hand relabels without the reset, casts [pooled] fault 0 seeds 1000..3048 (0.9s)
    FAIL   68/2048 lit FE1 R-1249 and R-1258, a stale session's SchemaChanged once per stale_cooldown
    FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL 1179/2048 lit I8 stale statement once per E
    FAIL 2030/2048 lit I9 loud half
    FAIL    1/2048 lit I9 silent past W of the first confirmation
    FAIL   78/2048 mid I8 stale statement once per E, running calls and actions apart
-== old labels copied [pooled] fault 0 seeds 1000..3048 (1.9s)
+== old labels copied [pooled] fault 0 seeds 1000..3048 (1.1s)
    FAIL  551/2048 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
    FAIL 2048/2048 lit FE1 R-1249 and R-1258, a stale session's SchemaChanged once per stale_cooldown
    FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
@@ -789,7 +837,7 @@
    FAIL 2040/2048 lit I9 loud half
    FAIL  488/2048 lit I9 loud: a request, entry or replacement
    FAIL  288/2048 mid I8 stale statement once per E, running calls and actions apart
-== record and column statements [pooled] fault 0 seeds 1000..3048 (1.3s)
+== record and column statements [pooled] fault 0 seeds 1000..3048 (1.1s)
    FAIL  692/2048 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
    FAIL 2048/2048 lit FE1 R-1249 and R-1258, a stale session's SchemaChanged once per stale_cooldown
    FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
@@ -821,7 +869,7 @@
    FAIL  454/2048 lit I9 loud: a request, entry or replacement
    FAIL    8/2048 lit I9 silent past W of the first confirmation
    FAIL  141/2048 mid I8 stale statement once per E, running calls and actions apart
-== three processes, heavy [pooled] fault 0 seeds 1000..3048 (1.3s)
+== three processes, heavy [pooled] fault 0 seeds 1000..3048 (1.2s)
    FAIL   98/2048 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
    FAIL 2048/2048 lit FE1 R-1249 and R-1258, a stale session's SchemaChanged once per stale_cooldown
    FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)

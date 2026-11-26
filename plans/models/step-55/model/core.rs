@@ -446,6 +446,9 @@ pub struct Pool {
     pub ep_open: HashMap<u64, u32>,
     pub cg_repl: HashMap<u64, u32>,
     pub sopens: Vec<u64>,
+    // the twenty-eighth review's FF1: each stale-driven replacement, when it's counted, and whose it is, 0 an
+    // epoch's (a replacement, a discard, a held connection's release), 1 a *replace* action's at checkout
+    pub repl_t: Vec<(u64, u8)>,
     pub owed: Vec<(u64, u64, bool)>,
     pub applied_snap: u64,
     pub inflight: Vec<u64>,

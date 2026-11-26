@@ -935,6 +935,7 @@ pub async fn run_call(p: usize, conn: &mut Conn, cx: &mut Cx, sp: &Spec) -> Res 
             cx.due_mark = None;
             if w().confirms(&o.r, first) {
                 w().begin_step(p);
+                w().inc("FF1 replace requested: a confirming next attempt, row B3");
                 request(p, Act::Replace, false, cx, None).await;
             }
         }
@@ -1280,6 +1281,7 @@ async fn session(p: usize, conn: &mut Conn, cx: &mut Cx, sp: &Spec, o: Out) -> R
             let (n, sn, ri) = (s.pools[p].n, s.pools[p].snap, s.pools[p].rises);
             s.do_take(p, Act::Replace, n, sn, ri);
         } else {
+            w().inc("FF1 replace requested: a 42804 or XX000 at its failure");
             request(p, Act::Replace, false, cx, None).await;
         }
     }
@@ -1302,6 +1304,7 @@ async fn session(p: usize, conn: &mut Conn, cx: &mut Cx, sp: &Spec, o: Out) -> R
             Some(r) => {
                 w().begin_step(p);
                 if !sure && w().confirms(&r.r, err.code()) {
+                    w().inc("FF1 replace requested: a confirming run on the new connection, row A2");
                     request(p, Act::Replace, false, cx, None).await;
                 }
                 return if r.r.is_ok() { Res::Ok(r) } else { Res::Pg(r) };
@@ -1380,7 +1383,7 @@ async fn replace(p: usize, conn: &mut Conn, cx: &mut Cx, sp: &Spec, ep: u64) -> 
                 let s = w();
                 s.pools[p].extra -= 1;
                 s.pools[p].open -= 1; // the old one closes
-                *s.pools[p].ep_repl.entry(ep).or_insert(0) += 1;
+                *s.pools[p].ep_repl.entry(ep).or_insert(0) += 1; let rt = s.now; s.pools[p].repl_t.push((rt, 0));
                 *conn = nc;
                 return Some(r);
             }
@@ -1410,7 +1413,7 @@ async fn replace(p: usize, conn: &mut Conn, cx: &mut Cx, sp: &Spec, ep: u64) -> 
             let mut nc = mk_conn(p, o);
             let mode = if w().c.caches { Mode::Keep((sp.stmt, 0, 0)) } else { Mode::Unnamed };
             let r = run_once(p, &mut nc, cx, sp, mode).await;
-            *w().pools[p].ep_repl.entry(ep).or_insert(0) += 1;
+            { let s = w(); *s.pools[p].ep_repl.entry(ep).or_insert(0) += 1; let rt = s.now; s.pools[p].repl_t.push((rt, 0)); }
             *conn = nc;
             Some(r)
         }

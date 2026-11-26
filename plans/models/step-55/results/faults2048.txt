@@ -1,7 +1,7 @@
 switch 1 [straight]: ANY=2048; I4 span=2; new I1=2048   | no fault: 
 switch 1 [pooled]: ANY=2048; new I1=2048   | no fault: 
-switch 2 [straight]: ANY=2048; I3 more than open at its start=2048; I4 per epoch opens=2047; I4 per epoch replacements=2048; I4 span=690   | no fault: 
-switch 3 [straight]: ANY=2048; I4 span=3; new I1=2048   | no fault: 
+switch 2 [straight]: ANY=2048; I3 more than open at its start=2048; I3 span, an epoch's replacements, R-0981=2045; I4 per epoch opens=2047; I4 per epoch replacements=2048; I4 span=690; I4 span replacements, FF1=1760   | no fault: 
+switch 3 [straight]: ANY=2048; I4 span=3; I4 span replacements, FF1=2; new I1=2048   | no fault: 
 switch 4 [straight]: ANY=2046; I8 in a savepoint=1822; I8 in a transaction=2004; I8 once per connection=129; I8 outside a transaction=2030; R-1271 from t0+W on=2046; new I8 held, from then on=1948   | no fault: 
 switch 5 [straight]: ANY=2048; I8 outside a transaction=2047; R-1271 before t0+W, not judged not old=2048; R-1271 from t0+W on=2047   | no fault: 
 switch 6 [straight]: ANY=2048; I2=2048; new I9 silent past W of the first request=6   | no fault: 
@@ -10,20 +10,20 @@ switch 7 [straight]: ANY=2048; I7 held, a stale copy failing twice=1172; I7 outs
 switch 7 [pooled]: ANY=2048; I7 outside a transaction=2048; I8 pooled, outside a transaction, as it is with no cool-down and no retry=2048; I8 search_path visible outside=2048; new I9 loud half=1956   | no fault: 
 switch 8 [straight]: ANY=736; new I1=736   | no fault: 
 switch 8 [pooled]: ANY=918; new I1=918   | no fault: 
-switch 9 [straight]: ANY=1596; I10 newer=1596; I3=1446; new I1=545   | no fault: 
+switch 9 [straight]: ANY=1596; I10 newer=1596; I3=1446; I3 span, an epoch's replacements, R-0981=1; new I1=545   | no fault: 
 switch 9 [pooled]: ANY=1389; I10 newer=1389   | no fault: 
 switch 10 [straight]: ANY=2048; I10 sets=2048   | no fault: 
 switch 10 [pooled]: ANY=2048; I10 sets=2048   | no fault: 
 switch 11 [straight]: ANY=411; I10 newer=411; I3=331; new I1=121   | no fault: 
 switch 12 [straight]: ANY=524; I10 newer=524; I3=64; new I1=17   | no fault: 
 switch 13 [straight]: ANY=672; I10 newer=672; I3=569; new I1=165   | no fault: 
-switch 14 [straight]: ANY=2048; I10 down=2048; I3 several=2045; new I1 several=2046   | no fault: 
+switch 14 [straight]: ANY=2048; I10 down=2048; I3 several=2045; I3 span, an epoch's replacements, R-0981=62; new I1 several=2046   | no fault: 
 switch 14 [pooled]: ANY=2048; I10 down=2048   | no fault: 
 switch 15 [straight]: ANY=2011; I10 newer=20; I10 snapshot=2011; I3=3; new I1=15   | no fault: 
 switch 16 [straight]: ANY=2048; I10 newer=1834; I10 snapshot=2048; I11 read=2048; I3=1600; new I1=697   | no fault: 
 switch 17 [straight]: ANY=1916; I10 newer=11; I10 snapshot=1916; new I1=8   | no fault: 
 switch 18 [straight]: ANY=2048; I10 newer=1788; I3=2045; new I1=2048   | no fault: 
-switch 19 [straight]: ANY=1748; I3=1748   | no fault: 
+switch 19 [straight]: ANY=1748; I3=1748; I3 span, an epoch's replacements, R-0981=1   | no fault: 
 switch 20 [straight]: ANY=1870; new I1=1870   | no fault: 
 switch 20 [pooled]: ANY=1942; new I1=1942   | no fault: 
 switch 21 [straight]: ANY=1246; I8 clearing=11; new I1=1242   | no fault: 

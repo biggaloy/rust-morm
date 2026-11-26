@@ -1,6 +1,6 @@
 switch 1 [straight]: ANY=256; new I1=256   | no fault: 
 switch 1 [pooled]: ANY=256; new I1=256   | no fault: 
-switch 2 [straight]: ANY=256; I3 more than open at its start=256; I4 per epoch opens=256; I4 per epoch replacements=256; I4 span=84   | no fault: 
+switch 2 [straight]: ANY=256; I3 more than open at its start=256; I3 span, an epoch's replacements, R-0981=255; I4 per epoch opens=256; I4 per epoch replacements=256; I4 span=84; I4 span replacements, FF1=221   | no fault: 
 switch 3 [straight]: ANY=256; new I1=256   | no fault: 
 switch 4 [straight]: ANY=256; I8 in a savepoint=231; I8 in a transaction=251; I8 once per connection=16; I8 outside a transaction=251; R-1271 from t0+W on=256; new I8 held, from then on=239   | no fault: 
 switch 5 [straight]: ANY=256; I8 outside a transaction=256; R-1271 before t0+W, not judged not old=256; R-1271 from t0+W on=256   | no fault: 
@@ -17,7 +17,7 @@ switch 10 [pooled]: ANY=256; I10 sets=256   | no fault:
 switch 11 [straight]: ANY=54; I10 newer=54; I3=42; new I1=19   | no fault: 
 switch 12 [straight]: ANY=69; I10 newer=69; I3=9; new I1=3   | no fault: 
 switch 13 [straight]: ANY=88; I10 newer=88; I3=71; new I1=28   | no fault: 
-switch 14 [straight]: ANY=256; I10 down=256; I3 several=256; new I1 several=256   | no fault: 
+switch 14 [straight]: ANY=256; I10 down=256; I3 several=256; I3 span, an epoch's replacements, R-0981=16; new I1 several=256   | no fault: 
 switch 14 [pooled]: ANY=256; I10 down=256   | no fault: 
 switch 15 [straight]: ANY=248; I10 newer=1; I10 snapshot=248; new I1=1   | no fault: 
 switch 16 [straight]: ANY=256; I10 newer=231; I10 snapshot=256; I11 read=256; I3=196; new I1=77   | no fault: 

@@ -114,7 +114,7 @@ pub async fn machine_checkout(p: usize, conn: &mut Conn) {
                 let s = w();
                 let now = s.now;
                 s.pools[p].sopens.push(now);
-                *s.pools[p].cg_repl.entry(cg).or_insert(0) += 1;
+                *s.pools[p].cg_repl.entry(cg).or_insert(0) += 1; s.pools[p].repl_t.push((now, 1));
             }
             match open_try(p).await {
                 Ok(o) => {
@@ -164,7 +164,7 @@ fn release_held(p: usize, conn: Conn) {
     s.wake(p);
     if let Some(ep) = conn.mark {
         s.inc("marked held releases");
-        *s.pools[p].ep_repl.entry(ep).or_insert(0) += 1;
+        *s.pools[p].ep_repl.entry(ep).or_insert(0) += 1; let rt = s.now; s.pools[p].repl_t.push((rt, 0));
     }
 }
 
@@ -788,7 +788,7 @@ pub async fn call_tx(p: usize, sps: Vec<(Spec, bool)>, retry: u32, rr: bool) {
                         {
                             let s = w();
                             s.pools[p].open -= 1;
-                            *s.pools[p].ep_repl.entry(ep).or_insert(0) += 1;
+                            *s.pools[p].ep_repl.entry(ep).or_insert(0) += 1; let rt = s.now; s.pools[p].repl_t.push((rt, 0));
                         }
                         if last {
                             conn.id = 0;

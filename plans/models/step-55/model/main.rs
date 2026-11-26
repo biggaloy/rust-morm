@@ -41,6 +41,11 @@ fn settings(pooled: bool) -> Vec<Cfg> {
         // the twenty-sixth review's FD1: the same with up to 100 ms between a transaction's checkout and its statement's
         // run, as when it runs other statements first, so transactions begun before a failure reach the statement after it
         Cfg { name: "search_path only, no retry, up to 100 ms to the run", only: Some(PATH), tx: 1.0, retry0: true, held: 0.0, two: 0.0, burst: 0.0, world: 0.0, co_gap: 100 * MS, ..b() },
+        // the twenty-eighth review's FF1: stale-driven replacements with no schema change, from a client's stored text
+        // holding _morm_retired_ only (the epoch's alone, R-0981's bound) and from a record-shape function fed rows of
+        // tables of different shapes only (a client's 42804, which requests *replace* too, R-1271's "Churn")
+        Cfg { name: "stored text only, no schema change", only: Some(ST), world: 0.05, mix: [0., 0., 0., 0., 0., 0., 1., 0., 0.], ..b() },
+        Cfg { name: "record shapes only, no schema change", only: Some(H), world: 0.0, ..b() },
     ];
     v.push(Cfg { name: "max 1", max: 1, budget: 2, ..b() });
     v.push(Cfg { name: "max 1, budget 1", max: 1, budget: 1, ..b() });

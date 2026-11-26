@@ -411,5 +411,54 @@ pub fn end_checks(s: &mut Sim) {
             let e = s.cnt.entry("most stale-driven opens in a span (max)").or_insert(0);
             *e = (*e).max(n);
         }
+        // the twenty-eighth review's FF1: stale-driven replacements in any span of stale_cooldown, an epoch's and a
+        // *replace* action's together. R-1268's "Shorter:" now says up to four times max in any span, plus a round of
+        // each per migration, as R-1271's "Churn" and I4 do ("I4 span replacements, FF1"); its older wording, max per
+        // period and twice that in any span, plus a round per migration, counted an epoch's alone ("lit FF1")
+        let rt = s.pools[p].repl_t.clone();
+        let mx = max as u64;
+        let (mut lo, mut most, mut most_ep) = (0usize, 0u64, 0u64);
+        let (mut lit, mut eg, mut over, mut ep_over) = (false, String::new(), String::new(), String::new());
+        for hi in 0..rt.len() {
+            while rt[hi].0 - rt[lo].0 >= wd {
+                lo += 1;
+            }
+            // a change counts for the span when the pool can have learned it there: from W before the span's first
+            // replacement, as a standby's replay or a read after the change can trail its commit
+            let m = ch.iter().filter(|c| **c + wd >= rt[lo].0 && **c <= rt[hi].0).count() as u64;
+            let n = (hi - lo + 1) as u64;
+            let ne = rt[lo..=hi].iter().filter(|x| x.1 == 0).count() as u64;
+            if n > 2 * mx + mx * m && !lit {
+                lit = true;
+                eg = format!("{} replacements in {}..{}, {} an epoch's, {} changes", n, rt[lo].0, rt[hi].0, ne, m);
+            }
+            // R-0981's bound on an epoch's replacements alone: 2 × max in any span, plus max per migration
+            if ne > 2 * mx + mx * m && ep_over.is_empty() {
+                ep_over = format!("{} of an epoch's in {}..{}, {} changes", ne, rt[lo].0, rt[hi].0, m);
+            }
+            if n > 4 * mx + 2 * mx * m && over.is_empty() {
+                over = format!("{} replacements in {}..{}, {} changes", n, rt[lo].0, rt[hi].0, m);
+            }
+            most = most.max(n);
+            most_ep = most_ep.max(ne);
+        }
+        if lit {
+            s.fail("lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span", eg);
+        }
+        if !over.is_empty() {
+            s.fail("I4 span replacements, FF1", over);
+        }
+        if !ep_over.is_empty() {
+            s.fail("I3 span, an epoch's replacements, R-0981", ep_over);
+        }
+        if !rt.is_empty() {
+            let (ne, na) = (rt.iter().filter(|x| x.1 == 0).count() as u64, rt.iter().filter(|x| x.1 == 1).count() as u64);
+            s.inc_by("FF1 replacements: an epoch's", ne);
+            s.inc_by("FF1 replacements: a replace action's", na);
+            for (k, v) in [("FF1 most replacements in a span (max)", most), ("FF1 most of an epoch's in a span (max)", most_ep)] {
+                let e = s.cnt.entry(k).or_insert(0);
+                *e = (*e).max(v);
+            }
+        }
     }
 }

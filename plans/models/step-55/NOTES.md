@@ -1,3 +1,25 @@
+# Step 55's stale-session model, after the twenty-eighth review's fix
+
+Started from `plans/models/step-55/` on `main` (the twenty-seventh review's fix, PR #3 `c458987`). FF1 changes nothing I4 checks: I4 already fails more than `4 × max + 4` stale-driven opens in any span of `W`, plus `2 × max` per change, and the default load already has a client's `42804` with no schema change (statement `H`, a record shape chosen per call, `Cause::Data`) and stored text toggled at the client's pace. FF1 and FF2 are README wording; what's new shows the bound by kind of replacement, and a case the sweep found: stored text changed to a good label between a failure and its confirming run requests *replace* too.
+
+What changed:
+
+- `model/core.rs`, `Pool::repl_t`: each stale-driven replacement, at the time it's counted, and its kind, 0 an epoch's (a replacement, a discard, a held connection's release), 1 a *replace* action's at checkout; `machine.rs` and `calls.rs` push it beside every `ep_repl` and `cg_repl` count.
+- `model/machine.rs`: counters "FF1 replace requested: a 42804 or XX000 at its failure", "... a confirming run on the new connection, row A2" and "... a confirming next attempt, row B3".
+- `model/world.rs`, `end_checks`, over the span of `W` ending at each replacement, a change counting when it came up to `W` before the span began (a standby's replay or a read can trail its commit): "I4 span replacements, FF1", more than `4 × max + 2 × max` per change, R-1268's new "Shorter:"; "I3 span, an epoch's replacements, R-0981", an epoch's more than `2 × max + max` per change; "lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span", the older wording, which doesn't count; counters for each kind's total and the most in a span.
+- `model/main.rs`: two settings in both modes, "stored text only, no schema change" (statement `ST`, world events only toggling the stored text) and "record shapes only, no schema change" (statement `H`, no world events); 86 settings, 47 straight to Postgres and 39 behind PgBouncer.
+- `model/ff1.sh <binary> [count]` prints the counts straight to Postgres (`results/ff1.txt`); `model/cmp.py` also sets aside FF1's and R-0981's lines and the two new settings.
+
+This round ran `run-all.sh` with the binary in the worktree's `.claude/scratch/`, then `switches.py` and `ff1.sh`.
+
+Results:
+
+- **No check fails with no fault** in the 86 settings over 256, 2,048 and 20,000 sequences (seeds 0 to 255, 1,000 to 3,047, 10,000 to 29,999), but the older wordings' ("lit ", "ez ", "mid "). `cmp.py` against `c458987`'s outputs: the same, once FF1's lines, the two settings, timings and example seeds are set aside. "lit FF1" fails in 37 of the 47 straight-to-Postgres settings at 256 sequences, 40 at 2,048 and 42 at 20,000 (6 to 19,869 of 20,000).
+- **Switches:** every one caught exactly as before (`results/switches.txt`, the same counts); the new checks also catch switch 2 (255 and 221 of 256), 3, 9, 14 and 19. **Breaks:** the same counts (`results/breaks.txt`).
+- **FF1,** 256 sequences of 40 s straight to Postgres, `max` = 4, `W` = 1 s, the most replacements in a span / of an epoch's / *replace* requests by a `42804`, A2, B3 / "lit FF1": stored text only 11 / 8 / 0, 4,110, 1,027 / 219 of 256; record shapes only 11 / 7 / 39,037, 0, 0 / 255; defaults 19 / 15 / 7,766, 1,217, 521 / 30; transactions without retry 21 / 16 / 12,466, 693, 0 / 156 (`results/ff1.txt`).
+
+Not run: Postgres and PgBouncer (FF1 and FF2 are wording of morm's own procedure), `fe1.sh` and the earlier rounds' scripts, as nothing they count changed and the outputs are the same.
+
 # Step 55's stale-session model, after the twenty-seventh review's fix
 
 Started from `plans/models/step-55/` on `main` (the twenty-sixth review's fix, PR #3 `b98bada`). FE1 changes what the model checks: behind PgBouncer a stale session's cool-down ends at every pool-wide action, adoption or push-out by the cap as well as at its expiry, so R-1249's "once" and R-1258's "for `stale_cooldown`" were wrong, and T-0319's I8 now states the bound the procedure gives. FE1's sweep straight to Postgres is I3's and I4's bounds, already checked; FE2 is I8's stale-statement bound behind PgBouncer, already checked; FE3 is the PR body.
