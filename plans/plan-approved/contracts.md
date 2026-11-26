@@ -286,7 +286,7 @@ pub enum Error {
                                                // or from any cached statement (proofs 14 to 17). Returned when the next
                                                // attempt may succeed: where morm repaired something for it (a statement evicted, a pending
                                                // entry made, or a connection discarded or marked for replacement); behind PgBouncer on a
-                                               // session-class failure's first time (row D2), whose next attempt may reach another server
+                                               // session-class failure outside the cool-down (row D2), whose next attempt may reach another server
                                                // session; on the transient XX000 "could not open relation with OID", which doesn't repeat;
                                                // and behind PgBouncer with pending entries off, on row D1. Otherwise the server's error is
                                                // returned as Error::Postgres, so .retry(n) stops (the stale-session machine, MA, MB, EQ3)
