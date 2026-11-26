@@ -190,6 +190,20 @@
    FAIL  248/256 lit I9 loud half
    FAIL    7/256 lit I9 loud: a request, entry or replacement
    FAIL   20/256 lit R-1271 before t0+W, not judged not old (parameter test)
+== transactions without retry, entries off [straight] fault 0 seeds 0..256 (0.1s)
+   FAIL   26/256 lit I1
+   FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL  256/256 lit I8 search_path once per E
+   FAIL  252/256 lit I9 loud half
+   FAIL    8/256 lit I9 loud: a request, entry or replacement
+   FAIL   23/256 lit R-1271 before t0+W, not judged not old (parameter test)
+== transactions without retry, E a fifth of W [straight] fault 0 seeds 0..256 (0.1s)
+   FAIL   32/256 lit I1
+   FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL   42/256 lit I8 search_path once per E
+   FAIL  248/256 lit I9 loud half
+   FAIL    6/256 lit I9 loud: a request, entry or replacement
+   FAIL   27/256 lit R-1271 before t0+W, not judged not old (parameter test)
 == max 1 [straight] fault 0 seeds 0..256 (0.1s)
    FAIL    6/256 ez I8 held, before then, every error
    FAIL   82/256 lit I1
@@ -543,6 +557,26 @@
    FAIL  255/256 lit I9 loud half
    FAIL   19/256 lit I9 loud: a request, entry or replacement
    FAIL  229/256 mid I8 stale statement once per E, running calls and actions apart
+== transactions without retry, entries off [pooled] fault 0 seeds 0..256 (0.2s)
+   FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL  256/256 lit I2 (an adoption took its place)
+   FAIL  238/256 lit I8 never visible after RECONNECT
+   FAIL    5/256 lit I8 never visible after server_lifetime
+   FAIL  256/256 lit I8 search_path once per E
+   FAIL  256/256 lit I8 stale statement once per E
+   FAIL  255/256 lit I9 loud half
+   FAIL    9/256 lit I9 loud: a request, entry or replacement
+   FAIL  256/256 mid I8 stale statement once per E, running calls and actions apart
+== transactions without retry, E a fifth of W [pooled] fault 0 seeds 0..256 (0.2s)
+   FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL  256/256 lit I2 (an adoption took its place)
+   FAIL  223/256 lit I8 never visible after RECONNECT
+   FAIL    3/256 lit I8 never visible after server_lifetime
+   FAIL   82/256 lit I8 search_path once per E
+   FAIL  256/256 lit I8 stale statement once per E
+   FAIL  252/256 lit I9 loud half
+   FAIL   19/256 lit I9 loud: a request, entry or replacement
+   FAIL  156/256 mid I8 stale statement once per E, running calls and actions apart
 == max 1 [pooled] fault 0 seeds 0..256 (0.1s)
    FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL  256/256 lit I2 (an adoption took its place)

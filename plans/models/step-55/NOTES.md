@@ -1,3 +1,18 @@
+# Step 55's stale-session model, after the twenty-third review's fix
+
+Started from `plans/models/step-55/` on `main` (the answer to the two answers' question, PR #3 `e417bc8`). FA1, FA3 and FA4 are wording the model already agreed with; FA2 changes what it checks:
+
+- `model/calls.rs`, `check_pg`: I14 with pending entries off and the caches on, no `22P02` the second row takes (`ret: false`) comes back as it is from an attempt before one that returned `Error::SchemaChanged`, in a savepoint or not. `call_tx`: no attempt after one that did returns `Error::SchemaChanged` for bad text or a kept function's error (I14's later half, every setting). Counters: "entries off: SchemaChanged for bad text or a kept function's error" and "entries off: a 22P02 as it is on a later attempt".
+- `model/machine.rs`, `entry`: break 124, entries off still keeping an entry (64, `E` = 1 s).
+- `model/main.rs`: two settings, "transactions without retry, entries off" and "transactions without retry, E a fifth of W"; 74 settings.
+- `model/breaks.py`: 124 at "entries off" and the new entries-off setting, and switch 28 at "entries off".
+- `model/fa2.sh <binary>` prints the cost counters at the FA2 settings (`results/fa2.txt`); `model/fa2breaks.sh <binary>` the breaks (`results/fa2breaks.txt`).
+- `probes/run9.sh <bindir> <scratch> <socketdir>`: FA3's savepoint case on a throwaway cluster, `results/probe9-17.txt` (17.11, `/opt/pgsql-17`) and `probe9-18.txt` (18.6, the Manjaro package), the same.
+- FA4 needs nothing new: I14 already fails a bad text's `Error::SchemaChanged` from a run begun while its statement's entry exists, which is what the corrected tests state.
+- `build.sh`, `full.sh` and `cost.sh` find the worktree with `git rev-parse`; this round ran their commands directly with the binary in the worktree's `.claude/scratch/`, as `full.sh` lists them, `cost.txt` not run again (nothing it counts changed).
+
+Results: no check fails with no fault in the 74 settings over 256, 2,048 and 20,000 sequences; the switches as at `e417bc8` but the 28th and 33rd, also caught by I14's later half now (`switches.txt`); break 124 caught in 249 to 256 of 256.
+
 # Step 55's stale-session model, after the owner's answer to the two answers' question
 
 Started from `plans/models/step-55/` on `main` (the two answers' round's, PR #3 `64820fe`). The answer is in by default, with no option for it: R-1245's second row takes every cached statement's `22P02` from `enum_in`, by its SQLSTATE and routine alone, and the name test is gone. What changed:

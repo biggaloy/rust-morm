@@ -16,6 +16,10 @@ RUNS += [(m, f, "defaults") for f in (120, 123) for m in ("straight", "pooled")]
 RUNS += [(m, 123, "every call a cast beside a second type") for m in ("straight", "pooled")]
 # I14, the second row's cost: a pending entry ignored, so a bad text's Error::SchemaChanged recurs while its entry lasts
 RUNS += [(m, 107, "transactions without retry") for m in ("straight", "pooled")]
+# I14 with pending entries off (twenty-third review, FA2). 124: entries off still keeping an entry, so a bad text's
+# 22P02 comes back as it is from a cached attempt; switch 28 (a later attempt running cached) against I14's later half
+RUNS += [(m, 124, s) for s in ("entries off", "transactions without retry, entries off") for m in ("straight", "pooled")]
+RUNS += [(m, 28, "entries off") for m in ("straight", "pooled")]
 for mode, b, s in RUNS:
     out = subprocess.run([M, f"set{b}" if s == "set" else s, str(b), "0", "256", mode], capture_output=True, text=True).stdout
     print(f"-- break {b} [{mode}] {s}")

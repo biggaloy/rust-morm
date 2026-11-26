@@ -1,0 +1,10 @@
+ERROR:  22P02: invalid input value for enum st: "zz"
+LOCATION:  enum_in, enum.c:129
+ERROR:  22P02: invalid input value for enum st: "zz"
+LOCATION:  enum_in, enum.c:129
+ id | c 
+----+---
+  1 | a
+  2 | b
+(2 rows)
+

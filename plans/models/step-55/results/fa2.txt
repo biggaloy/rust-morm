@@ -1,0 +1,76 @@
+== defaults [straight] fault 0 seeds 0..256 (0.1s)
+        SchemaChanged for bad text = 2223
+        SchemaChanged for bad text or a kept function's error, no retry = 2322
+        a bad label beside a second type: SchemaChanged = 479
+        a bad label of a lone cast: SchemaChanged = 1353
+        calls = 867988
+        transactions = 303488
+== defaults [pooled] fault 0 seeds 0..256 (0.1s)
+        SchemaChanged for bad text = 2024
+        SchemaChanged for bad text or a kept function's error, no retry = 2670
+        a bad label beside a second type: SchemaChanged = 554
+        a bad label of a lone cast: SchemaChanged = 1332
+        calls = 872233
+        transactions = 305427
+== entries off [straight] fault 0 seeds 0..256 (0.1s)
+        SchemaChanged for bad text = 2759
+        SchemaChanged for bad text or a kept function's error, no retry = 2882
+        a bad label beside a second type: SchemaChanged = 607
+        a bad label of a lone cast: SchemaChanged = 1669
+        calls = 872156
+        entries off: SchemaChanged for bad text or a kept function's error = 8819
+        entries off: a 22P02 as it is on a later attempt = 4578
+        transactions = 305771
+== entries off [pooled] fault 0 seeds 0..256 (0.1s)
+        SchemaChanged for bad text = 2392
+        SchemaChanged for bad text or a kept function's error, no retry = 3170
+        a bad label beside a second type: SchemaChanged = 644
+        a bad label of a lone cast: SchemaChanged = 1543
+        calls = 871743
+        entries off: SchemaChanged for bad text or a kept function's error = 9766
+        entries off: a 22P02 as it is on a later attempt = 5341
+        transactions = 305166
+== transactions without retry [straight] fault 0 seeds 0..256 (0.1s)
+        SchemaChanged for bad text = 12720
+        SchemaChanged for bad text or a kept function's error, no retry = 13888
+        a bad label beside a second type: SchemaChanged = 2948
+        a bad label of a lone cast: SchemaChanged = 7714
+        calls = 872929
+        transactions = 697659
+== transactions without retry [pooled] fault 0 seeds 0..256 (0.2s)
+        SchemaChanged for bad text = 11793
+        SchemaChanged for bad text or a kept function's error, no retry = 15105
+        a bad label beside a second type: SchemaChanged = 3068
+        a bad label of a lone cast: SchemaChanged = 7547
+        calls = 868971
+        transactions = 695276
+== transactions without retry, E a fifth of W [straight] fault 0 seeds 0..256 (0.1s)
+        SchemaChanged for bad text = 13503
+        SchemaChanged for bad text or a kept function's error, no retry = 14892
+        a bad label beside a second type: SchemaChanged = 3216
+        a bad label of a lone cast: SchemaChanged = 8206
+        calls = 870833
+        transactions = 696099
+== transactions without retry, E a fifth of W [pooled] fault 0 seeds 0..256 (0.2s)
+        SchemaChanged for bad text = 12850
+        SchemaChanged for bad text or a kept function's error, no retry = 16814
+        a bad label beside a second type: SchemaChanged = 3375
+        a bad label of a lone cast: SchemaChanged = 8317
+        calls = 870168
+        transactions = 696314
+== transactions without retry, entries off [straight] fault 0 seeds 0..256 (0.1s)
+        SchemaChanged for bad text = 18184
+        SchemaChanged for bad text or a kept function's error, no retry = 20368
+        a bad label beside a second type: SchemaChanged = 4327
+        a bad label of a lone cast: SchemaChanged = 10945
+        calls = 873287
+        entries off: SchemaChanged for bad text or a kept function's error = 20368
+        transactions = 698833
+== transactions without retry, entries off [pooled] fault 0 seeds 0..256 (0.2s)
+        SchemaChanged for bad text = 15956
+        SchemaChanged for bad text or a kept function's error, no retry = 21622
+        a bad label beside a second type: SchemaChanged = 4150
+        a bad label of a lone cast: SchemaChanged = 10318
+        calls = 869807
+        entries off: SchemaChanged for bad text or a kept function's error = 21622
+        transactions = 695466

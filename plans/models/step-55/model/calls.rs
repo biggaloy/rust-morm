@@ -212,6 +212,19 @@ pub fn check_pg(p: usize, cx: &Cx, sp: &Spec, o: &Out, at: At) {
     let xx = app && err == Err::XX && cx.cached_mode;
     let notold = cx.tested == Some(false);
     let d = format!("t={} stmt={} {:?} {:?} {:?} tested={:?} ptest={}", now, sp.stmt, err, o.cause, at, cx.tested, cx.ptest);
+    // ---- I14 with pending entries off (twenty-third review, FA2): every 22P02 the second row takes inside a
+    // transaction then returns Error::SchemaChanged at every such call, in both modes, so with the caches on none comes
+    // back as it is from an attempt before one that returned Error::SchemaChanged; .retry(n)'s later attempts, which run
+    // unnamed, return it as it is (checked in call_tx)
+    if matches!(at, At::Tx { .. } | At::Sp { .. }) && matches!(err, Err::P22 { ret: false, .. }) {
+        let off = s.c.pend_max == 0 || s.c.e == 0;
+        if off && s.c.caches && !cx.retried {
+            s.fail("I14 entries off: a 22P02 the second row takes returned as it is before a SchemaChanged", d.clone());
+        }
+        if off && cx.retried {
+            s.inc("entries off: a 22P02 as it is on a later attempt");
+        }
+    }
     // ---- I9's loud half ----
     if let Err::P22 { named: Named::Kept(v), .. } = err {
         let since = s.db.types[v as usize].1;
@@ -720,6 +733,16 @@ pub async fn call_tx(p: usize, sps: Vec<(Spec, bool)>, retry: u32, rr: bool) {
                     }
                     if retry == 0 {
                         check_sc(p, &cx, &sp, o, At::Tx { retry }, conn.id);
+                    }
+                    // I14's later attempts: run unnamed, they return a bad text's or a kept function's 22P02 as it is
+                    if cx.retried && matches!(o.r, Err(Err::P22 { ret: false, .. })) && !matches!(o.cause, Cause::Stmt(_) | Cause::Sess(_) | Cause::Path) {
+                        w().fail("I14 a later attempt's SchemaChanged for a 22P02 the second row takes", format!("t={} stmt={} {:?}", w().now, sp.stmt, o.cause));
+                    }
+                    if !cx.retried && matches!(o.r, Err(Err::P22 { ret: false, .. })) && !matches!(o.cause, Cause::Stmt(_) | Cause::Sess(_) | Cause::Path) {
+                        let s = w();
+                        if s.c.pend_max == 0 || s.c.e == 0 {
+                            s.inc("entries off: SchemaChanged for bad text or a kept function's error");
+                        }
                     }
                     retried = w().c.fault != 29 || true;
                     if w().c.fault == 29 {

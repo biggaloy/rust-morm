@@ -381,7 +381,11 @@ impl Sim {
         r
     }
     fn entry(&mut self, p: usize, sp: &Spec, err: Err, marked: bool) {
-        let (mx, e, now) = (self.c.pend_max, self.c.e, self.now);
+        let (mut mx, mut e, now) = (self.c.pend_max, self.c.e, self.now);
+        // break 124 (twenty-third review, FA2): pending entries off still keeping one, as if the setting were ignored
+        if self.c.fault == 124 && (mx == 0 || e == 0) {
+            (mx, e) = (64, S);
+        }
         if mx == 0 || e == 0 {
             return;
         }

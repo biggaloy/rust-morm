@@ -1,0 +1,22 @@
+== entries off [straight] fault 124 seeds 0..256 (0.1s)
+   FAIL  253/256 ANY
+   FAIL  253/256 I14 entries off: a 22P02 the second row takes returned as it is before a SchemaChanged
+== entries off [pooled] fault 124 seeds 0..256 (0.1s)
+   FAIL  249/256 ANY
+   FAIL  249/256 I14 entries off: a 22P02 the second row takes returned as it is before a SchemaChanged
+== transactions without retry, entries off [straight] fault 124 seeds 0..256 (0.1s)
+   FAIL  256/256 ANY
+   FAIL  256/256 I14 entries off: a 22P02 the second row takes returned as it is before a SchemaChanged
+== transactions without retry, entries off [pooled] fault 124 seeds 0..256 (0.2s)
+   FAIL  256/256 ANY
+   FAIL  256/256 I14 entries off: a 22P02 the second row takes returned as it is before a SchemaChanged
+== entries off [straight] fault 28 seeds 0..256 (0.1s)
+   FAIL  256/256 ANY
+   FAIL  256/256 I14 a later attempt's SchemaChanged for a 22P02 the second row takes
+   FAIL  256/256 I7 retried attempt runs cached
+   FAIL  173/256 I7 stale statements on more than one attempt
+== entries off [pooled] fault 28 seeds 0..256 (0.2s)
+   FAIL  256/256 ANY
+   FAIL  256/256 I14 a later attempt's SchemaChanged for a 22P02 the second row takes
+   FAIL  256/256 I7 retried attempt runs cached
+   FAIL  256/256 I7 stale statements on more than one attempt

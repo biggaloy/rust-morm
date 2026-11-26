@@ -82,18 +82,18 @@
    FAIL  250/256 I12 a call that never ends
    FAIL  256/256 I12 a call waits for a connection while it holds one
 -- break 120 [straight] set
-   256 I7 held, a stale copy failing twice e.g. seed 1: t=25005506 stmt=9 P22 { named: Kept(86), ret: false, lab: Newest, stored: true } Stmt(24881089) HeldApp tested=None ptest=false
-   256 I7 in a transaction, as it is e.g. seed 1: t=10047137 stmt=9 P22 { named: Kept(31), ret: false, lab: Newest, stored: true } Stmt(9139473) Sp { retry: 1 } tested=None ptest=false
-   256 I7 outside a transaction e.g. seed 1: t=10057882 stmt=9 P22 { named: Kept(31), ret: false, lab: Newest, stored: true } Stmt(9139473) Held tested=None ptest=false
-   256 new I9 loud half e.g. seed 1: t=10047137 stmt=9 P22 { named: Kept(31), ret: false, lab: Newest, stored: true } Stmt(9139473) Sp { retry: 1 } tested=None ptest=false
+   256 I7 held, a stale copy failing twice e.g. seed 4: t=2075547 stmt=9 P22 { named: Kept(3), ret: false, lab: Newest, stored: true } Stmt(1674161) HeldApp tested=None ptest=false
+   256 I7 in a transaction, as it is e.g. seed 4: t=1953838 stmt=9 P22 { named: Kept(2), ret: false, lab: Newest, stored: true } Stmt(901256) Sp { retry: 2 } tested=None ptest=false
+   256 I7 outside a transaction e.g. seed 4: t=2003808 stmt=9 P22 { named: Kept(4), ret: false, lab: Newest, stored: true } Stmt(1999976) Held tested=None ptest=false
+   256 new I9 loud half e.g. seed 4: t=1953838 stmt=9 P22 { named: Kept(2), ret: false, lab: Newest, stored: true } Stmt(901256) Sp { retry: 2 } tested=None ptest=false
 -- break 120 [pooled] set
-   256 I7 in a transaction, as it is e.g. seed 4: t=5695363 stmt=9 P22 { named: Kept(17), ret: false, lab: Newest, stored: true } Stmt(5493107) Tx { retry: 2 } tested=None ptest=false
-   256 I7 outside a transaction e.g. seed 4: t=5710067 stmt=9 P22 { named: Kept(17), ret: false, lab: Newest, stored: true } Stmt(5493107) Out tested=None ptest=false
-   256 new I9 loud half e.g. seed 4: t=5695363 stmt=9 P22 { named: Kept(17), ret: false, lab: Newest, stored: true } Stmt(5493107) Tx { retry: 2 } tested=None ptest=false
+   256 I7 in a transaction, as it is e.g. seed 2: t=1915913 stmt=9 P22 { named: Kept(1), ret: false, lab: Newest, stored: true } Stmt(304627) Sp { retry: 2 } tested=None ptest=false
+   256 I7 outside a transaction e.g. seed 2: t=1907577 stmt=9 P22 { named: Kept(1), ret: false, lab: Newest, stored: true } Stmt(304627) Out tested=None ptest=false
+   256 new I9 loud half e.g. seed 2: t=1907577 stmt=9 P22 { named: Kept(1), ret: false, lab: Newest, stored: true } Stmt(304627) Out tested=None ptest=false
 -- break 123 [straight] set
    256 I7 in a transaction, as it is e.g. seed 4: t=1317695 stmt=10 P22 { named: Cur, ret: false, lab: Newest, stored: false } Stmt(1204256) Tx { retry: 0 } tested=None ptest=false
 -- break 123 [pooled] set
-   256 I7 in a transaction, as it is e.g. seed 10: t=250808 stmt=10 P22 { named: Cur, ret: false, lab: Newest, stored: false } Stmt(206557) Tx { retry: 2 } tested=None ptest=false
+   256 I7 in a transaction, as it is e.g. seed 6: t=2001088 stmt=10 P22 { named: Cur, ret: false, lab: Newest, stored: false } Stmt(1987660) Tx { retry: 0 } tested=None ptest=false
 -- break 120 [straight] defaults
    FAIL   13/256 I7 held, a stale copy failing twice
    FAIL  109/256 I7 in a transaction, as it is
@@ -119,3 +119,19 @@
    FAIL  256/256 I14 the second row's cost: a bad text's SchemaChanged in a run begun while its entry exists
    FAIL  256/256 I8 pending run cached
    FAIL  256/256 new I8 a failure begun while its entry exists
+-- break 124 [straight] entries off
+   FAIL  253/256 I14 entries off: a 22P02 the second row takes returned as it is before a SchemaChanged
+-- break 124 [pooled] entries off
+   FAIL  249/256 I14 entries off: a 22P02 the second row takes returned as it is before a SchemaChanged
+-- break 124 [straight] transactions without retry, entries off
+   FAIL  256/256 I14 entries off: a 22P02 the second row takes returned as it is before a SchemaChanged
+-- break 124 [pooled] transactions without retry, entries off
+   FAIL  256/256 I14 entries off: a 22P02 the second row takes returned as it is before a SchemaChanged
+-- break 28 [straight] entries off
+   FAIL  256/256 I14 a later attempt's SchemaChanged for a 22P02 the second row takes
+   FAIL  256/256 I7 retried attempt runs cached
+   FAIL  173/256 I7 stale statements on more than one attempt
+-- break 28 [pooled] entries off
+   FAIL  256/256 I14 a later attempt's SchemaChanged for a 22P02 the second row takes
+   FAIL  256/256 I7 retried attempt runs cached
+   FAIL  256/256 I7 stale statements on more than one attempt

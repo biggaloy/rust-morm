@@ -41,8 +41,8 @@
  30 straight  108   833
  31 straight  256  2048
  32 straight  194  1649
- 33 pooled    235  1863
- 33 straight  146  1260
+ 33 pooled    256  2048
+ 33 straight  255  2038
  34 straight  254  2029
  35 pooled    256  2048
  36 pooled    256  2048

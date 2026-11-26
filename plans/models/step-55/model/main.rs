@@ -30,6 +30,9 @@ fn settings(pooled: bool) -> Vec<Cfg> {
         Cfg { name: "long transactions", gap2: 300 * MS, two: 0.9, gap: 80_000.0, ..b() },
         Cfg { name: "slow", gap: 800_000.0, world: 0.2, mix: [1., 0., 0., 0., 4., 0., 0., 0., 0.], mig_refresh: 0.0, ..b() },
         Cfg { name: "transactions without retry", tx: 0.8, retry0: true, held: 0.0, ..b() },
+        // the twenty-third review's FA2: the second row's cost with pending entries off, and with a shorter E
+        Cfg { name: "transactions without retry, entries off", tx: 0.8, retry0: true, held: 0.0, pend_max: 0, ..b() },
+        Cfg { name: "transactions without retry, E a fifth of W", tx: 0.8, retry0: true, held: 0.0, e: 200 * MS, ..b() },
     ];
     v.push(Cfg { name: "max 1", max: 1, budget: 2, ..b() });
     v.push(Cfg { name: "max 1, budget 1", max: 1, budget: 1, ..b() });

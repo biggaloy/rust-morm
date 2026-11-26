@@ -34,15 +34,15 @@ switch 25 [straight]: ANY=1374; I8 clearing=1374   | no fault:
 switch 25 [pooled]: ANY=1944; I8 clearing=1944   | no fault: 
 switch 26 [pooled]: ANY=657; I8 clearing=657; new I9 silent past W of the first request=43   | no fault: 
 switch 27 [pooled]: ANY=2048; I14 the second row's cost: a bad text's SchemaChanged in a run begun while its entry exists=1996; new I8 a failure begun while its entry exists=2032   | no fault: 
-switch 28 [straight]: ANY=2048; I7 retried attempt runs cached=2048; I7 stale statements on more than one attempt=1510   | no fault: 
-switch 28 [pooled]: ANY=2048; I7 retried attempt runs cached=2048; I7 stale statements on more than one attempt=1930   | no fault: 
+switch 28 [straight]: ANY=2048; I14 a later attempt's SchemaChanged for a 22P02 the second row takes=1572; I7 retried attempt runs cached=2048; I7 stale statements on more than one attempt=1510   | no fault: 
+switch 28 [pooled]: ANY=2048; I14 a later attempt's SchemaChanged for a 22P02 the second row takes=2048; I7 retried attempt runs cached=2048; I7 stale statements on more than one attempt=1930   | no fault: 
 switch 29 [straight]: ANY=556; I7 stale statements on more than one attempt=556   | no fault: 
 switch 29 [pooled]: ANY=1018; I7 stale statements on more than one attempt=1018   | no fault: 
 switch 30 [straight]: ANY=833; I4 per epoch opens=833   | no fault: 
 switch 31 [straight]: ANY=2048; I11=2048; I11 as it is after a whole rollback=2048; I11 read=2048   | no fault: 
 switch 32 [straight]: ANY=1649; new I8 held, before then=1648; new I8 held, from then on=5   | no fault: 
-switch 33 [straight]: ANY=1260; I14 the second row's cost: a bad text's SchemaChanged in a run begun while its entry exists=789; I9 loud: more than the second row's, or not as it is after it=744   | no fault: 
-switch 33 [pooled]: ANY=1863; I14 the second row's cost: a bad text's SchemaChanged in a run begun while its entry exists=732; I9 loud: more than the second row's, or not as it is after it=1784   | no fault: 
+switch 33 [straight]: ANY=2038; I14 a later attempt's SchemaChanged for a 22P02 the second row takes=2034; I14 the second row's cost: a bad text's SchemaChanged in a run begun while its entry exists=789; I9 loud: more than the second row's, or not as it is after it=744   | no fault: 
+switch 33 [pooled]: ANY=2048; I14 a later attempt's SchemaChanged for a 22P02 the second row takes=2048; I14 the second row's cost: a bad text's SchemaChanged in a run begun while its entry exists=732; I9 loud: more than the second row's, or not as it is after it=1784   | no fault: 
 switch 34 [straight]: ANY=2029; I7 held, a stale copy failing twice=2029; new I9 loud half=1001   | no fault: 
 switch 35 [pooled]: ANY=2048; I12 a call that never ends=1972; I12 a call waits for a connection while it holds one=2048   | no fault: 
 switch 36 [straight]: ANY=2048; I7 in a transaction, as it is=2048   | no fault: 
