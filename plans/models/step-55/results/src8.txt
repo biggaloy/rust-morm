@@ -1,0 +1,15 @@
+postgresql-15.20: 2400 files read; functions named enum_in: ['src/backend/utils/fmgrtab.c (string literal)', 'src/backend/utils/adt/enum.c']
+     ('src/backend/utils/adt/enum.c', 'ereport', 'ERRCODE_INVALID_TEXT_REPRESENTATION', 'invalid input value for enum %s: \\"%s\\"')
+     ('src/backend/utils/adt/enum.c', 'ereport', 'ERRCODE_INVALID_TEXT_REPRESENTATION', 'invalid input value for enum %s: \\"%s\\"')
+postgresql-16.16: 2473 files read; functions named enum_in: ['src/backend/utils/fmgrtab.c (string literal)', 'src/backend/utils/adt/enum.c']
+     ('src/backend/utils/adt/enum.c', 'ereturn', 'ERRCODE_INVALID_TEXT_REPRESENTATION', 'invalid input value for enum %s: \\"%s\\"')
+     ('src/backend/utils/adt/enum.c', 'ereturn', 'ERRCODE_INVALID_TEXT_REPRESENTATION', 'invalid input value for enum %s: \\"%s\\"')
+postgresql-17.12: 2411 files read; functions named enum_in: ['src/backend/utils/adt/enum.c']
+     ('src/backend/utils/adt/enum.c', 'ereturn', 'ERRCODE_INVALID_TEXT_REPRESENTATION', 'invalid input value for enum %s: \\"%s\\"')
+     ('src/backend/utils/adt/enum.c', 'ereturn', 'ERRCODE_INVALID_TEXT_REPRESENTATION', 'invalid input value for enum %s: \\"%s\\"')
+postgresql-18.7: 2487 files read; functions named enum_in: ['src/backend/utils/adt/enum.c']
+     ('src/backend/utils/adt/enum.c', 'ereturn', 'ERRCODE_INVALID_TEXT_REPRESENTATION', 'invalid input value for enum %s: \\"%s\\"')
+     ('src/backend/utils/adt/enum.c', 'ereturn', 'ERRCODE_INVALID_TEXT_REPRESENTATION', 'invalid input value for enum %s: \\"%s\\"')
+enum.c's enum_in, 21 releases (REL_15_0 to REL_15_20): [('ereport', 'ERRCODE_INVALID_TEXT_REPRESENTATION', 'invalid input value for enum %s: \\"%s\\"'), ('ereport', 'ERRCODE_INVALID_TEXT_REPRESENTATION', 'invalid input value for enum %s: \\"%s\\"')]
+enum.c's enum_in, 37 releases (REL_16_0 to REL_18_7): [('ereturn', 'ERRCODE_INVALID_TEXT_REPRESENTATION', 'invalid input value for enum %s: \\"%s\\"'), ('ereturn', 'ERRCODE_INVALID_TEXT_REPRESENTATION', 'invalid input value for enum %s: \\"%s\\"')]
+releases: 58

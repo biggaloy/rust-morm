@@ -1,0 +1,111 @@
+18.6
+1. the conversion cases [C]
+  SELECT ($1::st)::text, (c::kind)::text FROM s WHERE id = $2, after a hand change exchanged st and kind [lc_messages C]
+    outside a transaction: cached 22P02 enum_in: invalid input value for enum st: "k2" -> second row, fresh run -> [<Record text='k' c='k2'>]
+    transaction, no retry: attempt 1: 22P02 enum_in: invalid input value for enum st: "k2" -> Error::SchemaChanged
+    .retry(1).transaction: attempt 1: 22P02 enum_in: invalid input value for enum st: "k2" -> Error::SchemaChanged; attempt 2: [<Record text='k' c='k2'>]
+    a new session: [<Record text='k' c='k2'>]
+  SELECT ($1::st)::text, (c::cmp)::text FROM s WHERE id = $2, cmp kept under another name and made again over st2 [lc_messages C]
+    outside a transaction: cached 22P02 enum_in: invalid input value for enum st: "b" -> second row, fresh run -> [<Record text='a' c='(b)'>]
+    transaction, no retry: attempt 1: 22P02 enum_in: invalid input value for enum st: "b" -> Error::SchemaChanged
+    .retry(1).transaction: attempt 1: 22P02 enum_in: invalid input value for enum st: "b" -> Error::SchemaChanged; attempt 2: [<Record text='a' c='(b)'>]
+    a new session: [<Record text='a' c='(b)'>]
+2. the language case [C]
+  SELECT ($1::entrada)::text, entrada kept under another name by hand and made again with a new label [lc_messages C]
+    outside a transaction: cached 22P02 enum_in: invalid input value for enum entrada_vieja: "c" -> second row, fresh run -> [<Record text='c'>]
+    transaction, no retry: attempt 1: 22P02 enum_in: invalid input value for enum entrada_vieja: "c" -> Error::SchemaChanged
+    .retry(1).transaction: attempt 1: 22P02 enum_in: invalid input value for enum entrada_vieja: "c" -> Error::SchemaChanged; attempt 2: [<Record text='c'>]
+    a new session: [<Record text='c'>]
+3. a real bad label, nothing changed [C]
+  SELECT ($1::st)::text given 'zz' [lc_messages C]
+    outside a transaction: cached 22P02 enum_in: invalid input value for enum st: "zz" -> second row, fresh run -> 22P02 enum_in: invalid input value for enum st: "zz"
+    transaction, no retry: attempt 1: 22P02 enum_in: invalid input value for enum st: "zz" -> Error::SchemaChanged
+    .retry(1).transaction: attempt 1: 22P02 enum_in: invalid input value for enum st: "zz" -> Error::SchemaChanged; attempt 2: 22P02 enum_in: invalid input value for enum st: "zz" -> as it is
+    a new session: 22P02 enum_in: invalid input value for enum st: "zz"
+  SELECT ($1::entrada)::text given 'entrada' [lc_messages C]
+    outside a transaction: cached 22P02 enum_in: invalid input value for enum entrada: "entrada" -> second row, fresh run -> 22P02 enum_in: invalid input value for enum entrada: "entrada"
+    transaction, no retry: attempt 1: 22P02 enum_in: invalid input value for enum entrada: "entrada" -> Error::SchemaChanged
+    .retry(1).transaction: attempt 1: 22P02 enum_in: invalid input value for enum entrada: "entrada" -> Error::SchemaChanged; attempt 2: 22P02 enum_in: invalid input value for enum entrada: "entrada" -> as it is
+    a new session: 22P02 enum_in: invalid input value for enum entrada: "entrada"
+  SELECT ($1::st)::text, (c::kind)::text FROM s WHERE id = $2 given 'zz' [lc_messages C]
+    outside a transaction: cached 22P02 enum_in: invalid input value for enum st: "zz" -> second row, fresh run -> 22P02 enum_in: invalid input value for enum st: "zz"
+    transaction, no retry: attempt 1: 22P02 enum_in: invalid input value for enum st: "zz" -> Error::SchemaChanged
+    .retry(1).transaction: attempt 1: 22P02 enum_in: invalid input value for enum st: "zz" -> Error::SchemaChanged; attempt 2: 22P02 enum_in: invalid input value for enum st: "zz" -> as it is
+    a new session: 22P02 enum_in: invalid input value for enum st: "zz"
+1. the conversion cases [es_ES.utf8]
+  SELECT ($1::st)::text, (c::kind)::text FROM s WHERE id = $2, after a hand change exchanged st and kind [lc_messages es_ES.utf8]
+    outside a transaction: cached 22P02 enum_in: la sintaxis de entrada no es válida para el enum st: «k2» -> second row, fresh run -> [<Record text='k' c='k2'>]
+    transaction, no retry: attempt 1: 22P02 enum_in: la sintaxis de entrada no es válida para el enum st: «k2» -> Error::SchemaChanged
+    .retry(1).transaction: attempt 1: 22P02 enum_in: la sintaxis de entrada no es válida para el enum st: «k2» -> Error::SchemaChanged; attempt 2: [<Record text='k' c='k2'>]
+    a new session: [<Record text='k' c='k2'>]
+  SELECT ($1::st)::text, (c::cmp)::text FROM s WHERE id = $2, cmp kept under another name and made again over st2 [lc_messages es_ES.utf8]
+    outside a transaction: cached 22P02 enum_in: la sintaxis de entrada no es válida para el enum st: «b» -> second row, fresh run -> [<Record text='a' c='(b)'>]
+    transaction, no retry: attempt 1: 22P02 enum_in: la sintaxis de entrada no es válida para el enum st: «b» -> Error::SchemaChanged
+    .retry(1).transaction: attempt 1: 22P02 enum_in: la sintaxis de entrada no es válida para el enum st: «b» -> Error::SchemaChanged; attempt 2: [<Record text='a' c='(b)'>]
+    a new session: [<Record text='a' c='(b)'>]
+2. the language case [es_ES.utf8]
+  SELECT ($1::entrada)::text, entrada kept under another name by hand and made again with a new label [lc_messages es_ES.utf8]
+    outside a transaction: cached 22P02 enum_in: la sintaxis de entrada no es válida para el enum entrada_vieja: «c» -> second row, fresh run -> [<Record text='c'>]
+    transaction, no retry: attempt 1: 22P02 enum_in: la sintaxis de entrada no es válida para el enum entrada_vieja: «c» -> Error::SchemaChanged
+    .retry(1).transaction: attempt 1: 22P02 enum_in: la sintaxis de entrada no es válida para el enum entrada_vieja: «c» -> Error::SchemaChanged; attempt 2: [<Record text='c'>]
+    a new session: [<Record text='c'>]
+3. a real bad label, nothing changed [es_ES.utf8]
+  SELECT ($1::st)::text given 'zz' [lc_messages es_ES.utf8]
+    outside a transaction: cached 22P02 enum_in: la sintaxis de entrada no es válida para el enum st: «zz» -> second row, fresh run -> 22P02 enum_in: la sintaxis de entrada no es válida para el enum st: «zz»
+    transaction, no retry: attempt 1: 22P02 enum_in: la sintaxis de entrada no es válida para el enum st: «zz» -> Error::SchemaChanged
+    .retry(1).transaction: attempt 1: 22P02 enum_in: la sintaxis de entrada no es válida para el enum st: «zz» -> Error::SchemaChanged; attempt 2: 22P02 enum_in: la sintaxis de entrada no es válida para el enum st: «zz» -> as it is
+    a new session: 22P02 enum_in: la sintaxis de entrada no es válida para el enum st: «zz»
+  SELECT ($1::entrada)::text given 'entrada' [lc_messages es_ES.utf8]
+    outside a transaction: cached 22P02 enum_in: la sintaxis de entrada no es válida para el enum entrada: «entrada» -> second row, fresh run -> 22P02 enum_in: la sintaxis de entrada no es válida para el enum entrada: «entrada»
+    transaction, no retry: attempt 1: 22P02 enum_in: la sintaxis de entrada no es válida para el enum entrada: «entrada» -> Error::SchemaChanged
+    .retry(1).transaction: attempt 1: 22P02 enum_in: la sintaxis de entrada no es válida para el enum entrada: «entrada» -> Error::SchemaChanged; attempt 2: 22P02 enum_in: la sintaxis de entrada no es válida para el enum entrada: «entrada» -> as it is
+    a new session: 22P02 enum_in: la sintaxis de entrada no es válida para el enum entrada: «entrada»
+  SELECT ($1::st)::text, (c::kind)::text FROM s WHERE id = $2 given 'zz' [lc_messages es_ES.utf8]
+    outside a transaction: cached 22P02 enum_in: la sintaxis de entrada no es válida para el enum st: «zz» -> second row, fresh run -> 22P02 enum_in: la sintaxis de entrada no es válida para el enum st: «zz»
+    transaction, no retry: attempt 1: 22P02 enum_in: la sintaxis de entrada no es válida para el enum st: «zz» -> Error::SchemaChanged
+    .retry(1).transaction: attempt 1: 22P02 enum_in: la sintaxis de entrada no es válida para el enum st: «zz» -> Error::SchemaChanged; attempt 2: 22P02 enum_in: la sintaxis de entrada no es válida para el enum st: «zz» -> as it is
+    a new session: 22P02 enum_in: la sintaxis de entrada no es válida para el enum st: «zz»
+1. the conversion cases [de_DE.utf8]
+  SELECT ($1::st)::text, (c::kind)::text FROM s WHERE id = $2, after a hand change exchanged st and kind [lc_messages de_DE.utf8]
+    outside a transaction: cached 22P02 enum_in: ungültiger Eingabewert für Enum st: »k2« -> second row, fresh run -> [<Record text='k' c='k2'>]
+    transaction, no retry: attempt 1: 22P02 enum_in: ungültiger Eingabewert für Enum st: »k2« -> Error::SchemaChanged
+    .retry(1).transaction: attempt 1: 22P02 enum_in: ungültiger Eingabewert für Enum st: »k2« -> Error::SchemaChanged; attempt 2: [<Record text='k' c='k2'>]
+    a new session: [<Record text='k' c='k2'>]
+  SELECT ($1::st)::text, (c::cmp)::text FROM s WHERE id = $2, cmp kept under another name and made again over st2 [lc_messages de_DE.utf8]
+    outside a transaction: cached 22P02 enum_in: ungültiger Eingabewert für Enum st: »b« -> second row, fresh run -> [<Record text='a' c='(b)'>]
+    transaction, no retry: attempt 1: 22P02 enum_in: ungültiger Eingabewert für Enum st: »b« -> Error::SchemaChanged
+    .retry(1).transaction: attempt 1: 22P02 enum_in: ungültiger Eingabewert für Enum st: »b« -> Error::SchemaChanged; attempt 2: [<Record text='a' c='(b)'>]
+    a new session: [<Record text='a' c='(b)'>]
+2. the language case [de_DE.utf8]
+  SELECT ($1::entrada)::text, entrada kept under another name by hand and made again with a new label [lc_messages de_DE.utf8]
+    outside a transaction: cached 22P02 enum_in: ungültiger Eingabewert für Enum entrada_vieja: »c« -> second row, fresh run -> [<Record text='c'>]
+    transaction, no retry: attempt 1: 22P02 enum_in: ungültiger Eingabewert für Enum entrada_vieja: »c« -> Error::SchemaChanged
+    .retry(1).transaction: attempt 1: 22P02 enum_in: ungültiger Eingabewert für Enum entrada_vieja: »c« -> Error::SchemaChanged; attempt 2: [<Record text='c'>]
+    a new session: [<Record text='c'>]
+3. a real bad label, nothing changed [de_DE.utf8]
+  SELECT ($1::st)::text given 'zz' [lc_messages de_DE.utf8]
+    outside a transaction: cached 22P02 enum_in: ungültiger Eingabewert für Enum st: »zz« -> second row, fresh run -> 22P02 enum_in: ungültiger Eingabewert für Enum st: »zz«
+    transaction, no retry: attempt 1: 22P02 enum_in: ungültiger Eingabewert für Enum st: »zz« -> Error::SchemaChanged
+    .retry(1).transaction: attempt 1: 22P02 enum_in: ungültiger Eingabewert für Enum st: »zz« -> Error::SchemaChanged; attempt 2: 22P02 enum_in: ungültiger Eingabewert für Enum st: »zz« -> as it is
+    a new session: 22P02 enum_in: ungültiger Eingabewert für Enum st: »zz«
+  SELECT ($1::entrada)::text given 'entrada' [lc_messages de_DE.utf8]
+    outside a transaction: cached 22P02 enum_in: ungültiger Eingabewert für Enum entrada: »entrada« -> second row, fresh run -> 22P02 enum_in: ungültiger Eingabewert für Enum entrada: »entrada«
+    transaction, no retry: attempt 1: 22P02 enum_in: ungültiger Eingabewert für Enum entrada: »entrada« -> Error::SchemaChanged
+    .retry(1).transaction: attempt 1: 22P02 enum_in: ungültiger Eingabewert für Enum entrada: »entrada« -> Error::SchemaChanged; attempt 2: 22P02 enum_in: ungültiger Eingabewert für Enum entrada: »entrada« -> as it is
+    a new session: 22P02 enum_in: ungültiger Eingabewert für Enum entrada: »entrada«
+  SELECT ($1::st)::text, (c::kind)::text FROM s WHERE id = $2 given 'zz' [lc_messages de_DE.utf8]
+    outside a transaction: cached 22P02 enum_in: ungültiger Eingabewert für Enum st: »zz« -> second row, fresh run -> 22P02 enum_in: ungültiger Eingabewert für Enum st: »zz«
+    transaction, no retry: attempt 1: 22P02 enum_in: ungültiger Eingabewert für Enum st: »zz« -> Error::SchemaChanged
+    .retry(1).transaction: attempt 1: 22P02 enum_in: ungültiger Eingabewert für Enum st: »zz« -> Error::SchemaChanged; attempt 2: 22P02 enum_in: ungültiger Eingabewert für Enum st: »zz« -> as it is
+    a new session: 22P02 enum_in: ungültiger Eingabewert für Enum st: »zz«
+4. other 22P02s and other enum_in errors, nothing changed [C]
+    SELECT $1::text::int -> 22P02 pg_strtoint32_safe: invalid input syntax for type integer: "x" 
+    SELECT $1::text::uuid -> 22P02 string_to_uuid: invalid input syntax for type uuid: "x" 
+    SELECT $1::text::json -> 22P02 json_errsave_error: invalid input syntax for type json
+DETAIL:  The input string ended unexpectedly. 
+    SELECT $1::text::bool -> 22P02 boolin: invalid input syntax for type boolean: "x" 
+    SELECT $1::text::inet -> 22P02 network_in: invalid input syntax for type inet: "x" 
+    DO $$ BEGIN RAISE EXCEPTION USING ERRCODE = '22P02', MESSAGE = 'invalid input value for enum st: "x"'; END $$ -> 22P02 exec_stmt_raise: invalid input value for enum st: "x" 
+    DO $$ DECLARE v st; BEGIN v := 'x'; EXCEPTION WHEN others THEN RAISE; END $$ -> 22P02 enum_in: invalid input value for enum st: "x" -> second row
+    a label added in the open transaction -> 55P04 check_safe_enum_use: unsafe use of new value "b" of enum type st
+HINT:  New enum values must be committed before they can be used.

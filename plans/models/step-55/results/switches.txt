@@ -2,57 +2,57 @@
   1 straight  256  2048
   2 straight  256  2048
   3 straight  256  2048
-  4 straight  256  2047
+  4 straight  256  2046
   5 straight  256  2048
   6 pooled    256  2048
   6 straight  256  2048
   7 pooled    256  2048
   7 straight  256  2048
-  8 pooled    119   884
-  8 straight   97   734
-  9 pooled    168  1356
-  9 straight  204  1625
+  8 pooled    112   918
+  8 straight   86   736
+  9 pooled    178  1389
+  9 straight  208  1596
  10 pooled    256  2048
  10 straight  256  2048
- 11 straight   56   418
- 12 straight   61   524
- 13 straight   88   664
+ 11 straight   54   411
+ 12 straight   69   524
+ 13 straight   88   672
  14 pooled    256  2048
  14 straight  256  2048
- 15 straight  252  2011
+ 15 straight  248  2011
  16 straight  256  2048
- 17 straight  250  2020
+ 17 straight  239  1916
  18 straight  256  2048
- 19 straight  211  1749
- 20 pooled    242  1923
- 20 straight  236  1874
- 21 straight  156  1237
- 22 pooled    254  2003
+ 19 straight  228  1748
+ 20 pooled    244  1942
+ 20 straight  237  1870
+ 21 straight  147  1246
+ 22 pooled    254  2016
  23 pooled    228  1761
  24 straight  256  2048
- 25 pooled    242  1964
- 25 straight  175  1370
- 26 pooled     74   639
- 27 pooled    256  2043
+ 25 pooled    239  1944
+ 25 straight  154  1374
+ 26 pooled     83   657
+ 27 pooled    256  2048
  28 pooled    256  2048
  28 straight  256  2048
- 29 pooled    136  1042
- 29 straight   75   598
- 30 straight  116   938
+ 29 pooled    129  1018
+ 29 straight   81   556
+ 30 straight  108   833
  31 straight  256  2048
- 32 straight  207  1622
- 33 pooled    252  2035
- 33 straight  236  1937
- 34 straight  256  2033
+ 32 straight  194  1649
+ 33 pooled    235  1863
+ 33 straight  146  1260
+ 34 straight  254  2029
  35 pooled    256  2048
- 36 pooled    175  1300
- 36 straight  157  1161
- 37 pooled    253  2035
- 37 straight  212  1680
+ 36 pooled    256  2048
+ 36 straight  256  2048
+ 37 pooled    256  2032
+ 37 straight  209  1653
  38 pooled      0     0
  38 straight  256  2048
- 39 pooled    256  2048
- 39 straight  204  1655
-132 straight  256  2048
-lowest by 256: [(0, 0, (38, 'pooled')), (56, 418, (11, 'straight')), (61, 524, (12, 'straight')), (74, 639, (26, 'pooled'))]
-lowest by 2048: [(0, 0, (38, 'pooled')), (56, 418, (11, 'straight')), (61, 524, (12, 'straight')), (75, 598, (29, 'straight'))]
+ 39 pooled    256  2047
+ 39 straight  197  1629
+132 straight  256  2047
+lowest by 256: [(0, 0, (38, 'pooled')), (54, 411, (11, 'straight')), (69, 524, (12, 'straight')), (81, 556, (29, 'straight'))]
+lowest by 2048: [(0, 0, (38, 'pooled')), (54, 411, (11, 'straight')), (69, 524, (12, 'straight')), (81, 556, (29, 'straight'))]

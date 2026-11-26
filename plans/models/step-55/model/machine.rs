@@ -435,18 +435,16 @@ impl Sim {
         let casts = casts(sp.stmt);
         match e {
             Err::A0 if cached => Cls::Stmt,
-            Err::P22 { ret, .. } => {
-                // the decided test, on the message as the server writes it
+            Err::P22 { named, ret, .. } => {
+                // as decided (2026-11-26): every cached statement's 22P02 from enum_in takes the second row, known
+                // by its SQLSTATE and routine alone; no message text is read. Break 120: only one that casts a
+                // parameter takes it. Switch 36: the second row reads the message again, a 22P02 naming a type the
+                // statement casts to now being taken for a label's own. Break 123: the procedure at 64820fe, the
+                // name test reading a statement that casts one parameter, here the conversion form of statement 10
+                // (odd values), and the two-cast form always taken.
                 let br = self.c.fault;
-                // the four answers: any cached statement's (break 120: only one that casts a parameter); always one
-                // that casts no parameter, or parameters to two types (break 122: the name test reads it); and a
-                // cast written with its schema is named only with it (break 121, in rule.rs)
-                let always = !casts || (sp.stmt == TWO && br != 122);
-                let r2 = cached && (casts || br != 120) && (br == 43 || always || {
-                    let m = self.message(e, sp.val);
-                    let bound = if matches!(sp.stmt, CAST | TRIG | STC | TWO) { vec![self.text(sp.label, sp.val)] } else { vec![] };
-                    crate::rule::second(&m, std::slice::from_ref(&self.ty), br, &bound)
-                });
+                let read = (br == 36 && casts) || (br == 123 && casts && !(sp.stmt == TWO && sp.val % 2 == 0));
+                let r2 = cached && (casts || br != 120) && !(read && named == Named::Cur);
                 if r2 && self.c.pooled2 {
                     return Cls::Stmt;
                 }

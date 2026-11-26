@@ -1,354 +1,317 @@
-== defaults [pooled] fault 0 seeds 10000..30000 (12.0s)
-   FAIL 19999/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
+== defaults [pooled] fault 0 seeds 10000..30000 (10.9s)
+   FAIL 20000/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL 19998/20000 lit I2 (an adoption took its place)
-   FAIL 11802/20000 lit I8 never visible after RECONNECT
-   FAIL   51/20000 lit I8 never visible after server_lifetime
-   FAIL 5540/20000 lit I8 search_path once per E
-   FAIL 10283/20000 lit I8 stale statement once per E
-   FAIL 19920/20000 lit I9 loud half
-   FAIL 4828/20000 lit I9 loud: a request, entry or replacement
-   FAIL    3/20000 lit I9 silent past W of the first confirmation
-   FAIL 3022/20000 mid I8 stale statement once per E, running calls and actions apart
-== entries off [pooled] fault 0 seeds 10000..30000 (11.8s)
-   FAIL 19999/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 11937/20000 lit I8 never visible after RECONNECT
+   FAIL   54/20000 lit I8 never visible after server_lifetime
+   FAIL 5299/20000 lit I8 search_path once per E
+   FAIL 10100/20000 lit I8 stale statement once per E
+   FAIL 19932/20000 lit I9 loud half
+   FAIL 4668/20000 lit I9 loud: a request, entry or replacement
+   FAIL    6/20000 lit I9 silent past W of the first confirmation
+   FAIL 2972/20000 mid I8 stale statement once per E, running calls and actions apart
+== entries off [pooled] fault 0 seeds 10000..30000 (11.0s)
+   FAIL 19998/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL 20000/20000 lit I2 (an adoption took its place)
-   FAIL 12286/20000 lit I8 never visible after RECONNECT
-   FAIL   63/20000 lit I8 never visible after server_lifetime
-   FAIL 15395/20000 lit I8 search_path once per E
-   FAIL 15514/20000 lit I8 stale statement once per E
+   FAIL 12216/20000 lit I8 never visible after RECONNECT
+   FAIL   67/20000 lit I8 never visible after server_lifetime
+   FAIL 15391/20000 lit I8 search_path once per E
+   FAIL 15668/20000 lit I8 stale statement once per E
+   FAIL 19917/20000 lit I9 loud half
+   FAIL 4288/20000 lit I9 loud: a request, entry or replacement
+   FAIL 10320/20000 mid I8 stale statement once per E, running calls and actions apart
+== caps of 1 [pooled] fault 0 seeds 10000..30000 (11.1s)
+   FAIL 20000/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 19999/20000 lit I2 (an adoption took its place)
+   FAIL 11617/20000 lit I8 never visible after RECONNECT
+   FAIL   74/20000 lit I8 never visible after server_lifetime
+   FAIL 9292/20000 lit I8 search_path once per E
+   FAIL 12726/20000 lit I8 stale statement once per E
    FAIL 19937/20000 lit I9 loud half
-   FAIL 4284/20000 lit I9 loud: a request, entry or replacement
-   FAIL 10104/20000 mid I8 stale statement once per E, running calls and actions apart
-== caps of 1 [pooled] fault 0 seeds 10000..30000 (12.2s)
-   FAIL 19999/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 20000/20000 lit I2 (an adoption took its place)
-   FAIL 11735/20000 lit I8 never visible after RECONNECT
-   FAIL   50/20000 lit I8 never visible after server_lifetime
-   FAIL 9090/20000 lit I8 search_path once per E
-   FAIL 12753/20000 lit I8 stale statement once per E
-   FAIL 19919/20000 lit I9 loud half
-   FAIL 4424/20000 lit I9 loud: a request, entry or replacement
-   FAIL 6320/20000 mid I8 stale statement once per E, running calls and actions apart
-== W five times E [pooled] fault 0 seeds 10000..30000 (14.2s)
-   FAIL 19996/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 19998/20000 lit I2 (an adoption took its place)
-   FAIL 11965/20000 lit I8 never visible after RECONNECT
-   FAIL   75/20000 lit I8 never visible after server_lifetime
-   FAIL  619/20000 lit I8 search_path once per E
-   FAIL 8818/20000 lit I8 stale statement once per E
-   FAIL 19920/20000 lit I9 loud half
-   FAIL 4833/20000 lit I9 loud: a request, entry or replacement
+   FAIL 4421/20000 lit I9 loud: a request, entry or replacement
    FAIL    1/20000 lit I9 silent past W of the first confirmation
-   FAIL  891/20000 mid I8 stale statement once per E, running calls and actions apart
-== budget 8 [pooled] fault 0 seeds 10000..30000 (13.6s)
-   FAIL 19999/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 19998/20000 lit I2 (an adoption took its place)
-   FAIL 11802/20000 lit I8 never visible after RECONNECT
-   FAIL   51/20000 lit I8 never visible after server_lifetime
-   FAIL 5540/20000 lit I8 search_path once per E
-   FAIL 10283/20000 lit I8 stale statement once per E
-   FAIL 19920/20000 lit I9 loud half
-   FAIL 4828/20000 lit I9 loud: a request, entry or replacement
-   FAIL    3/20000 lit I9 silent past W of the first confirmation
-   FAIL 3022/20000 mid I8 stale statement once per E, running calls and actions apart
-== caches off [pooled] fault 0 seeds 10000..30000 (9.6s)
-   FAIL 19998/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 5821/20000 lit I8 never visible after RECONNECT
-   FAIL 19876/20000 lit I9 loud half
-== no client input [pooled] fault 0 seeds 10000..30000 (11.7s)
+   FAIL 6370/20000 mid I8 stale statement once per E, running calls and actions apart
+== W five times E [pooled] fault 0 seeds 10000..30000 (11.0s)
    FAIL 20000/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 19996/20000 lit I2 (an adoption took its place)
-   FAIL 12882/20000 lit I8 never visible after RECONNECT
-   FAIL   59/20000 lit I8 never visible after server_lifetime
-   FAIL 5855/20000 lit I8 search_path once per E
-   FAIL 10330/20000 lit I8 stale statement once per E
-   FAIL 1659/20000 lit I9 loud: a request, entry or replacement
+   FAIL 19999/20000 lit I2 (an adoption took its place)
+   FAIL 11981/20000 lit I8 never visible after RECONNECT
+   FAIL   57/20000 lit I8 never visible after server_lifetime
+   FAIL  547/20000 lit I8 search_path once per E
+   FAIL 8669/20000 lit I8 stale statement once per E
+   FAIL 19916/20000 lit I9 loud half
+   FAIL 4812/20000 lit I9 loud: a request, entry or replacement
+   FAIL  883/20000 mid I8 stale statement once per E, running calls and actions apart
+== budget 8 [pooled] fault 0 seeds 10000..30000 (10.8s)
+   FAIL 20000/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 19998/20000 lit I2 (an adoption took its place)
+   FAIL 11937/20000 lit I8 never visible after RECONNECT
+   FAIL   54/20000 lit I8 never visible after server_lifetime
+   FAIL 5299/20000 lit I8 search_path once per E
+   FAIL 10100/20000 lit I8 stale statement once per E
+   FAIL 19932/20000 lit I9 loud half
+   FAIL 4668/20000 lit I9 loud: a request, entry or replacement
    FAIL    6/20000 lit I9 silent past W of the first confirmation
-   FAIL 3132/20000 mid I8 stale statement once per E, running calls and actions apart
-== several, one server [pooled] fault 0 seeds 10000..30000 (12.9s)
+   FAIL 2972/20000 mid I8 stale statement once per E, running calls and actions apart
+== caches off [pooled] fault 0 seeds 10000..30000 (8.0s)
+   FAIL 19996/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 5882/20000 lit I8 never visible after RECONNECT
+   FAIL 19887/20000 lit I9 loud half
+== no client input [pooled] fault 0 seeds 10000..30000 (10.0s)
+   FAIL 20000/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 19995/20000 lit I2 (an adoption took its place)
+   FAIL 12772/20000 lit I8 never visible after RECONNECT
+   FAIL   67/20000 lit I8 never visible after server_lifetime
+   FAIL 5968/20000 lit I8 search_path once per E
+   FAIL 10441/20000 lit I8 stale statement once per E
+   FAIL 1738/20000 lit I9 loud: a request, entry or replacement
+   FAIL    6/20000 lit I9 silent past W of the first confirmation
+   FAIL 3092/20000 mid I8 stale statement once per E, running calls and actions apart
+== several, one server [pooled] fault 0 seeds 10000..30000 (10.9s)
    FAIL 19999/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 18070/20000 lit I2 (an adoption took its place)
-   FAIL 12174/20000 lit I8 never visible after RECONNECT
-   FAIL   68/20000 lit I8 never visible after server_lifetime
-   FAIL 2288/20000 lit I8 search_path once per E
-   FAIL 11649/20000 lit I8 stale statement once per E
-   FAIL 19937/20000 lit I9 loud half
-   FAIL 4898/20000 lit I9 loud: a request, entry or replacement
+   FAIL 18325/20000 lit I2 (an adoption took its place)
+   FAIL 12189/20000 lit I8 never visible after RECONNECT
+   FAIL   64/20000 lit I8 never visible after server_lifetime
+   FAIL 2023/20000 lit I8 search_path once per E
+   FAIL 11534/20000 lit I8 stale statement once per E
+   FAIL 19915/20000 lit I9 loud half
+   FAIL 4891/20000 lit I9 loud: a request, entry or replacement
+   FAIL   16/20000 lit I9 silent past W of the first confirmation
+   FAIL 3039/20000 mid I8 stale statement once per E, running calls and actions apart
+== two servers [pooled] fault 0 seeds 10000..30000 (10.9s)
+   FAIL 19998/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 18330/20000 lit I2 (an adoption took its place)
+   FAIL 12261/20000 lit I8 never visible after RECONNECT
+   FAIL   62/20000 lit I8 never visible after server_lifetime
+   FAIL 1983/20000 lit I8 search_path once per E
+   FAIL 11328/20000 lit I8 stale statement once per E
+   FAIL 19931/20000 lit I9 loud half
+   FAIL 4958/20000 lit I9 loud: a request, entry or replacement
    FAIL    8/20000 lit I9 silent past W of the first confirmation
-   FAIL 3066/20000 mid I8 stale statement once per E, running calls and actions apart
-== two servers [pooled] fault 0 seeds 10000..30000 (12.7s)
-   FAIL 19999/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 18052/20000 lit I2 (an adoption took its place)
-   FAIL 12196/20000 lit I8 never visible after RECONNECT
-   FAIL   61/20000 lit I8 never visible after server_lifetime
-   FAIL 2111/20000 lit I8 search_path once per E
-   FAIL 11438/20000 lit I8 stale statement once per E
-   FAIL 19930/20000 lit I9 loud half
-   FAIL 4901/20000 lit I9 loud: a request, entry or replacement
-   FAIL    9/20000 lit I9 silent past W of the first confirmation
-   FAIL 2956/20000 mid I8 stale statement once per E, running calls and actions apart
-== three servers [pooled] fault 0 seeds 10000..30000 (12.9s)
-   FAIL 19997/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 18109/20000 lit I2 (an adoption took its place)
-   FAIL 12191/20000 lit I8 never visible after RECONNECT
-   FAIL   75/20000 lit I8 never visible after server_lifetime
-   FAIL 2187/20000 lit I8 search_path once per E
-   FAIL 11405/20000 lit I8 stale statement once per E
-   FAIL 19925/20000 lit I9 loud half
-   FAIL 4998/20000 lit I9 loud: a request, entry or replacement
-   FAIL   12/20000 lit I9 silent past W of the first confirmation
-   FAIL 2948/20000 mid I8 stale statement once per E, running calls and actions apart
-== heavy [pooled] fault 0 seeds 10000..30000 (11.1s)
-   FAIL 19996/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 20000/20000 lit I2 (an adoption took its place)
-   FAIL 17941/20000 lit I8 never visible after RECONNECT
-   FAIL    1/20000 lit I8 never visible after server_lifetime
-   FAIL 5319/20000 lit I8 search_path once per E
-   FAIL 10767/20000 lit I8 stale statement once per E
-   FAIL 19997/20000 lit I9 loud half
-   FAIL 5490/20000 lit I9 loud: a request, entry or replacement
-   FAIL 4547/20000 mid I8 stale statement once per E, running calls and actions apart
-== landing always [pooled] fault 0 seeds 10000..30000 (12.7s)
-   FAIL 19999/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 20000/20000 lit I2 (an adoption took its place)
-   FAIL 11909/20000 lit I8 never visible after RECONNECT
-   FAIL   49/20000 lit I8 never visible after server_lifetime
-   FAIL 5575/20000 lit I8 search_path once per E
-   FAIL 10267/20000 lit I8 stale statement once per E
+   FAIL 2972/20000 mid I8 stale statement once per E, running calls and actions apart
+== three servers [pooled] fault 0 seeds 10000..30000 (11.0s)
+   FAIL 20000/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 18338/20000 lit I2 (an adoption took its place)
+   FAIL 12211/20000 lit I8 never visible after RECONNECT
+   FAIL   74/20000 lit I8 never visible after server_lifetime
+   FAIL 2016/20000 lit I8 search_path once per E
+   FAIL 11265/20000 lit I8 stale statement once per E
    FAIL 19921/20000 lit I9 loud half
-   FAIL 4793/20000 lit I9 loud: a request, entry or replacement
-   FAIL    5/20000 lit I9 silent past W of the first confirmation
-   FAIL 2931/20000 mid I8 stale statement once per E, running calls and actions apart
-== two servers, landing always, heavy [pooled] fault 0 seeds 10000..30000 (10.7s)
-   FAIL 19991/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 19883/20000 lit I2 (an adoption took its place)
-   FAIL 18280/20000 lit I8 never visible after RECONNECT
-   FAIL    1/20000 lit I8 never visible after server_lifetime
-   FAIL 1947/20000 lit I8 search_path once per E
-   FAIL 13278/20000 lit I8 stale statement once per E
-   FAIL 19997/20000 lit I9 loud half
-   FAIL 6271/20000 lit I9 loud: a request, entry or replacement
-   FAIL 4045/20000 mid I8 stale statement once per E, running calls and actions apart
-== savepoints [pooled] fault 0 seeds 10000..30000 (18.9s)
-   FAIL 20000/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 20000/20000 lit I2 (an adoption took its place)
-   FAIL 16235/20000 lit I8 never visible after RECONNECT
-   FAIL  164/20000 lit I8 never visible after server_lifetime
-   FAIL 12713/20000 lit I8 search_path once per E
-   FAIL 18132/20000 lit I8 stale statement once per E
-   FAIL 19974/20000 lit I9 loud half
-   FAIL 3195/20000 lit I9 loud: a request, entry or replacement
-   FAIL    6/20000 lit I9 silent past W of the first confirmation
-   FAIL 10608/20000 mid I8 stale statement once per E, running calls and actions apart
-== RR and SERIALIZABLE only [pooled] fault 0 seeds 10000..30000 (14.3s)
-   FAIL 19999/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 19998/20000 lit I2 (an adoption took its place)
-   FAIL 11802/20000 lit I8 never visible after RECONNECT
-   FAIL   51/20000 lit I8 never visible after server_lifetime
-   FAIL 5540/20000 lit I8 search_path once per E
-   FAIL 10283/20000 lit I8 stale statement once per E
-   FAIL 19920/20000 lit I9 loud half
-   FAIL 4828/20000 lit I9 loud: a request, entry or replacement
-   FAIL    3/20000 lit I9 silent past W of the first confirmation
-   FAIL 3022/20000 mid I8 stale statement once per E, running calls and actions apart
-== quiet [pooled] fault 0 seeds 10000..30000 (14.9s)
-   FAIL 19999/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 8871/20000 lit I2 (an adoption took its place)
-   FAIL 1035/20000 lit I8 never visible after RECONNECT
-   FAIL   40/20000 lit I8 never visible after server_lifetime
-   FAIL 1695/20000 lit I8 search_path once per E
-   FAIL 4664/20000 lit I8 stale statement once per E
-   FAIL 19894/20000 lit I9 loud half
-   FAIL 1344/20000 lit I9 loud: a request, entry or replacement
-   FAIL  114/20000 lit I9 silent past W of the first confirmation
-   FAIL  604/20000 mid I8 stale statement once per E, running calls and actions apart
-== hand relabels [pooled] fault 0 seeds 10000..30000 (18.1s)
-   FAIL 20000/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 19441/20000 lit I2 (an adoption took its place)
-   FAIL 4983/20000 lit I8 never visible after RECONNECT
-   FAIL   71/20000 lit I8 never visible after server_lifetime
-   FAIL 3688/20000 lit I8 search_path once per E
-   FAIL 8155/20000 lit I8 stale statement once per E
-   FAIL 19999/20000 lit I9 loud half
-   FAIL 3822/20000 lit I9 loud: a request, entry or replacement
-   FAIL   14/20000 lit I9 silent past W of the first confirmation
-   FAIL 1457/20000 mid I8 stale statement once per E, running calls and actions apart
-== long transactions [pooled] fault 0 seeds 10000..30000 (19.6s)
-   FAIL 20000/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 11791/20000 lit I2 (an adoption took its place)
-   FAIL 4306/20000 lit I8 never visible after RECONNECT
-   FAIL  236/20000 lit I8 never visible after server_lifetime
-   FAIL 2296/20000 lit I8 search_path once per E
-   FAIL 2927/20000 lit I8 stale statement once per E
-   FAIL 19772/20000 lit I9 loud half
-   FAIL 1044/20000 lit I9 loud: a request, entry or replacement
-   FAIL  103/20000 lit I9 silent past W of the first confirmation
-   FAIL  317/20000 mid I8 stale statement once per E, running calls and actions apart
-== slow [pooled] fault 0 seeds 10000..30000 (7.7s)
-   FAIL 19990/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL   47/20000 lit I2 (an adoption took its place)
-   FAIL   30/20000 lit I8 never visible after RECONNECT
-   FAIL    3/20000 lit I8 never visible after server_lifetime
-   FAIL   50/20000 lit I8 search_path once per E
-   FAIL  608/20000 lit I8 stale statement once per E
-   FAIL    2/20000 mid I8 stale statement once per E, running calls and actions apart
-== transactions without retry [pooled] fault 0 seeds 10000..30000 (15.1s)
-   FAIL 20000/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 19998/20000 lit I2 (an adoption took its place)
-   FAIL 17817/20000 lit I8 never visible after RECONNECT
-   FAIL  227/20000 lit I8 never visible after server_lifetime
-   FAIL 19904/20000 lit I8 search_path once per E
-   FAIL 20000/20000 lit I8 stale statement once per E
-   FAIL 19910/20000 lit I9 loud half
-   FAIL 1678/20000 lit I9 loud: a request, entry or replacement
-   FAIL   14/20000 lit I9 silent past W of the first confirmation
-   FAIL 18268/20000 mid I8 stale statement once per E, running calls and actions apart
-== max 1 [pooled] fault 0 seeds 10000..30000 (11.8s)
-   FAIL 19999/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 19992/20000 lit I2 (an adoption took its place)
-   FAIL 9564/20000 lit I8 never visible after RECONNECT
-   FAIL   57/20000 lit I8 never visible after server_lifetime
-   FAIL 7803/20000 lit I8 search_path once per E
-   FAIL 2259/20000 lit I8 stale statement once per E
-   FAIL 19873/20000 lit I9 loud half
-   FAIL 4008/20000 lit I9 loud: a request, entry or replacement
+   FAIL 5001/20000 lit I9 loud: a request, entry or replacement
    FAIL    7/20000 lit I9 silent past W of the first confirmation
-   FAIL 1671/20000 mid I8 stale statement once per E, running calls and actions apart
-== max 1, budget 1 [pooled] fault 0 seeds 10000..30000 (12.0s)
-   FAIL 19999/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 19992/20000 lit I2 (an adoption took its place)
-   FAIL 9564/20000 lit I8 never visible after RECONNECT
-   FAIL   57/20000 lit I8 never visible after server_lifetime
-   FAIL 7803/20000 lit I8 search_path once per E
-   FAIL 2259/20000 lit I8 stale statement once per E
-   FAIL 19873/20000 lit I9 loud half
-   FAIL 4008/20000 lit I9 loud: a request, entry or replacement
-   FAIL    7/20000 lit I9 silent past W of the first confirmation
-   FAIL 1671/20000 mid I8 stale statement once per E, running calls and actions apart
-== max 1, quick [pooled] fault 0 seeds 10000..30000 (10.4s)
+   FAIL 2943/20000 mid I8 stale statement once per E, running calls and actions apart
+== heavy [pooled] fault 0 seeds 10000..30000 (9.4s)
    FAIL 19997/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 11961/20000 lit I2 (an adoption took its place)
-   FAIL 2880/20000 lit I8 never visible after RECONNECT
-   FAIL   37/20000 lit I8 never visible after server_lifetime
-   FAIL 3582/20000 lit I8 search_path once per E
-   FAIL  539/20000 lit I8 stale statement once per E
-   FAIL 19769/20000 lit I9 loud half
-   FAIL 2296/20000 lit I9 loud: a request, entry or replacement
-   FAIL   47/20000 lit I9 silent past W of the first confirmation
-   FAIL  463/20000 mid I8 stale statement once per E, running calls and actions apart
-== max 2, budget 2, heavy [pooled] fault 0 seeds 10000..30000 (12.1s)
-   FAIL 19999/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL 20000/20000 lit I2 (an adoption took its place)
-   FAIL 17157/20000 lit I8 never visible after RECONNECT
-   FAIL    6/20000 lit I8 never visible after server_lifetime
-   FAIL 7087/20000 lit I8 search_path once per E
-   FAIL 7943/20000 lit I8 stale statement once per E
-   FAIL 19993/20000 lit I9 loud half
-   FAIL 6557/20000 lit I9 loud: a request, entry or replacement
-   FAIL 4217/20000 mid I8 stale statement once per E, running calls and actions apart
-== hand relabels without the reset [pooled] fault 0 seeds 10000..30000 (17.2s)
-   FAIL 19999/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 19548/20000 lit I2 (an adoption took its place)
-   FAIL 5155/20000 lit I8 never visible after RECONNECT
-   FAIL   70/20000 lit I8 never visible after server_lifetime
-   FAIL 3585/20000 lit I8 search_path once per E
-   FAIL 9302/20000 lit I8 stale statement once per E
-   FAIL 19999/20000 lit I9 loud half
-   FAIL 3823/20000 lit I9 loud: a request, entry or replacement
-   FAIL   25/20000 lit I9 silent past W of the first confirmation
-   FAIL 1754/20000 mid I8 stale statement once per E, running calls and actions apart
-== hand relabels without the reset, casts [pooled] fault 0 seeds 10000..30000 (17.5s)
-   FAIL 19995/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 15050/20000 lit I8 stale statement once per E
-   FAIL 19964/20000 lit I9 loud half
-   FAIL   21/20000 lit I9 silent past W of the first confirmation
-   FAIL  869/20000 mid I8 stale statement once per E, running calls and actions apart
-== old labels copied [pooled] fault 0 seeds 10000..30000 (15.0s)
-   FAIL 19999/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 19996/20000 lit I2 (an adoption took its place)
-   FAIL 11857/20000 lit I8 never visible after RECONNECT
-   FAIL   61/20000 lit I8 never visible after server_lifetime
-   FAIL 5602/20000 lit I8 search_path once per E
-   FAIL 10211/20000 lit I8 stale statement once per E
-   FAIL 19932/20000 lit I9 loud half
-   FAIL 4678/20000 lit I9 loud: a request, entry or replacement
-   FAIL    4/20000 lit I9 silent past W of the first confirmation
-   FAIL 2926/20000 mid I8 stale statement once per E, running calls and actions apart
-== record and column statements [pooled] fault 0 seeds 10000..30000 (11.7s)
-   FAIL 19996/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 20000/20000 lit I2 (an adoption took its place)
-   FAIL 11254/20000 lit I8 never visible after RECONNECT
-   FAIL   48/20000 lit I8 never visible after server_lifetime
-   FAIL 7542/20000 lit I8 search_path once per E
-   FAIL 10611/20000 lit I8 stale statement once per E
-   FAIL 19932/20000 lit I9 loud half
-   FAIL 5760/20000 lit I9 loud: a request, entry or replacement
-   FAIL    7/20000 lit I9 silent past W of the first confirmation
-   FAIL 3168/20000 mid I8 stale statement once per E, running calls and actions apart
-== English, a type named as a word [pooled] fault 0 seeds 10000..30000 (12.6s)
+   FAIL 17868/20000 lit I8 never visible after RECONNECT
+   FAIL    3/20000 lit I8 never visible after server_lifetime
+   FAIL 5263/20000 lit I8 search_path once per E
+   FAIL 10629/20000 lit I8 stale statement once per E
+   FAIL 19995/20000 lit I9 loud half
+   FAIL 5555/20000 lit I9 loud: a request, entry or replacement
+   FAIL 4504/20000 mid I8 stale statement once per E, running calls and actions apart
+== landing always [pooled] fault 0 seeds 10000..30000 (10.8s)
    FAIL 19999/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL 19998/20000 lit I2 (an adoption took its place)
-   FAIL 11817/20000 lit I8 never visible after RECONNECT
+   FAIL 11930/20000 lit I8 never visible after RECONNECT
+   FAIL   58/20000 lit I8 never visible after server_lifetime
+   FAIL 5365/20000 lit I8 search_path once per E
+   FAIL 10234/20000 lit I8 stale statement once per E
+   FAIL 19923/20000 lit I9 loud half
+   FAIL 4627/20000 lit I9 loud: a request, entry or replacement
+   FAIL    5/20000 lit I9 silent past W of the first confirmation
+   FAIL 2996/20000 mid I8 stale statement once per E, running calls and actions apart
+== two servers, landing always, heavy [pooled] fault 0 seeds 10000..30000 (9.2s)
+   FAIL 19997/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 19902/20000 lit I2 (an adoption took its place)
+   FAIL 18338/20000 lit I8 never visible after RECONNECT
+   FAIL    1/20000 lit I8 never visible after server_lifetime
+   FAIL 1873/20000 lit I8 search_path once per E
+   FAIL 13133/20000 lit I8 stale statement once per E
+   FAIL 19998/20000 lit I9 loud half
+   FAIL 6269/20000 lit I9 loud: a request, entry or replacement
+   FAIL 3903/20000 mid I8 stale statement once per E, running calls and actions apart
+== savepoints [pooled] fault 0 seeds 10000..30000 (16.5s)
+   FAIL 20000/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 20000/20000 lit I2 (an adoption took its place)
+   FAIL 16126/20000 lit I8 never visible after RECONNECT
+   FAIL  200/20000 lit I8 never visible after server_lifetime
+   FAIL 12350/20000 lit I8 search_path once per E
+   FAIL 17911/20000 lit I8 stale statement once per E
+   FAIL 19971/20000 lit I9 loud half
+   FAIL 3386/20000 lit I9 loud: a request, entry or replacement
+   FAIL    4/20000 lit I9 silent past W of the first confirmation
+   FAIL 10465/20000 mid I8 stale statement once per E, running calls and actions apart
+== RR and SERIALIZABLE only [pooled] fault 0 seeds 10000..30000 (10.9s)
+   FAIL 20000/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 19998/20000 lit I2 (an adoption took its place)
+   FAIL 11937/20000 lit I8 never visible after RECONNECT
    FAIL   54/20000 lit I8 never visible after server_lifetime
-   FAIL 5572/20000 lit I8 search_path once per E
-   FAIL 10225/20000 lit I8 stale statement once per E
-   FAIL 19917/20000 lit I9 loud half
-   FAIL 4854/20000 lit I9 loud: a request, entry or replacement
-   FAIL    3/20000 lit I9 silent past W of the first confirmation
-   FAIL 3032/20000 mid I8 stale statement once per E, running calls and actions apart
-== a type named as a word [pooled] fault 0 seeds 10000..30000 (12.8s)
-   FAIL 19999/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 19996/20000 lit I2 (an adoption took its place)
-   FAIL 11875/20000 lit I8 never visible after RECONNECT
-   FAIL   77/20000 lit I8 never visible after server_lifetime
-   FAIL 5522/20000 lit I8 search_path once per E
-   FAIL 9470/20000 lit I8 stale statement once per E
-   FAIL 19987/20000 lit I9 loud half
-   FAIL 4783/20000 lit I9 loud: a request, entry or replacement
-   FAIL    3/20000 lit I9 silent past W of the first confirmation
-   FAIL 2710/20000 mid I8 stale statement once per E, running calls and actions apart
-== messages the test can't read [pooled] fault 0 seeds 10000..30000 (12.4s)
-   FAIL 19999/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 19999/20000 lit I2 (an adoption took its place)
-   FAIL 11918/20000 lit I8 never visible after RECONNECT
+   FAIL 5299/20000 lit I8 search_path once per E
+   FAIL 10100/20000 lit I8 stale statement once per E
+   FAIL 19932/20000 lit I9 loud half
+   FAIL 4668/20000 lit I9 loud: a request, entry or replacement
+   FAIL    6/20000 lit I9 silent past W of the first confirmation
+   FAIL 2972/20000 mid I8 stale statement once per E, running calls and actions apart
+== quiet [pooled] fault 0 seeds 10000..30000 (10.3s)
+   FAIL 20000/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 9742/20000 lit I2 (an adoption took its place)
+   FAIL 1009/20000 lit I8 never visible after RECONNECT
    FAIL   43/20000 lit I8 never visible after server_lifetime
-   FAIL 5281/20000 lit I8 search_path once per E
-   FAIL 10241/20000 lit I8 stale statement once per E
-   FAIL 19924/20000 lit I9 loud half
-   FAIL 4756/20000 lit I9 loud: a request, entry or replacement
-   FAIL    4/20000 lit I9 silent past W of the first confirmation
-   FAIL 2865/20000 mid I8 stale statement once per E, running calls and actions apart
-== a cast written with its schema, its kept type moved where the search_path finds it [pooled] fault 0 seeds 10000..30000 (12.8s)
-   FAIL 19999/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 1419/20000 lit I8 search_path once per E
+   FAIL 4534/20000 lit I8 stale statement once per E
+   FAIL 19881/20000 lit I9 loud half
+   FAIL 1335/20000 lit I9 loud: a request, entry or replacement
+   FAIL  118/20000 lit I9 silent past W of the first confirmation
+   FAIL  564/20000 mid I8 stale statement once per E, running calls and actions apart
+== hand relabels [pooled] fault 0 seeds 10000..30000 (10.7s)
+   FAIL 20000/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 19550/20000 lit I2 (an adoption took its place)
+   FAIL 5050/20000 lit I8 never visible after RECONNECT
+   FAIL   57/20000 lit I8 never visible after server_lifetime
+   FAIL 3530/20000 lit I8 search_path once per E
+   FAIL 7991/20000 lit I8 stale statement once per E
+   FAIL 19999/20000 lit I9 loud half
+   FAIL 3900/20000 lit I9 loud: a request, entry or replacement
+   FAIL   16/20000 lit I9 silent past W of the first confirmation
+   FAIL 1517/20000 mid I8 stale statement once per E, running calls and actions apart
+== long transactions [pooled] fault 0 seeds 10000..30000 (16.3s)
+   FAIL 20000/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 13124/20000 lit I2 (an adoption took its place)
+   FAIL 4348/20000 lit I8 never visible after RECONNECT
+   FAIL  279/20000 lit I8 never visible after server_lifetime
+   FAIL 2061/20000 lit I8 search_path once per E
+   FAIL 2876/20000 lit I8 stale statement once per E
+   FAIL 19820/20000 lit I9 loud half
+   FAIL 1012/20000 lit I9 loud: a request, entry or replacement
+   FAIL  104/20000 lit I9 silent past W of the first confirmation
+   FAIL  330/20000 mid I8 stale statement once per E, running calls and actions apart
+== slow [pooled] fault 0 seeds 10000..30000 (6.7s)
+   FAIL 19990/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL   70/20000 lit I2 (an adoption took its place)
+   FAIL   23/20000 lit I8 never visible after RECONNECT
+   FAIL    3/20000 lit I8 never visible after server_lifetime
+   FAIL   43/20000 lit I8 search_path once per E
+   FAIL  593/20000 lit I8 stale statement once per E
+   FAIL    2/20000 mid I8 stale statement once per E, running calls and actions apart
+== transactions without retry [pooled] fault 0 seeds 10000..30000 (13.1s)
+   FAIL 20000/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 20000/20000 lit I2 (an adoption took its place)
+   FAIL 17814/20000 lit I8 never visible after RECONNECT
+   FAIL  239/20000 lit I8 never visible after server_lifetime
+   FAIL 19881/20000 lit I8 search_path once per E
+   FAIL 20000/20000 lit I8 stale statement once per E
+   FAIL 19884/20000 lit I9 loud half
+   FAIL 1754/20000 lit I9 loud: a request, entry or replacement
+   FAIL   11/20000 lit I9 silent past W of the first confirmation
+   FAIL 18116/20000 mid I8 stale statement once per E, running calls and actions apart
+== max 1 [pooled] fault 0 seeds 10000..30000 (10.2s)
+   FAIL 20000/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL 19998/20000 lit I2 (an adoption took its place)
-   FAIL 11817/20000 lit I8 never visible after RECONNECT
-   FAIL   54/20000 lit I8 never visible after server_lifetime
-   FAIL 5572/20000 lit I8 search_path once per E
-   FAIL 10225/20000 lit I8 stale statement once per E
-   FAIL 19917/20000 lit I9 loud half
-   FAIL 4854/20000 lit I9 loud: a request, entry or replacement
-   FAIL    3/20000 lit I9 silent past W of the first confirmation
-   FAIL 3032/20000 mid I8 stale statement once per E, running calls and actions apart
-== two processes [pooled] fault 0 seeds 10000..30000 (14.6s)
-   FAIL 19998/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 19983/20000 lit I2 (an adoption took its place)
-   FAIL 11774/20000 lit I8 never visible after RECONNECT
-   FAIL   54/20000 lit I8 never visible after server_lifetime
-   FAIL 3430/20000 lit I8 search_path once per E
-   FAIL 6454/20000 lit I8 stale statement once per E
-   FAIL 19924/20000 lit I9 loud half
-   FAIL 4331/20000 lit I9 loud: a request, entry or replacement
-   FAIL   79/20000 lit I9 silent past W of the first confirmation
-   FAIL 1524/20000 mid I8 stale statement once per E, running calls and actions apart
-   FAIL    3/20000 mid I9 silent past W of the first request, another process's copy
-== three processes, heavy [pooled] fault 0 seeds 10000..30000 (16.4s)
-   FAIL 19995/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 9545/20000 lit I8 never visible after RECONNECT
+   FAIL   46/20000 lit I8 never visible after server_lifetime
+   FAIL 7433/20000 lit I8 search_path once per E
+   FAIL 2243/20000 lit I8 stale statement once per E
+   FAIL 19870/20000 lit I9 loud half
+   FAIL 3965/20000 lit I9 loud: a request, entry or replacement
+   FAIL    7/20000 lit I9 silent past W of the first confirmation
+   FAIL 1662/20000 mid I8 stale statement once per E, running calls and actions apart
+== max 1, budget 1 [pooled] fault 0 seeds 10000..30000 (10.2s)
+   FAIL 20000/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 19998/20000 lit I2 (an adoption took its place)
+   FAIL 9545/20000 lit I8 never visible after RECONNECT
+   FAIL   46/20000 lit I8 never visible after server_lifetime
+   FAIL 7433/20000 lit I8 search_path once per E
+   FAIL 2243/20000 lit I8 stale statement once per E
+   FAIL 19870/20000 lit I9 loud half
+   FAIL 3965/20000 lit I9 loud: a request, entry or replacement
+   FAIL    7/20000 lit I9 silent past W of the first confirmation
+   FAIL 1662/20000 mid I8 stale statement once per E, running calls and actions apart
+== max 1, quick [pooled] fault 0 seeds 10000..30000 (8.8s)
+   FAIL 19996/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 12838/20000 lit I2 (an adoption took its place)
+   FAIL 2957/20000 lit I8 never visible after RECONNECT
+   FAIL   39/20000 lit I8 never visible after server_lifetime
+   FAIL 3296/20000 lit I8 search_path once per E
+   FAIL  560/20000 lit I8 stale statement once per E
+   FAIL 19765/20000 lit I9 loud half
+   FAIL 2432/20000 lit I9 loud: a request, entry or replacement
+   FAIL   61/20000 lit I9 silent past W of the first confirmation
+   FAIL  487/20000 mid I8 stale statement once per E, running calls and actions apart
+== max 2, budget 2, heavy [pooled] fault 0 seeds 10000..30000 (9.3s)
+   FAIL 20000/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 20000/20000 lit I2 (an adoption took its place)
+   FAIL 17201/20000 lit I8 never visible after RECONNECT
+   FAIL    6/20000 lit I8 never visible after server_lifetime
+   FAIL 7094/20000 lit I8 search_path once per E
+   FAIL 7676/20000 lit I8 stale statement once per E
+   FAIL 19993/20000 lit I9 loud half
+   FAIL 6534/20000 lit I9 loud: a request, entry or replacement
+   FAIL 4081/20000 mid I8 stale statement once per E, running calls and actions apart
+== hand relabels without the reset [pooled] fault 0 seeds 10000..30000 (10.8s)
+   FAIL 19999/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 19636/20000 lit I2 (an adoption took its place)
+   FAIL 5042/20000 lit I8 never visible after RECONNECT
+   FAIL   60/20000 lit I8 never visible after server_lifetime
+   FAIL 3448/20000 lit I8 search_path once per E
+   FAIL 9133/20000 lit I8 stale statement once per E
+   FAIL 19997/20000 lit I9 loud half
+   FAIL 3932/20000 lit I9 loud: a request, entry or replacement
+   FAIL   28/20000 lit I9 silent past W of the first confirmation
+   FAIL 1757/20000 mid I8 stale statement once per E, running calls and actions apart
+== hand relabels without the reset, casts [pooled] fault 0 seeds 10000..30000 (8.4s)
+   FAIL 19999/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 11743/20000 lit I8 stale statement once per E
+   FAIL 19807/20000 lit I9 loud half
+   FAIL    7/20000 lit I9 silent past W of the first confirmation
+   FAIL  767/20000 mid I8 stale statement once per E, running calls and actions apart
+== old labels copied [pooled] fault 0 seeds 10000..30000 (11.5s)
+   FAIL 20000/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL 19999/20000 lit I2 (an adoption took its place)
-   FAIL 17238/20000 lit I8 never visible after RECONNECT
-   FAIL    7/20000 lit I8 never visible after server_lifetime
-   FAIL 1801/20000 lit I8 search_path once per E
-   FAIL 5049/20000 lit I8 stale statement once per E
-   FAIL 19996/20000 lit I9 loud half
-   FAIL 5115/20000 lit I9 loud: a request, entry or replacement
-   FAIL   27/20000 lit I9 silent past W of the first confirmation
-   FAIL 1625/20000 mid I8 stale statement once per E, running calls and actions apart
+   FAIL 11807/20000 lit I8 never visible after RECONNECT
+   FAIL   56/20000 lit I8 never visible after server_lifetime
+   FAIL 5272/20000 lit I8 search_path once per E
+   FAIL 10167/20000 lit I8 stale statement once per E
+   FAIL 19934/20000 lit I9 loud half
+   FAIL 4778/20000 lit I9 loud: a request, entry or replacement
+   FAIL    2/20000 lit I9 silent past W of the first confirmation
+   FAIL 2984/20000 mid I8 stale statement once per E, running calls and actions apart
+== record and column statements [pooled] fault 0 seeds 10000..30000 (10.7s)
+   FAIL 19998/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 20000/20000 lit I2 (an adoption took its place)
+   FAIL 11320/20000 lit I8 never visible after RECONNECT
+   FAIL   43/20000 lit I8 never visible after server_lifetime
+   FAIL 7352/20000 lit I8 search_path once per E
+   FAIL 10288/20000 lit I8 stale statement once per E
+   FAIL 19930/20000 lit I9 loud half
+   FAIL 5649/20000 lit I9 loud: a request, entry or replacement
+   FAIL    7/20000 lit I9 silent past W of the first confirmation
+   FAIL 3068/20000 mid I8 stale statement once per E, running calls and actions apart
+== every call a cast beside a second type [pooled] fault 0 seeds 10000..30000 (9.6s)
+   FAIL 20000/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 8984/20000 lit I2 (an adoption took its place)
+   FAIL 19555/20000 lit I8 stale statement once per E
+   FAIL   50/20000 lit I9 silent past W of the first confirmation
+   FAIL 7959/20000 mid I8 stale statement once per E, running calls and actions apart
+== two processes [pooled] fault 0 seeds 10000..30000 (12.7s)
+   FAIL 20000/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 19987/20000 lit I2 (an adoption took its place)
+   FAIL 11746/20000 lit I8 never visible after RECONNECT
+   FAIL   65/20000 lit I8 never visible after server_lifetime
+   FAIL 3176/20000 lit I8 search_path once per E
+   FAIL 6388/20000 lit I8 stale statement once per E
+   FAIL 19909/20000 lit I9 loud half
+   FAIL 4395/20000 lit I9 loud: a request, entry or replacement
+   FAIL   81/20000 lit I9 silent past W of the first confirmation
+   FAIL 1435/20000 mid I8 stale statement once per E, running calls and actions apart
+   FAIL    4/20000 mid I9 silent past W of the first request, another process's copy
+== three processes, heavy [pooled] fault 0 seeds 10000..30000 (12.0s)
+   FAIL 19998/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 20000/20000 lit I2 (an adoption took its place)
+   FAIL 17353/20000 lit I8 never visible after RECONNECT
+   FAIL   11/20000 lit I8 never visible after server_lifetime
+   FAIL 1738/20000 lit I8 search_path once per E
+   FAIL 4885/20000 lit I8 stale statement once per E
+   FAIL 19993/20000 lit I9 loud half
+   FAIL 5078/20000 lit I9 loud: a request, entry or replacement
+   FAIL   38/20000 lit I9 silent past W of the first confirmation
+   FAIL 1578/20000 mid I8 stale statement once per E, running calls and actions apart
+   FAIL    2/20000 mid I9 silent past W of the first request, another process's copy

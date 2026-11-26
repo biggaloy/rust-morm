@@ -25,13 +25,11 @@ pub fn draw(s: &mut Sim) -> Spec {
     let val = s.rng.n(8) as u8;
     let u = s.rng.f();
     let label = if !s.c.client {
-        if u < 0.78 { Label::Shared } else if u < 0.95 { Label::Newest } else { Label::NewName }
+        if u < 0.78 { Label::Shared } else { Label::Newest }
     } else if u < 0.70 {
         Label::Shared
-    } else if u < 0.85 {
-        Label::Newest
     } else if u < 0.90 {
-        Label::NewName
+        Label::Newest
     } else if u < 0.95 {
         Label::Bad
     } else if (s.c.retired_real || s.c.fault == 40) && s.rng.p(0.5) {
@@ -165,11 +163,7 @@ fn world(s: &mut Sim) {
         }
         2 => swap(s, TS::Dropped),
         3 => {
-            // 0 a bare new name, 1 one that needs quotes, 2 SET SCHEMA off the path, 3 SET SCHEMA to a schema the
-            // search_path finds, printing with none, only for a cast written with its schema
-            let h = if s.moved_ok { s.rng.n(4) } else { s.rng.n(3) } as u8;
-            let v = s.cur_ver();
-            s.how.insert(v, if s.c.onpath { 3 } else { h });
+            // how the kept type is renamed or moved changes only its message's text, which nothing reads now
             swap(s, TS::Kept)
         }
         4 => col(s),

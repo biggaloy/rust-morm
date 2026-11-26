@@ -182,7 +182,7 @@ fn bound_lit(s: &Sim) -> u64 {
 }
 fn loud_lit(s: &Sim, sp: &Spec, o: &Out, v: u32) -> bool {
     let since = s.db.types[v as usize].1;
-    let newlab = matches!(sp.label, Label::New(x) if x > v && x <= s.cur_ver()) || matches!(sp.label, Label::Newest | Label::NewName);
+    let newlab = matches!(sp.label, Label::New(x) if x > v && x <= s.cur_ver()) || matches!(sp.label, Label::Newest);
     matches!(o.cause, Cause::Kept(_)) && o.comp.is_some_and(|c| c.at <= since) && matches!(sp.stmt, F | TRIG) && newlab && o.sess_opened <= since
 }
 
@@ -228,8 +228,7 @@ pub fn check_pg(p: usize, cx: &Cx, sp: &Spec, o: &Out, at: At) {
         if vis {
             let cp = o.copy.unwrap_or(0);
             let ez = loud_lit(s, sp, o, v) || (app && (casts(sp.stmt) || castlike(sp.stmt)) && cx.cached_mode && o.copy_at <= since && s.seen_copy.insert(cp));
-            let cant = s.c.words && casts(sp.stmt) && cx.cached_mode && o.copy_at <= since && matches!(at, At::Tx { .. } | At::Sp { .. });
-            if !ez && !cant {
+            if !ez {
                 s.fail("new I9 loud half", d.clone());
             }
             if loud_lit(s, sp, o, v) {
@@ -286,14 +285,6 @@ pub fn check_pg(p: usize, cx: &Cx, sp: &Spec, o: &Out, at: At) {
                     }
                     return;
                 }
-            }
-            // what the test can't tell: a type named as a word of a message in another language
-            if s.c.words && matches!(err, Err::P22 { named: Named::Kept(_), .. }) && casts(sp.stmt) && matches!(at, At::Tx { .. } | At::Sp { .. }) {
-                s.inc("a type named as a word: as it is, inside a transaction");
-                if !o.cached || o.copy_at > s.db.types[o.ver as usize].2 {
-                    s.fail("R-1271 can't tell, not from a copy prepared before the swap", d);
-                }
-                return;
             }
             match at {
                 At::Out | At::Held => s.fail("I7 outside a transaction", d),
@@ -462,15 +453,10 @@ pub fn check_sc(p: usize, cx: &Cx, sp: &Spec, o: &Out, at: At, conn: u64) {
     let now = s.now;
     let d = format!("t={} stmt={} {:?} {:?}", now, sp.stmt, o.cause, at);
     let retry0 = matches!(at, At::Tx { retry: 0 } | At::Sp { retry: 0 });
-    // the four answers: the second row always takes a statement that casts parameters to two types, and a name
-    // printed with no schema never names a cast written with one
-    let always = sp.stmt == TWO || (s.ty.schema.is_some() && s.own_path);
-    if matches!(o.r, Err(Err::P22 { named: Named::Cur, .. })) && casts(sp.stmt) && o.comp.is_none() && s.c.unread {
-        s.inc("a bad label whose message the test can't read: SchemaChanged");
-    } else if matches!(o.r, Err(Err::P22 { named: Named::Cur, .. })) && casts(sp.stmt) && o.comp.is_none() && always {
-        s.inc("a bad label the second row always takes: SchemaChanged");
-    } else if matches!(o.r, Err(Err::P22 { named: Named::Cur, .. })) && casts(sp.stmt) && o.comp.is_none() {
-        s.fail("I14 an error that names the cast's own type taken for a stale statement", d.clone());
+    // as decided, every cached statement's 22P02 from enum_in takes the second row, so a bad label of a cast that
+    // isn't stale gets Error::SchemaChanged first inside a transaction: counted, and I14 below bounds it
+    if matches!(o.r, Err(Err::P22 { named: Named::Cur, .. })) && casts(sp.stmt) && o.comp.is_none() {
+        s.inc(if sp.stmt == TWO { "a bad label beside a second type: SchemaChanged" } else { "a bad label of a lone cast: SchemaChanged" });
     }
     // the two answers' cost: a bad label or bad stored text the second row takes, a kept type's stale function's
     // error among them, gets Error::SchemaChanged first, and never from a run begun while its statement's entry
@@ -485,7 +471,7 @@ pub fn check_sc(p: usize, cx: &Cx, sp: &Spec, o: &Out, at: At, conn: u64) {
             if let Some(c) = cr.iter().rev().find(|c| **c < st) {
                 let rem = s.pools[p].removals.get(&sp.stmt).cloned().unwrap_or_default();
                 if st < c + e && !rem.iter().any(|r| *r >= *c && *r <= st) {
-                    s.fail("R-1271 cost: a bad text's SchemaChanged in a run begun while its entry exists", d.clone());
+                    s.fail("I14 the second row's cost: a bad text's SchemaChanged in a run begun while its entry exists", d.clone());
                 }
             }
         }

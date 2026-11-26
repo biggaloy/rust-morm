@@ -1,7 +1,8 @@
 #!/bin/bash
 # every setting and switch; the outputs go beside the model, in ../results
+S="$(git -C "$(dirname "$0")" rev-parse --show-toplevel)/.claude/scratch"; mkdir -p "$S"   # the worktree's .claude/scratch
 cd "$(dirname "$0")" || exit 1
-M=$(cd ../../../.. && pwd)/model   # .claude/scratch/model
+M=$S/model
 R=../results
 $M all 0 0 256 > $R/all256.txt
 $M faults 0 0 256 > $R/faults256.txt

@@ -1,60 +1,56 @@
 -- break 101 [straight] defaults
-   FAIL   10/256 I7 held, a stale copy failing twice
-   FAIL  106/256 I7 in a transaction, as it is
+   FAIL   15/256 I7 held, a stale copy failing twice
+   FAIL   98/256 I7 in a transaction, as it is
    FAIL  117/256 I7 outside a transaction
-   FAIL  148/256 I8 search_path as it is in a transaction
-   FAIL   73/256 I8 search_path visible outside
-   FAIL   16/256 new I9 loud half
+   FAIL  137/256 I8 search_path as it is in a transaction
+   FAIL  103/256 I8 search_path visible outside
+   FAIL   13/256 new I9 loud half
 -- break 102 [straight] defaults
    FAIL    1/256 I8 outside a transaction
-   FAIL  248/256 R-1271 before t0+W, not judged not old
-   FAIL    2/256 R-1271 from t0+W on
-   FAIL  152/256 new I8 held, before then
+   FAIL  245/256 R-1271 before t0+W, not judged not old
+   FAIL    6/256 R-1271 from t0+W on
+   FAIL  149/256 new I8 held, before then
 -- break 103 [straight] defaults
-   FAIL  169/256 I7 held, a stale copy failing twice
+   FAIL  167/256 I7 held, a stale copy failing twice
    FAIL  256/256 I7 outside a transaction
-   FAIL    2/256 I8 outside a transaction
+   FAIL    1/256 I8 outside a transaction
    FAIL  256/256 I8 search_path visible outside
-   FAIL  244/256 R-1271 before t0+W, not judged not old
-   FAIL    4/256 R-1271 from t0+W on
-   FAIL  132/256 new I8 held, before then
-   FAIL  232/256 new I9 loud half
+   FAIL  245/256 R-1271 before t0+W, not judged not old
+   FAIL    2/256 R-1271 from t0+W on
+   FAIL  154/256 new I8 held, before then
+   FAIL  231/256 new I9 loud half
 -- break 107 [straight] defaults
+   FAIL  225/256 I14 the second row's cost: a bad text's SchemaChanged in a run begun while its entry exists
    FAIL  256/256 I8 pending run cached
-   FAIL  135/256 R-1271 cost: a bad text's SchemaChanged in a run begun while its entry exists
-   FAIL  181/256 new I8 a failure begun while its entry exists
+   FAIL  208/256 new I8 a failure begun while its entry exists
 -- break 42 [straight] defaults
-   FAIL  163/256 I13 a confirming run that ends in another error doesn't confirm
--- break 43 [straight] defaults
-   FAIL  232/256 I14 an error that names the cast's own type taken for a stale statement
+   FAIL  164/256 I13 a confirming run that ends in another error doesn't confirm
 -- break 45 [straight] defaults
    FAIL  256/256 R-1271 more than one catalog read
    FAIL  256/256 R-1271 more than one catalog read in a transaction
    FAIL  194/256 R-1271 more than two catalog reads
 -- break 101 [pooled] defaults
-   FAIL  186/256 I7 in a transaction, as it is
-   FAIL  197/256 I7 outside a transaction
-   FAIL  163/256 I8 search_path as it is in a transaction
-   FAIL  110/256 I8 search_path visible outside
-   FAIL   26/256 new I9 loud half
+   FAIL  185/256 I7 in a transaction, as it is
+   FAIL  205/256 I7 outside a transaction
+   FAIL  171/256 I8 search_path as it is in a transaction
+   FAIL  118/256 I8 search_path visible outside
+   FAIL   34/256 new I9 loud half
 -- break 103 [pooled] defaults
    FAIL  256/256 I7 outside a transaction
    FAIL  256/256 I8 pooled, outside a transaction, as it is with no cool-down and no retry
    FAIL  256/256 I8 search_path visible outside
-   FAIL  252/256 new I9 loud half
+   FAIL  251/256 new I9 loud half
 -- break 105 [pooled] defaults
-   FAIL  248/256 new I8 never visible after RECONNECT
+   FAIL  244/256 new I8 never visible after RECONNECT
 -- break 106 [pooled] defaults
    FAIL  252/256 new I8 never visible after RECONNECT
-   FAIL  247/256 new I8 never visible after server_lifetime
+   FAIL  249/256 new I8 never visible after server_lifetime
 -- break 107 [pooled] defaults
+   FAIL  195/256 I14 the second row's cost: a bad text's SchemaChanged in a run begun while its entry exists
    FAIL  256/256 I8 pending run cached
-   FAIL  145/256 R-1271 cost: a bad text's SchemaChanged in a run begun while its entry exists
-   FAIL  254/256 new I8 a failure begun while its entry exists
+   FAIL  256/256 new I8 a failure begun while its entry exists
 -- break 42 [pooled] defaults
-   FAIL  249/256 I13 a confirming run that ends in another error doesn't confirm
--- break 43 [pooled] defaults
-   FAIL  231/256 I14 an error that names the cast's own type taken for a stale statement
+   FAIL  247/256 I13 a confirming run that ends in another error doesn't confirm
 -- break 44 [pooled] defaults
    FAIL  256/256 I12 its own connection again, with another idle
 -- break 46 [pooled] defaults
@@ -63,135 +59,63 @@
    FAIL  256/256 I8 in a savepoint
    FAIL  256/256 I8 in a transaction
    FAIL  256/256 I8 outside a transaction
-   FAIL  252/256 I9 a copied label, not plpgsql compiled before the relabel
+   FAIL  255/256 I9 a copied label, not plpgsql compiled before the relabel
    FAIL  256/256 R-1271 before t0+W, not judged not old
    FAIL  256/256 R-1271 from t0+W on
-   FAIL  256/256 new I8 held, from then on
+   FAIL  255/256 new I8 held, from then on
 -- break 41 [pooled] old labels copied
    FAIL  252/256 I9 a copied label, not plpgsql compiled before the relabel
-   FAIL  229/256 new I8 never visible after server_lifetime
+   FAIL  223/256 new I8 never visible after server_lifetime
 -- break 4 [straight] hand relabels without the reset, casts
-   FAIL   24/256 R-1271 given up, from t0+W on
+   FAIL    8/256 R-1271 given up, from t0+W on
 -- break 5 [straight] hand relabels without the reset, casts
-   FAIL   67/256 R-1271 given up, from t0+W on
-   FAIL  113/256 R-1271 given up, not judged not old
+   FAIL   30/256 R-1271 given up, from t0+W on
+   FAIL  111/256 R-1271 given up, not judged not old
 -- break 105 [pooled] hand relabels without the reset
-   FAIL  210/256 new I8 never visible after RECONNECT
+   FAIL  198/256 new I8 never visible after RECONNECT
 -- break 106 [pooled] hand relabels without the reset, casts
-   FAIL  144/256 R-1271 given up, pooled, after RECONNECT or server_lifetime
--- break 110 [straight] set
-   179 I7 in a transaction, as it is e.g. seed 2: t=4877339 stmt=8 P22 { named: Kept(19), ret: false, lab: NewName, stored: false } Stmt(4852100) Tx { retry: 1 } tested=None ptest=false
-   179 new I9 loud half e.g. seed 2: t=4877339 stmt=8 P22 { named: Kept(19), ret: false, lab: NewName, stored: false } Stmt(4852100) Tx { retry: 1 } tested=None ptest=false
--- break 110 [pooled] set
-   183 I7 in a transaction, as it is e.g. seed 4: t=9946409 stmt=8 P22 { named: Kept(46), ret: false, lab: NewName, stored: true } Stmt(9933266) Sp { retry: 1 } tested=None ptest=false
-   183 new I9 loud half e.g. seed 4: t=9946409 stmt=8 P22 { named: Kept(46), ret: false, lab: NewName, stored: true } Stmt(9933266) Sp { retry: 1 } tested=None ptest=false
--- break 111 [straight] set
-   5 I14 an error that names the cast's own type taken for a stale statement e.g. seed 29: t=2730021 stmt=8 None Tx { retry: 0 }
-   18 I7 in a transaction, as it is e.g. seed 2: t=15333446 stmt=8 P22 { named: Kept(74), ret: false, lab: NewName, stored: true } Stmt(15284668) Sp { retry: 2 } tested=None ptest=false
-   18 new I9 loud half e.g. seed 2: t=15333446 stmt=8 P22 { named: Kept(74), ret: false, lab: NewName, stored: true } Stmt(15284668) Sp { retry: 2 } tested=None ptest=false
--- break 111 [pooled] set
-   5 I14 an error that names the cast's own type taken for a stale statement e.g. seed 29: t=643145 stmt=8 None Tx { retry: 0 }
-   18 I7 in a transaction, as it is e.g. seed 2: t=2675351 stmt=8 P22 { named: Kept(7), ret: false, lab: NewName, stored: true } Stmt(2608868) Tx { retry: 1 } tested=None ptest=false
-   18 new I9 loud half e.g. seed 2: t=2675351 stmt=8 P22 { named: Kept(7), ret: false, lab: NewName, stored: true } Stmt(2608868) Tx { retry: 1 } tested=None ptest=false
--- break 112 [straight] set
-   53 I14 an error that names the cast's own type taken for a stale statement e.g. seed 5: t=2771438 stmt=8 None Tx { retry: 0 }
--- break 112 [pooled] set
-   53 I14 an error that names the cast's own type taken for a stale statement e.g. seed 7: t=423969 stmt=8 None Tx { retry: 0 }
--- break 113 [straight] set
-   256 I7 in a transaction, as it is e.g. seed 0: t=69061 stmt=8 P22 { named: Kept(0), ret: false, lab: Newest, stored: false } Stmt(49554) Sp { retry: 2 } tested=None ptest=false
-   256 new I9 loud half e.g. seed 0: t=69061 stmt=8 P22 { named: Kept(0), ret: false, lab: Newest, stored: false } Stmt(49554) Sp { retry: 2 } tested=None ptest=false
--- break 113 [pooled] set
-   256 I7 in a transaction, as it is e.g. seed 2: t=349107 stmt=8 P22 { named: Kept(1), ret: false, lab: Newest, stored: false } Stmt(326556) Sp { retry: 2 } tested=None ptest=false
-   256 new I9 loud half e.g. seed 2: t=349107 stmt=8 P22 { named: Kept(1), ret: false, lab: Newest, stored: false } Stmt(326556) Sp { retry: 2 } tested=None ptest=false
--- break 114 [straight] set
-   256 I7 in a transaction, as it is e.g. seed 0: t=69061 stmt=8 P22 { named: Kept(0), ret: false, lab: Newest, stored: false } Stmt(49554) Sp { retry: 2 } tested=None ptest=false
-   256 new I9 loud half e.g. seed 0: t=69061 stmt=8 P22 { named: Kept(0), ret: false, lab: Newest, stored: false } Stmt(49554) Sp { retry: 2 } tested=None ptest=false
--- break 114 [pooled] set
-   256 I7 in a transaction, as it is e.g. seed 0: t=264983 stmt=8 P22 { named: Kept(0), ret: false, lab: Newest, stored: false } Stmt(120670) Sp { retry: 1 } tested=None ptest=false
-   256 new I9 loud half e.g. seed 0: t=264983 stmt=8 P22 { named: Kept(0), ret: false, lab: Newest, stored: false } Stmt(120670) Sp { retry: 1 } tested=None ptest=false
--- break 115 [straight] set
-   256 I7 in a transaction, as it is e.g. seed 2: t=4877339 stmt=8 P22 { named: Kept(19), ret: false, lab: NewName, stored: false } Stmt(4852100) Tx { retry: 1 } tested=None ptest=false
-   256 new I9 loud half e.g. seed 2: t=4877339 stmt=8 P22 { named: Kept(19), ret: false, lab: NewName, stored: false } Stmt(4852100) Tx { retry: 1 } tested=None ptest=false
--- break 115 [pooled] set
-   256 I7 in a transaction, as it is e.g. seed 5: t=3409802 stmt=8 P22 { named: Kept(13), ret: false, lab: Newest, stored: false } Stmt(3397492) Tx { retry: 1 } tested=None ptest=false
-   256 new I9 loud half e.g. seed 5: t=3409802 stmt=8 P22 { named: Kept(13), ret: false, lab: Newest, stored: false } Stmt(3397492) Tx { retry: 1 } tested=None ptest=false
--- break 116 [straight] set
-   144 I14 an error that names the cast's own type taken for a stale statement e.g. seed 6: t=6987192 stmt=8 None Tx { retry: 0 }
--- break 116 [pooled] set
-   144 I14 an error that names the cast's own type taken for a stale statement e.g. seed 6: t=4383180 stmt=8 None Tx { retry: 0 }
--- break 117 [straight] set
-   45 I14 an error that names the cast's own type taken for a stale statement e.g. seed 0: t=247291 stmt=8 None Tx { retry: 0 }
--- break 117 [pooled] set
-   45 I14 an error that names the cast's own type taken for a stale statement e.g. seed 0: t=4673218 stmt=8 None Tx { retry: 0 }
--- break 118 [straight] set
-   30 I7 in a transaction, as it is e.g. seed 24: t=3283548 stmt=8 P22 { named: Kept(18), ret: false, lab: NewName, stored: true } Stmt(3274279) Tx { retry: 1 } tested=None ptest=false
-   30 new I9 loud half e.g. seed 24: t=3283548 stmt=8 P22 { named: Kept(18), ret: false, lab: NewName, stored: true } Stmt(3274279) Tx { retry: 1 } tested=None ptest=false
--- break 118 [pooled] set
-   30 I7 in a transaction, as it is e.g. seed 24: t=18022307 stmt=8 P22 { named: Kept(80), ret: false, lab: NewName, stored: true } Stmt(17112420) Tx { retry: 2 } tested=None ptest=false
-   30 new I9 loud half e.g. seed 24: t=18022307 stmt=8 P22 { named: Kept(80), ret: false, lab: NewName, stored: true } Stmt(17112420) Tx { retry: 2 } tested=None ptest=false
--- break 119 [straight] set
-   12 I14 an error that names the cast's own type taken for a stale statement e.g. seed 9: t=6797968 stmt=8 None Tx { retry: 0 }
-   12 I7 in a transaction, as it is e.g. seed 110: t=783328 stmt=8 P22 { named: Kept(2), ret: false, lab: Newest, stored: false } Stmt(764789) Tx { retry: 2 } tested=None ptest=false
-   12 new I9 loud half e.g. seed 110: t=783328 stmt=8 P22 { named: Kept(2), ret: false, lab: Newest, stored: false } Stmt(764789) Tx { retry: 2 } tested=None ptest=false
--- break 119 [pooled] set
-   12 I14 an error that names the cast's own type taken for a stale statement e.g. seed 9: t=1504785 stmt=8 None Tx { retry: 0 }
-   12 I7 in a transaction, as it is e.g. seed 110: t=1465192 stmt=8 P22 { named: Kept(6), ret: false, lab: Newest, stored: false } Stmt(1296040) Tx { retry: 0 } tested=None ptest=false
-   12 new I9 loud half e.g. seed 110: t=1465192 stmt=8 P22 { named: Kept(6), ret: false, lab: Newest, stored: false } Stmt(1296040) Tx { retry: 0 } tested=None ptest=false
+   FAIL  217/256 R-1271 given up, pooled, after RECONNECT or server_lifetime
 -- break 35 [pooled] max 1
    FAIL  256/256 I12 a call that never ends
    FAIL  256/256 I12 a call waits for a connection while it holds one
 -- break 35 [pooled] defaults
-   FAIL  248/256 I12 a call that never ends
+   FAIL  250/256 I12 a call that never ends
    FAIL  256/256 I12 a call waits for a connection while it holds one
 -- break 120 [straight] set
-   256 I7 held, a stale copy failing twice e.g. seed 0: t=4455090 stmt=9 P22 { named: Kept(15), ret: false, lab: NewName, stored: true } Stmt(4259650) HeldApp tested=None ptest=false
-   256 I7 in a transaction, as it is e.g. seed 0: t=552559 stmt=9 P22 { named: Kept(1), ret: false, lab: NewName, stored: true } Stmt(360064) Sp { retry: 1 } tested=None ptest=false
-   256 I7 outside a transaction e.g. seed 0: t=627725 stmt=9 P22 { named: Kept(1), ret: false, lab: NewName, stored: true } Stmt(360064) Out tested=None ptest=false
-   256 new I9 loud half e.g. seed 0: t=552559 stmt=9 P22 { named: Kept(1), ret: false, lab: NewName, stored: true } Stmt(360064) Sp { retry: 1 } tested=None ptest=false
+   256 I7 held, a stale copy failing twice e.g. seed 1: t=25005506 stmt=9 P22 { named: Kept(86), ret: false, lab: Newest, stored: true } Stmt(24881089) HeldApp tested=None ptest=false
+   256 I7 in a transaction, as it is e.g. seed 1: t=10047137 stmt=9 P22 { named: Kept(31), ret: false, lab: Newest, stored: true } Stmt(9139473) Sp { retry: 1 } tested=None ptest=false
+   256 I7 outside a transaction e.g. seed 1: t=10057882 stmt=9 P22 { named: Kept(31), ret: false, lab: Newest, stored: true } Stmt(9139473) Held tested=None ptest=false
+   256 new I9 loud half e.g. seed 1: t=10047137 stmt=9 P22 { named: Kept(31), ret: false, lab: Newest, stored: true } Stmt(9139473) Sp { retry: 1 } tested=None ptest=false
 -- break 120 [pooled] set
-   256 I7 in a transaction, as it is e.g. seed 1: t=3142046 stmt=9 P22 { named: Kept(9), ret: false, lab: NewName, stored: true } Stmt(3130302) Tx { retry: 0 } tested=None ptest=false
-   256 I7 outside a transaction e.g. seed 1: t=3270564 stmt=9 P22 { named: Kept(9), ret: false, lab: NewName, stored: true } Stmt(3130302) Out tested=None ptest=false
-   256 new I9 loud half e.g. seed 1: t=3142046 stmt=9 P22 { named: Kept(9), ret: false, lab: NewName, stored: true } Stmt(3130302) Tx { retry: 0 } tested=None ptest=false
--- break 121 [straight] set
-   256 I7 in a transaction, as it is e.g. seed 0: t=66255 stmt=0 P22 { named: Kept(1), ret: false, lab: Newest, stored: false } Stmt(53583) Sp { retry: 2 } tested=None ptest=false
-   256 new I9 loud half e.g. seed 0: t=66255 stmt=0 P22 { named: Kept(1), ret: false, lab: Newest, stored: false } Stmt(53583) Sp { retry: 2 } tested=None ptest=false
--- break 121 [pooled] set
-   256 I7 in a transaction, as it is e.g. seed 2: t=339495 stmt=0 P22 { named: Kept(1), ret: false, lab: Newest, stored: false } Stmt(248667) Tx { retry: 1 } tested=None ptest=false
-   256 new I9 loud half e.g. seed 2: t=339495 stmt=0 P22 { named: Kept(1), ret: false, lab: Newest, stored: false } Stmt(248667) Tx { retry: 1 } tested=None ptest=false
--- break 122 [straight] set
-   232 I7 in a transaction, as it is e.g. seed 2: t=310965 stmt=10 P22 { named: Cur, ret: false, lab: Newest, stored: false } Stmt(227850) Tx { retry: 0 } tested=None ptest=false
--- break 122 [pooled] set
-   232 I7 in a transaction, as it is e.g. seed 2: t=339495 stmt=10 P22 { named: Cur, ret: false, lab: Newest, stored: false } Stmt(248667) Tx { retry: 1 } tested=None ptest=false
+   256 I7 in a transaction, as it is e.g. seed 4: t=5695363 stmt=9 P22 { named: Kept(17), ret: false, lab: Newest, stored: true } Stmt(5493107) Tx { retry: 2 } tested=None ptest=false
+   256 I7 outside a transaction e.g. seed 4: t=5710067 stmt=9 P22 { named: Kept(17), ret: false, lab: Newest, stored: true } Stmt(5493107) Out tested=None ptest=false
+   256 new I9 loud half e.g. seed 4: t=5695363 stmt=9 P22 { named: Kept(17), ret: false, lab: Newest, stored: true } Stmt(5493107) Tx { retry: 2 } tested=None ptest=false
+-- break 123 [straight] set
+   256 I7 in a transaction, as it is e.g. seed 4: t=1317695 stmt=10 P22 { named: Cur, ret: false, lab: Newest, stored: false } Stmt(1204256) Tx { retry: 0 } tested=None ptest=false
+-- break 123 [pooled] set
+   256 I7 in a transaction, as it is e.g. seed 10: t=250808 stmt=10 P22 { named: Cur, ret: false, lab: Newest, stored: false } Stmt(206557) Tx { retry: 2 } tested=None ptest=false
 -- break 120 [straight] defaults
-   FAIL   15/256 I7 held, a stale copy failing twice
-   FAIL  135/256 I7 in a transaction, as it is
-   FAIL  141/256 I7 outside a transaction
-   FAIL  177/256 new I9 loud half
+   FAIL   13/256 I7 held, a stale copy failing twice
+   FAIL  109/256 I7 in a transaction, as it is
+   FAIL  127/256 I7 outside a transaction
+   FAIL  166/256 new I9 loud half
 -- break 120 [pooled] defaults
-   FAIL  185/256 I7 in a transaction, as it is
+   FAIL  187/256 I7 in a transaction, as it is
    FAIL  194/256 I7 outside a transaction
-   FAIL  211/256 new I9 loud half
--- break 121 [straight] defaults
-   FAIL    6/256 I7 in a transaction, as it is
-   FAIL    6/256 new I9 loud half
--- break 121 [pooled] defaults
-   FAIL    6/256 I7 in a transaction, as it is
-   FAIL    6/256 new I9 loud half
--- break 122 [straight] defaults
-   FAIL   54/256 I7 in a transaction, as it is
--- break 122 [pooled] defaults
-   FAIL  120/256 I7 in a transaction, as it is
--- break 121 [straight] a cast written with its schema, its kept type moved where the search_path finds it
-   FAIL  184/256 I7 in a transaction, as it is
-   FAIL  184/256 new I9 loud half
--- break 121 [pooled] a cast written with its schema, its kept type moved where the search_path finds it
-   FAIL  238/256 I7 in a transaction, as it is
-   FAIL  238/256 new I9 loud half
+   FAIL  214/256 new I9 loud half
+-- break 123 [straight] defaults
+   FAIL   35/256 I7 in a transaction, as it is
+-- break 123 [pooled] defaults
+   FAIL   82/256 I7 in a transaction, as it is
+-- break 123 [straight] every call a cast beside a second type
+   FAIL  256/256 I7 in a transaction, as it is
+-- break 123 [pooled] every call a cast beside a second type
+   FAIL  256/256 I7 in a transaction, as it is
 -- break 107 [straight] transactions without retry
+   FAIL  256/256 I14 the second row's cost: a bad text's SchemaChanged in a run begun while its entry exists
    FAIL  256/256 I8 pending run cached
-   FAIL  254/256 R-1271 cost: a bad text's SchemaChanged in a run begun while its entry exists
    FAIL  256/256 new I8 a failure begun while its entry exists
 -- break 107 [pooled] transactions without retry
+   FAIL  256/256 I14 the second row's cost: a bad text's SchemaChanged in a run begun while its entry exists
    FAIL  256/256 I8 pending run cached
-   FAIL  255/256 R-1271 cost: a bad text's SchemaChanged in a run begun while its entry exists
    FAIL  256/256 new I8 a failure begun while its entry exists
