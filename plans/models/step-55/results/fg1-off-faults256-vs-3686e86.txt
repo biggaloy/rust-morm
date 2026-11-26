@@ -1,0 +1,8 @@
+--- 
++++ 
+@@ -3 +3 @@
+-switch 2 [straight]: ANY=256; I3 more than open at its start=256; I3 span, an epoch's replacements, R-0981=255; I4 per epoch opens=256; I4 per epoch replacements=256; I4 span=84; I4 span replacements, FF1=221   | no fault: 
++switch 2 [straight]: ANY=256; I3 more than open at its start=256; I3 span, an epoch's replacements, R-0981=255; I4 per epoch opens=256; I4 per epoch replacements=256; I4 span=84; I4 span replacements, FF1=209   | no fault: 
+@@ -20 +20 @@
+-switch 14 [straight]: ANY=256; I10 down=256; I3 several=256; I3 span, an epoch's replacements, R-0981=16; new I1 several=256   | no fault: 
++switch 14 [straight]: ANY=256; I10 down=256; I3 several=256; new I1 several=256   | no fault: 

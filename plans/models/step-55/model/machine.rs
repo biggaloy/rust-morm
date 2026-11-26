@@ -936,7 +936,9 @@ pub async fn run_call(p: usize, conn: &mut Conn, cx: &mut Cx, sp: &Spec) -> Res 
             if w().confirms(&o.r, first) {
                 w().begin_step(p);
                 w().inc("FF1 replace requested: a confirming next attempt, row B3");
+                fg1_count(sp, &o, false);
                 request(p, Act::Replace, false, cx, None).await;
+                fg2_record(p, conn);
             }
         }
     }
@@ -1305,7 +1307,9 @@ async fn session(p: usize, conn: &mut Conn, cx: &mut Cx, sp: &Spec, o: Out) -> R
                 w().begin_step(p);
                 if !sure && w().confirms(&r.r, err.code()) {
                     w().inc("FF1 replace requested: a confirming run on the new connection, row A2");
+                    fg1_count(sp, &r, true);
                     request(p, Act::Replace, false, cx, None).await;
+                    fg2_record(p, conn);
                 }
                 return if r.r.is_ok() { Res::Ok(r) } else { Res::Pg(r) };
             }
@@ -1362,6 +1366,38 @@ fn count_open(p: usize, ep: u64) {
     *s.pools[p].ep_open.entry(ep).or_insert(0) += 1;
 }
 
+// the twenty-ninth review's FG1: what made a stored-text function's confirming run confirm
+fn fg1_count(sp: &Spec, o: &Out, a2: bool) {
+    if sp.stmt != ST {
+        return;
+    }
+    let s = w();
+    let k = match (o.r, s.db.stored_alt) {
+        (Err(Err::OT), _) => if a2 { "FG1 A2 replace by stored text: the function fails another way" } else { "FG1 B3 replace by stored text: the function fails another way" },
+        (Ok(_), 0) => if a2 { "FG1 A2 replace by stored text: a good label" } else { "FG1 B3 replace by stored text: a good label" },
+        (Ok(_), 1) => if a2 { "FG1 A2 replace by stored text: NULL" } else { "FG1 B3 replace by stored text: NULL" },
+        (Ok(_), _) => if a2 { "FG1 A2 replace by stored text: no row" } else { "FG1 B3 replace by stored text: no row" },
+        _ => if a2 { "FG1 A2 replace by stored text: other" } else { "FG1 B3 replace by stored text: other" },
+    };
+    s.inc(k);
+    // the older wording, R-0981's "stored text a client changes to a good label", as a check of an older wording
+    if !k.ends_with("a good label") {
+        let d = format!("t={} {}", s.now, k);
+        s.fail("lit FG1 R-0981 a replace from stored text only when it changes to a good label", d);
+    }
+}
+// the twenty-ninth review's FG2: the connection whose run requested *replace* opened before the action is taken, so
+// it's behind the connection generation once it is, and is replaced at its next checkout too
+fn fg2_record(p: usize, conn: &Conn) {
+    let s = w();
+    if s.c.pooled || conn.id == 0 {
+        return;
+    }
+    let now = s.now;
+    s.pools[p].req_conn.insert(conn.id, now);
+    s.inc(if conn.cgen < s.pools[p].cgen { "FG2 requester behind at once (action taken)" } else { "FG2 requester not yet behind (action due)" });
+}
+
 async fn replace(p: usize, conn: &mut Conn, cx: &mut Cx, sp: &Spec, ep: u64) -> Option<Out> {
     let beside = {
         let s = w();
@@ -1383,7 +1419,7 @@ async fn replace(p: usize, conn: &mut Conn, cx: &mut Cx, sp: &Spec, ep: u64) -> 
                 let s = w();
                 s.pools[p].extra -= 1;
                 s.pools[p].open -= 1; // the old one closes
-                *s.pools[p].ep_repl.entry(ep).or_insert(0) += 1; let rt = s.now; s.pools[p].repl_t.push((rt, 0));
+                *s.pools[p].ep_repl.entry(ep).or_insert(0) += 1; let rt = s.now; s.pools[p].repl_t.push((rt, 0)); s.pools[p].repl_dbg.push((rt, ep, 1));
                 *conn = nc;
                 return Some(r);
             }
@@ -1413,7 +1449,7 @@ async fn replace(p: usize, conn: &mut Conn, cx: &mut Cx, sp: &Spec, ep: u64) -> 
             let mut nc = mk_conn(p, o);
             let mode = if w().c.caches { Mode::Keep((sp.stmt, 0, 0)) } else { Mode::Unnamed };
             let r = run_once(p, &mut nc, cx, sp, mode).await;
-            { let s = w(); *s.pools[p].ep_repl.entry(ep).or_insert(0) += 1; let rt = s.now; s.pools[p].repl_t.push((rt, 0)); }
+            { let s = w(); *s.pools[p].ep_repl.entry(ep).or_insert(0) += 1; let rt = s.now; s.pools[p].repl_t.push((rt, 0)); s.pools[p].repl_dbg.push((rt, ep, 2)); }
             *conn = nc;
             Some(r)
         }

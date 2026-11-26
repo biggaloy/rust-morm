@@ -108,7 +108,23 @@ pub async fn machine_checkout(p: usize, conn: &mut Conn) {
             let s = w();
             (s.pools[p].sgen, s.pools[p].cgen, s.c.pooled)
         };
-        if conn.cgen < cg && !pooled {
+        // break 128: the *replace* action spares the connection whose own run requested it, against FG2's check
+        let spared = { let s = w(); s.c.fault == 128 && s.pools[p].req_conn.contains_key(&conn.id) };
+        if conn.cgen < cg && !pooled && spared {
+            let s = w();
+            s.fail("FG2 a checkout kept a connection behind the connection generation", format!("t={} conn={}", s.now, conn.id));
+            s.pools[p].req_conn.remove(&conn.id);
+        }
+        if conn.cgen < cg && !pooled && !spared {
+            {
+                let s = w();
+                if s.pools[p].req_conn.remove(&conn.id).is_some() {
+                    s.inc("FG2 the requesting connection replaced at its next checkout");
+                    // the older wording, R-1249's "replaces every other connection", as a check of an older wording
+                    let d = format!("t={} conn={}", s.now, conn.id);
+                    s.fail("lit FG2 R-1249 the action replaces every other connection", d);
+                }
+            }
             w().pools[p].open -= 1;
             {
                 let s = w();
@@ -164,7 +180,7 @@ fn release_held(p: usize, conn: Conn) {
     s.wake(p);
     if let Some(ep) = conn.mark {
         s.inc("marked held releases");
-        *s.pools[p].ep_repl.entry(ep).or_insert(0) += 1; let rt = s.now; s.pools[p].repl_t.push((rt, 0));
+        *s.pools[p].ep_repl.entry(ep).or_insert(0) += 1; let rt = s.now; s.pools[p].repl_t.push((rt, 0)); s.pools[p].repl_dbg.push((rt, ep, 4));
     }
 }
 
@@ -788,7 +804,7 @@ pub async fn call_tx(p: usize, sps: Vec<(Spec, bool)>, retry: u32, rr: bool) {
                         {
                             let s = w();
                             s.pools[p].open -= 1;
-                            *s.pools[p].ep_repl.entry(ep).or_insert(0) += 1; let rt = s.now; s.pools[p].repl_t.push((rt, 0));
+                            *s.pools[p].ep_repl.entry(ep).or_insert(0) += 1; let rt = s.now; s.pools[p].repl_t.push((rt, 0)); s.pools[p].repl_dbg.push((rt, ep, 3));
                         }
                         if last {
                             conn.id = 0;

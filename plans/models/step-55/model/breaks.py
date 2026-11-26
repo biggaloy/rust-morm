@@ -25,6 +25,9 @@ RUNS += [(m, 124, "search_path only, no retry, entries off") for m in ("straight
 # the twenty-seventh review's FE1: row D2's cool-down, against I8's new clause, behind PgBouncer. 125: D2 never enters
 # the cool-down inside a transaction; 126: it enters it a step after its failure; 127: an entry lasting half of W
 RUNS += [("pooled", b, s) for b in (125, 126, 127) for s in ("defaults", "transactions without retry")]
+# the twenty-ninth review's FG2: 128, the *replace* action sparing the connection whose own confirming run requested
+# it, straight to Postgres, against "FG2 a checkout kept a connection behind the connection generation"
+RUNS += [("straight", 128, s) for s in ("defaults", "stored text only, no schema change", "transactions without retry")]
 for mode, b, s in RUNS:
     out = subprocess.run([M, f"set{b}" if s == "set" else s, str(b), "0", "256", mode], capture_output=True, text=True).stdout
     print(f"-- break {b} [{mode}] {s}")

@@ -1,56 +1,55 @@
 -- break 101 [straight] defaults
-   FAIL   15/256 I7 held, a stale copy failing twice
-   FAIL   98/256 I7 in a transaction, as it is
-   FAIL  117/256 I7 outside a transaction
-   FAIL  137/256 I8 search_path as it is in a transaction
-   FAIL  103/256 I8 search_path visible outside
-   FAIL   13/256 new I9 loud half
+   FAIL   22/256 I7 held, a stale copy failing twice
+   FAIL  105/256 I7 in a transaction, as it is
+   FAIL  144/256 I7 outside a transaction
+   FAIL  143/256 I8 search_path as it is in a transaction
+   FAIL   89/256 I8 search_path visible outside
+   FAIL    8/256 new I9 loud half
 -- break 102 [straight] defaults
-   FAIL    1/256 I8 outside a transaction
-   FAIL  245/256 R-1271 before t0+W, not judged not old
-   FAIL    6/256 R-1271 from t0+W on
-   FAIL  149/256 new I8 held, before then
+   FAIL  250/256 R-1271 before t0+W, not judged not old
+   FAIL    5/256 R-1271 from t0+W on
+   FAIL  145/256 new I8 held, before then
 -- break 103 [straight] defaults
    FAIL  167/256 I7 held, a stale copy failing twice
    FAIL  256/256 I7 outside a transaction
-   FAIL    1/256 I8 outside a transaction
+   FAIL    2/256 I8 outside a transaction
    FAIL  256/256 I8 search_path visible outside
-   FAIL  245/256 R-1271 before t0+W, not judged not old
-   FAIL    2/256 R-1271 from t0+W on
-   FAIL  154/256 new I8 held, before then
-   FAIL  231/256 new I9 loud half
+   FAIL  247/256 R-1271 before t0+W, not judged not old
+   FAIL    3/256 R-1271 from t0+W on
+   FAIL  148/256 new I8 held, before then
+   FAIL  224/256 new I9 loud half
 -- break 107 [straight] defaults
-   FAIL  225/256 I14 the second row's cost: a bad text's SchemaChanged in a run begun while its entry exists
+   FAIL  228/256 I14 the second row's cost: a bad text's SchemaChanged in a run begun while its entry exists
    FAIL  256/256 I8 pending run cached
-   FAIL  208/256 new I8 a failure begun while its entry exists
+   FAIL  195/256 new I8 a failure begun while its entry exists
 -- break 42 [straight] defaults
-   FAIL  164/256 I13 a confirming run that ends in another error doesn't confirm
+   FAIL  162/256 I13 a confirming run that ends in another error doesn't confirm
 -- break 45 [straight] defaults
    FAIL  256/256 R-1271 more than one catalog read
    FAIL  256/256 R-1271 more than one catalog read in a transaction
-   FAIL  194/256 R-1271 more than two catalog reads
+   FAIL  181/256 R-1271 more than two catalog reads
 -- break 101 [pooled] defaults
-   FAIL  185/256 I7 in a transaction, as it is
-   FAIL  205/256 I7 outside a transaction
-   FAIL  171/256 I8 search_path as it is in a transaction
-   FAIL  118/256 I8 search_path visible outside
-   FAIL   34/256 new I9 loud half
+   FAIL  176/256 I7 in a transaction, as it is
+   FAIL  207/256 I7 outside a transaction
+   FAIL  174/256 I8 search_path as it is in a transaction
+   FAIL  126/256 I8 search_path visible outside
+   FAIL   42/256 new I9 loud half
 -- break 103 [pooled] defaults
    FAIL  256/256 I7 outside a transaction
    FAIL  256/256 I8 pooled, outside a transaction, as it is with no cool-down and no retry
    FAIL  256/256 I8 search_path visible outside
-   FAIL  251/256 new I9 loud half
+   FAIL  253/256 new I9 loud half
 -- break 105 [pooled] defaults
-   FAIL  244/256 new I8 never visible after RECONNECT
+   FAIL  249/256 new I8 never visible after RECONNECT
 -- break 106 [pooled] defaults
-   FAIL  252/256 new I8 never visible after RECONNECT
-   FAIL  249/256 new I8 never visible after server_lifetime
+   FAIL  254/256 new I8 never visible after RECONNECT
+   FAIL  245/256 new I8 never visible after server_lifetime
 -- break 107 [pooled] defaults
-   FAIL  195/256 I14 the second row's cost: a bad text's SchemaChanged in a run begun while its entry exists
+   FAIL  192/256 I14 the second row's cost: a bad text's SchemaChanged in a run begun while its entry exists
    FAIL  256/256 I8 pending run cached
    FAIL  256/256 new I8 a failure begun while its entry exists
 -- break 42 [pooled] defaults
-   FAIL  247/256 I13 a confirming run that ends in another error doesn't confirm
+   FAIL  249/256 I13 a confirming run that ends in another error doesn't confirm
 -- break 44 [pooled] defaults
    FAIL  256/256 I12 its own connection again, with another idle
 -- break 46 [pooled] defaults
@@ -59,54 +58,54 @@
    FAIL  256/256 I8 in a savepoint
    FAIL  256/256 I8 in a transaction
    FAIL  256/256 I8 outside a transaction
-   FAIL  255/256 I9 a copied label, not plpgsql compiled before the relabel
+   FAIL  254/256 I9 a copied label, not plpgsql compiled before the relabel
    FAIL  256/256 R-1271 before t0+W, not judged not old
    FAIL  256/256 R-1271 from t0+W on
-   FAIL  255/256 new I8 held, from then on
+   FAIL  256/256 new I8 held, from then on
 -- break 41 [pooled] old labels copied
-   FAIL  252/256 I9 a copied label, not plpgsql compiled before the relabel
-   FAIL  223/256 new I8 never visible after server_lifetime
+   FAIL  254/256 I9 a copied label, not plpgsql compiled before the relabel
+   FAIL  231/256 new I8 never visible after server_lifetime
 -- break 4 [straight] hand relabels without the reset, casts
    FAIL    8/256 R-1271 given up, from t0+W on
 -- break 5 [straight] hand relabels without the reset, casts
    FAIL   30/256 R-1271 given up, from t0+W on
    FAIL  111/256 R-1271 given up, not judged not old
 -- break 105 [pooled] hand relabels without the reset
-   FAIL  198/256 new I8 never visible after RECONNECT
+   FAIL  190/256 new I8 never visible after RECONNECT
 -- break 106 [pooled] hand relabels without the reset, casts
    FAIL  217/256 R-1271 given up, pooled, after RECONNECT or server_lifetime
 -- break 35 [pooled] max 1
    FAIL  256/256 I12 a call that never ends
    FAIL  256/256 I12 a call waits for a connection while it holds one
 -- break 35 [pooled] defaults
-   FAIL  250/256 I12 a call that never ends
+   FAIL  244/256 I12 a call that never ends
    FAIL  256/256 I12 a call waits for a connection while it holds one
 -- break 120 [straight] set
-   256 I7 held, a stale copy failing twice e.g. seed 3: t=247881 stmt=9 P22 { named: Kept(0), ret: false, lab: Newest, stored: true } Stmt(166050) HeldApp tested=None ptest=false
-   256 I7 in a transaction, as it is e.g. seed 3: t=179947 stmt=9 P22 { named: Kept(0), ret: false, lab: Newest, stored: true } Stmt(166050) Tx { retry: 1 } tested=None ptest=false
-   256 I7 outside a transaction e.g. seed 3: t=230486 stmt=9 P22 { named: Kept(0), ret: false, lab: Newest, stored: true } Stmt(166050) Held tested=None ptest=false
-   256 new I9 loud half e.g. seed 3: t=179947 stmt=9 P22 { named: Kept(0), ret: false, lab: Newest, stored: true } Stmt(166050) Tx { retry: 1 } tested=None ptest=false
+   256 I7 held, a stale copy failing twice e.g. seed 6: t=7298640 stmt=9 P22 { named: Kept(17), ret: false, lab: Newest, stored: true } Stmt(6909277) HeldApp tested=None ptest=false
+   256 I7 in a transaction, as it is e.g. seed 6: t=2710361 stmt=9 P22 { named: Kept(4), ret: false, lab: Newest, stored: true } Stmt(2531622) Sp { retry: 1 } tested=None ptest=false
+   256 I7 outside a transaction e.g. seed 6: t=2908067 stmt=9 P22 { named: Kept(4), ret: false, lab: Newest, stored: true } Stmt(2531622) Out tested=None ptest=false
+   256 new I9 loud half e.g. seed 6: t=2710361 stmt=9 P22 { named: Kept(4), ret: false, lab: Newest, stored: true } Stmt(2531622) Sp { retry: 1 } tested=None ptest=false
 -- break 120 [pooled] set
-   256 I7 in a transaction, as it is e.g. seed 2: t=1915913 stmt=9 P22 { named: Kept(1), ret: false, lab: Newest, stored: true } Stmt(304627) Sp { retry: 2 } tested=None ptest=false
-   256 I7 outside a transaction e.g. seed 2: t=1907577 stmt=9 P22 { named: Kept(1), ret: false, lab: Newest, stored: true } Stmt(304627) Out tested=None ptest=false
-   256 new I9 loud half e.g. seed 2: t=1907577 stmt=9 P22 { named: Kept(1), ret: false, lab: Newest, stored: true } Stmt(304627) Out tested=None ptest=false
+   256 I7 in a transaction, as it is e.g. seed 6: t=1538064 stmt=9 P22 { named: Kept(2), ret: false, lab: Newest, stored: true } Stmt(724431) Tx { retry: 2 } tested=None ptest=false
+   256 I7 outside a transaction e.g. seed 6: t=1552685 stmt=9 P22 { named: Kept(2), ret: false, lab: Newest, stored: true } Stmt(724431) Out tested=None ptest=false
+   256 new I9 loud half e.g. seed 6: t=1538064 stmt=9 P22 { named: Kept(2), ret: false, lab: Newest, stored: true } Stmt(724431) Tx { retry: 2 } tested=None ptest=false
 -- break 123 [straight] set
-   256 I7 in a transaction, as it is e.g. seed 1: t=224883 stmt=10 P22 { named: Cur, ret: false, lab: Newest, stored: false } Stmt(203300) Tx { retry: 1 } tested=None ptest=false
+   256 I7 in a transaction, as it is e.g. seed 4: t=1317695 stmt=10 P22 { named: Cur, ret: false, lab: Newest, stored: false } Stmt(1204256) Tx { retry: 0 } tested=None ptest=false
 -- break 123 [pooled] set
    256 I7 in a transaction, as it is e.g. seed 5: t=1462174 stmt=10 P22 { named: Cur, ret: false, lab: Newest, stored: false } Stmt(397641) Tx { retry: 2 } tested=None ptest=false
 -- break 120 [straight] defaults
-   FAIL   13/256 I7 held, a stale copy failing twice
-   FAIL  109/256 I7 in a transaction, as it is
-   FAIL  127/256 I7 outside a transaction
-   FAIL  166/256 new I9 loud half
+   FAIL   14/256 I7 held, a stale copy failing twice
+   FAIL  117/256 I7 in a transaction, as it is
+   FAIL  130/256 I7 outside a transaction
+   FAIL  156/256 new I9 loud half
 -- break 120 [pooled] defaults
-   FAIL  187/256 I7 in a transaction, as it is
-   FAIL  194/256 I7 outside a transaction
-   FAIL  214/256 new I9 loud half
+   FAIL  196/256 I7 in a transaction, as it is
+   FAIL  205/256 I7 outside a transaction
+   FAIL  220/256 new I9 loud half
 -- break 123 [straight] defaults
-   FAIL   35/256 I7 in a transaction, as it is
+   FAIL   30/256 I7 in a transaction, as it is
 -- break 123 [pooled] defaults
-   FAIL   82/256 I7 in a transaction, as it is
+   FAIL   79/256 I7 in a transaction, as it is
 -- break 123 [straight] every call a cast beside a second type
    FAIL  256/256 I7 in a transaction, as it is
 -- break 123 [pooled] every call a cast beside a second type
@@ -123,7 +122,7 @@
    FAIL  253/256 I14 entries off: a 22P02 the second row takes returned as it is before a SchemaChanged
    FAIL  256/256 I8 entries off: a run with no entry not cached
 -- break 124 [pooled] entries off
-   FAIL  249/256 I14 entries off: a 22P02 the second row takes returned as it is before a SchemaChanged
+   FAIL  253/256 I14 entries off: a 22P02 the second row takes returned as it is before a SchemaChanged
    FAIL  256/256 I8 entries off: a run with no entry not cached
 -- break 124 [straight] transactions without retry, entries off
    FAIL  256/256 I14 entries off: a 22P02 the second row takes returned as it is before a SchemaChanged
@@ -134,7 +133,7 @@
 -- break 28 [straight] entries off
    FAIL  256/256 I14 a later attempt's SchemaChanged for a 22P02 the second row takes
    FAIL  256/256 I7 retried attempt runs cached
-   FAIL  173/256 I7 stale statements on more than one attempt
+   FAIL  174/256 I7 stale statements on more than one attempt
 -- break 28 [pooled] entries off
    FAIL  256/256 I14 a later attempt's SchemaChanged for a 22P02 the second row takes
    FAIL  256/256 I7 retried attempt runs cached
@@ -148,10 +147,16 @@
 -- break 125 [pooled] transactions without retry
    FAIL  256/256 new I8 FE1 two D2 SchemaChanged of a statement within stale_cooldown, no removal between
 -- break 126 [pooled] defaults
-   FAIL  173/256 new I8 FE1 two D2 SchemaChanged of a statement within stale_cooldown, no removal between
+   FAIL  172/256 new I8 FE1 two D2 SchemaChanged of a statement within stale_cooldown, no removal between
 -- break 126 [pooled] transactions without retry
-   FAIL  239/256 new I8 FE1 two D2 SchemaChanged of a statement within stale_cooldown, no removal between
+   FAIL  238/256 new I8 FE1 two D2 SchemaChanged of a statement within stale_cooldown, no removal between
 -- break 127 [pooled] defaults
    FAIL  256/256 new I8 FE1 two D2 SchemaChanged of a statement within stale_cooldown, no removal between
 -- break 127 [pooled] transactions without retry
    FAIL  256/256 new I8 FE1 two D2 SchemaChanged of a statement within stale_cooldown, no removal between
+-- break 128 [straight] defaults
+   FAIL  249/256 FG2 a checkout kept a connection behind the connection generation
+-- break 128 [straight] stored text only, no schema change
+   FAIL  256/256 FG2 a checkout kept a connection behind the connection generation
+-- break 128 [straight] transactions without retry
+   FAIL  223/256 FG2 a checkout kept a connection behind the connection generation

@@ -1,69 +1,71 @@
-== defaults [pooled] fault 0 seeds 10000..30000 (11.0s)
-   FAIL 5525/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+== defaults [pooled] fault 0 seeds 10000..30000 (11.1s)
+   FAIL 5657/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
    FAIL 20000/20000 lit FE1 R-1249 and R-1258, a stale session's SchemaChanged once per stale_cooldown
    FAIL 20000/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 19998/20000 lit I2 (an adoption took its place)
-   FAIL 11937/20000 lit I8 never visible after RECONNECT
-   FAIL   54/20000 lit I8 never visible after server_lifetime
-   FAIL 5299/20000 lit I8 search_path once per E
-   FAIL 10100/20000 lit I8 stale statement once per E
-   FAIL 19932/20000 lit I9 loud half
-   FAIL 4668/20000 lit I9 loud: a request, entry or replacement
-   FAIL    6/20000 lit I9 silent past W of the first confirmation
-   FAIL 2972/20000 mid I8 stale statement once per E, running calls and actions apart
-== entries off [pooled] fault 0 seeds 10000..30000 (11.3s)
+   FAIL 19997/20000 lit I2 (an adoption took its place)
+   FAIL 11690/20000 lit I8 never visible after RECONNECT
+   FAIL   70/20000 lit I8 never visible after server_lifetime
+   FAIL 5274/20000 lit I8 search_path once per E
+   FAIL 10162/20000 lit I8 stale statement once per E
+   FAIL 19933/20000 lit I9 loud half
+   FAIL 4703/20000 lit I9 loud: a request, entry or replacement
+   FAIL    2/20000 lit I9 silent past W of the first confirmation
+   FAIL 2941/20000 mid I8 stale statement once per E, running calls and actions apart
+== entries off [pooled] fault 0 seeds 10000..30000 (11.2s)
    FAIL 20000/20000 lit FE1 R-1249 and R-1258, a stale session's SchemaChanged once per stale_cooldown
    FAIL 19998/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL 20000/20000 lit I2 (an adoption took its place)
-   FAIL 12216/20000 lit I8 never visible after RECONNECT
-   FAIL   67/20000 lit I8 never visible after server_lifetime
-   FAIL 15391/20000 lit I8 search_path once per E
-   FAIL 15668/20000 lit I8 stale statement once per E
-   FAIL 19917/20000 lit I9 loud half
-   FAIL 4288/20000 lit I9 loud: a request, entry or replacement
-   FAIL 10320/20000 mid I8 stale statement once per E, running calls and actions apart
-== caps of 1 [pooled] fault 0 seeds 10000..30000 (11.3s)
-   FAIL 6233/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL 12161/20000 lit I8 never visible after RECONNECT
+   FAIL   59/20000 lit I8 never visible after server_lifetime
+   FAIL 15428/20000 lit I8 search_path once per E
+   FAIL 15617/20000 lit I8 stale statement once per E
+   FAIL 19941/20000 lit I9 loud half
+   FAIL 4193/20000 lit I9 loud: a request, entry or replacement
+   FAIL 10259/20000 mid I8 stale statement once per E, running calls and actions apart
+== caps of 1 [pooled] fault 0 seeds 10000..30000 (11.5s)
+   FAIL 6208/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
    FAIL 20000/20000 lit FE1 R-1249 and R-1258, a stale session's SchemaChanged once per stale_cooldown
    FAIL 20000/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 19999/20000 lit I2 (an adoption took its place)
-   FAIL 11617/20000 lit I8 never visible after RECONNECT
-   FAIL   74/20000 lit I8 never visible after server_lifetime
-   FAIL 9292/20000 lit I8 search_path once per E
-   FAIL 12726/20000 lit I8 stale statement once per E
-   FAIL 19937/20000 lit I9 loud half
-   FAIL 4421/20000 lit I9 loud: a request, entry or replacement
+   FAIL 20000/20000 lit I2 (an adoption took its place)
+   FAIL 11487/20000 lit I8 never visible after RECONNECT
+   FAIL   61/20000 lit I8 never visible after server_lifetime
+   FAIL 9307/20000 lit I8 search_path once per E
+   FAIL 12792/20000 lit I8 stale statement once per E
+   FAIL 19919/20000 lit I9 loud half
+   FAIL 4519/20000 lit I9 loud: a request, entry or replacement
    FAIL    1/20000 lit I9 silent past W of the first confirmation
-   FAIL 6370/20000 mid I8 stale statement once per E, running calls and actions apart
-== W five times E [pooled] fault 0 seeds 10000..30000 (11.1s)
-   FAIL 6504/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL 6411/20000 mid I8 stale statement once per E, running calls and actions apart
+== W five times E [pooled] fault 0 seeds 10000..30000 (11.2s)
+   FAIL 6496/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL 20000/20000 lit FE1 R-1249 and R-1258, a stale session's SchemaChanged once per stale_cooldown
+   FAIL 19999/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 20000/20000 lit I2 (an adoption took its place)
+   FAIL 11825/20000 lit I8 never visible after RECONNECT
+   FAIL   63/20000 lit I8 never visible after server_lifetime
+   FAIL  549/20000 lit I8 search_path once per E
+   FAIL 8770/20000 lit I8 stale statement once per E
+   FAIL 19925/20000 lit I9 loud half
+   FAIL 4765/20000 lit I9 loud: a request, entry or replacement
+   FAIL    4/20000 lit I9 silent past W of the first confirmation
+   FAIL  861/20000 mid I8 stale statement once per E, running calls and actions apart
+== budget 8 [pooled] fault 0 seeds 10000..30000 (11.1s)
+   FAIL 5657/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
    FAIL 20000/20000 lit FE1 R-1249 and R-1258, a stale session's SchemaChanged once per stale_cooldown
    FAIL 20000/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 19999/20000 lit I2 (an adoption took its place)
-   FAIL 11981/20000 lit I8 never visible after RECONNECT
-   FAIL   57/20000 lit I8 never visible after server_lifetime
-   FAIL  547/20000 lit I8 search_path once per E
-   FAIL 8669/20000 lit I8 stale statement once per E
-   FAIL 19916/20000 lit I9 loud half
-   FAIL 4812/20000 lit I9 loud: a request, entry or replacement
-   FAIL  883/20000 mid I8 stale statement once per E, running calls and actions apart
-== budget 8 [pooled] fault 0 seeds 10000..30000 (11.0s)
-   FAIL 5525/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
-   FAIL 20000/20000 lit FE1 R-1249 and R-1258, a stale session's SchemaChanged once per stale_cooldown
-   FAIL 20000/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 19998/20000 lit I2 (an adoption took its place)
-   FAIL 11937/20000 lit I8 never visible after RECONNECT
-   FAIL   54/20000 lit I8 never visible after server_lifetime
-   FAIL 5299/20000 lit I8 search_path once per E
-   FAIL 10100/20000 lit I8 stale statement once per E
-   FAIL 19932/20000 lit I9 loud half
-   FAIL 4668/20000 lit I9 loud: a request, entry or replacement
-   FAIL    6/20000 lit I9 silent past W of the first confirmation
-   FAIL 2972/20000 mid I8 stale statement once per E, running calls and actions apart
+   FAIL 19997/20000 lit I2 (an adoption took its place)
+   FAIL 11690/20000 lit I8 never visible after RECONNECT
+   FAIL   70/20000 lit I8 never visible after server_lifetime
+   FAIL 5274/20000 lit I8 search_path once per E
+   FAIL 10162/20000 lit I8 stale statement once per E
+   FAIL 19933/20000 lit I9 loud half
+   FAIL 4703/20000 lit I9 loud: a request, entry or replacement
+   FAIL    2/20000 lit I9 silent past W of the first confirmation
+   FAIL 2941/20000 mid I8 stale statement once per E, running calls and actions apart
 == caches off [pooled] fault 0 seeds 10000..30000 (8.1s)
-   FAIL 19996/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 5882/20000 lit I8 never visible after RECONNECT
-   FAIL 19887/20000 lit I9 loud half
+   FAIL 19999/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 5685/20000 lit I8 never visible after RECONNECT
+   FAIL    1/20000 lit I8 never visible after server_lifetime
+   FAIL 19890/20000 lit I9 loud half
 == no client input [pooled] fault 0 seeds 10000..30000 (10.1s)
    FAIL 5669/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
    FAIL 19971/20000 lit FE1 R-1249 and R-1258, a stale session's SchemaChanged once per stale_cooldown
@@ -76,147 +78,148 @@
    FAIL 1738/20000 lit I9 loud: a request, entry or replacement
    FAIL    6/20000 lit I9 silent past W of the first confirmation
    FAIL 3092/20000 mid I8 stale statement once per E, running calls and actions apart
-== several, one server [pooled] fault 0 seeds 10000..30000 (11.0s)
-   FAIL 5730/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+== several, one server [pooled] fault 0 seeds 10000..30000 (11.1s)
+   FAIL 5698/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
    FAIL 19999/20000 lit FE1 R-1249 and R-1258, a stale session's SchemaChanged once per stale_cooldown
-   FAIL 19999/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 18325/20000 lit I2 (an adoption took its place)
-   FAIL 12189/20000 lit I8 never visible after RECONNECT
-   FAIL   64/20000 lit I8 never visible after server_lifetime
-   FAIL 2023/20000 lit I8 search_path once per E
-   FAIL 11534/20000 lit I8 stale statement once per E
-   FAIL 19915/20000 lit I9 loud half
-   FAIL 4891/20000 lit I9 loud: a request, entry or replacement
-   FAIL   16/20000 lit I9 silent past W of the first confirmation
-   FAIL 3039/20000 mid I8 stale statement once per E, running calls and actions apart
+   FAIL 19997/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 18302/20000 lit I2 (an adoption took its place)
+   FAIL 12074/20000 lit I8 never visible after RECONNECT
+   FAIL   60/20000 lit I8 never visible after server_lifetime
+   FAIL 2059/20000 lit I8 search_path once per E
+   FAIL 11553/20000 lit I8 stale statement once per E
+   FAIL 19922/20000 lit I9 loud half
+   FAIL 4986/20000 lit I9 loud: a request, entry or replacement
+   FAIL   11/20000 lit I9 silent past W of the first confirmation
+   FAIL 3071/20000 mid I8 stale statement once per E, running calls and actions apart
 == two servers [pooled] fault 0 seeds 10000..30000 (11.1s)
-   FAIL 5705/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL 5788/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
    FAIL 20000/20000 lit FE1 R-1249 and R-1258, a stale session's SchemaChanged once per stale_cooldown
-   FAIL 19998/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 18330/20000 lit I2 (an adoption took its place)
-   FAIL 12261/20000 lit I8 never visible after RECONNECT
-   FAIL   62/20000 lit I8 never visible after server_lifetime
-   FAIL 1983/20000 lit I8 search_path once per E
-   FAIL 11328/20000 lit I8 stale statement once per E
-   FAIL 19931/20000 lit I9 loud half
-   FAIL 4958/20000 lit I9 loud: a request, entry or replacement
-   FAIL    8/20000 lit I9 silent past W of the first confirmation
-   FAIL 2972/20000 mid I8 stale statement once per E, running calls and actions apart
-== three servers [pooled] fault 0 seeds 10000..30000 (11.0s)
-   FAIL 5759/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
-   FAIL 20000/20000 lit FE1 R-1249 and R-1258, a stale session's SchemaChanged once per stale_cooldown
+   FAIL 19999/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 18301/20000 lit I2 (an adoption took its place)
+   FAIL 12101/20000 lit I8 never visible after RECONNECT
+   FAIL   61/20000 lit I8 never visible after server_lifetime
+   FAIL 1979/20000 lit I8 search_path once per E
+   FAIL 11294/20000 lit I8 stale statement once per E
+   FAIL 19926/20000 lit I9 loud half
+   FAIL 4885/20000 lit I9 loud: a request, entry or replacement
+   FAIL   10/20000 lit I9 silent past W of the first confirmation
+   FAIL 3015/20000 mid I8 stale statement once per E, running calls and actions apart
+== three servers [pooled] fault 0 seeds 10000..30000 (11.2s)
+   FAIL 5879/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL 19999/20000 lit FE1 R-1249 and R-1258, a stale session's SchemaChanged once per stale_cooldown
    FAIL 20000/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 18338/20000 lit I2 (an adoption took its place)
-   FAIL 12211/20000 lit I8 never visible after RECONNECT
-   FAIL   74/20000 lit I8 never visible after server_lifetime
-   FAIL 2016/20000 lit I8 search_path once per E
-   FAIL 11265/20000 lit I8 stale statement once per E
-   FAIL 19921/20000 lit I9 loud half
-   FAIL 5001/20000 lit I9 loud: a request, entry or replacement
-   FAIL    7/20000 lit I9 silent past W of the first confirmation
-   FAIL 2943/20000 mid I8 stale statement once per E, running calls and actions apart
-== heavy [pooled] fault 0 seeds 10000..30000 (9.2s)
-   FAIL 3846/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL 18312/20000 lit I2 (an adoption took its place)
+   FAIL 12217/20000 lit I8 never visible after RECONNECT
+   FAIL   59/20000 lit I8 never visible after server_lifetime
+   FAIL 1998/20000 lit I8 search_path once per E
+   FAIL 11447/20000 lit I8 stale statement once per E
+   FAIL 19939/20000 lit I9 loud half
+   FAIL 4832/20000 lit I9 loud: a request, entry or replacement
+   FAIL   14/20000 lit I9 silent past W of the first confirmation
+   FAIL 3017/20000 mid I8 stale statement once per E, running calls and actions apart
+== heavy [pooled] fault 0 seeds 10000..30000 (9.3s)
+   FAIL 3820/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
    FAIL 20000/20000 lit FE1 R-1249 and R-1258, a stale session's SchemaChanged once per stale_cooldown
-   FAIL 19997/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 19995/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL 20000/20000 lit I2 (an adoption took its place)
-   FAIL 17868/20000 lit I8 never visible after RECONNECT
+   FAIL 17810/20000 lit I8 never visible after RECONNECT
    FAIL    3/20000 lit I8 never visible after server_lifetime
-   FAIL 5263/20000 lit I8 search_path once per E
-   FAIL 10629/20000 lit I8 stale statement once per E
-   FAIL 19995/20000 lit I9 loud half
-   FAIL 5555/20000 lit I9 loud: a request, entry or replacement
-   FAIL 4504/20000 mid I8 stale statement once per E, running calls and actions apart
-== landing always [pooled] fault 0 seeds 10000..30000 (11.0s)
-   FAIL 5538/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL 5169/20000 lit I8 search_path once per E
+   FAIL 10773/20000 lit I8 stale statement once per E
+   FAIL 19998/20000 lit I9 loud half
+   FAIL 5524/20000 lit I9 loud: a request, entry or replacement
+   FAIL    1/20000 lit I9 silent past W of the first confirmation
+   FAIL 4603/20000 mid I8 stale statement once per E, running calls and actions apart
+== landing always [pooled] fault 0 seeds 10000..30000 (11.1s)
+   FAIL 5687/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
    FAIL 20000/20000 lit FE1 R-1249 and R-1258, a stale session's SchemaChanged once per stale_cooldown
    FAIL 19999/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL 19998/20000 lit I2 (an adoption took its place)
-   FAIL 11930/20000 lit I8 never visible after RECONNECT
-   FAIL   58/20000 lit I8 never visible after server_lifetime
-   FAIL 5365/20000 lit I8 search_path once per E
-   FAIL 10234/20000 lit I8 stale statement once per E
-   FAIL 19923/20000 lit I9 loud half
-   FAIL 4627/20000 lit I9 loud: a request, entry or replacement
-   FAIL    5/20000 lit I9 silent past W of the first confirmation
-   FAIL 2996/20000 mid I8 stale statement once per E, running calls and actions apart
-== two servers, landing always, heavy [pooled] fault 0 seeds 10000..30000 (9.3s)
-   FAIL 4258/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
-   FAIL 19997/20000 lit FE1 R-1249 and R-1258, a stale session's SchemaChanged once per stale_cooldown
+   FAIL 11792/20000 lit I8 never visible after RECONNECT
+   FAIL   66/20000 lit I8 never visible after server_lifetime
+   FAIL 5316/20000 lit I8 search_path once per E
+   FAIL 10209/20000 lit I8 stale statement once per E
+   FAIL 19932/20000 lit I9 loud half
+   FAIL 4790/20000 lit I9 loud: a request, entry or replacement
+   FAIL    4/20000 lit I9 silent past W of the first confirmation
+   FAIL 2936/20000 mid I8 stale statement once per E, running calls and actions apart
+== two servers, landing always, heavy [pooled] fault 0 seeds 10000..30000 (9.4s)
+   FAIL 4175/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL 19999/20000 lit FE1 R-1249 and R-1258, a stale session's SchemaChanged once per stale_cooldown
    FAIL 19997/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 19902/20000 lit I2 (an adoption took its place)
-   FAIL 18338/20000 lit I8 never visible after RECONNECT
-   FAIL    1/20000 lit I8 never visible after server_lifetime
-   FAIL 1873/20000 lit I8 search_path once per E
-   FAIL 13133/20000 lit I8 stale statement once per E
-   FAIL 19998/20000 lit I9 loud half
-   FAIL 6269/20000 lit I9 loud: a request, entry or replacement
-   FAIL 3903/20000 mid I8 stale statement once per E, running calls and actions apart
-== savepoints [pooled] fault 0 seeds 10000..30000 (16.8s)
-   FAIL 8134/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL 19915/20000 lit I2 (an adoption took its place)
+   FAIL 18274/20000 lit I8 never visible after RECONNECT
+   FAIL 1876/20000 lit I8 search_path once per E
+   FAIL 12999/20000 lit I8 stale statement once per E
+   FAIL 19993/20000 lit I9 loud half
+   FAIL 6265/20000 lit I9 loud: a request, entry or replacement
+   FAIL    2/20000 lit I9 silent past W of the first confirmation
+   FAIL 3843/20000 mid I8 stale statement once per E, running calls and actions apart
+== savepoints [pooled] fault 0 seeds 10000..30000 (16.9s)
+   FAIL 8084/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
    FAIL 20000/20000 lit FE1 R-1249 and R-1258, a stale session's SchemaChanged once per stale_cooldown
    FAIL 20000/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL 20000/20000 lit I2 (an adoption took its place)
-   FAIL 16126/20000 lit I8 never visible after RECONNECT
-   FAIL  200/20000 lit I8 never visible after server_lifetime
-   FAIL 12350/20000 lit I8 search_path once per E
-   FAIL 17911/20000 lit I8 stale statement once per E
-   FAIL 19971/20000 lit I9 loud half
-   FAIL 3386/20000 lit I9 loud: a request, entry or replacement
-   FAIL    4/20000 lit I9 silent past W of the first confirmation
-   FAIL 10465/20000 mid I8 stale statement once per E, running calls and actions apart
+   FAIL 16174/20000 lit I8 never visible after RECONNECT
+   FAIL  152/20000 lit I8 never visible after server_lifetime
+   FAIL 12482/20000 lit I8 search_path once per E
+   FAIL 18046/20000 lit I8 stale statement once per E
+   FAIL 19970/20000 lit I9 loud half
+   FAIL 3328/20000 lit I9 loud: a request, entry or replacement
+   FAIL    5/20000 lit I9 silent past W of the first confirmation
+   FAIL 10646/20000 mid I8 stale statement once per E, running calls and actions apart
 == RR and SERIALIZABLE only [pooled] fault 0 seeds 10000..30000 (11.1s)
-   FAIL 5525/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL 5657/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
    FAIL 20000/20000 lit FE1 R-1249 and R-1258, a stale session's SchemaChanged once per stale_cooldown
    FAIL 20000/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 19998/20000 lit I2 (an adoption took its place)
-   FAIL 11937/20000 lit I8 never visible after RECONNECT
-   FAIL   54/20000 lit I8 never visible after server_lifetime
-   FAIL 5299/20000 lit I8 search_path once per E
-   FAIL 10100/20000 lit I8 stale statement once per E
-   FAIL 19932/20000 lit I9 loud half
-   FAIL 4668/20000 lit I9 loud: a request, entry or replacement
-   FAIL    6/20000 lit I9 silent past W of the first confirmation
-   FAIL 2972/20000 mid I8 stale statement once per E, running calls and actions apart
-== quiet [pooled] fault 0 seeds 10000..30000 (10.4s)
-   FAIL 6622/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
-   FAIL 19974/20000 lit FE1 R-1249 and R-1258, a stale session's SchemaChanged once per stale_cooldown
+   FAIL 19997/20000 lit I2 (an adoption took its place)
+   FAIL 11690/20000 lit I8 never visible after RECONNECT
+   FAIL   70/20000 lit I8 never visible after server_lifetime
+   FAIL 5274/20000 lit I8 search_path once per E
+   FAIL 10162/20000 lit I8 stale statement once per E
+   FAIL 19933/20000 lit I9 loud half
+   FAIL 4703/20000 lit I9 loud: a request, entry or replacement
+   FAIL    2/20000 lit I9 silent past W of the first confirmation
+   FAIL 2941/20000 mid I8 stale statement once per E, running calls and actions apart
+== quiet [pooled] fault 0 seeds 10000..30000 (10.5s)
+   FAIL 6671/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL 19984/20000 lit FE1 R-1249 and R-1258, a stale session's SchemaChanged once per stale_cooldown
    FAIL 20000/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 9742/20000 lit I2 (an adoption took its place)
-   FAIL 1009/20000 lit I8 never visible after RECONNECT
-   FAIL   43/20000 lit I8 never visible after server_lifetime
-   FAIL 1419/20000 lit I8 search_path once per E
-   FAIL 4534/20000 lit I8 stale statement once per E
+   FAIL 9713/20000 lit I2 (an adoption took its place)
+   FAIL  988/20000 lit I8 never visible after RECONNECT
+   FAIL   40/20000 lit I8 never visible after server_lifetime
+   FAIL 1475/20000 lit I8 search_path once per E
+   FAIL 4485/20000 lit I8 stale statement once per E
    FAIL 19881/20000 lit I9 loud half
-   FAIL 1335/20000 lit I9 loud: a request, entry or replacement
-   FAIL  118/20000 lit I9 silent past W of the first confirmation
-   FAIL  564/20000 mid I8 stale statement once per E, running calls and actions apart
-== hand relabels [pooled] fault 0 seeds 10000..30000 (10.8s)
-   FAIL 6033/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL 1317/20000 lit I9 loud: a request, entry or replacement
+   FAIL  109/20000 lit I9 silent past W of the first confirmation
+   FAIL  556/20000 mid I8 stale statement once per E, running calls and actions apart
+== hand relabels [pooled] fault 0 seeds 10000..30000 (10.9s)
+   FAIL 5981/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
    FAIL 20000/20000 lit FE1 R-1249 and R-1258, a stale session's SchemaChanged once per stale_cooldown
-   FAIL 20000/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 19550/20000 lit I2 (an adoption took its place)
-   FAIL 5050/20000 lit I8 never visible after RECONNECT
-   FAIL   57/20000 lit I8 never visible after server_lifetime
-   FAIL 3530/20000 lit I8 search_path once per E
-   FAIL 7991/20000 lit I8 stale statement once per E
-   FAIL 19999/20000 lit I9 loud half
-   FAIL 3900/20000 lit I9 loud: a request, entry or replacement
-   FAIL   16/20000 lit I9 silent past W of the first confirmation
-   FAIL 1517/20000 mid I8 stale statement once per E, running calls and actions apart
+   FAIL 19997/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 19593/20000 lit I2 (an adoption took its place)
+   FAIL 4968/20000 lit I8 never visible after RECONNECT
+   FAIL   49/20000 lit I8 never visible after server_lifetime
+   FAIL 3553/20000 lit I8 search_path once per E
+   FAIL 7890/20000 lit I8 stale statement once per E
+   FAIL 19998/20000 lit I9 loud half
+   FAIL 3974/20000 lit I9 loud: a request, entry or replacement
+   FAIL   18/20000 lit I9 silent past W of the first confirmation
+   FAIL 1473/20000 mid I8 stale statement once per E, running calls and actions apart
 == long transactions [pooled] fault 0 seeds 10000..30000 (16.5s)
-   FAIL 5013/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
-   FAIL 19996/20000 lit FE1 R-1249 and R-1258, a stale session's SchemaChanged once per stale_cooldown
+   FAIL 5113/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL 19997/20000 lit FE1 R-1249 and R-1258, a stale session's SchemaChanged once per stale_cooldown
    FAIL 20000/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 13124/20000 lit I2 (an adoption took its place)
-   FAIL 4348/20000 lit I8 never visible after RECONNECT
-   FAIL  279/20000 lit I8 never visible after server_lifetime
-   FAIL 2061/20000 lit I8 search_path once per E
-   FAIL 2876/20000 lit I8 stale statement once per E
-   FAIL 19820/20000 lit I9 loud half
-   FAIL 1012/20000 lit I9 loud: a request, entry or replacement
-   FAIL  104/20000 lit I9 silent past W of the first confirmation
-   FAIL  330/20000 mid I8 stale statement once per E, running calls and actions apart
+   FAIL 13007/20000 lit I2 (an adoption took its place)
+   FAIL 4224/20000 lit I8 never visible after RECONNECT
+   FAIL  270/20000 lit I8 never visible after server_lifetime
+   FAIL 2100/20000 lit I8 search_path once per E
+   FAIL 2850/20000 lit I8 stale statement once per E
+   FAIL 19782/20000 lit I9 loud half
+   FAIL  987/20000 lit I9 loud: a request, entry or replacement
+   FAIL  100/20000 lit I9 silent past W of the first confirmation
+   FAIL  314/20000 mid I8 stale statement once per E, running calls and actions apart
 == slow [pooled] fault 0 seeds 10000..30000 (6.7s)
    FAIL 1956/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
    FAIL  362/20000 lit FE1 R-1249 and R-1258, a stale session's SchemaChanged once per stale_cooldown
@@ -228,121 +231,123 @@
    FAIL  593/20000 lit I8 stale statement once per E
    FAIL    2/20000 mid I8 stale statement once per E, running calls and actions apart
 == transactions without retry [pooled] fault 0 seeds 10000..30000 (13.5s)
-   FAIL 18373/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL 18268/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL 20000/20000 lit FE1 R-1249 and R-1258, a stale session's SchemaChanged once per stale_cooldown
+   FAIL 20000/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 19999/20000 lit I2 (an adoption took its place)
+   FAIL 17792/20000 lit I8 never visible after RECONNECT
+   FAIL  250/20000 lit I8 never visible after server_lifetime
+   FAIL 19855/20000 lit I8 search_path once per E
+   FAIL 19998/20000 lit I8 stale statement once per E
+   FAIL 19918/20000 lit I9 loud half
+   FAIL 1667/20000 lit I9 loud: a request, entry or replacement
+   FAIL   16/20000 lit I9 silent past W of the first confirmation
+   FAIL 18120/20000 mid I8 stale statement once per E, running calls and actions apart
+== transactions without retry, entries off [pooled] fault 0 seeds 10000..30000 (14.8s)
    FAIL 20000/20000 lit FE1 R-1249 and R-1258, a stale session's SchemaChanged once per stale_cooldown
    FAIL 20000/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL 20000/20000 lit I2 (an adoption took its place)
-   FAIL 17814/20000 lit I8 never visible after RECONNECT
-   FAIL  239/20000 lit I8 never visible after server_lifetime
-   FAIL 19881/20000 lit I8 search_path once per E
-   FAIL 20000/20000 lit I8 stale statement once per E
-   FAIL 19884/20000 lit I9 loud half
-   FAIL 1754/20000 lit I9 loud: a request, entry or replacement
-   FAIL   11/20000 lit I9 silent past W of the first confirmation
-   FAIL 18116/20000 mid I8 stale statement once per E, running calls and actions apart
-== transactions without retry, entries off [pooled] fault 0 seeds 10000..30000 (14.7s)
-   FAIL 20000/20000 lit FE1 R-1249 and R-1258, a stale session's SchemaChanged once per stale_cooldown
-   FAIL 20000/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 20000/20000 lit I2 (an adoption took its place)
-   FAIL 18535/20000 lit I8 never visible after RECONNECT
-   FAIL  400/20000 lit I8 never visible after server_lifetime
+   FAIL 18463/20000 lit I8 never visible after RECONNECT
+   FAIL  375/20000 lit I8 never visible after server_lifetime
    FAIL 20000/20000 lit I8 search_path once per E
    FAIL 20000/20000 lit I8 stale statement once per E
-   FAIL 19899/20000 lit I9 loud half
-   FAIL 1547/20000 lit I9 loud: a request, entry or replacement
-   FAIL 19999/20000 mid I8 stale statement once per E, running calls and actions apart
-== transactions without retry, E a fifth of W [pooled] fault 0 seeds 10000..30000 (13.8s)
-   FAIL 19381/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL 19897/20000 lit I9 loud half
+   FAIL 1581/20000 lit I9 loud: a request, entry or replacement
+   FAIL    1/20000 lit I9 silent past W of the first confirmation
+   FAIL 19998/20000 mid I8 stale statement once per E, running calls and actions apart
+== transactions without retry, E a fifth of W [pooled] fault 0 seeds 10000..30000 (13.9s)
+   FAIL 19387/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
    FAIL 20000/20000 lit FE1 R-1249 and R-1258, a stale session's SchemaChanged once per stale_cooldown
    FAIL 20000/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL 20000/20000 lit I2 (an adoption took its place)
-   FAIL 18011/20000 lit I8 never visible after RECONNECT
-   FAIL  264/20000 lit I8 never visible after server_lifetime
-   FAIL 7546/20000 lit I8 search_path once per E
-   FAIL 19999/20000 lit I8 stale statement once per E
-   FAIL 19910/20000 lit I9 loud half
-   FAIL 1777/20000 lit I9 loud: a request, entry or replacement
-   FAIL 12076/20000 mid I8 stale statement once per E, running calls and actions apart
-== search_path only, no retry [pooled] fault 0 seeds 10000..30000 (4.4s)
+   FAIL 17972/20000 lit I8 never visible after RECONNECT
+   FAIL  259/20000 lit I8 never visible after server_lifetime
+   FAIL 7475/20000 lit I8 search_path once per E
+   FAIL 19997/20000 lit I8 stale statement once per E
+   FAIL 19914/20000 lit I9 loud half
+   FAIL 1826/20000 lit I9 loud: a request, entry or replacement
+   FAIL 12133/20000 mid I8 stale statement once per E, running calls and actions apart
+== search_path only, no retry [pooled] fault 0 seeds 10000..30000 (4.5s)
    FAIL 15699/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
    FAIL 20000/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
-== search_path only, no retry, entries off [pooled] fault 0 seeds 10000..30000 (14.4s)
+== search_path only, no retry, entries off [pooled] fault 0 seeds 10000..30000 (14.5s)
    FAIL 20000/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL 20000/20000 lit I8 search_path once per E
-== search_path only, no retry, E off by 0s [pooled] fault 0 seeds 10000..30000 (14.8s)
+== search_path only, no retry, E off by 0s [pooled] fault 0 seeds 10000..30000 (15.2s)
    FAIL 20000/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
 == search_path only, no retry, up to 100 ms to the run [pooled] fault 0 seeds 10000..30000 (5.1s)
    FAIL 20000/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
    FAIL 20000/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
-== stored text only, no schema change [pooled] fault 0 seeds 10000..30000 (9.5s)
-   FAIL 19998/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
+== stored text only, no schema change [pooled] fault 0 seeds 10000..30000 (9.9s)
+   FAIL 19996/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
 == record shapes only, no schema change [pooled] fault 0 seeds 10000..30000 (9.0s)
    FAIL 19999/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
 == max 1 [pooled] fault 0 seeds 10000..30000 (10.2s)
-   FAIL 4224/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL 4194/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
    FAIL 20000/20000 lit FE1 R-1249 and R-1258, a stale session's SchemaChanged once per stale_cooldown
-   FAIL 20000/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 19998/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL 19998/20000 lit I2 (an adoption took its place)
-   FAIL 9545/20000 lit I8 never visible after RECONNECT
-   FAIL   46/20000 lit I8 never visible after server_lifetime
-   FAIL 7433/20000 lit I8 search_path once per E
-   FAIL 2243/20000 lit I8 stale statement once per E
-   FAIL 19870/20000 lit I9 loud half
-   FAIL 3965/20000 lit I9 loud: a request, entry or replacement
-   FAIL    7/20000 lit I9 silent past W of the first confirmation
-   FAIL 1662/20000 mid I8 stale statement once per E, running calls and actions apart
+   FAIL 9230/20000 lit I8 never visible after RECONNECT
+   FAIL   41/20000 lit I8 never visible after server_lifetime
+   FAIL 7310/20000 lit I8 search_path once per E
+   FAIL 2291/20000 lit I8 stale statement once per E
+   FAIL 19882/20000 lit I9 loud half
+   FAIL 4003/20000 lit I9 loud: a request, entry or replacement
+   FAIL    8/20000 lit I9 silent past W of the first confirmation
+   FAIL 1711/20000 mid I8 stale statement once per E, running calls and actions apart
 == max 1, budget 1 [pooled] fault 0 seeds 10000..30000 (10.2s)
-   FAIL 4224/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL 4194/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
    FAIL 20000/20000 lit FE1 R-1249 and R-1258, a stale session's SchemaChanged once per stale_cooldown
-   FAIL 20000/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 19998/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL 19998/20000 lit I2 (an adoption took its place)
-   FAIL 9545/20000 lit I8 never visible after RECONNECT
-   FAIL   46/20000 lit I8 never visible after server_lifetime
-   FAIL 7433/20000 lit I8 search_path once per E
-   FAIL 2243/20000 lit I8 stale statement once per E
-   FAIL 19870/20000 lit I9 loud half
-   FAIL 3965/20000 lit I9 loud: a request, entry or replacement
-   FAIL    7/20000 lit I9 silent past W of the first confirmation
-   FAIL 1662/20000 mid I8 stale statement once per E, running calls and actions apart
+   FAIL 9230/20000 lit I8 never visible after RECONNECT
+   FAIL   41/20000 lit I8 never visible after server_lifetime
+   FAIL 7310/20000 lit I8 search_path once per E
+   FAIL 2291/20000 lit I8 stale statement once per E
+   FAIL 19882/20000 lit I9 loud half
+   FAIL 4003/20000 lit I9 loud: a request, entry or replacement
+   FAIL    8/20000 lit I9 silent past W of the first confirmation
+   FAIL 1711/20000 mid I8 stale statement once per E, running calls and actions apart
 == max 1, quick [pooled] fault 0 seeds 10000..30000 (8.9s)
-   FAIL 1200/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
-   FAIL 19893/20000 lit FE1 R-1249 and R-1258, a stale session's SchemaChanged once per stale_cooldown
-   FAIL 19996/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 12838/20000 lit I2 (an adoption took its place)
-   FAIL 2957/20000 lit I8 never visible after RECONNECT
-   FAIL   39/20000 lit I8 never visible after server_lifetime
-   FAIL 3296/20000 lit I8 search_path once per E
-   FAIL  560/20000 lit I8 stale statement once per E
-   FAIL 19765/20000 lit I9 loud half
-   FAIL 2432/20000 lit I9 loud: a request, entry or replacement
-   FAIL   61/20000 lit I9 silent past W of the first confirmation
-   FAIL  487/20000 mid I8 stale statement once per E, running calls and actions apart
-== max 2, budget 2, heavy [pooled] fault 0 seeds 10000..30000 (9.4s)
-   FAIL 4252/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
-   FAIL 20000/20000 lit FE1 R-1249 and R-1258, a stale session's SchemaChanged once per stale_cooldown
-   FAIL 20000/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 20000/20000 lit I2 (an adoption took its place)
-   FAIL 17201/20000 lit I8 never visible after RECONNECT
-   FAIL    6/20000 lit I8 never visible after server_lifetime
-   FAIL 7094/20000 lit I8 search_path once per E
-   FAIL 7676/20000 lit I8 stale statement once per E
-   FAIL 19993/20000 lit I9 loud half
-   FAIL 6534/20000 lit I9 loud: a request, entry or replacement
-   FAIL 4081/20000 mid I8 stale statement once per E, running calls and actions apart
-== hand relabels without the reset [pooled] fault 0 seeds 10000..30000 (11.0s)
-   FAIL 6065/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
-   FAIL 20000/20000 lit FE1 R-1249 and R-1258, a stale session's SchemaChanged once per stale_cooldown
+   FAIL 1178/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL 19912/20000 lit FE1 R-1249 and R-1258, a stale session's SchemaChanged once per stale_cooldown
    FAIL 19999/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 19636/20000 lit I2 (an adoption took its place)
-   FAIL 5042/20000 lit I8 never visible after RECONNECT
-   FAIL   60/20000 lit I8 never visible after server_lifetime
-   FAIL 3448/20000 lit I8 search_path once per E
-   FAIL 9133/20000 lit I8 stale statement once per E
-   FAIL 19997/20000 lit I9 loud half
-   FAIL 3932/20000 lit I9 loud: a request, entry or replacement
-   FAIL   28/20000 lit I9 silent past W of the first confirmation
-   FAIL 1757/20000 mid I8 stale statement once per E, running calls and actions apart
-== hand relabels without the reset, casts [pooled] fault 0 seeds 10000..30000 (8.4s)
+   FAIL 12855/20000 lit I2 (an adoption took its place)
+   FAIL 2842/20000 lit I8 never visible after RECONNECT
+   FAIL   41/20000 lit I8 never visible after server_lifetime
+   FAIL 3220/20000 lit I8 search_path once per E
+   FAIL  588/20000 lit I8 stale statement once per E
+   FAIL 19762/20000 lit I9 loud half
+   FAIL 2392/20000 lit I9 loud: a request, entry or replacement
+   FAIL   50/20000 lit I9 silent past W of the first confirmation
+   FAIL  506/20000 mid I8 stale statement once per E, running calls and actions apart
+== max 2, budget 2, heavy [pooled] fault 0 seeds 10000..30000 (9.4s)
+   FAIL 4197/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL 20000/20000 lit FE1 R-1249 and R-1258, a stale session's SchemaChanged once per stale_cooldown
+   FAIL 19998/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 20000/20000 lit I2 (an adoption took its place)
+   FAIL 17045/20000 lit I8 never visible after RECONNECT
+   FAIL    7/20000 lit I8 never visible after server_lifetime
+   FAIL 7027/20000 lit I8 search_path once per E
+   FAIL 7783/20000 lit I8 stale statement once per E
+   FAIL 19991/20000 lit I9 loud half
+   FAIL 6688/20000 lit I9 loud: a request, entry or replacement
+   FAIL    1/20000 lit I9 silent past W of the first confirmation
+   FAIL 4120/20000 mid I8 stale statement once per E, running calls and actions apart
+== hand relabels without the reset [pooled] fault 0 seeds 10000..30000 (10.9s)
+   FAIL 6078/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL 19999/20000 lit FE1 R-1249 and R-1258, a stale session's SchemaChanged once per stale_cooldown
+   FAIL 20000/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 19658/20000 lit I2 (an adoption took its place)
+   FAIL 4921/20000 lit I8 never visible after RECONNECT
+   FAIL   63/20000 lit I8 never visible after server_lifetime
+   FAIL 3437/20000 lit I8 search_path once per E
+   FAIL 8908/20000 lit I8 stale statement once per E
+   FAIL 19996/20000 lit I9 loud half
+   FAIL 3955/20000 lit I9 loud: a request, entry or replacement
+   FAIL   29/20000 lit I9 silent past W of the first confirmation
+   FAIL 1701/20000 mid I8 stale statement once per E, running calls and actions apart
+== hand relabels without the reset, casts [pooled] fault 0 seeds 10000..30000 (8.5s)
    FAIL  649/20000 lit FE1 R-1249 and R-1258, a stale session's SchemaChanged once per stale_cooldown
    FAIL 19999/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL 11743/20000 lit I8 stale statement once per E
@@ -350,62 +355,62 @@
    FAIL    7/20000 lit I9 silent past W of the first confirmation
    FAIL  767/20000 mid I8 stale statement once per E, running calls and actions apart
 == old labels copied [pooled] fault 0 seeds 10000..30000 (11.0s)
-   FAIL 5605/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL 5643/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
    FAIL 20000/20000 lit FE1 R-1249 and R-1258, a stale session's SchemaChanged once per stale_cooldown
-   FAIL 20000/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 19999/20000 lit I2 (an adoption took its place)
-   FAIL 11807/20000 lit I8 never visible after RECONNECT
-   FAIL   56/20000 lit I8 never visible after server_lifetime
-   FAIL 5272/20000 lit I8 search_path once per E
-   FAIL 10167/20000 lit I8 stale statement once per E
-   FAIL 19934/20000 lit I9 loud half
-   FAIL 4778/20000 lit I9 loud: a request, entry or replacement
-   FAIL    2/20000 lit I9 silent past W of the first confirmation
-   FAIL 2984/20000 mid I8 stale statement once per E, running calls and actions apart
-== record and column statements [pooled] fault 0 seeds 10000..30000 (10.7s)
-   FAIL 6764/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL 19999/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 20000/20000 lit I2 (an adoption took its place)
+   FAIL 11734/20000 lit I8 never visible after RECONNECT
+   FAIL   62/20000 lit I8 never visible after server_lifetime
+   FAIL 5281/20000 lit I8 search_path once per E
+   FAIL 9989/20000 lit I8 stale statement once per E
+   FAIL 19914/20000 lit I9 loud half
+   FAIL 4719/20000 lit I9 loud: a request, entry or replacement
+   FAIL    1/20000 lit I9 silent past W of the first confirmation
+   FAIL 2973/20000 mid I8 stale statement once per E, running calls and actions apart
+== record and column statements [pooled] fault 0 seeds 10000..30000 (10.8s)
+   FAIL 6816/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
    FAIL 20000/20000 lit FE1 R-1249 and R-1258, a stale session's SchemaChanged once per stale_cooldown
    FAIL 19998/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 20000/20000 lit I2 (an adoption took its place)
-   FAIL 11320/20000 lit I8 never visible after RECONNECT
-   FAIL   43/20000 lit I8 never visible after server_lifetime
-   FAIL 7352/20000 lit I8 search_path once per E
-   FAIL 10288/20000 lit I8 stale statement once per E
-   FAIL 19930/20000 lit I9 loud half
-   FAIL 5649/20000 lit I9 loud: a request, entry or replacement
-   FAIL    7/20000 lit I9 silent past W of the first confirmation
-   FAIL 3068/20000 mid I8 stale statement once per E, running calls and actions apart
-== every call a cast beside a second type [pooled] fault 0 seeds 10000..30000 (9.4s)
+   FAIL 19998/20000 lit I2 (an adoption took its place)
+   FAIL 11126/20000 lit I8 never visible after RECONNECT
+   FAIL   27/20000 lit I8 never visible after server_lifetime
+   FAIL 7396/20000 lit I8 search_path once per E
+   FAIL 10474/20000 lit I8 stale statement once per E
+   FAIL 19923/20000 lit I9 loud half
+   FAIL 5685/20000 lit I9 loud: a request, entry or replacement
+   FAIL    3/20000 lit I9 silent past W of the first confirmation
+   FAIL 3079/20000 mid I8 stale statement once per E, running calls and actions apart
+== every call a cast beside a second type [pooled] fault 0 seeds 10000..30000 (9.5s)
    FAIL 20000/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL 8984/20000 lit I2 (an adoption took its place)
    FAIL 19555/20000 lit I8 stale statement once per E
    FAIL   50/20000 lit I9 silent past W of the first confirmation
    FAIL 7959/20000 mid I8 stale statement once per E, running calls and actions apart
 == two processes [pooled] fault 0 seeds 10000..30000 (12.9s)
-   FAIL 2594/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
-   FAIL 19999/20000 lit FE1 R-1249 and R-1258, a stale session's SchemaChanged once per stale_cooldown
-   FAIL 20000/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 19987/20000 lit I2 (an adoption took its place)
-   FAIL 11746/20000 lit I8 never visible after RECONNECT
-   FAIL   65/20000 lit I8 never visible after server_lifetime
-   FAIL 3176/20000 lit I8 search_path once per E
-   FAIL 6388/20000 lit I8 stale statement once per E
-   FAIL 19909/20000 lit I9 loud half
-   FAIL 4395/20000 lit I9 loud: a request, entry or replacement
-   FAIL   81/20000 lit I9 silent past W of the first confirmation
-   FAIL 1435/20000 mid I8 stale statement once per E, running calls and actions apart
+   FAIL 2632/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL 20000/20000 lit FE1 R-1249 and R-1258, a stale session's SchemaChanged once per stale_cooldown
+   FAIL 19998/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 19994/20000 lit I2 (an adoption took its place)
+   FAIL 11726/20000 lit I8 never visible after RECONNECT
+   FAIL   64/20000 lit I8 never visible after server_lifetime
+   FAIL 3251/20000 lit I8 search_path once per E
+   FAIL 6346/20000 lit I8 stale statement once per E
+   FAIL 19924/20000 lit I9 loud half
+   FAIL 4514/20000 lit I9 loud: a request, entry or replacement
+   FAIL   98/20000 lit I9 silent past W of the first confirmation
+   FAIL 1492/20000 mid I8 stale statement once per E, running calls and actions apart
    FAIL    4/20000 mid I9 silent past W of the first request, another process's copy
 == three processes, heavy [pooled] fault 0 seeds 10000..30000 (12.2s)
-   FAIL  933/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
-   FAIL 19999/20000 lit FE1 R-1249 and R-1258, a stale session's SchemaChanged once per stale_cooldown
-   FAIL 19998/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL  882/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL 19997/20000 lit FE1 R-1249 and R-1258, a stale session's SchemaChanged once per stale_cooldown
+   FAIL 20000/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL 20000/20000 lit I2 (an adoption took its place)
-   FAIL 17353/20000 lit I8 never visible after RECONNECT
-   FAIL   11/20000 lit I8 never visible after server_lifetime
-   FAIL 1738/20000 lit I8 search_path once per E
-   FAIL 4885/20000 lit I8 stale statement once per E
-   FAIL 19993/20000 lit I9 loud half
-   FAIL 5078/20000 lit I9 loud: a request, entry or replacement
-   FAIL   38/20000 lit I9 silent past W of the first confirmation
-   FAIL 1578/20000 mid I8 stale statement once per E, running calls and actions apart
-   FAIL    2/20000 mid I9 silent past W of the first request, another process's copy
+   FAIL 17262/20000 lit I8 never visible after RECONNECT
+   FAIL   10/20000 lit I8 never visible after server_lifetime
+   FAIL 1666/20000 lit I8 search_path once per E
+   FAIL 4806/20000 lit I8 stale statement once per E
+   FAIL 19995/20000 lit I9 loud half
+   FAIL 5176/20000 lit I9 loud: a request, entry or replacement
+   FAIL   33/20000 lit I9 silent past W of the first confirmation
+   FAIL 1543/20000 mid I8 stale statement once per E, running calls and actions apart
+   FAIL    1/20000 mid I9 silent past W of the first request, another process's copy

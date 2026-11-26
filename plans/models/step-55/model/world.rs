@@ -170,6 +170,12 @@ fn world(s: &mut Sim) {
         5 => {}
         6 => {
             s.db.stored_bad = s.c.client && !s.db.stored_bad;
+            // FG1: text that stops holding _morm_retired_x holds a good label half the time, else NULL, no row, or
+            // a value its function fails on another way
+            // FG1_OFF=1 keeps the earlier world, a good label only, to compare the outputs with the last round's
+            if s.c.client && !s.db.stored_bad && std::env::var_os("FG1_OFF").is_none() {
+                s.db.stored_alt = match s.rng.r(0, 4) { 0 | 1 => 0, 2 => 1, 3 => 2, _ => 3 };
+            }
             s.db.stored_nm = s.rng.p(0.5);
         }
         7 => {
@@ -426,8 +432,12 @@ pub fn end_checks(s: &mut Sim) {
             // a change counts for the span when the pool can have learned it there: from W before the span's first
             // replacement, as a standby's replay or a read after the change can trail its commit
             let m = ch.iter().filter(|c| **c + wd >= rt[lo].0 && **c <= rt[hi].0).count() as u64;
+            // the twenty-ninth round: or when the pool did learn it there, by a read that moved its <n>, which can come
+            // any time after the commit, since <n> is read only on a failure; the larger of the two counts
+            let mv = s.pools[p].moved.iter().filter(|x| x.0 + wd >= rt[lo].0 && x.0 <= rt[hi].0).count() as u64;
+            let m = m.max(mv);
             let n = (hi - lo + 1) as u64;
-            let ne = rt[lo..=hi].iter().filter(|x| x.1 == 0).count() as u64;
+            let ne =rt[lo..=hi].iter().filter(|x| x.1 == 0).count() as u64;
             if n > 2 * mx + mx * m && !lit {
                 lit = true;
                 eg = format!("{} replacements in {}..{}, {} an epoch's, {} changes", n, rt[lo].0, rt[hi].0, ne, m);
@@ -435,6 +445,14 @@ pub fn end_checks(s: &mut Sim) {
             // R-0981's bound on an epoch's replacements alone: 2 × max in any span, plus max per migration
             if ne > 2 * mx + mx * m && ep_over.is_empty() {
                 ep_over = format!("{} of an epoch's in {}..{}, {} changes", ne, rt[lo].0, rt[hi].0, m);
+                if std::env::var("DBGR").is_ok() {
+                    let (a, b) = (rt[lo].0, rt[hi].0);
+                    println!("span {}..{}", a, b);
+                    println!("repl (t, epoch, site) {:?}", s.pools[p].repl_dbg.iter().filter(|x| x.0 + 2 * wd >= a && x.0 <= b + wd).collect::<Vec<_>>());
+                    println!("epochs (id,t,snap,rises,open) {:?}", s.pools[p].epochs.iter().filter(|x| x.1 + 3 * wd >= a && x.1 <= b + wd).collect::<Vec<_>>());
+                    println!("changes (t,n) {:?}", s.db.nhist.iter().filter(|x| x.0 + 10 * wd >= a && x.0 <= b + wd).collect::<Vec<_>>());
+                    println!("moves (t,n,snap) {:?}", s.pools[p].moved.iter().filter(|x| x.0 + 10 * wd >= a && x.0 <= b + wd).collect::<Vec<_>>());
+                }
             }
             if n > 4 * mx + 2 * mx * m && over.is_empty() {
                 over = format!("{} replacements in {}..{}, {} changes", n, rt[lo].0, rt[hi].0, m);

@@ -1,0 +1,60 @@
+--- 
++++ 
+@@ -5 +5,3 @@
+-   FAIL   30/256 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
++   FAIL   26/256 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
++   FAIL    3/256 lit FG1 R-0981 a replace from stored text only when it changes to a good label
++   FAIL  251/256 lit FG2 R-1249 the action replaces every other connection
+@@ -16 +18,3 @@
+-   FAIL   36/256 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
++   FAIL   31/256 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
++   FAIL   42/256 lit FG1 R-0981 a replace from stored text only when it changes to a good label
++   FAIL  250/256 lit FG2 R-1249 the action replaces every other connection
+@@ -28 +32,3 @@
+-   FAIL   42/256 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
++   FAIL   39/256 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
++   FAIL    7/256 lit FG1 R-0981 a replace from stored text only when it changes to a good label
++   FAIL  249/256 lit FG2 R-1249 the action replaces every other connection
+@@ -41 +47,3 @@
+-   FAIL   33/256 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
++   FAIL   32/256 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
++   FAIL    3/256 lit FG1 R-0981 a replace from stored text only when it changes to a good label
++   FAIL  251/256 lit FG2 R-1249 the action replaces every other connection
+@@ -53 +61,3 @@
+-   FAIL   30/256 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
++   FAIL   26/256 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
++   FAIL    3/256 lit FG1 R-0981 a replace from stored text only when it changes to a good label
++   FAIL  251/256 lit FG2 R-1249 the action replaces every other connection
+@@ -64,0 +75 @@
++   FAIL  255/256 lit FG2 R-1249 the action replaces every other connection
+@@ -73,0 +85 @@
++   FAIL  256/256 lit FG2 R-1249 the action replaces every other connection
+@@ -83,0 +96,2 @@
++   FAIL    1/256 lit FG1 R-0981 a replace from stored text only when it changes to a good label
++   FAIL  244/256 lit FG2 R-1249 the action replaces every other connection
+@@ -95 +109,2 @@
+-   FAIL   32/256 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
++   FAIL   30/256 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
++   FAIL  224/256 lit FG2 R-1249 the action replaces every other connection
+@@ -107 +122,3 @@
+-   FAIL   33/256 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
++   FAIL   30/256 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
++   FAIL    2/256 lit FG1 R-0981 a replace from stored text only when it changes to a good label
++   FAIL  232/256 lit FG2 R-1249 the action replaces every other connection
+@@ -118,0 +136,2 @@
++   FAIL   24/256 lit FG1 R-0981 a replace from stored text only when it changes to a good label
++   FAIL  256/256 lit FG2 R-1249 the action replaces every other connection
+@@ -130 +149,3 @@
+-   FAIL   32/256 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
++   FAIL   28/256 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
++   FAIL    6/256 lit FG1 R-0981 a replace from stored text only when it changes to a good label
++   FAIL  249/256 lit FG2 R-1249 the action replaces every other connection
+@@ -141,0 +163,2 @@
++   FAIL    6/256 lit FG1 R-0981 a replace from stored text only when it changes to a good label
++   FAIL  252/256 lit FG2 R-1249 the action replaces every other connection
+@@ -153 +176,3 @@
+-   FAIL   69/256 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
++   FAIL   64/256 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
++   FAIL   18/256 lit FG1 R-0981 a replace from stored text only when it changes to a good label
++   FAIL  251/256 lit FG2 R-1249 the action replaces every other connection
+@@ -164 +189,3 @@

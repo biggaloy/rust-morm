@@ -1,3 +1,19 @@
+# Step 55's stale-session model, after the twenty-ninth review's fix
+
+Started from `plans/models/step-55/` on `main` (the twenty-eighth review's fix, PR #3 `3686e86`), copied to `plans/wip/step-55/`. FG1 changes what the model checks: stored text toggled only between a good label and `_morm_retired_x`, so only one kind of confirming change was driven, where any change that makes the next run confirm brings a *replace* action. FG2 changes nothing a check bounds (the model already replaces every connection behind the connection generation at checkout), but nothing checked it.
+
+What changed:
+
+- `model/core.rs`: `Err::OT` (code 8, off the no-confirm list); `Db::stored_alt`, what the stored text holds when it isn't `_morm_retired_x` (0 a good label, 1 `NULL`, 2 no row, 3 a value its function fails on another way); statement `ST`'s run and oracle: `NULL` and no row answer on any session, 3 gives `Err::OT` on any, a dropped type's stale session gives its `XX000` first; `Pool::req_conn`, each connection whose own confirming run requested *replace*; `Pool::repl_dbg`, a debugging record printed with `DBGR=1`.
+- `model/world.rs`: world event 6 draws `stored_alt` (half 0, else 1, 2 or 3) when the text stops holding `_morm_retired_x`, with client input only; `FG1_OFF=1` keeps the earlier world. The FF1 span checks ("I4 span replacements, FF1", "I3 span, an epoch's replacements, R-0981", "lit FF1") count, per span, the larger of the changes committed from `W` before it and the pool's moves of `<n>` from `W` before it, since the pool learns a change only at a read, which comes only on a failure: FG1's world met a span with three migrations committed 1.4 s before it and learned inside it, once, at switch 16's setting with no fault (seed 2,889).
+- `model/machine.rs`: `fg1_count`, counters "FG1 A2/B3 replace by stored text: a good label / NULL / no row / the function fails another way / other", and "lit FG1 R-0981 a replace from stored text only when it changes to a good label", the older wording; `fg2_record`, counters "FG2 requester behind at once (action taken)" and "... not yet behind (action due)".
+- `model/calls.rs`, the checkout: "FG2 the requesting connection replaced at its next checkout"; "lit FG2 R-1249 the action replaces every other connection", the older wording; the check "FG2 a checkout kept a connection behind the connection generation"; break 128, the action sparing the connection whose own run requested it.
+- `model/breaks.py`: break 128 at "defaults", "stored text only, no schema change" and "transactions without retry", straight to Postgres. `model/fg1.sh <binary> [count]` prints the counts (`results/fg1.txt`). `model/cmp.py` also sets aside FG1's and FG2's lines.
+
+This round ran, with the binary in the worktree's `.claude/scratch/`, `FG1_OFF=1` at 256 sequences for every setting and switch against the last round's outputs, then `run-all.sh`, `switches.py` and `fg1.sh`.
+
+Results: see `proofs.md`'s record of the twenty-ninth review's fix on PR #3, and `results/`.
+
 # Step 55's stale-session model, after the twenty-eighth review's fix
 
 Started from `plans/models/step-55/` on `main` (the twenty-seventh review's fix, PR #3 `c458987`). FF1 changes nothing I4 checks: I4 already fails more than `4 × max + 4` stale-driven opens in any span of `W`, plus `2 × max` per change, and the default load already has a client's `42804` with no schema change (statement `H`, a record shape chosen per call, `Cause::Data`) and stored text toggled at the client's pace. FF1 and FF2 are README wording; what's new shows the bound by kind of replacement, and a case the sweep found: stored text changed to a good label between a failure and its confirming run requests *replace* too.

@@ -246,6 +246,9 @@ pub enum Err {
     T57,
     S40,
     F25,
+    // the twenty-ninth review's FG1: another server error off the no-confirm list, such as a STRICT read's P0002
+    // when the stored row is gone, or one the function raises further on
+    OT,
 }
 impl Err {
     pub fn code(&self) -> u8 {
@@ -257,6 +260,7 @@ impl Err {
             Err::T57 => 5,
             Err::S40 => 6,
             Err::F25 => 7,
+            Err::OT => 8,
         }
     }
     pub fn noconf(&self) -> bool {
@@ -359,6 +363,9 @@ pub struct Db {
     pub resets: u32,
     pub refresh: u32,
     pub stored_bad: bool,
+    // the twenty-ninth review's FG1: what the stored text holds when it isn't _morm_retired_x: 0 a good label, 1
+    // NULL, 2 no row (the function answers NULL), 3 a value its function fails on another way (Err::OT)
+    pub stored_alt: u8,
     pub stored_nm: bool,
     pub last_change: u64,
     pub refused_until: u64,
@@ -449,6 +456,12 @@ pub struct Pool {
     // the twenty-eighth review's FF1: each stale-driven replacement, when it's counted, and whose it is, 0 an
     // epoch's (a replacement, a discard, a held connection's release), 1 a *replace* action's at checkout
     pub repl_t: Vec<(u64, u8)>,
+    // the twenty-ninth review's FG2: each connection whose own confirming run requested *replace* (rows A2 and B3),
+    // by id, until a checkout replaces it
+    pub req_conn: HashMap<u64, u64>,
+    // a debugging record of each epoch replacement: time, epoch, site (1 A2 beside, 2 A2 in its slot, 3 B3's
+    // discard, 4 a held release), printed with DBGR=1 when R-0981's span check fails
+    pub repl_dbg: Vec<(u64, u64, u8)>,
     pub owed: Vec<(u64, u64, bool)>,
     pub applied_snap: u64,
     pub inflight: Vec<u64>,
@@ -524,6 +537,7 @@ impl Sim {
                 resets: 0,
                 refresh: 0,
                 stored_bad: false,
+                stored_alt: 0,
                 stored_nm: false,
                 last_change: 0,
                 refused_until: 0,
@@ -622,6 +636,8 @@ impl Sim {
         let cur = self.cur_ver();
         match sp.stmt {
             CAST | F | TRIG | TWO => self.enum_in(cur, sp.label).map_err(|e| e.code()),
+            ST if !self.db.stored_bad && self.db.stored_alt == 3 => Err(Err::OT.code()),
+            ST if !self.db.stored_bad && self.db.stored_alt != 0 => Ok(cur),
             ST => self.enum_in(cur, self.stored()).map_err(|e| e.code()),
             STC => self.enum_in(cur, self.stored2()).and_then(|_| self.enum_in(cur, sp.label)).map_err(|e| e.code()),
             NOC => self.enum_in(cur, self.stored2()).map_err(|e| e.code()),
@@ -752,9 +768,15 @@ impl Sim {
                 comp = Some(c);
                 ver = c.ver;
                 let l = if sp.stmt == F { sp.label } else { self.stored() };
-                let r = self.enum_in(c.ver, l);
+                let mut r = self.enum_in(c.ver, l);
+                // FG1: NULL or no row never reaches the conversion, and answers; a value the function fails on
+                // another way fails so on any session; a session whose compiled type was dropped fails first
+                if sp.stmt == ST && !self.db.stored_bad && self.db.stored_alt != 0 && r != Err(Err::XX) {
+                    r = if self.db.stored_alt == 3 { Err(Err::OT) } else { Ok(cur) };
+                }
                 let cause = match r {
                     Err(Err::P22 { named: Named::Kept(v), .. }) => Cause::Kept(v),
+                    Err(Err::OT) => Cause::None,
                     Err(_) if c.ver != cur => Cause::Sess(self.db.types[c.ver as usize].1),
                     _ => Cause::None,
                 };
