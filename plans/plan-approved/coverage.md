@@ -1459,9 +1459,9 @@ Totals: 1294 requirements, 329 test obligations.
 | T-0148 | integration | 56 | **Enum binding survives type changes:** on an open connection and on one opened afterwards… |
 | T-0149 | integration | 56 | **Names and labels:** a bare derive binds to the snake_case name, `#[pg_type(name = "...")… |
 | T-0150 | trybuild | 56 | a `PgEnum` with duplicate labels, an empty label, a label over 63 bytes, a label starting … |
-| T-0151 | integration | 14 | **Stale statements on Postgres 15–18:** with each parameter declared as its carrier and ca… |
+| T-0151 | integration | 14 | **Stale statements on Postgres 15–18:** each case, a statement in one context, outside a t… |
 | T-0152 | integration | 14 | **Stale sessions:** a plpgsql trigger compiled before a hand-run swap fails with `XX000`, … |
-| T-0153 | integration | 14 | **No false recovery:** a `42883` from SQL that was never cached isn't retried, a retried w… |
+| T-0153 | integration | 14 | **No false recovery:** each case, a statement in one context and with one set of values, r… |
 | T-0154 | trybuild | 35 | `#[pg_type]` on a type that also has `#[pg_enum(name = "...")]`, `#[pg_domain]` or `#[pg_c… |
 | T-0155 | integration | 57 | **Enum renames:** `was` and a decision each rename a value with rows holding it, the inver… |
 | T-0156 | integration | 37 | **Refresh:** a function compiled in an open session before a hand-run type swap fails, and… |
