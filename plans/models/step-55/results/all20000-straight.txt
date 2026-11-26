@@ -1,4 +1,4 @@
-== defaults [straight] fault 0 seeds 10000..30000 (9.6s)
+== defaults [straight] fault 0 seeds 10000..30000 (9.8s)
    FAIL 1047/20000 ez I8 held, before then, every error
    FAIL  209/20000 ez I8 held, before then, visible errors
    FAIL 2371/20000 lit I1
@@ -8,7 +8,7 @@
    FAIL 18485/20000 lit I9 loud half
    FAIL  405/20000 lit I9 loud: a request, entry or replacement
    FAIL  977/20000 lit R-1271 before t0+W, not judged not old (parameter test)
-== entries off [straight] fault 0 seeds 10000..30000 (9.6s)
+== entries off [straight] fault 0 seeds 10000..30000 (9.8s)
    FAIL 1078/20000 ez I8 held, before then, every error
    FAIL  220/20000 ez I8 held, before then, visible errors
    FAIL 1422/20000 lit I1
@@ -19,7 +19,7 @@
    FAIL 18592/20000 lit I9 loud half
    FAIL  396/20000 lit I9 loud: a request, entry or replacement
    FAIL  990/20000 lit R-1271 before t0+W, not judged not old (parameter test)
-== caps of 1 [straight] fault 0 seeds 10000..30000 (9.6s)
+== caps of 1 [straight] fault 0 seeds 10000..30000 (9.8s)
    FAIL 1088/20000 ez I8 held, before then, every error
    FAIL  229/20000 ez I8 held, before then, visible errors
    FAIL 2466/20000 lit I1
@@ -29,7 +29,7 @@
    FAIL 18519/20000 lit I9 loud half
    FAIL  440/20000 lit I9 loud: a request, entry or replacement
    FAIL 1011/20000 lit R-1271 before t0+W, not judged not old (parameter test)
-== W five times E [straight] fault 0 seeds 10000..30000 (9.6s)
+== W five times E [straight] fault 0 seeds 10000..30000 (10.2s)
    FAIL 1065/20000 ez I8 held, before then, every error
    FAIL  226/20000 ez I8 held, before then, visible errors
    FAIL 1684/20000 lit I1
@@ -40,7 +40,7 @@
    FAIL  409/20000 lit I9 loud: a request, entry or replacement
    FAIL    1/20000 lit I9 silent past W of the first confirmation
    FAIL  979/20000 lit R-1271 before t0+W, not judged not old (parameter test)
-== budget 8 [straight] fault 0 seeds 10000..30000 (9.6s)
+== budget 8 [straight] fault 0 seeds 10000..30000 (9.8s)
    FAIL 1047/20000 ez I8 held, before then, every error
    FAIL  209/20000 ez I8 held, before then, visible errors
    FAIL 2371/20000 lit I1
@@ -50,7 +50,7 @@
    FAIL 18485/20000 lit I9 loud half
    FAIL  405/20000 lit I9 loud: a request, entry or replacement
    FAIL  977/20000 lit R-1271 before t0+W, not judged not old (parameter test)
-== caches off [straight] fault 0 seeds 10000..30000 (8.3s)
+== caches off [straight] fault 0 seeds 10000..30000 (8.5s)
    FAIL 1152/20000 ez I8 held, before then, every error
    FAIL  259/20000 ez I8 held, before then, visible errors
    FAIL  343/20000 lit I1
@@ -67,7 +67,7 @@
    FAIL 5689/20000 lit I9 loud half
    FAIL   18/20000 lit I9 loud: a request, entry or replacement
    FAIL    1/20000 lit I9 silent past W of the first confirmation
-== several, one server [straight] fault 0 seeds 10000..30000 (9.6s)
+== several, one server [straight] fault 0 seeds 10000..30000 (10.1s)
    FAIL 1310/20000 ez I8 held, before then, every error
    FAIL  281/20000 ez I8 held, before then, visible errors
    FAIL  946/20000 lit I1 several (rose between them)
@@ -87,7 +87,7 @@
    FAIL 18541/20000 lit I9 loud half
    FAIL  423/20000 lit I9 loud: a request, entry or replacement
    FAIL 1208/20000 lit R-1271 before t0+W, not judged not old (parameter test)
-== three servers [straight] fault 0 seeds 10000..30000 (9.6s)
+== three servers [straight] fault 0 seeds 10000..30000 (10.0s)
    FAIL 1470/20000 ez I8 held, before then, every error
    FAIL  303/20000 ez I8 held, before then, visible errors
    FAIL  973/20000 lit I1 several (rose between them)
@@ -98,7 +98,7 @@
    FAIL 18488/20000 lit I9 loud half
    FAIL  437/20000 lit I9 loud: a request, entry or replacement
    FAIL 1336/20000 lit R-1271 before t0+W, not judged not old (parameter test)
-== heavy [straight] fault 0 seeds 10000..30000 (8.8s)
+== heavy [straight] fault 0 seeds 10000..30000 (9.1s)
    FAIL 2143/20000 ez I8 held, before then, every error
    FAIL  505/20000 ez I8 held, before then, visible errors
    FAIL 2909/20000 lit I1
@@ -108,7 +108,7 @@
    FAIL 19617/20000 lit I9 loud half
    FAIL 2283/20000 lit I9 loud: a request, entry or replacement
    FAIL 1142/20000 lit R-1271 before t0+W, not judged not old (parameter test)
-== landing always [straight] fault 0 seeds 10000..30000 (9.6s)
+== landing always [straight] fault 0 seeds 10000..30000 (9.9s)
    FAIL 1027/20000 ez I8 held, before then, every error
    FAIL  196/20000 ez I8 held, before then, visible errors
    FAIL 3564/20000 lit I1
@@ -119,7 +119,7 @@
    FAIL  441/20000 lit I9 loud: a request, entry or replacement
    FAIL    1/20000 lit I9 silent past W of the first confirmation
    FAIL 1002/20000 lit R-1271 before t0+W, not judged not old (parameter test)
-== two servers, landing always, heavy [straight] fault 0 seeds 10000..30000 (8.8s)
+== two servers, landing always, heavy [straight] fault 0 seeds 10000..30000 (8.9s)
    FAIL 2644/20000 ez I8 held, before then, every error
    FAIL  562/20000 ez I8 held, before then, visible errors
    FAIL 3172/20000 lit I1 several (rose between them)
@@ -129,7 +129,7 @@
    FAIL 19785/20000 lit I9 loud half
    FAIL 1784/20000 lit I9 loud: a request, entry or replacement
    FAIL 1360/20000 lit R-1271 before t0+W, not judged not old (parameter test)
-== savepoints [straight] fault 0 seeds 10000..30000 (12.6s)
+== savepoints [straight] fault 0 seeds 10000..30000 (12.5s)
    FAIL 1249/20000 ez I8 held, before then, every error
    FAIL  273/20000 ez I8 held, before then, visible errors
    FAIL 3035/20000 lit I1
@@ -139,7 +139,7 @@
    FAIL 19360/20000 lit I9 loud half
    FAIL  406/20000 lit I9 loud: a request, entry or replacement
    FAIL 1731/20000 lit R-1271 before t0+W, not judged not old (parameter test)
-== RR and SERIALIZABLE only [straight] fault 0 seeds 10000..30000 (9.7s)
+== RR and SERIALIZABLE only [straight] fault 0 seeds 10000..30000 (9.8s)
    FAIL 1047/20000 ez I8 held, before then, every error
    FAIL  209/20000 ez I8 held, before then, visible errors
    FAIL 2371/20000 lit I1
@@ -171,7 +171,7 @@
    FAIL  708/20000 lit I9 loud: a request, entry or replacement
    FAIL    1/20000 lit I9 silent past W of the first confirmation
    FAIL  632/20000 lit R-1271 before t0+W, not judged not old (parameter test)
-== long transactions [straight] fault 0 seeds 10000..30000 (10.8s)
+== long transactions [straight] fault 0 seeds 10000..30000 (11.0s)
    FAIL  776/20000 ez I8 held, before then, every error
    FAIL  174/20000 ez I8 held, before then, visible errors
    FAIL    6/20000 ez I8 held, from then on
@@ -185,7 +185,7 @@
    FAIL  142/20000 lit I9 loud: a request, entry or replacement
    FAIL   40/20000 lit I9 silent past W of the first confirmation
    FAIL 1227/20000 lit R-1271 before t0+W, not judged not old (parameter test)
-== slow [straight] fault 0 seeds 10000..30000 (7.7s)
+== slow [straight] fault 0 seeds 10000..30000 (7.6s)
    FAIL 1289/20000 ez I8 held, before then, every error
    FAIL  518/20000 ez I8 held, before then, visible errors
    FAIL  915/20000 ez I8 held, from then on
@@ -196,7 +196,7 @@
    FAIL    2/20000 lit I8 search_path once per E
    FAIL 4752/20000 lit I8 visible from then on (parameter test)
    FAIL 6935/20000 lit R-1271 before t0+W, not judged not old (parameter test)
-== transactions without retry [straight] fault 0 seeds 10000..30000 (10.1s)
+== transactions without retry [straight] fault 0 seeds 10000..30000 (10.4s)
    FAIL 3551/20000 lit I1
    FAIL 20000/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL 14268/20000 lit I8 search_path once per E
@@ -205,7 +205,7 @@
    FAIL  650/20000 lit I9 loud: a request, entry or replacement
    FAIL    2/20000 lit I9 silent past W of the first confirmation
    FAIL 1939/20000 lit R-1271 before t0+W, not judged not old (parameter test)
-== transactions without retry, entries off [straight] fault 0 seeds 10000..30000 (10.1s)
+== transactions without retry, entries off [straight] fault 0 seeds 10000..30000 (10.3s)
    FAIL 1954/20000 lit I1
    FAIL 20000/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL 20000/20000 lit I8 search_path once per E
@@ -213,7 +213,7 @@
    FAIL 19316/20000 lit I9 loud half
    FAIL  445/20000 lit I9 loud: a request, entry or replacement
    FAIL 1848/20000 lit R-1271 before t0+W, not judged not old (parameter test)
-== transactions without retry, E a fifth of W [straight] fault 0 seeds 10000..30000 (10.2s)
+== transactions without retry, E a fifth of W [straight] fault 0 seeds 10000..30000 (10.3s)
    FAIL 2724/20000 lit I1
    FAIL 20000/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL 4036/20000 lit I8 search_path once per E
@@ -221,6 +221,13 @@
    FAIL 19264/20000 lit I9 loud half
    FAIL  546/20000 lit I9 loud: a request, entry or replacement
    FAIL 1870/20000 lit R-1271 before t0+W, not judged not old (parameter test)
+== search_path only, no retry [straight] fault 0 seeds 10000..30000 (3.7s)
+   FAIL 20000/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
+== search_path only, no retry, entries off [straight] fault 0 seeds 10000..30000 (6.4s)
+   FAIL 20000/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 20000/20000 lit I8 search_path once per E
+== search_path only, no retry, E off by 0s [straight] fault 0 seeds 10000..30000 (6.5s)
+   FAIL 20000/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
 == max 1 [straight] fault 0 seeds 10000..30000 (11.7s)
    FAIL  432/20000 ez I8 held, before then, every error
    FAIL  102/20000 ez I8 held, before then, visible errors
@@ -231,7 +238,7 @@
    FAIL 15736/20000 lit I9 loud half
    FAIL  205/20000 lit I9 loud: a request, entry or replacement
    FAIL  364/20000 lit R-1271 before t0+W, not judged not old (parameter test)
-== max 1, budget 1 [straight] fault 0 seeds 10000..30000 (11.4s)
+== max 1, budget 1 [straight] fault 0 seeds 10000..30000 (11.6s)
    FAIL  434/20000 ez I8 held, before then, every error
    FAIL  111/20000 ez I8 held, before then, visible errors
    FAIL 6735/20000 lit I1
@@ -241,7 +248,7 @@
    FAIL 15711/20000 lit I9 loud half
    FAIL  200/20000 lit I9 loud: a request, entry or replacement
    FAIL  383/20000 lit R-1271 before t0+W, not judged not old (parameter test)
-== max 1, quick [straight] fault 0 seeds 10000..30000 (8.4s)
+== max 1, quick [straight] fault 0 seeds 10000..30000 (8.6s)
    FAIL  459/20000 ez I8 held, before then, every error
    FAIL  108/20000 ez I8 held, before then, visible errors
    FAIL 1950/20000 lit I1
@@ -252,7 +259,7 @@
    FAIL 14859/20000 lit I9 loud half
    FAIL   76/20000 lit I9 loud: a request, entry or replacement
    FAIL  476/20000 lit R-1271 before t0+W, not judged not old (parameter test)
-== max 2, budget 2, heavy [straight] fault 0 seeds 10000..30000 (8.8s)
+== max 2, budget 2, heavy [straight] fault 0 seeds 10000..30000 (8.9s)
    FAIL 1476/20000 ez I8 held, before then, every error
    FAIL  350/20000 ez I8 held, before then, visible errors
    FAIL 4239/20000 lit I1
@@ -262,7 +269,7 @@
    FAIL 19428/20000 lit I9 loud half
    FAIL 1436/20000 lit I9 loud: a request, entry or replacement
    FAIL  903/20000 lit R-1271 before t0+W, not judged not old (parameter test)
-== hand relabels without the reset [straight] fault 0 seeds 10000..30000 (9.5s)
+== hand relabels without the reset [straight] fault 0 seeds 10000..30000 (9.7s)
    FAIL  697/20000 ez I8 held, before then, every error
    FAIL  147/20000 ez I8 held, before then, visible errors
    FAIL 1452/20000 lit I1
@@ -274,10 +281,10 @@
    FAIL  738/20000 lit I9 loud: a request, entry or replacement
    FAIL    2/20000 lit I9 silent past W of the first confirmation
    FAIL  616/20000 lit R-1271 before t0+W, not judged not old (parameter test)
-== hand relabels without the reset, casts [straight] fault 0 seeds 10000..30000 (7.7s)
+== hand relabels without the reset, casts [straight] fault 0 seeds 10000..30000 (7.9s)
    FAIL 19999/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL 18899/20000 lit I9 loud half
-== old labels copied [straight] fault 0 seeds 10000..30000 (9.7s)
+== old labels copied [straight] fault 0 seeds 10000..30000 (9.8s)
    FAIL  796/20000 ez I8 held, before then, every error
    FAIL  238/20000 ez I8 held, before then, visible errors
    FAIL 2353/20000 lit I1
@@ -287,7 +294,7 @@
    FAIL 18463/20000 lit I9 loud half
    FAIL  439/20000 lit I9 loud: a request, entry or replacement
    FAIL  991/20000 lit R-1271 before t0+W, not judged not old (parameter test)
-== record and column statements [straight] fault 0 seeds 10000..30000 (9.7s)
+== record and column statements [straight] fault 0 seeds 10000..30000 (9.9s)
    FAIL 1137/20000 ez I8 held, before then, every error
    FAIL  289/20000 ez I8 held, before then, visible errors
    FAIL 2632/20000 lit I1
@@ -298,11 +305,11 @@
    FAIL  511/20000 lit I9 loud: a request, entry or replacement
    FAIL    1/20000 lit I9 silent past W of the first confirmation
    FAIL 1368/20000 lit R-1271 before t0+W, not judged not old (parameter test)
-== every call a cast beside a second type [straight] fault 0 seeds 10000..30000 (8.0s)
+== every call a cast beside a second type [straight] fault 0 seeds 10000..30000 (8.2s)
    FAIL  190/20000 lit I1
    FAIL 20000/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL    2/20000 lit I9 silent past W of the first confirmation
-== held [straight] fault 0 seeds 10000..30000 (10.6s)
+== held [straight] fault 0 seeds 10000..30000 (10.8s)
    FAIL 1408/20000 ez I8 held, before then, every error
    FAIL  254/20000 ez I8 held, before then, visible errors
    FAIL  919/20000 lit I1
@@ -312,7 +319,7 @@
    FAIL 15672/20000 lit I9 loud half
    FAIL   71/20000 lit I9 loud: a request, entry or replacement
    FAIL  330/20000 lit R-1271 before t0+W, not judged not old (parameter test)
-== held, quiet [straight] fault 0 seeds 10000..30000 (10.6s)
+== held, quiet [straight] fault 0 seeds 10000..30000 (10.8s)
    FAIL  271/20000 ez I8 held, before then, every error
    FAIL   57/20000 ez I8 held, before then, visible errors
    FAIL  202/20000 lit I1
@@ -322,7 +329,7 @@
    FAIL 12785/20000 lit I9 loud half
    FAIL    2/20000 lit I9 loud: a request, entry or replacement
    FAIL  101/20000 lit R-1271 before t0+W, not judged not old (parameter test)
-== long holds [straight] fault 0 seeds 10000..30000 (11.5s)
+== long holds [straight] fault 0 seeds 10000..30000 (11.7s)
    FAIL 4091/20000 ez I8 held, before then, every error
    FAIL  998/20000 ez I8 held, before then, visible errors
    FAIL  192/20000 ez I8 held, from then on
@@ -336,7 +343,7 @@
    FAIL   79/20000 lit I9 loud: a request, entry or replacement
    FAIL   15/20000 lit I9 silent past W of the first confirmation
    FAIL  774/20000 lit R-1271 before t0+W, not judged not old (parameter test)
-== long holds, held [straight] fault 0 seeds 10000..30000 (16.4s)
+== long holds, held [straight] fault 0 seeds 10000..30000 (16.7s)
    FAIL 4344/20000 ez I8 held, before then, every error
    FAIL  971/20000 ez I8 held, before then, visible errors
    FAIL  204/20000 ez I8 held, from then on
@@ -350,7 +357,7 @@
    FAIL    8/20000 lit I9 loud: a request, entry or replacement
    FAIL    3/20000 lit I9 silent past W of the first confirmation
    FAIL  215/20000 lit R-1271 before t0+W, not judged not old (parameter test)
-== long holds, quiet [straight] fault 0 seeds 10000..30000 (13.1s)
+== long holds, quiet [straight] fault 0 seeds 10000..30000 (13.4s)
    FAIL 1547/20000 ez I8 held, before then, every error
    FAIL  632/20000 ez I8 held, before then, visible errors
    FAIL  158/20000 ez I8 held, from then on
@@ -363,7 +370,7 @@
    FAIL 7923/20000 lit I9 loud half
    FAIL    2/20000 lit I9 silent past W of the first confirmation
    FAIL  240/20000 lit R-1271 before t0+W, not judged not old (parameter test)
-== long holds, hand relabels [straight] fault 0 seeds 10000..30000 (13.8s)
+== long holds, hand relabels [straight] fault 0 seeds 10000..30000 (14.4s)
    FAIL 2319/20000 ez I8 held, before then, every error
    FAIL  512/20000 ez I8 held, before then, visible errors
    FAIL  150/20000 ez I8 held, from then on
@@ -377,7 +384,7 @@
    FAIL   35/20000 lit I9 loud: a request, entry or replacement
    FAIL   15/20000 lit I9 silent past W of the first confirmation
    FAIL  215/20000 lit R-1271 before t0+W, not judged not old (parameter test)
-== role limit [straight] fault 0 seeds 10000..30000 (9.6s)
+== role limit [straight] fault 0 seeds 10000..30000 (9.8s)
    FAIL 1094/20000 ez I8 held, before then, every error
    FAIL  231/20000 ez I8 held, before then, visible errors
    FAIL 2306/20000 lit I1
@@ -387,7 +394,7 @@
    FAIL 18499/20000 lit I9 loud half
    FAIL  598/20000 lit I9 loud: a request, entry or replacement
    FAIL  616/20000 lit R-1271 before t0+W, not judged not old (parameter test)
-== role limit, heavy [straight] fault 0 seeds 10000..30000 (8.8s)
+== role limit, heavy [straight] fault 0 seeds 10000..30000 (9.0s)
    FAIL 2051/20000 ez I8 held, before then, every error
    FAIL  436/20000 ez I8 held, before then, visible errors
    FAIL 2973/20000 lit I1
@@ -397,7 +404,7 @@
    FAIL 19616/20000 lit I9 loud half
    FAIL 2614/20000 lit I9 loud: a request, entry or replacement
    FAIL  517/20000 lit R-1271 before t0+W, not judged not old (parameter test)
-== refusals [straight] fault 0 seeds 10000..30000 (9.8s)
+== refusals [straight] fault 0 seeds 10000..30000 (9.9s)
    FAIL 1990/20000 ez I8 held, before then, every error
    FAIL  404/20000 ez I8 held, before then, visible errors
    FAIL 3683/20000 lit I1
@@ -407,7 +414,7 @@
    FAIL 17373/20000 lit I9 loud half
    FAIL 2665/20000 lit I9 loud: a request, entry or replacement
    FAIL   95/20000 lit R-1271 before t0+W, not judged not old (parameter test)
-== held, no rerun [straight] fault 0 seeds 10000..30000 (9.6s)
+== held, no rerun [straight] fault 0 seeds 10000..30000 (9.8s)
    FAIL  956/20000 ez I8 held, before then, every error
    FAIL  201/20000 ez I8 held, before then, visible errors
    FAIL 2290/20000 lit I1

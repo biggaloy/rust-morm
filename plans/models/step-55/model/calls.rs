@@ -224,6 +224,11 @@ pub fn check_pg(p: usize, cx: &Cx, sp: &Spec, o: &Out, at: At) {
         if off && cx.retried {
             s.inc("entries off: a 22P02 as it is on a later attempt");
         }
+        // the twenty-fourth review's FB3: with entries on, while a statement's entry lasts its runs are unnamed, so a
+        // bad label's 22P02 inside a savepoint comes as it is, which the savepoint clears; I14 fails the other outcome
+        if !off && matches!(at, At::Sp { .. }) && !cx.cached_mode && !cx.retried {
+            s.inc("a 22P02 the second row takes, as it is in a savepoint while its entry lasts");
+        }
     }
     // ---- I9's loud half ----
     if let Err::P22 { named: Named::Kept(v), .. } = err {
@@ -651,6 +656,9 @@ pub async fn call_tx(p: usize, sps: Vec<(Spec, bool)>, retry: u32, rr: bool) {
     if g > 0 {
         sleep(g).await;
     }
+    if retry == 0 && sps.iter().any(|(x, _)| x.stmt == PATH) {
+        w().inc("search_path: transactions, no retry");
+    }
     for attempt in 0..=retry {
         let pooled = w().c.pooled;
         let mut cx = Cx { out: false, rr, retried, ..Cx::default() };
@@ -733,6 +741,14 @@ pub async fn call_tx(p: usize, sps: Vec<(Spec, bool)>, retry: u32, rr: bool) {
                     }
                     if retry == 0 {
                         check_sc(p, &cx, &sp, o, At::Tx { retry }, conn.id);
+                    }
+                    // FB1's counts: a search_path switch's SchemaChanged with no .retry(n), with entries on and off
+                    if o.cause == Cause::Path && retry == 0 {
+                        let s = w();
+                        s.inc("search_path: SchemaChanged, no retry");
+                        if s.c.pend_max == 0 || s.c.e == 0 {
+                            s.inc("entries off: search_path SchemaChanged, no retry");
+                        }
                     }
                     // I14's later attempts: run unnamed, they return a bad text's or a kept function's 22P02 as it is
                     if cx.retried && matches!(o.r, Err(Err::P22 { ret: false, .. })) && !matches!(o.cause, Cause::Stmt(_) | Cause::Sess(_) | Cause::Path) {

@@ -841,6 +841,16 @@ pub async fn run_call(p: usize, conn: &mut Conn, cx: &mut Cx, sp: &Spec) -> Res 
     };
     cx.cached_mode = matches!(mode, Mode::Cached(_));
     cx.conn = conn.id;
+    // the twenty-fourth review's FB1: with pending entries off no entry is made, so with the caches on every run a
+    // call starts, outside .retry(n)'s later attempts, runs the cached copy: a statement under a per-transaction
+    // search_path meets whatever path its connection's copy, or behind PgBouncer its server session's, was prepared
+    // under, and fails inside a transaction at every switch from it (R-0718's "Pending entries off", R-1271's bullet)
+    {
+        let s = w();
+        if (s.c.pend_max == 0 || s.c.e == 0) && s.c.caches && !cx.retried && !matches!(mode, Mode::Cached(_)) {
+            s.fail("I8 entries off: a run with no entry not cached", format!("t={} stmt={}", s.now, sp.stmt));
+        }
+    }
     let o = run_once(p, conn, cx, sp, mode).await;
     cx.first = Some(o.r);
     {

@@ -1,0 +1,103 @@
+postgres (PostgreSQL) 17.11
+== 1. evict after each failure, prepare again on a miss (straight to Postgres, entries off)
+-- t1 b
+ERROR:  0A000: cached plan must not change result type
+LOCATION:  RevalidateCachedQuery, plancache.c:753
+-- t2 a
+ id | x  
+----+----
+  1 | 10
+(1 row)
+
+-- t3 b
+ERROR:  0A000: cached plan must not change result type
+LOCATION:  RevalidateCachedQuery, plancache.c:753
+-- t4 a
+ id | x  
+----+----
+  1 | 10
+(1 row)
+
+-- t5 b
+ERROR:  0A000: cached plan must not change result type
+LOCATION:  RevalidateCachedQuery, plancache.c:753
+-- t6 a
+ id | x  
+----+----
+  1 | 10
+(1 row)
+
+-- t7 b
+ERROR:  0A000: cached plan must not change result type
+LOCATION:  RevalidateCachedQuery, plancache.c:753
+-- t8 a
+ id | x  
+----+----
+  1 | 10
+(1 row)
+
+-- t9 b
+ERROR:  0A000: cached plan must not change result type
+LOCATION:  RevalidateCachedQuery, plancache.c:753
+-- t10 a
+ id | x  
+----+----
+  1 | 10
+(1 row)
+
+== 2. the server statement stays (behind PgBouncer, entries off)
+-- t1 b
+ERROR:  0A000: cached plan must not change result type
+LOCATION:  RevalidateCachedQuery, plancache.c:753
+-- t2 a
+ id | x  
+----+----
+  1 | 10
+(1 row)
+
+-- t3 b
+ERROR:  0A000: cached plan must not change result type
+LOCATION:  RevalidateCachedQuery, plancache.c:753
+-- t4 a
+ id | x  
+----+----
+  1 | 10
+(1 row)
+
+-- t5 b
+ERROR:  0A000: cached plan must not change result type
+LOCATION:  RevalidateCachedQuery, plancache.c:753
+-- t6 a
+ id | x  
+----+----
+  1 | 10
+(1 row)
+
+-- t7 b
+ERROR:  0A000: cached plan must not change result type
+LOCATION:  RevalidateCachedQuery, plancache.c:753
+-- t8 a
+ id | x  
+----+----
+  1 | 10
+(1 row)
+
+-- t9 b
+ERROR:  0A000: cached plan must not change result type
+LOCATION:  RevalidateCachedQuery, plancache.c:753
+-- t10 a
+ id | x  
+----+----
+  1 | 10
+(1 row)
+
+== 3. .retry(1): the failed attempt, then the next attempt run unnamed
+-- attempt 1
+ERROR:  0A000: cached plan must not change result type
+LOCATION:  RevalidateCachedQuery, plancache.c:753
+-- attempt 2, unnamed
+ id | x  | extra 
+----+----+-------
+  1 | 20 | e
+(1 row)
+

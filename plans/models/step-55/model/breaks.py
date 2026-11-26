@@ -20,6 +20,8 @@ RUNS += [(m, 107, "transactions without retry") for m in ("straight", "pooled")]
 # 22P02 comes back as it is from a cached attempt; switch 28 (a later attempt running cached) against I14's later half
 RUNS += [(m, 124, s) for s in ("entries off", "transactions without retry, entries off") for m in ("straight", "pooled")]
 RUNS += [(m, 28, "entries off") for m in ("straight", "pooled")]
+# the twenty-fourth review's FB1: 124 against I8's entries-off clause, a statement under a per-transaction search_path
+RUNS += [(m, 124, "search_path only, no retry, entries off") for m in ("straight", "pooled")]
 for mode, b, s in RUNS:
     out = subprocess.run([M, f"set{b}" if s == "set" else s, str(b), "0", "256", mode], capture_output=True, text=True).stdout
     print(f"-- break {b} [{mode}] {s}")

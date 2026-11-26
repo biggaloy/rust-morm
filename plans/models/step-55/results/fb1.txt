@@ -1,0 +1,48 @@
+== search_path only, no retry [straight] fault 0 seeds 0..256 (0.0s)
+        ms simulated = 10264141
+        search_path: SchemaChanged, no retry = 20529
+        search_path: transactions, no retry = 512000
+== search_path only, no retry [pooled] fault 0 seeds 0..256 (0.1s)
+        ms simulated = 10265795
+        search_path: SchemaChanged, no retry = 22590
+        search_path: transactions, no retry = 512000
+== search_path only, no retry, entries off [straight] fault 0 seeds 0..256 (0.1s)
+        entries off: search_path SchemaChanged, no retry = 160247
+        ms simulated = 10268892
+        search_path: SchemaChanged, no retry = 160247
+        search_path: transactions, no retry = 512000
+== search_path only, no retry, entries off [pooled] fault 0 seeds 0..256 (0.2s)
+        entries off: search_path SchemaChanged, no retry = 229646
+        ms simulated = 10284192
+        search_path: SchemaChanged, no retry = 229646
+        search_path: transactions, no retry = 512000
+== search_path only, no retry, E off by 0s [straight] fault 0 seeds 0..256 (0.1s)
+        entries off: search_path SchemaChanged, no retry = 160247
+        ms simulated = 10268892
+        search_path: SchemaChanged, no retry = 160247
+        search_path: transactions, no retry = 512000
+== search_path only, no retry, E off by 0s [pooled] fault 0 seeds 0..256 (0.2s)
+        entries off: search_path SchemaChanged, no retry = 229646
+        ms simulated = 10284192
+        search_path: SchemaChanged, no retry = 229646
+        search_path: transactions, no retry = 512000
+== transactions without retry [straight] fault 0 seeds 0..256 (0.1s)
+        a 22P02 the second row takes, as it is in a savepoint while its entry lasts = 2073
+        ms simulated = 10280273
+        search_path: SchemaChanged, no retry = 8541
+        search_path: transactions, no retry = 80486
+== transactions without retry [pooled] fault 0 seeds 0..256 (0.2s)
+        a 22P02 the second row takes, as it is in a savepoint while its entry lasts = 2262
+        ms simulated = 10251747
+        search_path: SchemaChanged, no retry = 8933
+        search_path: transactions, no retry = 80975
+== transactions without retry, entries off [straight] fault 0 seeds 0..256 (0.1s)
+        entries off: search_path SchemaChanged, no retry = 13807
+        ms simulated = 10253998
+        search_path: SchemaChanged, no retry = 13807
+        search_path: transactions, no retry = 81232
+== transactions without retry, entries off [pooled] fault 0 seeds 0..256 (0.2s)
+        entries off: search_path SchemaChanged, no retry = 16761
+        ms simulated = 10264420
+        search_path: SchemaChanged, no retry = 16761
+        search_path: transactions, no retry = 81000

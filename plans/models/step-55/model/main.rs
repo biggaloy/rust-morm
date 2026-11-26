@@ -33,6 +33,11 @@ fn settings(pooled: bool) -> Vec<Cfg> {
         // the twenty-third review's FA2: the second row's cost with pending entries off, and with a shorter E
         Cfg { name: "transactions without retry, entries off", tx: 0.8, retry0: true, held: 0.0, pend_max: 0, ..b() },
         Cfg { name: "transactions without retry, E a fifth of W", tx: 0.8, retry0: true, held: 0.0, e: 200 * MS, ..b() },
+        // the twenty-fourth review's FB1: one statement under a per-transaction search_path, two paths at random, a
+        // transaction with no .retry(n) about every 20 ms, no world events; its SchemaChanged with entries on and off
+        Cfg { name: "search_path only, no retry", only: Some(PATH), tx: 1.0, retry0: true, held: 0.0, two: 0.0, burst: 0.0, world: 0.0, ..b() },
+        Cfg { name: "search_path only, no retry, entries off", only: Some(PATH), tx: 1.0, retry0: true, held: 0.0, two: 0.0, burst: 0.0, world: 0.0, pend_max: 0, ..b() },
+        Cfg { name: "search_path only, no retry, E off by 0s", only: Some(PATH), tx: 1.0, retry0: true, held: 0.0, two: 0.0, burst: 0.0, world: 0.0, e: 0, ..b() },
     ];
     v.push(Cfg { name: "max 1", max: 1, budget: 2, ..b() });
     v.push(Cfg { name: "max 1, budget 1", max: 1, budget: 1, ..b() });

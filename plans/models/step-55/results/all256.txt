@@ -204,6 +204,13 @@
    FAIL  248/256 lit I9 loud half
    FAIL    6/256 lit I9 loud: a request, entry or replacement
    FAIL   27/256 lit R-1271 before t0+W, not judged not old (parameter test)
+== search_path only, no retry [straight] fault 0 seeds 0..256 (0.0s)
+   FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
+== search_path only, no retry, entries off [straight] fault 0 seeds 0..256 (0.1s)
+   FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL  256/256 lit I8 search_path once per E
+== search_path only, no retry, E off by 0s [straight] fault 0 seeds 0..256 (0.1s)
+   FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
 == max 1 [straight] fault 0 seeds 0..256 (0.1s)
    FAIL    6/256 ez I8 held, before then, every error
    FAIL   82/256 lit I1
@@ -577,6 +584,13 @@
    FAIL  252/256 lit I9 loud half
    FAIL   19/256 lit I9 loud: a request, entry or replacement
    FAIL  156/256 mid I8 stale statement once per E, running calls and actions apart
+== search_path only, no retry [pooled] fault 0 seeds 0..256 (0.1s)
+   FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
+== search_path only, no retry, entries off [pooled] fault 0 seeds 0..256 (0.2s)
+   FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL  256/256 lit I8 search_path once per E
+== search_path only, no retry, E off by 0s [pooled] fault 0 seeds 0..256 (0.2s)
+   FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
 == max 1 [pooled] fault 0 seeds 0..256 (0.1s)
    FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL  256/256 lit I2 (an adoption took its place)

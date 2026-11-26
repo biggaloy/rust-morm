@@ -1,3 +1,19 @@
+# Step 55's stale-session model, after the twenty-fourth review's fix
+
+Started from `plans/models/step-55/` on `main` (the twenty-third review's fix, PR #3 `018b3fb`). FB1 changes what the model checks; FB3's outcome while an entry lasts was already checked by I14 and is now counted too; FB2, FB4 to FB7 are wording and Postgres tests the model already agreed with.
+
+- `model/machine.rs`, `run_call`: I8's entries-off clause. With pending entries off and the caches on, no run a call starts, outside `.retry(n)`'s later attempts, is unnamed, so a statement under a per-transaction `search_path` meets the copy its connection, or behind PgBouncer its server session, prepared under whatever path, and fails inside a transaction at every switch from it ("I8 entries off: a run with no entry not cached").
+- `model/calls.rs`, `call_tx`: counts "search_path: transactions, no retry", "search_path: SchemaChanged, no retry" and "entries off: search_path SchemaChanged, no retry"; `check_pg`: "a 22P02 the second row takes, as it is in a savepoint while its entry lasts" (FB3's in-between outcome; I14 fails the other one).
+- `model/world.rs`, `end_checks`: "ms simulated", to give the rates per second.
+- `model/main.rs`: three settings, "search_path only, no retry", the same with entries off by `stale_pending_max = 0`, and by `stale_pending_expiry = "0s"`: one statement under a per-transaction `search_path`, two paths at random, every call a transaction with no `.retry(n)`, no bursts and no world events; 80 settings, 44 straight to Postgres and 36 behind PgBouncer.
+- `model/breaks.py`: break 124 (entries off keeping an entry) also at the new entries-off setting, against I8's new clause.
+- `model/fb1.sh <binary> [fault] [count]` prints FB1's counts (`results/fb1.txt`).
+- `probes/run10.sh <bindir> <scratch> <socketdir>`: FB1's case on a throwaway cluster, `results/probe10-17.txt` (17.11, `/opt/pgsql-17`) and `probe10-18.txt` (18.6, the Manjaro package), the same but the line numbers.
+- This round ran `full.sh`'s commands directly with the binary in the worktree's `.claude/scratch/`, and `fb1.sh`; `cost.sh` and `fa2.sh` were not run again (nothing they count changed).
+
+Results: no check fails with no fault in the 80 settings over 256, 2,048 and 20,000 sequences (seeds 0 to 255, 1,000 to 3,047, 10,000 to 29,999); every switch caught exactly as at `018b3fb` (`switches.txt`, the same file); break 124 caught by I8's new clause in 256 of 256 at every entries-off setting, beside I14 (`breaks.txt`). FB1's counts at 256 sequences of 40 s (`fb1.txt`), one statement under a per-transaction `search_path`, 50 transactions a second with no `.retry(n)`, a pool of four: with entries on and `E` = `W` = 1 s, `Error::SchemaChanged` 2.00 a second straight to Postgres and 2.20 behind PgBouncer (4.0% and 4.4% of transactions), the extra over one per `E` being, in the sequences read one by one, calls already running, queued for the pool, when the first failed, which the bound excludes (no failure begins while an entry exists); with entries off, by either setting, 15.6 a second straight to Postgres (31.3%, about a third, as a connection's copy exists only after a success there) and 22.3 behind PgBouncer (44.9%, about half, as the server statement stays).
+
+
 # Step 55's stale-session model, after the twenty-third review's fix
 
 Started from `plans/models/step-55/` on `main` (the answer to the two answers' question, PR #3 `e417bc8`). FA1, FA3 and FA4 are wording the model already agreed with; FA2 changes what it checks:

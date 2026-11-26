@@ -48,7 +48,7 @@
    FAIL 1894/2048 lit I9 loud half
    FAIL   48/2048 lit I9 loud: a request, entry or replacement
    FAIL   93/2048 lit R-1271 before t0+W, not judged not old (parameter test)
-== caches off [straight] fault 0 seeds 1000..3048 (0.8s)
+== caches off [straight] fault 0 seeds 1000..3048 (0.9s)
    FAIL  105/2048 ez I8 held, before then, every error
    FAIL   24/2048 ez I8 held, before then, visible errors
    FAIL   28/2048 lit I1
@@ -208,6 +208,13 @@
    FAIL 1979/2048 lit I9 loud half
    FAIL   47/2048 lit I9 loud: a request, entry or replacement
    FAIL  191/2048 lit R-1271 before t0+W, not judged not old (parameter test)
+== search_path only, no retry [straight] fault 0 seeds 1000..3048 (0.4s)
+   FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
+== search_path only, no retry, entries off [straight] fault 0 seeds 1000..3048 (0.7s)
+   FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 2048/2048 lit I8 search_path once per E
+== search_path only, no retry, E off by 0s [straight] fault 0 seeds 1000..3048 (0.7s)
+   FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
 == max 1 [straight] fault 0 seeds 1000..3048 (1.2s)
    FAIL   46/2048 ez I8 held, before then, every error
    FAIL   10/2048 ez I8 held, before then, visible errors
@@ -330,7 +337,7 @@
    FAIL    4/2048 lit I8 visible from then on (parameter test)
    FAIL 1717/2048 lit I9 loud half
    FAIL   19/2048 lit R-1271 before t0+W, not judged not old (parameter test)
-== long holds, quiet [straight] fault 0 seeds 1000..3048 (1.3s)
+== long holds, quiet [straight] fault 0 seeds 1000..3048 (1.4s)
    FAIL  148/2048 ez I8 held, before then, every error
    FAIL   62/2048 ez I8 held, before then, visible errors
    FAIL   18/2048 ez I8 held, from then on
@@ -511,7 +518,7 @@
    FAIL 2038/2048 lit I9 loud half
    FAIL  505/2048 lit I9 loud: a request, entry or replacement
    FAIL  290/2048 mid I8 stale statement once per E, running calls and actions apart
-== two servers, landing always, heavy [pooled] fault 0 seeds 1000..3048 (0.9s)
+== two servers, landing always, heavy [pooled] fault 0 seeds 1000..3048 (1.0s)
    FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL 2035/2048 lit I2 (an adoption took its place)
    FAIL 1898/2048 lit I8 never visible after RECONNECT
@@ -531,7 +538,7 @@
    FAIL 2047/2048 lit I9 loud half
    FAIL  352/2048 lit I9 loud: a request, entry or replacement
    FAIL 1086/2048 mid I8 stale statement once per E, running calls and actions apart
-== RR and SERIALIZABLE only [pooled] fault 0 seeds 1000..3048 (1.1s)
+== RR and SERIALIZABLE only [pooled] fault 0 seeds 1000..3048 (1.2s)
    FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL 2047/2048 lit I2 (an adoption took its place)
    FAIL 1194/2048 lit I8 never visible after RECONNECT
@@ -541,7 +548,7 @@
    FAIL 2040/2048 lit I9 loud half
    FAIL  485/2048 lit I9 loud: a request, entry or replacement
    FAIL  304/2048 mid I8 stale statement once per E, running calls and actions apart
-== quiet [pooled] fault 0 seeds 1000..3048 (1.0s)
+== quiet [pooled] fault 0 seeds 1000..3048 (1.1s)
    FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL  980/2048 lit I2 (an adoption took its place)
    FAIL  113/2048 lit I8 never visible after RECONNECT
@@ -580,7 +587,7 @@
    FAIL    4/2048 lit I8 never visible after RECONNECT
    FAIL   10/2048 lit I8 search_path once per E
    FAIL   67/2048 lit I8 stale statement once per E
-== transactions without retry [pooled] fault 0 seeds 1000..3048 (1.3s)
+== transactions without retry [pooled] fault 0 seeds 1000..3048 (1.4s)
    FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL 2048/2048 lit I2 (an adoption took its place)
    FAIL 1839/2048 lit I8 never visible after RECONNECT
@@ -610,6 +617,13 @@
    FAIL 2035/2048 lit I9 loud half
    FAIL  193/2048 lit I9 loud: a request, entry or replacement
    FAIL 1258/2048 mid I8 stale statement once per E, running calls and actions apart
+== search_path only, no retry [pooled] fault 0 seeds 1000..3048 (0.4s)
+   FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
+== search_path only, no retry, entries off [pooled] fault 0 seeds 1000..3048 (1.5s)
+   FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 2048/2048 lit I8 search_path once per E
+== search_path only, no retry, E off by 0s [pooled] fault 0 seeds 1000..3048 (1.5s)
+   FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
 == max 1 [pooled] fault 0 seeds 1000..3048 (1.0s)
    FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL 2048/2048 lit I2 (an adoption took its place)
@@ -641,7 +655,7 @@
    FAIL  229/2048 lit I9 loud: a request, entry or replacement
    FAIL    7/2048 lit I9 silent past W of the first confirmation
    FAIL   54/2048 mid I8 stale statement once per E, running calls and actions apart
-== max 2, budget 2, heavy [pooled] fault 0 seeds 1000..3048 (0.9s)
+== max 2, budget 2, heavy [pooled] fault 0 seeds 1000..3048 (1.0s)
    FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL 2048/2048 lit I2 (an adoption took its place)
    FAIL 1760/2048 lit I8 never visible after RECONNECT
@@ -689,7 +703,7 @@
    FAIL  624/2048 lit I9 loud: a request, entry or replacement
    FAIL    1/2048 lit I9 silent past W of the first confirmation
    FAIL  340/2048 mid I8 stale statement once per E, running calls and actions apart
-== every call a cast beside a second type [pooled] fault 0 seeds 1000..3048 (0.9s)
+== every call a cast beside a second type [pooled] fault 0 seeds 1000..3048 (1.0s)
    FAIL 2048/2048 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL  921/2048 lit I2 (an adoption took its place)
    FAIL 1986/2048 lit I8 stale statement once per E

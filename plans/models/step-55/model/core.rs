@@ -568,6 +568,9 @@ impl Sim {
     pub fn inc(&mut self, k: &'static str) {
         *self.cnt.entry(k).or_insert(0) += 1;
     }
+    pub fn inc_by(&mut self, k: &'static str, n: u64) {
+        *self.cnt.entry(k).or_insert(0) += n;
+    }
     pub fn cur_ver(&self) -> u32 {
         (self.db.types.len() - 1) as u32
     }

@@ -222,6 +222,8 @@ pub async fn driver() {
 }
 // I1, I3, I4 from the records
 pub fn end_checks(s: &mut Sim) {
+    let ms = s.now / MS;
+    s.inc_by("ms simulated", ms);
     let wd = s.c.w;
     let ch: Vec<u64> = s.db.nhist.iter().skip(1).map(|x| x.0).collect();
     let several = s.c.several;
