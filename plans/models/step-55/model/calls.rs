@@ -552,6 +552,22 @@ pub fn check_sc(p: usize, cx: &Cx, sp: &Spec, o: &Out, at: At, conn: u64) {
                 }
             }
             s.pools[p].fails_tx.entry((sp.stmt, path)).or_default().push((now, cx.started));
+            let off = s.c.pend_max == 0 || s.c.e == 0;
+            // the twenty-fifth review's FC1: classed at the end against the entries made, in world::end_checks
+            if path && !off {
+                s.pools[p].path_fx.entry(sp.stmt).or_default().push((o.t, cx.started));
+            }
+            // the twenty-fifth review's FC2: with entries off behind PgBouncer a stale statement fails until the next
+            // salt or adoption, which a 0A000 requests at its failure; one failing after an action taken since its
+            // change would break I8's clearing clause, so this counts what the clause already checks
+            if let Cause::Stmt(t0) = o.cause {
+                if off && s.c.pooled {
+                    s.inc("entries off, behind PgBouncer: a stale statement's SchemaChanged, no retry");
+                    if s.pools[p].acts.iter().any(|a| a.t > t0 && a.t < cx.started) {
+                        s.inc("entries off, behind PgBouncer: one begun after a pool-wide action taken since its change");
+                    }
+                }
+            }
         }
         _ => {}
     }

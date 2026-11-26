@@ -224,6 +224,25 @@ pub async fn driver() {
 pub fn end_checks(s: &mut Sim) {
     let ms = s.now / MS;
     s.inc_by("ms simulated", ms);
+    // the twenty-fifth review's FC1: each search_path SchemaChanged with entries on and no .retry(n), classed by when
+    // its call began: after another one's error and before the entry that came after that error was made, which R-1271
+    // now leaves out beside the calls already running at the first, or otherwise
+    let (mut after, mut other) = (0u64, 0u64);
+    for p in 0..s.pools.len() {
+        for (stmt, v) in s.pools[p].path_fx.iter() {
+            let cr = s.pools[p].created.get(stmt).cloned().unwrap_or_default();
+            for (i, &(_, st)) in v.iter().enumerate() {
+                let hit = v.iter().enumerate().any(|(j, &(et, _))| {
+                    j != i && et < st && cr.iter().find(|c| **c >= et).is_none_or(|c| st < *c)
+                });
+                if hit { after += 1 } else { other += 1 }
+            }
+        }
+    }
+    if after + other > 0 {
+        s.inc_by("search_path, entries on: SchemaChanged begun after another's error, before its entry", after);
+        s.inc_by("search_path, entries on: SchemaChanged otherwise", other);
+    }
     let wd = s.c.w;
     let ch: Vec<u64> = s.db.nhist.iter().skip(1).map(|x| x.0).collect();
     let several = s.c.several;

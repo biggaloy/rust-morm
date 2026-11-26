@@ -456,6 +456,8 @@ pub struct Pool {
     pub co_t: Vec<u64>,
     pub acts_t: Vec<u64>,
     pub fails_tx: HashMap<(u8, bool), Vec<(u64, u64)>>,
+    // the twenty-fifth review's FC1: each search_path SchemaChanged with no .retry(n), as (its run's error, its run's start)
+    pub path_fx: HashMap<u8, Vec<(u64, u64)>>,
     pub removals: HashMap<u8, Vec<u64>>,
     pub created: HashMap<u8, Vec<u64>>,
     pub moved: Vec<(u64, i64, u64)>,

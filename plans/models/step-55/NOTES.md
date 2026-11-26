@@ -1,3 +1,25 @@
+# Step 55's stale-session model, after the twenty-fifth review's fix
+
+Started from `plans/models/step-55/` on `main` (the twenty-fourth review's fix, PR #3 `59286dc`). No finding changes what the model checks, so no check, setting or switch changed, and the switches weren't run again:
+
+- **FC1** moves R-1271's, R-0984's and R-1272's `search_path` bound to the moment the pending entry is made. That's the bound I8 already stated and the model already checked ("new I8 a failure begun while its entry exists"); "lit I8 search_path once per E", an older wording's check kept to show what it fails, excuses only calls begun before the last failure's check.
+- **FC2** says that with entries off behind PgBouncer a stale statement fails until the next salt or adoption, which a `0A000` requests at its failure. I8's clearing clause ("I8 clearing": no cached run uses a copy a change left stale once a pool-wide action or an adoption was taken after that change and before the run's read of the generation word) already checks that in every setting, entries off included.
+- FC3 and FC4 are wording.
+
+What's new is counting only:
+
+- `model/core.rs`, `Pool::path_fx`, and `model/calls.rs`, `check_sc`: each `search_path` `Error::SchemaChanged` with entries on and no `.retry(n)`, as its run's error time and its call's start. `model/world.rs`, `end_checks`, classes each: "begun after another's error, before its entry", when its call began after another such failure's error and before the first entry made at or after that error, which is FC1's case; or "otherwise".
+- `model/calls.rs`, `check_sc`: with entries off behind PgBouncer, "a stale statement's SchemaChanged, no retry", and "one begun after a pool-wide action taken since its change", which should stay at zero, as I8's clearing clause fails it.
+- `model/fc.sh <binary> [fault] [count]` prints them (`results/fc.txt`).
+
+Results, 256 sequences of 40 seconds each, fault 0:
+
+- **`all`:** the 80 settings give the same output as `results/all256.txt` at `59286dc`, byte for byte, so the counters change nothing: no check fails but the older wordings' ("lit ", "ez ", "mid ").
+- **FC1, "search_path only, no retry"** (`E` = `W` = 1 s, a transaction about every 20 ms on a pool of four): straight to Postgres 20,529 `Error::SchemaChanged` in 10,264 s, 2.00 per `E`, of which 10,610, 1.03 per `E`, began after another's error and before its entry, and 9,919, 0.97 per `E`, otherwise; behind PgBouncer 22,590, 2.20 per `E`, 12,350 (1.20 per `E`) and 10,240 (1.00 per `E`). So about one per `E` plus about one more begun while the entry wasn't made yet, as R-1271 now says. At "transactions without retry" 2,138 of 8,541 and 2,653 of 8,933.
+- **FC2,** with entries off behind PgBouncer: 3,104 stale statements' `Error::SchemaChanged` at "entries off" and 20,319 at "transactions without retry, entries off", none begun after a pool-wide action taken since its change; "I8 clearing" fails nowhere.
+
+Not run: the switches (no check changed), 2,048 and 20,000 sequences, and the defaults' `E` = `W` = 60 s, which the review's own model ran (1.57 and 2.46 per `E`).
+
 # Step 55's stale-session model, after the twenty-fourth review's fix
 
 Started from `plans/models/step-55/` on `main` (the twenty-third review's fix, PR #3 `018b3fb`). FB1 changes what the model checks; FB3's outcome while an entry lasts was already checked by I14 and is now counted too; FB2, FB4 to FB7 are wording and Postgres tests the model already agreed with.

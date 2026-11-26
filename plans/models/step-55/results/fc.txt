@@ -1,0 +1,116 @@
+== search_path only, no retry [straight] fault 0 seeds 0..256 (0.0s)
+   FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)   e.g. seed 6: 
+        ms simulated = 10264141
+        search_path, entries on: SchemaChanged begun after another's error, before its entry = 10610
+        search_path, entries on: SchemaChanged otherwise = 9919
+        search_path: SchemaChanged, no retry = 20529
+        search_path: transactions, no retry = 512000
+== search_path only, no retry [pooled] fault 0 seeds 0..256 (0.0s)
+   FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)   e.g. seed 8: 
+        ms simulated = 10265795
+        search_path, entries on: SchemaChanged begun after another's error, before its entry = 12350
+        search_path, entries on: SchemaChanged otherwise = 10240
+        search_path: SchemaChanged, no retry = 22590
+        search_path: transactions, no retry = 512000
+== transactions without retry [straight] fault 0 seeds 0..256 (0.1s)
+   FAIL   43/256 lit I1   e.g. seed 0: 10079839 10079839
+   FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)   e.g. seed 5: 
+   FAIL  188/256 lit I8 search_path once per E   e.g. seed 5: t=8849621 stmt=2 Path Tx { retry: 0 }
+   FAIL  248/256 lit I9 loud half   e.g. seed 5: t=15930235 stmt=4 P22 { named: Kept(16), ret: true, lab: RetX, stored: false } Kept(16) Sp { retry: 0 } tested=Some(false) ptest=false
+   FAIL    7/256 lit I9 loud: a request, entry or replacement   e.g. seed 0: t=35709362 stmt=4 P22 { named: Kept(50), ret: true, lab: RetX, stored: false } Kept(50) Tx { retry: 0 } tested=Some(false) ptest=false reqs=1 entry=false repl=false other=false confirm=true
+   FAIL   20/256 lit R-1271 before t0+W, not judged not old (parameter test)   e.g. seed 27: t=6957645 stmt=4 P22 { named: Ret(7), ret: true, lab: Shared, stored: false } Sess(6841986) Sp { retry: 0 } tested=None ptest=true
+        SchemaChanged for a kept function's error = 1168
+        SchemaChanged for bad text = 12720
+        SchemaChanged for bad text or a kept function's error, no retry = 13888
+        ms simulated = 10280273
+        search_path, entries on: SchemaChanged begun after another's error, before its entry = 2138
+        search_path, entries on: SchemaChanged otherwise = 6403
+        search_path: SchemaChanged, no retry = 8541
+        search_path: transactions, no retry = 80486
+== transactions without retry [pooled] fault 0 seeds 0..256 (0.2s)
+   FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)   e.g. seed 4: 
+   FAIL  255/256 lit I2 (an adoption took its place)   e.g. seed 4: 3455552
+   FAIL  233/256 lit I8 never visible after RECONNECT   e.g. seed 4: t=37454452 stmt=7 Sess(37387038) Tx { retry: 0 }
+   FAIL    4/256 lit I8 never visible after server_lifetime   e.g. seed 19: t=21029357 stmt=7 Sess(16888860) Tx { retry: 0 }
+   FAIL  254/256 lit I8 search_path once per E   e.g. seed 4: t=1582854 stmt=2 Path Tx { retry: 0 }
+   FAIL  256/256 lit I8 stale statement once per E   e.g. seed 4: t=1412322 stmt=0 Stmt(1213869) Tx { retry: 0 }
+   FAIL  255/256 lit I9 loud half   e.g. seed 4: t=6778588 stmt=3 P22 { named: Kept(8), ret: true, lab: RetX, stored: false } Kept(8) Tx { retry: 0 } tested=None ptest=true
+   FAIL   19/256 lit I9 loud: a request, entry or replacement   e.g. seed 6: t=5950642 stmt=4 P22 { named: Kept(6), ret: true, lab: RetX, stored: false } Kept(6) Out tested=None ptest=false reqs=1 entry=false repl=false other=true confirm=false
+        SchemaChanged for a kept function's error = 3312
+        SchemaChanged for bad text = 11793
+        SchemaChanged for bad text or a kept function's error, no retry = 15105
+        ms simulated = 10251747
+        search_path, entries on: SchemaChanged begun after another's error, before its entry = 2653
+        search_path, entries on: SchemaChanged otherwise = 6280
+        search_path: SchemaChanged, no retry = 8933
+        search_path: transactions, no retry = 80975
+== entries off [straight] fault 0 seeds 0..256 (0.1s)
+   FAIL   20/256 lit I1   e.g. seed 1: 36402482 36402482
+   FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)   e.g. seed 6: 
+   FAIL  154/256 lit I8 held, before then   e.g. seed 6: t=26006849 stmt=7 XX Sess(25573690) HeldApp tested=None ptest=false
+   FAIL   81/256 lit I8 search_path once per E   e.g. seed 0: t=36036543 stmt=2 Path Tx { retry: 0 }
+   FAIL  235/256 lit I9 loud half   e.g. seed 6: t=3554482 stmt=7 P22 { named: Kept(5), ret: true, lab: RetX, stored: false } Stmt(3528587) Out tested=None ptest=true
+   FAIL    6/256 lit I9 loud: a request, entry or replacement   e.g. seed 36: t=1366764 stmt=4 P22 { named: Kept(1), ret: true, lab: RetX, stored: false } Kept(1) Out tested=Some(true) ptest=false reqs=0 entry=false repl=true other=false confirm=false
+   FAIL   14/256 lit R-1271 before t0+W, not judged not old (parameter test)   e.g. seed 10: t=35038794 stmt=4 P22 { named: Ret(50), ret: true, lab: Shared, stored: false } Sess(34915813) Out tested=None ptest=true
+        SchemaChanged for a kept function's error = 123
+        SchemaChanged for bad text = 2759
+        SchemaChanged for bad text or a kept function's error, no retry = 2882
+        entries off: SchemaChanged for bad text or a kept function's error = 8819
+        entries off: a 22P02 as it is on a later attempt = 4578
+        entries off: search_path SchemaChanged, no retry = 1811
+        ms simulated = 10275060
+        search_path's 0A000 in the app's transaction = 835
+        search_path: SchemaChanged, no retry = 1811
+        search_path: transactions, no retry = 11775
+== entries off [pooled] fault 0 seeds 0..256 (0.1s)
+   FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)   e.g. seed 4: 
+   FAIL  256/256 lit I2 (an adoption took its place)   e.g. seed 4: 2243835
+   FAIL  154/256 lit I8 never visible after RECONNECT   e.g. seed 4: t=15284014 stmt=6 D42804 Sess(13700521) Tx { retry: 2 } tested=None ptest=false
+   FAIL    1/256 lit I8 never visible after server_lifetime   e.g. seed 92: t=4182561 stmt=7 Sess(36891) Tx { retry: 0 }
+   FAIL  189/256 lit I8 search_path once per E   e.g. seed 4: t=5725016 stmt=2 Path Tx { retry: 0 }
+   FAIL  190/256 lit I8 stale statement once per E   e.g. seed 4: t=6577972 stmt=8 Stmt(5911857) Tx { retry: 0 }
+   FAIL  255/256 lit I9 loud half   e.g. seed 4: t=20979721 stmt=3 P22 { named: Kept(25), ret: true, lab: RetX, stored: false } Kept(25) Tx { retry: 0 } tested=None ptest=true
+   FAIL   55/256 lit I9 loud: a request, entry or replacement   e.g. seed 3: t=28958524 stmt=4 P22 { named: Kept(36), ret: true, lab: RetX, stored: false } Kept(36) Out tested=None ptest=false reqs=1 entry=false repl=false other=false confirm=false
+        SchemaChanged for a kept function's error = 778
+        SchemaChanged for bad text = 2392
+        SchemaChanged for bad text or a kept function's error, no retry = 3170
+        entries off, behind PgBouncer: a stale statement's SchemaChanged, no retry = 3104
+        entries off: SchemaChanged for bad text or a kept function's error = 9766
+        entries off: a 22P02 as it is on a later attempt = 5341
+        entries off: search_path SchemaChanged, no retry = 2819
+        ms simulated = 10282531
+        search_path: SchemaChanged, no retry = 2819
+        search_path: transactions, no retry = 11627
+== transactions without retry, entries off [straight] fault 0 seeds 0..256 (0.1s)
+   FAIL   26/256 lit I1   e.g. seed 2: 40065749 40065749
+   FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)   e.g. seed 6: 
+   FAIL  256/256 lit I8 search_path once per E   e.g. seed 6: t=2833471 stmt=2 Path Tx { retry: 0 }
+   FAIL  252/256 lit I9 loud half   e.g. seed 6: t=11539107 stmt=3 P22 { named: Kept(8), ret: true, lab: RetX, stored: false } Kept(8) Out tested=None ptest=true
+   FAIL    8/256 lit I9 loud: a request, entry or replacement   e.g. seed 32: t=26638371 stmt=4 P22 { named: Kept(29), ret: true, lab: RetX, stored: false } Kept(29) Out tested=Some(true) ptest=false reqs=0 entry=false repl=true other=false confirm=false
+   FAIL   23/256 lit R-1271 before t0+W, not judged not old (parameter test)   e.g. seed 7: t=17992512 stmt=4 P22 { named: Ret(28), ret: true, lab: Shared, stored: false } Sess(17750144) Tx { retry: 0 } tested=None ptest=true
+        SchemaChanged for a kept function's error = 2184
+        SchemaChanged for bad text = 18184
+        SchemaChanged for bad text or a kept function's error, no retry = 20368
+        entries off: SchemaChanged for bad text or a kept function's error = 20368
+        entries off: search_path SchemaChanged, no retry = 13807
+        ms simulated = 10253998
+        search_path: SchemaChanged, no retry = 13807
+        search_path: transactions, no retry = 81232
+== transactions without retry, entries off [pooled] fault 0 seeds 0..256 (0.2s)
+   FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)   e.g. seed 4: 
+   FAIL  256/256 lit I2 (an adoption took its place)   e.g. seed 4: 4397918
+   FAIL  238/256 lit I8 never visible after RECONNECT   e.g. seed 9: t=3917196 stmt=4 Sess(3723649) Tx { retry: 0 }
+   FAIL    5/256 lit I8 never visible after server_lifetime   e.g. seed 30: t=28930846 stmt=4 Sess(24898643) Tx { retry: 0 }
+   FAIL  256/256 lit I8 search_path once per E   e.g. seed 4: t=1603141 stmt=2 Path Tx { retry: 0 }
+   FAIL  256/256 lit I8 stale statement once per E   e.g. seed 4: t=4017244 stmt=8 Stmt(3721319) Tx { retry: 0 }
+   FAIL  255/256 lit I9 loud half   e.g. seed 4: t=3175326 stmt=4 P22 { named: Kept(4), ret: true, lab: RetX, stored: false } Kept(4) Out tested=None ptest=false
+   FAIL    9/256 lit I9 loud: a request, entry or replacement   e.g. seed 24: t=23489944 stmt=4 P22 { named: Kept(40), ret: true, lab: RetX, stored: false } Kept(40) Out tested=None ptest=false reqs=1 entry=false repl=false other=false confirm=false
+        SchemaChanged for a kept function's error = 5666
+        SchemaChanged for bad text = 15956
+        SchemaChanged for bad text or a kept function's error, no retry = 21622
+        entries off, behind PgBouncer: a stale statement's SchemaChanged, no retry = 20319
+        entries off: SchemaChanged for bad text or a kept function's error = 21622
+        entries off: search_path SchemaChanged, no retry = 16761
+        ms simulated = 10264420
+        search_path: SchemaChanged, no retry = 16761
+        search_path: transactions, no retry = 81000
