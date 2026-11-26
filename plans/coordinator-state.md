@@ -2,16 +2,16 @@
 
 Read this first when resuming. It's what the coordinating session needs that isn't in `plan-approved/INDEX.md`. The coordinator updates and pushes it after each milestone. Agent briefs to reuse are in `coordinator-briefs.md`.
 
-**Last updated:** 2026-11-26, FD1 to FD3 are fixed; the twenty-seventh review is running.
+**Last updated:** 2026-11-26, the twenty-seventh review found FE1 to FE3 (minor wording, no owner choice); their fix agent is running.
 
 ## Where things stand
 
 - **Steps done:** 01 (PR #1, merged `ccd4413`) and 02 (PR #2, merged `34c81aa`), both approved by the owner.
-- **Step 55 is `in review`:** PR #3, branch `step-55-enum-proofs`, head `b98bada`, CI green, checker 1294 R / 329 T, 0 problems, no open questions. The twenty-sixth review's FD1 to FD3 are fixed and recorded (INDEX Decisions "The twenty-sixth review's fix (2026-11-26)"), and the model is in `plans/models/step-55/`. **Running: the twenty-seventh review in `briefs/step-55-review-27.md`** (started 2026-11-26; after a restart check `plans/reviews/step-55-review-27.md` on `main` and its worktree first), then follow that file's "After it reports".
+- **Step 55 is `in review`:** PR #3, branch `step-55-enum-proofs`, head `b98bada`, CI green, checker 1294 R / 329 T, 0 problems, no open questions. The twenty-sixth review's FD1 to FD3 are fixed and recorded (INDEX Decisions "The twenty-sixth review's fix (2026-11-26)"), and the model is in `plans/models/step-55/`. The twenty-seventh review is in (`reviews/step-55-review-27.md`, `2e3d636`): FE1 to FE3, all minor wording, none needing an owner choice (FE1's alternative, keeping cool-down entries across a repair, isn't taken). **Running: the fix agent in `briefs/step-55-review-27-fix.md`** (started 2026-11-26; after a restart check its worktree first), then follow that file's "After it reports".
 - **PR body:** 202,678 bytes of GitHub's 262,144 (move older rounds to `reviews/step-55-pr-history.md` again if it nears the limit); the earlier rounds are in `reviews/step-55-pr-history.md`.
 - **Token use, owner decisions (2026-11-25):** keep models in `plans/models/` (the EZ round's is in `plans/models/step-55/`), a fresh session at milestones, an hourly wake-up, and the models and efforts in `coordinator-briefs.md` (Opus 5.5 medium for the coordinator, high for every agent). Full review rounds stay, after wording-only fixes too.
 - **Next free IDs:** R-1295, T-0330.
-- Step 55's open items, reviews and designs: `reviews/step-55-open-items.md`, `reviews/step-55-review.md` and `-review-2.md` to `-review-26.md`, `reviews/stale-statement-design.md`.
+- Step 55's open items, reviews and designs: `reviews/step-55-open-items.md`, `reviews/step-55-review.md` and `-review-2.md` to `-review-27.md`, `reviews/stale-statement-design.md`.
 
 ## How to resume after a restart
 
@@ -31,7 +31,7 @@ Read this first when resuming. It's what the coordinating session needs that isn
 
 ## What comes next
 
-1. Step 55: the twenty-seventh review, running; repeat until clean, then PR #3 to the owner.
+1. Step 55: the twenty-seventh review's fix, running, then the twenty-eighth review; repeat until clean, then PR #3 to the owner.
 2. Step 03 (freeze the contracts) depends on 55. Then follow the order in `INDEX.md`.
 
 ## Rules that hold for every agent
