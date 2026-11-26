@@ -38,6 +38,9 @@ fn settings(pooled: bool) -> Vec<Cfg> {
         Cfg { name: "search_path only, no retry", only: Some(PATH), tx: 1.0, retry0: true, held: 0.0, two: 0.0, burst: 0.0, world: 0.0, ..b() },
         Cfg { name: "search_path only, no retry, entries off", only: Some(PATH), tx: 1.0, retry0: true, held: 0.0, two: 0.0, burst: 0.0, world: 0.0, pend_max: 0, ..b() },
         Cfg { name: "search_path only, no retry, E off by 0s", only: Some(PATH), tx: 1.0, retry0: true, held: 0.0, two: 0.0, burst: 0.0, world: 0.0, e: 0, ..b() },
+        // the twenty-sixth review's FD1: the same with up to 100 ms between a transaction's checkout and its statement's
+        // run, as when it runs other statements first, so transactions begun before a failure reach the statement after it
+        Cfg { name: "search_path only, no retry, up to 100 ms to the run", only: Some(PATH), tx: 1.0, retry0: true, held: 0.0, two: 0.0, burst: 0.0, world: 0.0, co_gap: 100 * MS, ..b() },
     ];
     v.push(Cfg { name: "max 1", max: 1, budget: 2, ..b() });
     v.push(Cfg { name: "max 1, budget 1", max: 1, budget: 1, ..b() });

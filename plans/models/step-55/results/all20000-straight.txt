@@ -1,6 +1,7 @@
-== defaults [straight] fault 0 seeds 10000..30000 (9.8s)
+== defaults [straight] fault 0 seeds 10000..30000 (9.7s)
    FAIL 1047/20000 ez I8 held, before then, every error
    FAIL  209/20000 ez I8 held, before then, visible errors
+   FAIL 4120/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
    FAIL 2371/20000 lit I1
    FAIL 19994/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL 10844/20000 lit I8 held, before then
@@ -8,7 +9,7 @@
    FAIL 18485/20000 lit I9 loud half
    FAIL  405/20000 lit I9 loud: a request, entry or replacement
    FAIL  977/20000 lit R-1271 before t0+W, not judged not old (parameter test)
-== entries off [straight] fault 0 seeds 10000..30000 (9.8s)
+== entries off [straight] fault 0 seeds 10000..30000 (9.7s)
    FAIL 1078/20000 ez I8 held, before then, every error
    FAIL  220/20000 ez I8 held, before then, visible errors
    FAIL 1422/20000 lit I1
@@ -19,9 +20,10 @@
    FAIL 18592/20000 lit I9 loud half
    FAIL  396/20000 lit I9 loud: a request, entry or replacement
    FAIL  990/20000 lit R-1271 before t0+W, not judged not old (parameter test)
-== caps of 1 [straight] fault 0 seeds 10000..30000 (9.8s)
+== caps of 1 [straight] fault 0 seeds 10000..30000 (9.7s)
    FAIL 1088/20000 ez I8 held, before then, every error
    FAIL  229/20000 ez I8 held, before then, visible errors
+   FAIL 4301/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
    FAIL 2466/20000 lit I1
    FAIL 19997/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL 11116/20000 lit I8 held, before then
@@ -29,9 +31,10 @@
    FAIL 18519/20000 lit I9 loud half
    FAIL  440/20000 lit I9 loud: a request, entry or replacement
    FAIL 1011/20000 lit R-1271 before t0+W, not judged not old (parameter test)
-== W five times E [straight] fault 0 seeds 10000..30000 (10.2s)
+== W five times E [straight] fault 0 seeds 10000..30000 (9.7s)
    FAIL 1065/20000 ez I8 held, before then, every error
    FAIL  226/20000 ez I8 held, before then, visible errors
+   FAIL 4469/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
    FAIL 1684/20000 lit I1
    FAIL 19998/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL 11358/20000 lit I8 held, before then
@@ -40,9 +43,10 @@
    FAIL  409/20000 lit I9 loud: a request, entry or replacement
    FAIL    1/20000 lit I9 silent past W of the first confirmation
    FAIL  979/20000 lit R-1271 before t0+W, not judged not old (parameter test)
-== budget 8 [straight] fault 0 seeds 10000..30000 (9.8s)
+== budget 8 [straight] fault 0 seeds 10000..30000 (9.7s)
    FAIL 1047/20000 ez I8 held, before then, every error
    FAIL  209/20000 ez I8 held, before then, visible errors
+   FAIL 4120/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
    FAIL 2371/20000 lit I1
    FAIL 19994/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL 10844/20000 lit I8 held, before then
@@ -50,7 +54,7 @@
    FAIL 18485/20000 lit I9 loud half
    FAIL  405/20000 lit I9 loud: a request, entry or replacement
    FAIL  977/20000 lit R-1271 before t0+W, not judged not old (parameter test)
-== caches off [straight] fault 0 seeds 10000..30000 (8.5s)
+== caches off [straight] fault 0 seeds 10000..30000 (8.4s)
    FAIL 1152/20000 ez I8 held, before then, every error
    FAIL  259/20000 ez I8 held, before then, visible errors
    FAIL  343/20000 lit I1
@@ -59,7 +63,8 @@
    FAIL 17532/20000 lit I9 loud half
    FAIL  393/20000 lit I9 loud: a request, entry or replacement
    FAIL 1020/20000 lit R-1271 before t0+W, not judged not old (parameter test)
-== no client input [straight] fault 0 seeds 10000..30000 (8.1s)
+== no client input [straight] fault 0 seeds 10000..30000 (8.2s)
+   FAIL 4120/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
    FAIL 1789/20000 lit I1
    FAIL 20000/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL 10240/20000 lit I8 held, before then
@@ -67,9 +72,10 @@
    FAIL 5689/20000 lit I9 loud half
    FAIL   18/20000 lit I9 loud: a request, entry or replacement
    FAIL    1/20000 lit I9 silent past W of the first confirmation
-== several, one server [straight] fault 0 seeds 10000..30000 (10.1s)
+== several, one server [straight] fault 0 seeds 10000..30000 (9.7s)
    FAIL 1310/20000 ez I8 held, before then, every error
    FAIL  281/20000 ez I8 held, before then, visible errors
+   FAIL 4331/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
    FAIL  946/20000 lit I1 several (rose between them)
    FAIL 20000/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL 11127/20000 lit I8 held, before then
@@ -80,6 +86,7 @@
 == two servers [straight] fault 0 seeds 10000..30000 (9.7s)
    FAIL 1508/20000 ez I8 held, before then, every error
    FAIL  289/20000 ez I8 held, before then, visible errors
+   FAIL 4294/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
    FAIL  983/20000 lit I1 several (rose between them)
    FAIL 19996/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL 11017/20000 lit I8 held, before then
@@ -87,9 +94,10 @@
    FAIL 18541/20000 lit I9 loud half
    FAIL  423/20000 lit I9 loud: a request, entry or replacement
    FAIL 1208/20000 lit R-1271 before t0+W, not judged not old (parameter test)
-== three servers [straight] fault 0 seeds 10000..30000 (10.0s)
+== three servers [straight] fault 0 seeds 10000..30000 (9.7s)
    FAIL 1470/20000 ez I8 held, before then, every error
    FAIL  303/20000 ez I8 held, before then, visible errors
+   FAIL 4251/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
    FAIL  973/20000 lit I1 several (rose between them)
    FAIL 20000/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL 11012/20000 lit I8 held, before then
@@ -98,9 +106,10 @@
    FAIL 18488/20000 lit I9 loud half
    FAIL  437/20000 lit I9 loud: a request, entry or replacement
    FAIL 1336/20000 lit R-1271 before t0+W, not judged not old (parameter test)
-== heavy [straight] fault 0 seeds 10000..30000 (9.1s)
+== heavy [straight] fault 0 seeds 10000..30000 (8.9s)
    FAIL 2143/20000 ez I8 held, before then, every error
    FAIL  505/20000 ez I8 held, before then, visible errors
+   FAIL 3325/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
    FAIL 2909/20000 lit I1
    FAIL 19994/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL 14782/20000 lit I8 held, before then
@@ -108,9 +117,10 @@
    FAIL 19617/20000 lit I9 loud half
    FAIL 2283/20000 lit I9 loud: a request, entry or replacement
    FAIL 1142/20000 lit R-1271 before t0+W, not judged not old (parameter test)
-== landing always [straight] fault 0 seeds 10000..30000 (9.9s)
+== landing always [straight] fault 0 seeds 10000..30000 (9.7s)
    FAIL 1027/20000 ez I8 held, before then, every error
    FAIL  196/20000 ez I8 held, before then, visible errors
+   FAIL 4048/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
    FAIL 3564/20000 lit I1
    FAIL 19994/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL 10730/20000 lit I8 held, before then
@@ -122,6 +132,7 @@
 == two servers, landing always, heavy [straight] fault 0 seeds 10000..30000 (8.9s)
    FAIL 2644/20000 ez I8 held, before then, every error
    FAIL  562/20000 ez I8 held, before then, visible errors
+   FAIL 3697/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
    FAIL 3172/20000 lit I1 several (rose between them)
    FAIL 19995/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL 15208/20000 lit I8 held, before then
@@ -132,6 +143,7 @@
 == savepoints [straight] fault 0 seeds 10000..30000 (12.5s)
    FAIL 1249/20000 ez I8 held, before then, every error
    FAIL  273/20000 ez I8 held, before then, visible errors
+   FAIL 6401/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
    FAIL 3035/20000 lit I1
    FAIL 20000/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL 9783/20000 lit I8 held, before then
@@ -139,9 +151,10 @@
    FAIL 19360/20000 lit I9 loud half
    FAIL  406/20000 lit I9 loud: a request, entry or replacement
    FAIL 1731/20000 lit R-1271 before t0+W, not judged not old (parameter test)
-== RR and SERIALIZABLE only [straight] fault 0 seeds 10000..30000 (9.8s)
+== RR and SERIALIZABLE only [straight] fault 0 seeds 10000..30000 (9.7s)
    FAIL 1047/20000 ez I8 held, before then, every error
    FAIL  209/20000 ez I8 held, before then, visible errors
+   FAIL 4120/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
    FAIL 2371/20000 lit I1
    FAIL 19994/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL 10844/20000 lit I8 held, before then
@@ -149,9 +162,10 @@
    FAIL 18485/20000 lit I9 loud half
    FAIL  405/20000 lit I9 loud: a request, entry or replacement
    FAIL  977/20000 lit R-1271 before t0+W, not judged not old (parameter test)
-== quiet [straight] fault 0 seeds 10000..30000 (9.7s)
+== quiet [straight] fault 0 seeds 10000..30000 (9.5s)
    FAIL  207/20000 ez I8 held, before then, every error
    FAIL   45/20000 ez I8 held, before then, visible errors
+   FAIL 4469/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
    FAIL  338/20000 lit I1
    FAIL 19997/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL 3009/20000 lit I8 held, before then
@@ -159,9 +173,10 @@
    FAIL 17100/20000 lit I9 loud half
    FAIL   14/20000 lit I9 loud: a request, entry or replacement
    FAIL  265/20000 lit R-1271 before t0+W, not judged not old (parameter test)
-== hand relabels [straight] fault 0 seeds 10000..30000 (9.7s)
+== hand relabels [straight] fault 0 seeds 10000..30000 (9.6s)
    FAIL  702/20000 ez I8 held, before then, every error
    FAIL  142/20000 ez I8 held, before then, visible errors
+   FAIL 4318/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
    FAIL 1407/20000 lit I1
    FAIL 19999/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL 6750/20000 lit I8 held, before then
@@ -171,10 +186,11 @@
    FAIL  708/20000 lit I9 loud: a request, entry or replacement
    FAIL    1/20000 lit I9 silent past W of the first confirmation
    FAIL  632/20000 lit R-1271 before t0+W, not judged not old (parameter test)
-== long transactions [straight] fault 0 seeds 10000..30000 (11.0s)
+== long transactions [straight] fault 0 seeds 10000..30000 (10.9s)
    FAIL  776/20000 ez I8 held, before then, every error
    FAIL  174/20000 ez I8 held, before then, visible errors
    FAIL    6/20000 ez I8 held, from then on
+   FAIL 3582/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
    FAIL 1412/20000 lit I1
    FAIL 20000/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL 7652/20000 lit I8 held, before then
@@ -189,6 +205,7 @@
    FAIL 1289/20000 ez I8 held, before then, every error
    FAIL  518/20000 ez I8 held, before then, visible errors
    FAIL  915/20000 ez I8 held, from then on
+   FAIL 1937/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
    FAIL  137/20000 lit I1
    FAIL 19995/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL 1289/20000 lit I8 held, before then
@@ -196,7 +213,8 @@
    FAIL    2/20000 lit I8 search_path once per E
    FAIL 4752/20000 lit I8 visible from then on (parameter test)
    FAIL 6935/20000 lit R-1271 before t0+W, not judged not old (parameter test)
-== transactions without retry [straight] fault 0 seeds 10000..30000 (10.4s)
+== transactions without retry [straight] fault 0 seeds 10000..30000 (10.3s)
+   FAIL 18756/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
    FAIL 3551/20000 lit I1
    FAIL 20000/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL 14268/20000 lit I8 search_path once per E
@@ -205,7 +223,7 @@
    FAIL  650/20000 lit I9 loud: a request, entry or replacement
    FAIL    2/20000 lit I9 silent past W of the first confirmation
    FAIL 1939/20000 lit R-1271 before t0+W, not judged not old (parameter test)
-== transactions without retry, entries off [straight] fault 0 seeds 10000..30000 (10.3s)
+== transactions without retry, entries off [straight] fault 0 seeds 10000..30000 (10.2s)
    FAIL 1954/20000 lit I1
    FAIL 20000/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL 20000/20000 lit I8 search_path once per E
@@ -214,6 +232,7 @@
    FAIL  445/20000 lit I9 loud: a request, entry or replacement
    FAIL 1848/20000 lit R-1271 before t0+W, not judged not old (parameter test)
 == transactions without retry, E a fifth of W [straight] fault 0 seeds 10000..30000 (10.3s)
+   FAIL 19388/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
    FAIL 2724/20000 lit I1
    FAIL 20000/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL 4036/20000 lit I8 search_path once per E
@@ -221,16 +240,21 @@
    FAIL 19264/20000 lit I9 loud half
    FAIL  546/20000 lit I9 loud: a request, entry or replacement
    FAIL 1870/20000 lit R-1271 before t0+W, not judged not old (parameter test)
-== search_path only, no retry [straight] fault 0 seeds 10000..30000 (3.7s)
+== search_path only, no retry [straight] fault 0 seeds 10000..30000 (4.0s)
+   FAIL 15229/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
    FAIL 20000/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
-== search_path only, no retry, entries off [straight] fault 0 seeds 10000..30000 (6.4s)
+== search_path only, no retry, entries off [straight] fault 0 seeds 10000..30000 (6.3s)
    FAIL 20000/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL 20000/20000 lit I8 search_path once per E
-== search_path only, no retry, E off by 0s [straight] fault 0 seeds 10000..30000 (6.5s)
+== search_path only, no retry, E off by 0s [straight] fault 0 seeds 10000..30000 (6.4s)
    FAIL 20000/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
-== max 1 [straight] fault 0 seeds 10000..30000 (11.7s)
+== search_path only, no retry, up to 100 ms to the run [straight] fault 0 seeds 10000..30000 (4.8s)
+   FAIL 19353/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL 19999/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
+== max 1 [straight] fault 0 seeds 10000..30000 (12.4s)
    FAIL  432/20000 ez I8 held, before then, every error
    FAIL  102/20000 ez I8 held, before then, visible errors
+   FAIL 4428/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
    FAIL 6766/20000 lit I1
    FAIL 19997/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL 5485/20000 lit I8 held, before then
@@ -238,9 +262,10 @@
    FAIL 15736/20000 lit I9 loud half
    FAIL  205/20000 lit I9 loud: a request, entry or replacement
    FAIL  364/20000 lit R-1271 before t0+W, not judged not old (parameter test)
-== max 1, budget 1 [straight] fault 0 seeds 10000..30000 (11.6s)
+== max 1, budget 1 [straight] fault 0 seeds 10000..30000 (12.9s)
    FAIL  434/20000 ez I8 held, before then, every error
    FAIL  111/20000 ez I8 held, before then, visible errors
+   FAIL 4431/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
    FAIL 6735/20000 lit I1
    FAIL 19996/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL 5419/20000 lit I8 held, before then
@@ -248,9 +273,10 @@
    FAIL 15711/20000 lit I9 loud half
    FAIL  200/20000 lit I9 loud: a request, entry or replacement
    FAIL  383/20000 lit R-1271 before t0+W, not judged not old (parameter test)
-== max 1, quick [straight] fault 0 seeds 10000..30000 (8.6s)
+== max 1, quick [straight] fault 0 seeds 10000..30000 (9.1s)
    FAIL  459/20000 ez I8 held, before then, every error
    FAIL  108/20000 ez I8 held, before then, visible errors
+   FAIL  549/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
    FAIL 1950/20000 lit I1
    FAIL 19998/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL 5323/20000 lit I8 held, before then
@@ -259,9 +285,10 @@
    FAIL 14859/20000 lit I9 loud half
    FAIL   76/20000 lit I9 loud: a request, entry or replacement
    FAIL  476/20000 lit R-1271 before t0+W, not judged not old (parameter test)
-== max 2, budget 2, heavy [straight] fault 0 seeds 10000..30000 (8.9s)
+== max 2, budget 2, heavy [straight] fault 0 seeds 10000..30000 (9.0s)
    FAIL 1476/20000 ez I8 held, before then, every error
    FAIL  350/20000 ez I8 held, before then, visible errors
+   FAIL 3409/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
    FAIL 4239/20000 lit I1
    FAIL 19996/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL 12270/20000 lit I8 held, before then
@@ -269,9 +296,10 @@
    FAIL 19428/20000 lit I9 loud half
    FAIL 1436/20000 lit I9 loud: a request, entry or replacement
    FAIL  903/20000 lit R-1271 before t0+W, not judged not old (parameter test)
-== hand relabels without the reset [straight] fault 0 seeds 10000..30000 (9.7s)
+== hand relabels without the reset [straight] fault 0 seeds 10000..30000 (9.6s)
    FAIL  697/20000 ez I8 held, before then, every error
    FAIL  147/20000 ez I8 held, before then, visible errors
+   FAIL 4360/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
    FAIL 1452/20000 lit I1
    FAIL 19998/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL 6534/20000 lit I8 held, before then
@@ -284,9 +312,10 @@
 == hand relabels without the reset, casts [straight] fault 0 seeds 10000..30000 (7.9s)
    FAIL 19999/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL 18899/20000 lit I9 loud half
-== old labels copied [straight] fault 0 seeds 10000..30000 (9.8s)
+== old labels copied [straight] fault 0 seeds 10000..30000 (9.7s)
    FAIL  796/20000 ez I8 held, before then, every error
    FAIL  238/20000 ez I8 held, before then, visible errors
+   FAIL 4323/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
    FAIL 2353/20000 lit I1
    FAIL 19997/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL 10655/20000 lit I8 held, before then
@@ -294,9 +323,10 @@
    FAIL 18463/20000 lit I9 loud half
    FAIL  439/20000 lit I9 loud: a request, entry or replacement
    FAIL  991/20000 lit R-1271 before t0+W, not judged not old (parameter test)
-== record and column statements [straight] fault 0 seeds 10000..30000 (9.9s)
+== record and column statements [straight] fault 0 seeds 10000..30000 (9.8s)
    FAIL 1137/20000 ez I8 held, before then, every error
    FAIL  289/20000 ez I8 held, before then, visible errors
+   FAIL 5303/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
    FAIL 2632/20000 lit I1
    FAIL 19998/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL 9845/20000 lit I8 held, before then
@@ -305,13 +335,14 @@
    FAIL  511/20000 lit I9 loud: a request, entry or replacement
    FAIL    1/20000 lit I9 silent past W of the first confirmation
    FAIL 1368/20000 lit R-1271 before t0+W, not judged not old (parameter test)
-== every call a cast beside a second type [straight] fault 0 seeds 10000..30000 (8.2s)
+== every call a cast beside a second type [straight] fault 0 seeds 10000..30000 (8.3s)
    FAIL  190/20000 lit I1
    FAIL 20000/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL    2/20000 lit I9 silent past W of the first confirmation
 == held [straight] fault 0 seeds 10000..30000 (10.8s)
    FAIL 1408/20000 ez I8 held, before then, every error
    FAIL  254/20000 ez I8 held, before then, visible errors
+   FAIL 1439/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
    FAIL  919/20000 lit I1
    FAIL 19997/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL 14803/20000 lit I8 held, before then
@@ -319,9 +350,10 @@
    FAIL 15672/20000 lit I9 loud half
    FAIL   71/20000 lit I9 loud: a request, entry or replacement
    FAIL  330/20000 lit R-1271 before t0+W, not judged not old (parameter test)
-== held, quiet [straight] fault 0 seeds 10000..30000 (10.8s)
+== held, quiet [straight] fault 0 seeds 10000..30000 (10.7s)
    FAIL  271/20000 ez I8 held, before then, every error
    FAIL   57/20000 ez I8 held, before then, visible errors
+   FAIL 1557/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
    FAIL  202/20000 lit I1
    FAIL 19998/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL 4406/20000 lit I8 held, before then
@@ -329,10 +361,11 @@
    FAIL 12785/20000 lit I9 loud half
    FAIL    2/20000 lit I9 loud: a request, entry or replacement
    FAIL  101/20000 lit R-1271 before t0+W, not judged not old (parameter test)
-== long holds [straight] fault 0 seeds 10000..30000 (11.7s)
+== long holds [straight] fault 0 seeds 10000..30000 (11.6s)
    FAIL 4091/20000 ez I8 held, before then, every error
    FAIL  998/20000 ez I8 held, before then, visible errors
    FAIL  192/20000 ez I8 held, from then on
+   FAIL 2975/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
    FAIL 1425/20000 lit I1
    FAIL 19997/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL 18393/20000 lit I8 held, before then
@@ -343,10 +376,11 @@
    FAIL   79/20000 lit I9 loud: a request, entry or replacement
    FAIL   15/20000 lit I9 silent past W of the first confirmation
    FAIL  774/20000 lit R-1271 before t0+W, not judged not old (parameter test)
-== long holds, held [straight] fault 0 seeds 10000..30000 (16.7s)
+== long holds, held [straight] fault 0 seeds 10000..30000 (16.5s)
    FAIL 4344/20000 ez I8 held, before then, every error
    FAIL  971/20000 ez I8 held, before then, visible errors
    FAIL  204/20000 ez I8 held, from then on
+   FAIL  819/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
    FAIL 1126/20000 lit I1
    FAIL 19999/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL 18608/20000 lit I8 held, before then
@@ -357,10 +391,11 @@
    FAIL    8/20000 lit I9 loud: a request, entry or replacement
    FAIL    3/20000 lit I9 silent past W of the first confirmation
    FAIL  215/20000 lit R-1271 before t0+W, not judged not old (parameter test)
-== long holds, quiet [straight] fault 0 seeds 10000..30000 (13.4s)
+== long holds, quiet [straight] fault 0 seeds 10000..30000 (13.2s)
    FAIL 1547/20000 ez I8 held, before then, every error
    FAIL  632/20000 ez I8 held, before then, visible errors
    FAIL  158/20000 ez I8 held, from then on
+   FAIL 1578/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
    FAIL  438/20000 lit I1
    FAIL 19999/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL 11741/20000 lit I8 held, before then
@@ -370,10 +405,11 @@
    FAIL 7923/20000 lit I9 loud half
    FAIL    2/20000 lit I9 silent past W of the first confirmation
    FAIL  240/20000 lit R-1271 before t0+W, not judged not old (parameter test)
-== long holds, hand relabels [straight] fault 0 seeds 10000..30000 (14.4s)
+== long holds, hand relabels [straight] fault 0 seeds 10000..30000 (14.0s)
    FAIL 2319/20000 ez I8 held, before then, every error
    FAIL  512/20000 ez I8 held, before then, visible errors
    FAIL  150/20000 ez I8 held, from then on
+   FAIL 1534/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
    FAIL  551/20000 lit I1
    FAIL 19999/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL 14522/20000 lit I8 held, before then
@@ -384,9 +420,10 @@
    FAIL   35/20000 lit I9 loud: a request, entry or replacement
    FAIL   15/20000 lit I9 silent past W of the first confirmation
    FAIL  215/20000 lit R-1271 before t0+W, not judged not old (parameter test)
-== role limit [straight] fault 0 seeds 10000..30000 (9.8s)
+== role limit [straight] fault 0 seeds 10000..30000 (9.7s)
    FAIL 1094/20000 ez I8 held, before then, every error
    FAIL  231/20000 ez I8 held, before then, visible errors
+   FAIL 4103/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
    FAIL 2306/20000 lit I1
    FAIL 19998/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL 10784/20000 lit I8 held, before then
@@ -394,9 +431,10 @@
    FAIL 18499/20000 lit I9 loud half
    FAIL  598/20000 lit I9 loud: a request, entry or replacement
    FAIL  616/20000 lit R-1271 before t0+W, not judged not old (parameter test)
-== role limit, heavy [straight] fault 0 seeds 10000..30000 (9.0s)
+== role limit, heavy [straight] fault 0 seeds 10000..30000 (8.9s)
    FAIL 2051/20000 ez I8 held, before then, every error
    FAIL  436/20000 ez I8 held, before then, visible errors
+   FAIL 3286/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
    FAIL 2973/20000 lit I1
    FAIL 19992/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL 14663/20000 lit I8 held, before then
@@ -407,6 +445,7 @@
 == refusals [straight] fault 0 seeds 10000..30000 (9.9s)
    FAIL 1990/20000 ez I8 held, before then, every error
    FAIL  404/20000 ez I8 held, before then, visible errors
+   FAIL 3893/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
    FAIL 3683/20000 lit I1
    FAIL 19999/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL 14136/20000 lit I8 held, before then
@@ -414,9 +453,10 @@
    FAIL 17373/20000 lit I9 loud half
    FAIL 2665/20000 lit I9 loud: a request, entry or replacement
    FAIL   95/20000 lit R-1271 before t0+W, not judged not old (parameter test)
-== held, no rerun [straight] fault 0 seeds 10000..30000 (9.8s)
+== held, no rerun [straight] fault 0 seeds 10000..30000 (9.5s)
    FAIL  956/20000 ez I8 held, before then, every error
    FAIL  201/20000 ez I8 held, before then, visible errors
+   FAIL 4239/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
    FAIL 2290/20000 lit I1
    FAIL 19998/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL 9749/20000 lit I8 held, before then

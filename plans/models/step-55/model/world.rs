@@ -231,8 +231,8 @@ pub fn end_checks(s: &mut Sim) {
     for p in 0..s.pools.len() {
         for (stmt, v) in s.pools[p].path_fx.iter() {
             let cr = s.pools[p].created.get(stmt).cloned().unwrap_or_default();
-            for (i, &(_, st)) in v.iter().enumerate() {
-                let hit = v.iter().enumerate().any(|(j, &(et, _))| {
+            for (i, &(_, st, _)) in v.iter().enumerate() {
+                let hit = v.iter().enumerate().any(|(j, &(et, _, _))| {
                     j != i && et < st && cr.iter().find(|c| **c >= et).is_none_or(|c| st < *c)
                 });
                 if hit { after += 1 } else { other += 1 }
@@ -242,6 +242,53 @@ pub fn end_checks(s: &mut Sim) {
     if after + other > 0 {
         s.inc_by("search_path, entries on: SchemaChanged begun after another's error, before its entry", after);
         s.inc_by("search_path, entries on: SchemaChanged otherwise", other);
+    }
+    // the twenty-sixth review's FD1: each such SchemaChanged classed against the earliest other one whose error came
+    // before its own and whose entry wasn't made yet when its run began: its run already in flight at that error, its
+    // transaction started before that error, or started after it, in the gap; with no such failure, the first. The
+    // README's older gap clause, "the transactions that start while morm rolls back the first ... before it marks the
+    // statement pending", counted only the last kind ("lit FD1"); R-1253's and R-1272's words now count runs, as I8 does
+    let (mut first, mut fl, mut before, mut gap, mut lit) = (0u64, 0u64, 0u64, 0u64, 0u64);
+    let mut eg = String::new();
+    for p in 0..s.pools.len() {
+        for (stmt, v) in s.pools[p].path_fx.iter() {
+            let cr = s.pools[p].created.get(stmt).cloned().unwrap_or_default();
+            for (i, &(ei, st, tt)) in v.iter().enumerate() {
+                let j = v
+                    .iter()
+                    .enumerate()
+                    .filter(|&(j, &(et, _, _))| j != i && et < ei && cr.iter().find(|c| **c >= et).is_none_or(|c| st < *c))
+                    .map(|(_, &(et, _, _))| et)
+                    .min();
+                match j {
+                    None => first += 1,
+                    Some(et) if st < et => {
+                        fl += 1;
+                        lit += 1;
+                        if eg.is_empty() {
+                            eg = format!("stmt={} run {} began before the earlier error {}, its transaction at {}", stmt, st, et, tt);
+                        }
+                    }
+                    Some(et) if tt < et => {
+                        before += 1;
+                        lit += 1;
+                        if eg.is_empty() {
+                            eg = format!("stmt={} transaction began {} before the earlier error {}, its run at {}", stmt, tt, et, st);
+                        }
+                    }
+                    Some(_) => gap += 1,
+                }
+            }
+        }
+    }
+    if first + fl + before + gap > 0 {
+        s.inc_by("search_path, entries on, FD1: SchemaChanged the first", first);
+        s.inc_by("search_path, entries on, FD1: SchemaChanged in flight at an earlier one's error", fl);
+        s.inc_by("search_path, entries on, FD1: SchemaChanged in a transaction started before it", before);
+        s.inc_by("search_path, entries on, FD1: SchemaChanged in a transaction started in the gap", gap);
+    }
+    if lit > 0 {
+        s.fail("lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back", eg.clone());
     }
     let wd = s.c.w;
     let ch: Vec<u64> = s.db.nhist.iter().skip(1).map(|x| x.0).collect();

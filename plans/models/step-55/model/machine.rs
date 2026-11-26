@@ -37,6 +37,7 @@ pub struct Cx {
     pub att: u64,
     pub first: Option<Result<u32, Err>>,
     pub carry: i64,
+    pub tx_t: u64, // the twenty-sixth review's FD1: when the transaction began, before its checkout
 }
 impl Cx {
     pub fn fresh_call(&mut self) {

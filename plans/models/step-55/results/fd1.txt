@@ -1,0 +1,66 @@
+== search_path only, no retry [straight] fault 0 seeds 0..256 (0.1s)
+   FAIL  194/256 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back   e.g. seed 7: stmt=2 run 21087865 began before the earlier error 21088723, its transaction at 21087865
+        ms simulated = 10264141
+        search_path, entries on, FD1: SchemaChanged in a transaction started before it = 1
+        search_path, entries on, FD1: SchemaChanged in a transaction started in the gap = 10609
+        search_path, entries on, FD1: SchemaChanged in flight at an earlier one's error = 365
+        search_path, entries on, FD1: SchemaChanged the first = 9554
+        search_path, entries on: SchemaChanged begun after another's error, before its entry = 10610
+        search_path, entries on: SchemaChanged otherwise = 9919
+        search_path: SchemaChanged, no retry = 20529
+        search_path: transactions, no retry = 512000
+== search_path only, no retry [pooled] fault 0 seeds 0..256 (0.1s)
+   FAIL  199/256 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back   e.g. seed 7: stmt=2 run 20576948 began before the earlier error 20577657, its transaction at 20576948
+        ms simulated = 10265795
+        search_path, entries on, FD1: SchemaChanged in a transaction started before it = 9
+        search_path, entries on, FD1: SchemaChanged in a transaction started in the gap = 12341
+        search_path, entries on, FD1: SchemaChanged in flight at an earlier one's error = 386
+        search_path, entries on, FD1: SchemaChanged the first = 9854
+        search_path, entries on: SchemaChanged begun after another's error, before its entry = 12350
+        search_path, entries on: SchemaChanged otherwise = 10240
+        search_path: SchemaChanged, no retry = 22590
+        search_path: transactions, no retry = 512000
+== search_path only, no retry, up to 100 ms to the run [straight] fault 0 seeds 0..256 (0.1s)
+   FAIL  248/256 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back   e.g. seed 2: stmt=2 transaction began 17361695 before the earlier error 17368323, its run at 17370689
+        ms simulated = 10283343
+        search_path, entries on, FD1: SchemaChanged in a transaction started before it = 5826
+        search_path, entries on, FD1: SchemaChanged in a transaction started in the gap = 3984
+        search_path, entries on, FD1: SchemaChanged in flight at an earlier one's error = 358
+        search_path, entries on, FD1: SchemaChanged the first = 9541
+        search_path, entries on: SchemaChanged begun after another's error, before its entry = 9810
+        search_path, entries on: SchemaChanged otherwise = 9899
+        search_path: SchemaChanged, no retry = 19709
+        search_path: transactions, no retry = 512000
+== search_path only, no retry, up to 100 ms to the run [pooled] fault 0 seeds 0..256 (0.1s)
+   FAIL  256/256 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back   e.g. seed 6: stmt=2 transaction began 104921 before the earlier error 162469, its run at 176350
+        ms simulated = 10246854
+        search_path, entries on, FD1: SchemaChanged in a transaction started before it = 7398
+        search_path, entries on, FD1: SchemaChanged in a transaction started in the gap = 4235
+        search_path, entries on, FD1: SchemaChanged in flight at an earlier one's error = 330
+        search_path, entries on, FD1: SchemaChanged the first = 9844
+        search_path, entries on: SchemaChanged begun after another's error, before its entry = 11633
+        search_path, entries on: SchemaChanged otherwise = 10174
+        search_path: SchemaChanged, no retry = 21807
+        search_path: transactions, no retry = 512000
+== transactions without retry [straight] fault 0 seeds 0..256 (0.1s)
+   FAIL  238/256 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back   e.g. seed 5: stmt=2 run 7332048 began before the earlier error 7332848, its transaction at 7332048
+        ms simulated = 10280273
+        search_path, entries on, FD1: SchemaChanged in a transaction started before it = 426
+        search_path, entries on, FD1: SchemaChanged in a transaction started in the gap = 1712
+        search_path, entries on, FD1: SchemaChanged in flight at an earlier one's error = 439
+        search_path, entries on, FD1: SchemaChanged the first = 5964
+        search_path, entries on: SchemaChanged begun after another's error, before its entry = 2138
+        search_path, entries on: SchemaChanged otherwise = 6403
+        search_path: SchemaChanged, no retry = 8541
+        search_path: transactions, no retry = 80486
+== transactions without retry [pooled] fault 0 seeds 0..256 (0.2s)
+   FAIL  237/256 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back   e.g. seed 4: stmt=2 transaction began 11994588 before the earlier error 11997287, its run at 11997588
+        ms simulated = 10251747
+        search_path, entries on, FD1: SchemaChanged in a transaction started before it = 334
+        search_path, entries on, FD1: SchemaChanged in a transaction started in the gap = 2319
+        search_path, entries on, FD1: SchemaChanged in flight at an earlier one's error = 417
+        search_path, entries on, FD1: SchemaChanged the first = 5863
+        search_path, entries on: SchemaChanged begun after another's error, before its entry = 2653
+        search_path, entries on: SchemaChanged otherwise = 6280
+        search_path: SchemaChanged, no retry = 8933
+        search_path: transactions, no retry = 80975

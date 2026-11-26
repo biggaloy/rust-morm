@@ -555,7 +555,7 @@ pub fn check_sc(p: usize, cx: &Cx, sp: &Spec, o: &Out, at: At, conn: u64) {
             let off = s.c.pend_max == 0 || s.c.e == 0;
             // the twenty-fifth review's FC1: classed at the end against the entries made, in world::end_checks
             if path && !off {
-                s.pools[p].path_fx.entry(sp.stmt).or_default().push((o.t, cx.started));
+                s.pools[p].path_fx.entry(sp.stmt).or_default().push((o.t, cx.started, cx.tx_t));
             }
             // the twenty-fifth review's FC2: with entries off behind PgBouncer a stale statement fails until the next
             // salt or adoption, which a 0A000 requests at its failure; one failing after an action taken since its
@@ -658,6 +658,7 @@ pub async fn call_held_gap(p: usize, sps: Vec<Spec>, app: bool, gap: u64) {
 pub async fn call_tx(p: usize, sps: Vec<(Spec, bool)>, retry: u32, rr: bool) {
     w().inc("calls");
     w().inc("transactions");
+    let tx_t = w().now;
     let mut conn = checkout(p, false).await;
     let mut retried = false;
     let mut due_mark = None;
@@ -677,7 +678,7 @@ pub async fn call_tx(p: usize, sps: Vec<(Spec, bool)>, retry: u32, rr: bool) {
     }
     for attempt in 0..=retry {
         let pooled = w().c.pooled;
-        let mut cx = Cx { out: false, rr, retried, ..Cx::default() };
+        let mut cx = Cx { out: false, rr, retried, tx_t, ..Cx::default() };
         cx.due_mark = due_mark.take();
         if pooled {
             let j = crate::calls::acq(conn.last_srv).await;

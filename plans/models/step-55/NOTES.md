@@ -1,3 +1,30 @@
+# Step 55's stale-session model, after the twenty-sixth review's fix
+
+Started from `plans/models/step-55/` on `main` (the twenty-fifth review's fix, PR #3 `e217a1c`). FD1 changes what the model counts, not what it checks: R-1253's and R-1272's gap clauses now count the transactions that run the statement before morm marks it pending, which is I8's set ("new I8 a failure begun while its entry exists", unchanged). FD2 and FD3 are wording the model already agreed with: R-1268's and R-1292's rate for a bad enum value is I14's, R-1271's kept function's "once per pending entry, beyond calls that begin before its entry is made" is I14's too, and R-1288's per-connection bound straight to Postgres is I8's ("I8 once per connection") and R-1271's ("R-1271 a stale copy failing twice").
+
+What changed:
+
+- `model/core.rs`, `Pool::path_fx`, and `model/calls.rs`, `check_sc`: each `search_path` `Error::SchemaChanged` with entries on and no `.retry(n)` also records its transaction's start, before its checkout (`machine.rs`, `Cx::tx_t`, set in `call_tx`).
+- `model/world.rs`, `end_checks`: FD1's classes. Against the earliest other such failure whose error came before its own and whose entry wasn't made when its run began: "in flight at an earlier one's error" (its run began before that error), "in a transaction started before it" (its transaction began before that error, its run after), "in a transaction started in the gap" (its transaction began after that error); with no such failure, "the first". The last round's two counters stay, and "begun after another's error" is the sum of the middle two.
+- `model/world.rs`: "lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back", the older README wording, fails a sequence with any failure of the first two extra kinds. It's an older wording's check, so it doesn't count.
+- `model/main.rs`: one setting in both modes, "search_path only, no retry, up to 100 ms to the run": the `search_path` setting with `co_gap` 100 ms, a random gap of up to 100 ms between a transaction's checkout and its statement's run, as when it runs other statements first. 82 settings, 45 straight to Postgres and 37 behind PgBouncer.
+- `model/fd1.sh <binary> [fault] [count]` prints the counts (`results/fd1.txt`).
+
+This round ran `full.sh`'s commands with the binary in the worktree's `.claude/scratch/`, then `switches.py` and `fd1.sh`; `cost.sh`, `fa2.sh`, `fb1.sh` and `fc.sh` weren't run again, as nothing they count changed.
+
+Results:
+
+- **No check fails with no fault** in the 82 settings over 256, 2,048 and 20,000 sequences (seeds 0 to 255, 1,000 to 3,047, 10,000 to 29,999), but the older wordings' ("lit ", "ez ", "mid "). The 80 earlier settings give the same results as at `e217a1c` once "lit FD1" lines, timings and example seeds are set aside.
+- **Switches:** every one caught exactly as before (`results/switches.txt`, the same counts). **Breaks:** the same counts (`results/breaks.txt`).
+- **FD1,** 256 sequences of 40 s, `E` = `W` = 1 s, 50 transactions a second on a pool of four, per `E`:
+  - "search_path only, no retry", straight to Postgres: 2.00 in all, 0.93 the first, 0.04 in flight, 0.00 begun before, 1.03 begun in the gap; "lit FD1" in 194 of 256.
+  - The same behind PgBouncer: 2.20, 0.96, 0.04, 0.00, 1.20; 199 of 256.
+  - "up to 100 ms to the run", straight to Postgres: 1.92, 0.93, 0.03, 0.57, 0.39; 248 of 256.
+  - The same behind PgBouncer: 2.13, 0.96, 0.03, 0.72, 0.41; 256 of 256.
+  - So with the run at checkout nearly every extra failure begins in the gap, which is why FC1's counts, by when the run began, matched the older clause; with transactions that reach the statement later, more than half begin before the earlier failure's error. None came from a run begun while its entry existed.
+
+Not run: Postgres and PgBouncer (FD1 to FD3 are wording of morm's own procedure), and the 60-second defaults, which the review's own model ran.
+
 # Step 55's stale-session model, after the twenty-fifth review's fix
 
 Started from `plans/models/step-55/` on `main` (the twenty-fourth review's fix, PR #3 `59286dc`). No finding changes what the model checks, so no check, setting or switch changed, and the switches weren't run again:
