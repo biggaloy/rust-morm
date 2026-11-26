@@ -166,7 +166,14 @@ impl Sim {
         self.inc("actions");
     }
     pub fn clear_tables(&mut self, p: usize) {
+        self.clear_tables_k(p, 1)
+    }
+    pub fn clear_tables_k(&mut self, p: usize, k: u8) {
         let now = self.now;
+        let cl: Vec<u8> = self.pools[p].cool.iter().filter(|e| e.1 > now).map(|e| e.0).collect();
+        for s in cl {
+            self.pools[p].cool_rm.entry(s).or_default().push((now, k));
+        }
         let st: Vec<u8> = self.pools[p].entries.iter().map(|e| e.stmt).collect();
         for s in st {
             self.pools[p].removals.entry(s).or_default().push(now);
@@ -258,7 +265,7 @@ impl Sim {
         if !pooled && !self.pools[p].entries.is_empty() && self.landing(p) {
             self.finish_take(p);
         }
-        self.clear_tables(p);
+        self.clear_tables_k(p, 2);
         if pooled {
             let salt = self.id();
             let fr = self.c.fault == 26;
@@ -1122,9 +1129,15 @@ async fn session(p: usize, conn: &mut Conn, cx: &mut Cx, sp: &Spec, o: Out) -> R
                 return;
             }
             if s.pools[p].cool.len() >= cm {
-                s.pools[p].cool.pop_front();
+                if let Some(x) = s.pools[p].cool.pop_front() {
+                    if x.1 > now {
+                        s.pools[p].cool_rm.entry(x.0).or_default().push((now, 3));
+                    }
+                }
             }
-            s.pools[p].cool.push_back((sp.stmt, now + wd));
+            // break 127: a cool-down entry expiring half of stale_cooldown after it's made
+            let life = if s.c.fault == 127 { wd / 2 } else { wd };
+            s.pools[p].cool.push_back((sp.stmt, now + life));
         };
         if cx.out {
             cx.other = true;
@@ -1164,7 +1177,43 @@ async fn session(p: usize, conn: &mut Conn, cx: &mut Cx, sp: &Spec, o: Out) -> R
                 }
             };
         }
-        add();
+        if w().c.fault == 126 {
+            // break 126: the statement enters the cool-down a step after its failure, so calls meeting the stale
+            // session meanwhile return Error::SchemaChanged too
+            sleep(MS).await;
+            w().begin_step(p);
+        }
+        {
+            // the twenty-seventh review's FE1: row D2's Error::SchemaChanged comes only from outside the cool-down,
+            // so two of one statement in a pool come stale_cooldown apart unless its entry was removed between them
+            let s = w();
+            let (now, wd) = (s.now, s.c.w);
+            if let Some(t0) = s.pools[p].d2_sc.get(&sp.stmt).copied() {
+                let rm: Vec<u8> = s.pools[p].cool_rm.get(&sp.stmt).map(|v| v.iter().filter(|x| x.0 >= t0 && x.0 <= now && x.0 < t0 + wd).map(|x| x.1).collect()).unwrap_or_default();
+                if now - t0 < wd {
+                    s.fail("lit FE1 R-1249 and R-1258, a stale session's SchemaChanged once per stale_cooldown", format!("stmt {} at {} and {}", sp.stmt, t0, now));
+                    if rm.is_empty() {
+                        s.fail("new I8 FE1 two D2 SchemaChanged of a statement within stale_cooldown, no removal between", format!("stmt {} at {} and {}", sp.stmt, t0, now));
+                    }
+                }
+                s.inc(if rm.contains(&1) {
+                    "FE1 D2 SchemaChanged: after a pool-wide action"
+                } else if rm.contains(&2) {
+                    "FE1 D2 SchemaChanged: after an adoption or a moved <n>"
+                } else if rm.contains(&3) {
+                    "FE1 D2 SchemaChanged: after a push-out by the cap"
+                } else {
+                    "FE1 D2 SchemaChanged: after the expiry"
+                });
+            } else {
+                s.inc("FE1 D2 SchemaChanged: the first");
+            }
+            s.pools[p].d2_sc.insert(sp.stmt, now);
+        }
+        if w().c.fault != 125 {
+            // break 125: row D2 never puts the statement in the cool-down inside a transaction
+            add();
+        }
         cx.cool = true;
         cx.rolled = true;
         sleep(MS).await;

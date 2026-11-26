@@ -1,3 +1,24 @@
+# Step 55's stale-session model, after the twenty-seventh review's fix
+
+Started from `plans/models/step-55/` on `main` (the twenty-sixth review's fix, PR #3 `b98bada`). FE1 changes what the model checks: behind PgBouncer a stale session's cool-down ends at every pool-wide action, adoption or push-out by the cap as well as at its expiry, so R-1249's "once" and R-1258's "for `stale_cooldown`" were wrong, and T-0319's I8 now states the bound the procedure gives. FE1's sweep straight to Postgres is I3's and I4's bounds, already checked; FE2 is I8's stale-statement bound behind PgBouncer, already checked; FE3 is the PR body.
+
+What changed:
+
+- `model/core.rs`, `Pool`: `cool_rm`, each cool-down entry removed before its expiry, with when and why (1 a pool-wide action, 2 an adoption or a moved `<n>`, 3 the cap), and `d2_sc`, each statement's last row D2 `Error::SchemaChanged`.
+- `model/machine.rs`: `clear_tables_k` records the removals, `on_moved` with kind 2, every take with kind 1; `session`'s `add` records a push-out by the cap. At each row D2 `Error::SchemaChanged` inside a transaction, against the statement's last one in that pool: "new I8 FE1 two D2 SchemaChanged of a statement within stale_cooldown, no removal between" fails one within `stale_cooldown` of the last with no removal between, counted when it came before that entry's expiry; "lit FE1 R-1249 and R-1258, a stale session's SchemaChanged once per stale_cooldown", the older wording, fails any one within `stale_cooldown`, and doesn't count; counters "FE1 D2 SchemaChanged: the first", "after a pool-wide action", "after an adoption or a moved <n>", "after a push-out by the cap" and "after the expiry".
+- Breaks: 125, D2 never putting the statement in the cool-down inside a transaction; 126, D2 putting it there a step after its failure; 127, a cool-down entry lasting half of `stale_cooldown`. `model/breaks.py` runs each behind PgBouncer at "defaults" and "transactions without retry".
+- `model/fe1.sh <binary> [count] [faults...]` prints the counts at seven settings behind PgBouncer (`results/fe1.txt`, fault 0); `model/run-all.sh <binary> <results dir>` is `full.sh`'s commands with both given; `model/cmp.py OLD NEW` compares two outputs, setting aside timings, example seeds and FE1's lines.
+
+This round ran `run-all.sh` with the binary in the worktree's `.claude/scratch/`, then `switches.py` and `fe1.sh`; `cost.sh`, `fa2.sh`, `fb1.sh`, `fc.sh` and `fd1.sh` weren't run again, as nothing they count changed.
+
+Results:
+
+- **No check fails with no fault** in the 82 settings over 256, 2,048 and 20,000 sequences (seeds 0 to 255, 1,000 to 3,047, 10,000 to 29,999), but the older wordings' ("lit ", "ez ", "mid "). `cmp.py` against `b98bada`'s outputs: the same, once FE1's lines, timings and example seeds are set aside.
+- **Switches:** every one caught exactly as before (`results/switches.txt`, the same counts). **Breaks:** the earlier ones as before; 125 in 256 and 256 of 256, 126 in 173 and 239, 127 in 256 and 256, at "defaults" and "transactions without retry" (`results/breaks.txt`).
+- **FE1,** 256 sequences of 40 s behind PgBouncer, `W` = 1 s, row D2's `Error::SchemaChanged`, first / after an action / after an adoption / after a push-out / after the expiry: "defaults" 1,278 / 6,651 / 6,260 / 0 / 1,569; "transactions without retry" 1,280 / 12,091 / 11,286 / 0 / 1,892; "caps of 1" 1,280 / 3,675 / 3,637 / 22,502 / 141; "heavy" 1,280 / 2,915 / 11,413 / 0 / 712; "two processes" 2,554 / 8,047 / 7,601 / 0 / 4,381; "three processes, heavy" 3,810 / 4,615 / 11,763 / 0 / 5,700; "hand relabels without the reset" 1,633 / 8,108 / 3,316 / 0 / 2,049. "lit FE1" fails in 256 of 256 at each, and in 31 of the 37 settings behind PgBouncer in `all256.txt`, 6 to 256 of 256.
+
+Not run: Postgres and PgBouncer (FE1 to FE3 are wording of morm's own procedure), and the 60-second defaults, which the review's own trace ran.
+
 # Step 55's stale-session model, after the twenty-sixth review's fix
 
 Started from `plans/models/step-55/` on `main` (the twenty-fifth review's fix, PR #3 `e217a1c`). FD1 changes what the model counts, not what it checks: R-1253's and R-1272's gap clauses now count the transactions that run the statement before morm marks it pending, which is I8's set ("new I8 a failure begun while its entry exists", unchanged). FD2 and FD3 are wording the model already agreed with: R-1268's and R-1292's rate for a bad enum value is I14's, R-1271's kept function's "once per pending entry, beyond calls that begin before its entry is made" is I14's too, and R-1288's per-connection bound straight to Postgres is I8's ("I8 once per connection") and R-1271's ("R-1271 a stale copy failing twice").

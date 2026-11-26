@@ -1,6 +1,6 @@
 # Brief: step 55, the twenty-seventh review's fix
 
-Started 2026-11-26 (`isolation: worktree`, background, Opus, high effort). If its commits aren't on `origin/step-55-enum-proofs` after a restart: in the same session, resume it with `SendMessage`; otherwise check the old worktree under `.claude/worktrees/` (commit and push any uncommitted work to a `wip/step-55-review-27-fix` branch), then start a fresh agent with the brief below. Use the attribution lines the session then gives.
+Done: fixed at `c458987`, 2026-11-26. Started 2026-11-26 (`isolation: worktree`, background, Opus, high effort). If its commits aren't on `origin/step-55-enum-proofs` after a restart: in the same session, resume it with `SendMessage`; otherwise check the old worktree under `.claude/worktrees/` (commit and push any uncommitted work to a `wip/step-55-review-27-fix` branch), then start a fresh agent with the brief below. Use the attribution lines the session then gives.
 
 ---
 

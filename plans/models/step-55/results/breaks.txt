@@ -82,18 +82,18 @@
    FAIL  250/256 I12 a call that never ends
    FAIL  256/256 I12 a call waits for a connection while it holds one
 -- break 120 [straight] set
-   256 I7 held, a stale copy failing twice e.g. seed 6: t=5577688 stmt=9 P22 { named: Kept(12), ret: false, lab: Newest, stored: true } Stmt(5341383) HeldApp tested=None ptest=false
-   256 I7 in a transaction, as it is e.g. seed 6: t=4831232 stmt=9 P22 { named: Kept(10), ret: false, lab: Newest, stored: true } Stmt(4302770) Tx { retry: 0 } tested=None ptest=false
-   256 I7 outside a transaction e.g. seed 6: t=4831467 stmt=9 P22 { named: Kept(10), ret: false, lab: Newest, stored: true } Stmt(4302770) Out tested=None ptest=false
-   256 new I9 loud half e.g. seed 6: t=4831232 stmt=9 P22 { named: Kept(10), ret: false, lab: Newest, stored: true } Stmt(4302770) Tx { retry: 0 } tested=None ptest=false
+   256 I7 held, a stale copy failing twice e.g. seed 2: t=3740886 stmt=9 P22 { named: Kept(9), ret: false, lab: Newest, stored: true } Stmt(3484699) HeldApp tested=None ptest=false
+   256 I7 in a transaction, as it is e.g. seed 2: t=2837478 stmt=9 P22 { named: Kept(5), ret: false, lab: Newest, stored: true } Stmt(1844555) Tx { retry: 0 } tested=None ptest=false
+   256 I7 outside a transaction e.g. seed 2: t=2856064 stmt=9 P22 { named: Kept(5), ret: false, lab: Newest, stored: true } Stmt(1844555) Out tested=None ptest=false
+   256 new I9 loud half e.g. seed 2: t=2837478 stmt=9 P22 { named: Kept(5), ret: false, lab: Newest, stored: true } Stmt(1844555) Tx { retry: 0 } tested=None ptest=false
 -- break 120 [pooled] set
-   256 I7 in a transaction, as it is e.g. seed 5: t=3088021 stmt=9 P22 { named: Kept(1), ret: false, lab: Newest, stored: true } Stmt(158282) Tx { retry: 1 } tested=None ptest=false
-   256 I7 outside a transaction e.g. seed 5: t=3170053 stmt=9 P22 { named: Kept(1), ret: false, lab: Newest, stored: true } Stmt(158282) Out tested=None ptest=false
-   256 new I9 loud half e.g. seed 5: t=3088021 stmt=9 P22 { named: Kept(1), ret: false, lab: Newest, stored: true } Stmt(158282) Tx { retry: 1 } tested=None ptest=false
+   256 I7 in a transaction, as it is e.g. seed 9: t=2749178 stmt=9 P22 { named: Kept(0), ret: false, lab: Newest, stored: true } Stmt(46493) Tx { retry: 2 } tested=None ptest=false
+   256 I7 outside a transaction e.g. seed 9: t=3042956 stmt=9 P22 { named: Kept(10), ret: false, lab: Newest, stored: true } Stmt(3014245) Out tested=None ptest=false
+   256 new I9 loud half e.g. seed 9: t=2749178 stmt=9 P22 { named: Kept(0), ret: false, lab: Newest, stored: true } Stmt(46493) Tx { retry: 2 } tested=None ptest=false
 -- break 123 [straight] set
-   256 I7 in a transaction, as it is e.g. seed 7: t=92573 stmt=10 P22 { named: Cur, ret: false, lab: Newest, stored: false } Stmt(79268) Tx { retry: 1 } tested=None ptest=false
+   256 I7 in a transaction, as it is e.g. seed 5: t=1379730 stmt=10 P22 { named: Cur, ret: false, lab: Newest, stored: false } Stmt(1360551) Sp { retry: 0 } tested=None ptest=false
 -- break 123 [pooled] set
-   256 I7 in a transaction, as it is e.g. seed 1: t=343028 stmt=10 P22 { named: Cur, ret: false, lab: Newest, stored: false } Stmt(219208) Sp { retry: 2 } tested=None ptest=false
+   256 I7 in a transaction, as it is e.g. seed 8: t=8780753 stmt=10 P22 { named: Cur, ret: false, lab: Newest, stored: false } Stmt(8661234) Tx { retry: 2 } tested=None ptest=false
 -- break 120 [straight] defaults
    FAIL   13/256 I7 held, a stale copy failing twice
    FAIL  109/256 I7 in a transaction, as it is
@@ -143,3 +143,15 @@
    FAIL  256/256 I8 entries off: a run with no entry not cached
 -- break 124 [pooled] search_path only, no retry, entries off
    FAIL  256/256 I8 entries off: a run with no entry not cached
+-- break 125 [pooled] defaults
+   FAIL  256/256 new I8 FE1 two D2 SchemaChanged of a statement within stale_cooldown, no removal between
+-- break 125 [pooled] transactions without retry
+   FAIL  256/256 new I8 FE1 two D2 SchemaChanged of a statement within stale_cooldown, no removal between
+-- break 126 [pooled] defaults
+   FAIL  173/256 new I8 FE1 two D2 SchemaChanged of a statement within stale_cooldown, no removal between
+-- break 126 [pooled] transactions without retry
+   FAIL  239/256 new I8 FE1 two D2 SchemaChanged of a statement within stale_cooldown, no removal between
+-- break 127 [pooled] defaults
+   FAIL  256/256 new I8 FE1 two D2 SchemaChanged of a statement within stale_cooldown, no removal between
+-- break 127 [pooled] transactions without retry
+   FAIL  256/256 new I8 FE1 two D2 SchemaChanged of a statement within stale_cooldown, no removal between

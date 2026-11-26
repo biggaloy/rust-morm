@@ -460,6 +460,10 @@ pub struct Pool {
     // and, for the twenty-sixth review's FD1, its transaction's start, before its checkout)
     pub path_fx: HashMap<u8, Vec<(u64, u64, u64)>>,
     pub removals: HashMap<u8, Vec<u64>>,
+    // the twenty-seventh review's FE1: each cool-down entry removed before its expiry, as (when, 1 a pool-wide action,
+    // 2 an adoption or a moved <n>, 3 the cap), and each statement's last row D2 Error::SchemaChanged
+    pub cool_rm: HashMap<u8, Vec<(u64, u8)>>,
+    pub d2_sc: HashMap<u8, u64>,
     pub created: HashMap<u8, Vec<u64>>,
     pub moved: Vec<(u64, i64, u64)>,
 }

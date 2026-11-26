@@ -424,6 +424,7 @@
    FAIL   17/256 lit R-1271 before t0+W, not judged not old (parameter test)
 == defaults [pooled] fault 0 seeds 0..256 (0.1s)
    FAIL   59/256 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL  256/256 lit FE1 R-1249 and R-1258, a stale session's SchemaChanged once per stale_cooldown
    FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL  256/256 lit I2 (an adoption took its place)
    FAIL  153/256 lit I8 never visible after RECONNECT
@@ -433,6 +434,7 @@
    FAIL   60/256 lit I9 loud: a request, entry or replacement
    FAIL   34/256 mid I8 stale statement once per E, running calls and actions apart
 == entries off [pooled] fault 0 seeds 0..256 (0.1s)
+   FAIL  256/256 lit FE1 R-1249 and R-1258, a stale session's SchemaChanged once per stale_cooldown
    FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL  256/256 lit I2 (an adoption took its place)
    FAIL  154/256 lit I8 never visible after RECONNECT
@@ -444,6 +446,7 @@
    FAIL  129/256 mid I8 stale statement once per E, running calls and actions apart
 == caps of 1 [pooled] fault 0 seeds 0..256 (0.1s)
    FAIL   90/256 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL  256/256 lit FE1 R-1249 and R-1258, a stale session's SchemaChanged once per stale_cooldown
    FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL  256/256 lit I2 (an adoption took its place)
    FAIL  142/256 lit I8 never visible after RECONNECT
@@ -455,6 +458,7 @@
    FAIL   73/256 mid I8 stale statement once per E, running calls and actions apart
 == W five times E [pooled] fault 0 seeds 0..256 (0.1s)
    FAIL   79/256 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL  256/256 lit FE1 R-1249 and R-1258, a stale session's SchemaChanged once per stale_cooldown
    FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL  256/256 lit I2 (an adoption took its place)
    FAIL  157/256 lit I8 never visible after RECONNECT
@@ -465,6 +469,7 @@
    FAIL   13/256 mid I8 stale statement once per E, running calls and actions apart
 == budget 8 [pooled] fault 0 seeds 0..256 (0.1s)
    FAIL   59/256 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL  256/256 lit FE1 R-1249 and R-1258, a stale session's SchemaChanged once per stale_cooldown
    FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL  256/256 lit I2 (an adoption took its place)
    FAIL  153/256 lit I8 never visible after RECONNECT
@@ -479,6 +484,7 @@
    FAIL  256/256 lit I9 loud half
 == no client input [pooled] fault 0 seeds 0..256 (0.1s)
    FAIL   65/256 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL  256/256 lit FE1 R-1249 and R-1258, a stale session's SchemaChanged once per stale_cooldown
    FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL  256/256 lit I2 (an adoption took its place)
    FAIL  164/256 lit I8 never visible after RECONNECT
@@ -489,6 +495,7 @@
    FAIL   43/256 mid I8 stale statement once per E, running calls and actions apart
 == several, one server [pooled] fault 0 seeds 0..256 (0.1s)
    FAIL   70/256 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL  256/256 lit FE1 R-1249 and R-1258, a stale session's SchemaChanged once per stale_cooldown
    FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL  235/256 lit I2 (an adoption took its place)
    FAIL  145/256 lit I8 never visible after RECONNECT
@@ -500,6 +507,7 @@
    FAIL   35/256 mid I8 stale statement once per E, running calls and actions apart
 == two servers [pooled] fault 0 seeds 0..256 (0.1s)
    FAIL   89/256 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL  256/256 lit FE1 R-1249 and R-1258, a stale session's SchemaChanged once per stale_cooldown
    FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL  232/256 lit I2 (an adoption took its place)
    FAIL  154/256 lit I8 never visible after RECONNECT
@@ -511,6 +519,7 @@
    FAIL   28/256 mid I8 stale statement once per E, running calls and actions apart
 == three servers [pooled] fault 0 seeds 0..256 (0.1s)
    FAIL   70/256 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL  256/256 lit FE1 R-1249 and R-1258, a stale session's SchemaChanged once per stale_cooldown
    FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL  231/256 lit I2 (an adoption took its place)
    FAIL  162/256 lit I8 never visible after RECONNECT
@@ -522,6 +531,7 @@
    FAIL   40/256 mid I8 stale statement once per E, running calls and actions apart
 == heavy [pooled] fault 0 seeds 0..256 (0.1s)
    FAIL   48/256 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL  256/256 lit FE1 R-1249 and R-1258, a stale session's SchemaChanged once per stale_cooldown
    FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL  256/256 lit I2 (an adoption took its place)
    FAIL  230/256 lit I8 never visible after RECONNECT
@@ -532,6 +542,7 @@
    FAIL   53/256 mid I8 stale statement once per E, running calls and actions apart
 == landing always [pooled] fault 0 seeds 0..256 (0.1s)
    FAIL   58/256 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL  256/256 lit FE1 R-1249 and R-1258, a stale session's SchemaChanged once per stale_cooldown
    FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL  256/256 lit I2 (an adoption took its place)
    FAIL  158/256 lit I8 never visible after RECONNECT
@@ -543,6 +554,7 @@
    FAIL   35/256 mid I8 stale statement once per E, running calls and actions apart
 == two servers, landing always, heavy [pooled] fault 0 seeds 0..256 (0.1s)
    FAIL   56/256 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL  256/256 lit FE1 R-1249 and R-1258, a stale session's SchemaChanged once per stale_cooldown
    FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL  254/256 lit I2 (an adoption took its place)
    FAIL  231/256 lit I8 never visible after RECONNECT
@@ -553,6 +565,7 @@
    FAIL   56/256 mid I8 stale statement once per E, running calls and actions apart
 == savepoints [pooled] fault 0 seeds 0..256 (0.2s)
    FAIL  107/256 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL  256/256 lit FE1 R-1249 and R-1258, a stale session's SchemaChanged once per stale_cooldown
    FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL  256/256 lit I2 (an adoption took its place)
    FAIL  207/256 lit I8 never visible after RECONNECT
@@ -564,6 +577,7 @@
    FAIL  137/256 mid I8 stale statement once per E, running calls and actions apart
 == RR and SERIALIZABLE only [pooled] fault 0 seeds 0..256 (0.1s)
    FAIL   59/256 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL  256/256 lit FE1 R-1249 and R-1258, a stale session's SchemaChanged once per stale_cooldown
    FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL  256/256 lit I2 (an adoption took its place)
    FAIL  153/256 lit I8 never visible after RECONNECT
@@ -574,6 +588,7 @@
    FAIL   34/256 mid I8 stale statement once per E, running calls and actions apart
 == quiet [pooled] fault 0 seeds 0..256 (0.1s)
    FAIL   86/256 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL  256/256 lit FE1 R-1249 and R-1258, a stale session's SchemaChanged once per stale_cooldown
    FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL  130/256 lit I2 (an adoption took its place)
    FAIL   10/256 lit I8 never visible after RECONNECT
@@ -585,6 +600,7 @@
    FAIL    9/256 mid I8 stale statement once per E, running calls and actions apart
 == hand relabels [pooled] fault 0 seeds 0..256 (0.1s)
    FAIL   74/256 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL  256/256 lit FE1 R-1249 and R-1258, a stale session's SchemaChanged once per stale_cooldown
    FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL  251/256 lit I2 (an adoption took its place)
    FAIL   66/256 lit I8 never visible after RECONNECT
@@ -596,6 +612,7 @@
    FAIL   24/256 mid I8 stale statement once per E, running calls and actions apart
 == long transactions [pooled] fault 0 seeds 0..256 (0.2s)
    FAIL   70/256 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL  256/256 lit FE1 R-1249 and R-1258, a stale session's SchemaChanged once per stale_cooldown
    FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL  163/256 lit I2 (an adoption took its place)
    FAIL   58/256 lit I8 never visible after RECONNECT
@@ -608,11 +625,13 @@
    FAIL    4/256 mid I8 stale statement once per E, running calls and actions apart
 == slow [pooled] fault 0 seeds 0..256 (0.1s)
    FAIL   25/256 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL    6/256 lit FE1 R-1249 and R-1258, a stale session's SchemaChanged once per stale_cooldown
    FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL    4/256 lit I2 (an adoption took its place)
    FAIL    8/256 lit I8 stale statement once per E
 == transactions without retry [pooled] fault 0 seeds 0..256 (0.2s)
    FAIL  237/256 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL  256/256 lit FE1 R-1249 and R-1258, a stale session's SchemaChanged once per stale_cooldown
    FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL  255/256 lit I2 (an adoption took its place)
    FAIL  233/256 lit I8 never visible after RECONNECT
@@ -623,6 +642,7 @@
    FAIL   19/256 lit I9 loud: a request, entry or replacement
    FAIL  229/256 mid I8 stale statement once per E, running calls and actions apart
 == transactions without retry, entries off [pooled] fault 0 seeds 0..256 (0.2s)
+   FAIL  256/256 lit FE1 R-1249 and R-1258, a stale session's SchemaChanged once per stale_cooldown
    FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL  256/256 lit I2 (an adoption took its place)
    FAIL  238/256 lit I8 never visible after RECONNECT
@@ -634,6 +654,7 @@
    FAIL  256/256 mid I8 stale statement once per E, running calls and actions apart
 == transactions without retry, E a fifth of W [pooled] fault 0 seeds 0..256 (0.2s)
    FAIL  249/256 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL  256/256 lit FE1 R-1249 and R-1258, a stale session's SchemaChanged once per stale_cooldown
    FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL  256/256 lit I2 (an adoption took its place)
    FAIL  223/256 lit I8 never visible after RECONNECT
@@ -656,6 +677,7 @@
    FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
 == max 1 [pooled] fault 0 seeds 0..256 (0.1s)
    FAIL   50/256 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL  256/256 lit FE1 R-1249 and R-1258, a stale session's SchemaChanged once per stale_cooldown
    FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL  256/256 lit I2 (an adoption took its place)
    FAIL  131/256 lit I8 never visible after RECONNECT
@@ -667,6 +689,7 @@
    FAIL   26/256 mid I8 stale statement once per E, running calls and actions apart
 == max 1, budget 1 [pooled] fault 0 seeds 0..256 (0.1s)
    FAIL   50/256 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL  256/256 lit FE1 R-1249 and R-1258, a stale session's SchemaChanged once per stale_cooldown
    FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL  256/256 lit I2 (an adoption took its place)
    FAIL  131/256 lit I8 never visible after RECONNECT
@@ -678,6 +701,7 @@
    FAIL   26/256 mid I8 stale statement once per E, running calls and actions apart
 == max 1, quick [pooled] fault 0 seeds 0..256 (0.1s)
    FAIL   16/256 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL  255/256 lit FE1 R-1249 and R-1258, a stale session's SchemaChanged once per stale_cooldown
    FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL  158/256 lit I2 (an adoption took its place)
    FAIL   32/256 lit I8 never visible after RECONNECT
@@ -689,6 +713,7 @@
    FAIL    2/256 mid I8 stale statement once per E, running calls and actions apart
 == max 2, budget 2, heavy [pooled] fault 0 seeds 0..256 (0.1s)
    FAIL   47/256 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL  256/256 lit FE1 R-1249 and R-1258, a stale session's SchemaChanged once per stale_cooldown
    FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL  256/256 lit I2 (an adoption took its place)
    FAIL  216/256 lit I8 never visible after RECONNECT
@@ -699,6 +724,7 @@
    FAIL   48/256 mid I8 stale statement once per E, running calls and actions apart
 == hand relabels without the reset [pooled] fault 0 seeds 0..256 (0.1s)
    FAIL   73/256 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL  256/256 lit FE1 R-1249 and R-1258, a stale session's SchemaChanged once per stale_cooldown
    FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL  252/256 lit I2 (an adoption took its place)
    FAIL   67/256 lit I8 never visible after RECONNECT
@@ -708,12 +734,14 @@
    FAIL   42/256 lit I9 loud: a request, entry or replacement
    FAIL   24/256 mid I8 stale statement once per E, running calls and actions apart
 == hand relabels without the reset, casts [pooled] fault 0 seeds 0..256 (0.1s)
+   FAIL   13/256 lit FE1 R-1249 and R-1258, a stale session's SchemaChanged once per stale_cooldown
    FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL  150/256 lit I8 stale statement once per E
    FAIL  255/256 lit I9 loud half
    FAIL   11/256 mid I8 stale statement once per E, running calls and actions apart
-== old labels copied [pooled] fault 0 seeds 0..256 (0.2s)
+== old labels copied [pooled] fault 0 seeds 0..256 (0.1s)
    FAIL   79/256 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL  256/256 lit FE1 R-1249 and R-1258, a stale session's SchemaChanged once per stale_cooldown
    FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL  256/256 lit I2 (an adoption took its place)
    FAIL  158/256 lit I8 never visible after RECONNECT
@@ -724,6 +752,7 @@
    FAIL   26/256 mid I8 stale statement once per E, running calls and actions apart
 == record and column statements [pooled] fault 0 seeds 0..256 (0.1s)
    FAIL   90/256 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL  256/256 lit FE1 R-1249 and R-1258, a stale session's SchemaChanged once per stale_cooldown
    FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL  256/256 lit I2 (an adoption took its place)
    FAIL  136/256 lit I8 never visible after RECONNECT
@@ -740,6 +769,7 @@
    FAIL  107/256 mid I8 stale statement once per E, running calls and actions apart
 == two processes [pooled] fault 0 seeds 0..256 (0.2s)
    FAIL   41/256 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL  256/256 lit FE1 R-1249 and R-1258, a stale session's SchemaChanged once per stale_cooldown
    FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL  255/256 lit I2 (an adoption took its place)
    FAIL  162/256 lit I8 never visible after RECONNECT
@@ -751,6 +781,7 @@
    FAIL   17/256 mid I8 stale statement once per E, running calls and actions apart
 == three processes, heavy [pooled] fault 0 seeds 0..256 (0.2s)
    FAIL   18/256 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL  256/256 lit FE1 R-1249 and R-1258, a stale session's SchemaChanged once per stale_cooldown
    FAIL  256/256 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL  256/256 lit I2 (an adoption took its place)
    FAIL  217/256 lit I8 never visible after RECONNECT

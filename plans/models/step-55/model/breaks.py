@@ -22,6 +22,9 @@ RUNS += [(m, 124, s) for s in ("entries off", "transactions without retry, entri
 RUNS += [(m, 28, "entries off") for m in ("straight", "pooled")]
 # the twenty-fourth review's FB1: 124 against I8's entries-off clause, a statement under a per-transaction search_path
 RUNS += [(m, 124, "search_path only, no retry, entries off") for m in ("straight", "pooled")]
+# the twenty-seventh review's FE1: row D2's cool-down, against I8's new clause, behind PgBouncer. 125: D2 never enters
+# the cool-down inside a transaction; 126: it enters it a step after its failure; 127: an entry lasting half of W
+RUNS += [("pooled", b, s) for b in (125, 126, 127) for s in ("defaults", "transactions without retry")]
 for mode, b, s in RUNS:
     out = subprocess.run([M, f"set{b}" if s == "set" else s, str(b), "0", "256", mode], capture_output=True, text=True).stdout
     print(f"-- break {b} [{mode}] {s}")

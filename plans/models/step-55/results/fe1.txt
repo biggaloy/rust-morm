@@ -1,0 +1,50 @@
+== defaults [pooled] fault 0 seeds 0..256 (0.3s)
+   FAIL  256/256 lit FE1 R-1249 and R-1258, a stale session's SchemaChanged once per stale_cooldown   e.g. seed 3: stmt 5 at 199940 and 942112
+        FE1 D2 SchemaChanged: after a pool-wide action = 6651
+        FE1 D2 SchemaChanged: after an adoption or a moved <n> = 6260
+        FE1 D2 SchemaChanged: after the expiry = 1569
+        FE1 D2 SchemaChanged: the first = 1278
+        ms simulated = 10279358
+== transactions without retry [pooled] fault 0 seeds 0..256 (0.3s)
+   FAIL  256/256 lit FE1 R-1249 and R-1258, a stale session's SchemaChanged once per stale_cooldown   e.g. seed 2: stmt 7 at 630207 and 1365212
+        FE1 D2 SchemaChanged: after a pool-wide action = 12091
+        FE1 D2 SchemaChanged: after an adoption or a moved <n> = 11286
+        FE1 D2 SchemaChanged: after the expiry = 1892
+        FE1 D2 SchemaChanged: the first = 1280
+        ms simulated = 10251747
+== caps of 1 [pooled] fault 0 seeds 0..256 (0.4s)
+   FAIL  256/256 lit FE1 R-1249 and R-1258, a stale session's SchemaChanged once per stale_cooldown   e.g. seed 0: stmt 4 at 1445281 and 1905998
+        FE1 D2 SchemaChanged: after a pool-wide action = 3675
+        FE1 D2 SchemaChanged: after a push-out by the cap = 22502
+        FE1 D2 SchemaChanged: after an adoption or a moved <n> = 3637
+        FE1 D2 SchemaChanged: after the expiry = 141
+        FE1 D2 SchemaChanged: the first = 1280
+        ms simulated = 10246749
+== heavy [pooled] fault 0 seeds 0..256 (0.3s)
+   FAIL  256/256 lit FE1 R-1249 and R-1258, a stale session's SchemaChanged once per stale_cooldown   e.g. seed 3: stmt 5 at 199940 and 942112
+        FE1 D2 SchemaChanged: after a pool-wide action = 2915
+        FE1 D2 SchemaChanged: after an adoption or a moved <n> = 11413
+        FE1 D2 SchemaChanged: after the expiry = 712
+        FE1 D2 SchemaChanged: the first = 1280
+        ms simulated = 10273841
+== two processes [pooled] fault 0 seeds 0..256 (0.5s)
+   FAIL  256/256 lit FE1 R-1249 and R-1258, a stale session's SchemaChanged once per stale_cooldown   e.g. seed 5: stmt 4 at 2142686 and 2683491
+        FE1 D2 SchemaChanged: after a pool-wide action = 8047
+        FE1 D2 SchemaChanged: after an adoption or a moved <n> = 7601
+        FE1 D2 SchemaChanged: after the expiry = 4381
+        FE1 D2 SchemaChanged: the first = 2554
+        ms simulated = 10249808
+== three processes, heavy [pooled] fault 0 seeds 0..256 (0.4s)
+   FAIL  256/256 lit FE1 R-1249 and R-1258, a stale session's SchemaChanged once per stale_cooldown   e.g. seed 8: stmt 5 at 7559318 and 8218238
+        FE1 D2 SchemaChanged: after a pool-wide action = 4615
+        FE1 D2 SchemaChanged: after an adoption or a moved <n> = 11763
+        FE1 D2 SchemaChanged: after the expiry = 5700
+        FE1 D2 SchemaChanged: the first = 3810
+        ms simulated = 10261419
+== hand relabels without the reset [pooled] fault 0 seeds 0..256 (0.3s)
+   FAIL  256/256 lit FE1 R-1249 and R-1258, a stale session's SchemaChanged once per stale_cooldown   e.g. seed 0: stmt 3 at 1328111 and 1837778
+        FE1 D2 SchemaChanged: after a pool-wide action = 8108
+        FE1 D2 SchemaChanged: after an adoption or a moved <n> = 3316
+        FE1 D2 SchemaChanged: after the expiry = 2049
+        FE1 D2 SchemaChanged: the first = 1633
+        ms simulated = 10264957
