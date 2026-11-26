@@ -276,9 +276,11 @@ pub enum Error {
     PoolBusy, ConnectionLost, ReadOnly, OutOfRange, InvalidText,
                                                // ConnectionLost on a held connection names a recovery conflict when one ended it (SG, step 12)
     InvalidOrder, InvalidCursor, Decimal,
-    SchemaChanged,                             // a stale statement or session inside a transaction or on a held connection, after a type swap;
-                                               // inside a transaction it fails the whole transaction, a savepoint's included (R-0441)
-                                               // or a column type change, recognised by SQLSTATE with the routine, an identifier or an
+    SchemaChanged,                             // a stale statement or session inside a transaction or on a held connection, after a type swap
+                                               // or a column type change, or, with no schema change, a cached statement's 0A000 on a
+                                               // search_path switch or its 22P02 from enum_in for a bad enum value (R-1245's first and
+                                               // second rows); inside a transaction it fails the whole transaction, a savepoint's
+                                               // included (R-0441); recognised by SQLSTATE with the routine, an identifier or an
                                                // untranslated elog message, never translated text (SC, R-1245): 0A000, the three plpgsql
                                                // 42804 routines, XX000 cache lookup, and 22P02 from enum_in naming a _morm_retired_ type
                                                // or from any cached statement (proofs 14 to 17). Returned when the next
