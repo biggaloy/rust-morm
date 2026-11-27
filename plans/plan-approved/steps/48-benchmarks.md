@@ -20,7 +20,7 @@ Measure every performance claim the plan makes, and hold it to its targets.
 
 Every target in the requirements is met or reported to the owner with numbers. A missed target is a bug.
 
-Other steps defer these measurements here: `.lock_ordered()` cost, statement cache split against a single cache, prepared against `query_typed` patches, `Bits<N>` word cost, `fetch_json` against `fetch_ref`, conversion-layer overhead, the `COPY` threshold, and the array literal path.
+Other steps defer these measurements here: `.lock_ordered()` cost, statement cache split against a single cache, prepared against `query_typed` patches, `Bits<N>` word cost, `fetch_json` against `fetch_ref`, conversion-layer overhead, the `COPY` threshold, the array literal path, and the stale-statement pending check on the cached-statement path.
 
 ## Context from other steps
 
@@ -56,6 +56,7 @@ Copied word for word from the approved plan. Every ID must end with a test tagge
 - **R-0746** Telemetry overhead on a primary-key read, for each row of the cost table in section 11. Target: under 1% with `tracing` on and the default `span_sample`. A miss is a bug, not a note in the docs.
 - **R-0747** Also: `morm::Pool` vs `deadpool-postgres`, pool sizes under mixed fast and slow queries, `fetch_ref` vs `fetch` vs `fetch_json`, morm's `Decimal` decoding vs `rust_decimal`'s, binary size and RSS with `tls` compiled in but unused, and RSS on both app and Postgres.
 - **R-1105** Reading a column whose type changed: `from_row_as` with a narrower field's per-value range check, against `from_row` on the same rows with matching types, for an integer, a `Decimal` and a `String` column, measured over a statement of many rows. `from_row` stays within noise of hand-written tokio-postgres decoding, so a binary whose columns match pays nothing for this.
+- **R-1269** **The stale-session checks on the cached-statement path.** A cached statement's run with no pending entry in the pool, against the same run with no check at all, over a single-row read and a 1,000-row read: the pending check is one acquire atomic read of the pool's generation word per run, the same instruction as a plain load on x86-64, which holds the entry count beside the generations a connection compares itself with, and a checkout's check for a due pool-wide action rides on the one atomic read of the generation word that checkout already does, so the two stay within noise. A run with one unrelated entry pending, whose text doesn't match, and a run of a statement with its own entry, which runs unnamed straight to Postgres and behind PgBouncer alike, are measured too, so the cost of the text comparison, and of an unnamed run against the cached one it replaces while the entry lasts, is known. So is a `.retry(1)` transaction's second attempt after an `Error::SchemaChanged`, its statements run unnamed, against the same attempt run cached, over a one-statement and a five-statement transaction, so what a retry costs is known.
 
 ## Test obligations
 

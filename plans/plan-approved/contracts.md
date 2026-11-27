@@ -9,14 +9,16 @@ What parallel steps share. Signatures here are the starting point, taken from th
 | `morm-core` | no async or database crates | Code several crates need: config loading (`morm.toml`, environment), the 63-byte name function, the connection budget function, and the manifest types |
 | `morm-macros` | `morm-core` | Procedural macros |
 | `morm` | `morm-macros`, `morm-core`, `tokio-postgres`, `deadpool` | Runtime |
-| `morm-migrate` | `morm-core`, `tokio-postgres` | Migration engine. Doesn't depend on `morm` |
-| `morm-admin` | `morm-migrate`, `morm-core` | The binary. Doesn't depend on the user's models |
-| `morm-mgr` | generated per project; `morm` and the user's models | Prints the manifest as JSON, and runs a migration's Rust data hooks |
+| `morm-migrate` | `morm-core`, `tokio-postgres` | Migration engine. Doesn't depend on `morm`. Always built with rustls, from step 29, where it first connects, in every build, used on its own as a library too, so `sslmode`'s default works for every TCP connection it opens (R-1286) |
+| `morm-admin` | `morm-migrate`, `morm-core` | The binary. Doesn't depend on the user's models. Always built with rustls, in every build and the release binaries, so `sslmode`'s default works for every TCP connection it opens (R-1285) |
+| `morm-mgr` | generated per project; `morm` and the user's models | Prints the manifest as JSON, and runs a migration's Rust data hooks. A member of the app's Cargo workspace, with one `Cargo.lock`. `init` always writes its `morm` dependency with `features = ["tls"]`, so its hooks reach a TCP database with TLS (R-1287) |
 
 ## Conventions
 
 - Rust 2024, MSRV 1.99.1, Tokio only, PostgreSQL 15 and later only.
 - Tool prefix `morm-`. Config `morm.toml`. Environment `MORM_*` and `DATABASE_URL`. Migrations in `morm-migrations/`. Ledger schema `_morm`.
+- `_morm` is owned by the migrating role and holds the database's statement generation in its comment, `morm statement generation <n>`, which any role reads from `pg_description` with no grant; a database with no `_morm` or no such comment reads as `0` (SE). Every migration `tx` step ends, in its own transaction, with the reset `CREATE OPERATOR _morm.### (LEFTARG = int4, RIGHTARG = int4, FUNCTION = int4eq); DROP OPERATOR _morm.### (int4, int4); COMMENT ON SCHEMA _morm IS 'morm statement generation <n>'`, `<n>` one more than before, which marks every cached plan in every session invalid at commit (SA, step 33). Behind a pooler with the statement caches on, the text of each cached statement starts with `/* morm g<n> */`, or `/* morm g<n>.<salt> */` after DDL made outside morm (SD, step 14).
+- Enum labels starting `_morm_` are reserved: a retired enum type's labels are renamed `_morm_retired_<random>_<label>`, `<random>` being the 16 hex digits the ledger records for the run that retired it (SA, step 38).
 - Exit codes: `0` ok, `1` error or drift, `2` refused by a guard, `3` open decisions. A run with both a refusal and an open decision exits `2`.
 - Generated SQL always quotes names. Generated code uses static dispatch.
 - Macro-generated items are public API: names below don't change without following `rules.md`.
@@ -81,6 +83,20 @@ pub trait SqlType {
     const LIST_CARRIER: tokio_postgres::types::Type;
     const CARRIES: &'static [&'static str];
     const TEXT_FORM: bool;
+    // EA, EF2: the cast written after a result column of this type in every column list morm
+    // writes, as "col"::text, or "" for none, so the driver never looks a type up with named
+    // statements of its own, which fail behind PgBouncer with no prepared statements: "text"
+    // for PgEnum, PgComposite and a PgDomain over one of them, "text[]" for a list of any of
+    // these, and for a list of a PgDomain over a built-in type its base type's array, such as
+    // "int4[]", because Postgres sends an array of a domain as the domain's own array type
+    // (a scalar domain comes as its base type). #[model] and #[view] also read as text a
+    // TEXT_FORM field whose sql names a type morm doesn't know (R-1241, step 56)
+    const READ_AS: &'static str;
+    // EG4: the same for a list of this type, beside CAST_LIST, because stable Rust can't build
+    // a generic Vec<T>'s string from T's: "text[]" for PgEnum, PgComposite and a PgDomain
+    // over either, T::CAST_LIST (such as "int4[]") for a PgDomain over a built-in T, and ""
+    // for every other type. Vec<T> and &[T] take T::READ_AS_LIST as their READ_AS
+    const READ_AS_LIST: &'static str;
 }
 // A parameter, object safe for &dyn Param in runtime fragments (R-0723), with a blanket
 // impl from SqlType: Option<T> and &T take T's cast and carrier, Vec<T> and &[T] T's list
@@ -92,6 +108,14 @@ pub trait Param: tokio_postgres::types::ToSql + Sync {
     fn carrier(&self) -> tokio_postgres::types::Type;
     fn is_null(&self) -> bool;
 }
+// Proof 13 (step 55) and EA: a PgEnum's ToSql accepts only the text carrier and writes the
+// label; its FromSql accepts only text, because every enum result column is read as ::text,
+// and never reads a variant list. A PgComposite's ToSql writes its text form into a text
+// carrier, and its FromSql parses Postgres's text form, (a,b): nothing between delimiters is
+// NULL, "" an empty string, a backslash escapes the next character, "" inside quotes is one
+// ", each position and length is checked, and bad input is an error, never a panic (EE9).
+// Lists are Vec<T> with the text[] carrier, read as ::text[]. tokio-postgres never sees an
+// enum or composite result column, so it never looks one up (R-1241, R-1242, R-1243)
 // A value fits a field of type T without loss, and is encoded as that column's carrier.
 // An Option value fits only an Option field, so NULL is bound only through a nullable
 // field; a non-Option value fits an Option field (K). FitsList<T> does the same element
@@ -193,7 +217,9 @@ impl Tx {
     // A savepoint: released when the closure returns Ok, rolled back to when it returns an
     // error (R-0441). There's no TxOptions on tx: no tx.isolation(..) or tx.retry(n), so
     // both are compile errors, because the isolation level is fixed before a transaction's
-    // first query, and a savepoint can't recover from 40001 or 40P01
+    // first query, and a savepoint can't recover from 40001 or 40P01; an Error::SchemaChanged
+    // inside it fails the whole transaction too: morm rolls the whole transaction back and sends
+    // nothing more on it (R-0441)
     pub async fn transaction<F, T>(&self, f: F) -> Result<T> where F: AsyncFnOnce(&Tx) -> Result<T>;
     // Each setting is immediate, one SET LOCAL, and holds for the rest of the transaction,
     // through savepoints that are released; rolling back to a savepoint opened before it
@@ -243,11 +269,27 @@ pub enum Upserted { Inserted, Updated, Unchanged }
 pub enum Error {
     Unique { constraint: String, field: Option<&'static str> },
     ForeignKey, NotNull, Check, Serialization, Deadlock, LockTimeout,
+                                               // Serialization also: a FATAL 40001 recovery conflict on a hot standby that
+                                               // ended the connection inside a transaction, before COMMIT (SG, step 20)
     TransactionTimeout, TransactionAborted, CommitUnknown, NestedConnection,
     PoolerMode, NotFound, EmptyPatch, Conflict, Forbidden, Validation,
     PoolBusy, ConnectionLost, ReadOnly, OutOfRange, InvalidText,
+                                               // ConnectionLost on a held connection names a recovery conflict when one ended it (SG, step 12)
     InvalidOrder, InvalidCursor, Decimal,
     SchemaChanged,                             // a stale statement or session inside a transaction or on a held connection, after a type swap
+                                               // or a column type change, or, with no schema change, a cached statement's 0A000 on a
+                                               // search_path switch or its 22P02 from enum_in for a bad enum value (R-1245's first and
+                                               // second rows); inside a transaction it fails the whole transaction, a savepoint's
+                                               // included (R-0441); recognised by SQLSTATE with the routine, an identifier or an
+                                               // untranslated elog message, never translated text (SC, R-1245): 0A000, the three plpgsql
+                                               // 42804 routines, XX000 cache lookup, and 22P02 from enum_in naming a _morm_retired_ type
+                                               // or from any cached statement (proofs 14 to 17). Returned when the next
+                                               // attempt may succeed: where morm repaired something for it (a statement evicted, a pending
+                                               // entry made, or a connection discarded or marked for replacement); behind PgBouncer on a
+                                               // session-class failure outside the cool-down (row D2), whose next attempt may reach another server
+                                               // session; on the transient XX000 "could not open relation with OID", which doesn't repeat;
+                                               // and behind PgBouncer with pending entries off, on row D1. Otherwise the server's error is
+                                               // returned as Error::Postgres, so .retry(n) stops (the stale-session machine, MA, MB, EQ3)
     UnknownEnumValue,                          // a label this binary's enum doesn't have, with the type and label
     SchemaMismatch,                            // check_schema's findings, from a pool's start or db.check_schema(), each naming the table, column, both definitions and what's wrong
     Config, Connect, ServerTooOld, Postgres,   // config, connecting, a server below 15, any other database error
@@ -264,7 +306,7 @@ These are shared by steps that can run side by side, so each is written and froz
 | `Db`, `Tx` and every `Conn` entry point | `morm` | All runtime steps |
 | `Changes<M>` | `morm` | Updates, hooks |
 | The `by`/`any` filter builder | `morm` | Reads, updates |
-| The internal query entry point, which runs SQL through the caches. It can carry a "don't count this" flag for the loop detector, so step 45's exclusions (R-0785) need no signature change (proof 11, DD) | `morm` | Pool, statements, every query step |
+| The internal query entry point, which runs SQL through the caches. It can carry a "don't count this" flag for the loop detector, so step 45's exclusions (R-0785) need no signature change (proof 11, DD). Behind a pooler with the caches on, the text it prepares for a cached statement carries the statement generation's marker (SD) | `morm` | Pool, statements, every query step |
 | Macro field IR: the parsed form of `#[model]`, `#[col]` and `#[view]` | `morm-macros` | All model steps |
 | The conversion layer between a field and its column | `morm` | Models, types, reads, writes |
 | `SqlType`, the trait that gives a column and a free parameter its cast, carrier and the column types it carries without loss (DH2, DH3), and, for an enum, its labels as a constant; `Param`, `Fits`, `FitsList`, `Sql<'a, P>` and `Params` | `morm` | Models, types, statements, reads, writes, manifest |
@@ -274,7 +316,7 @@ These are shared by steps that can run side by side, so each is written and froz
 | The connection budget function, implemented in step 11 | `morm-core` | Pool, `doctor`, `size` |
 | `Timestamp`, re-exported `Uuid`, `Range<T>` as types | `morm` | Bases and inference, before `types` adds their encoding |
 | The internal transaction with confirmed commit, implemented in step 17 for `insert_many` and chunked paths, before `db.transaction` exists | `morm` | Inserts, updates, upsert, transactions |
-| `PoolStats`, with every counter the plan names, including connections replaced for a stale generation | `morm` | Pool, hold-pooler, locks, outbox, telemetry |
+| `PoolStats`, with every counter the plan names, including connections replaced for a stale generation, stale statements and pending statements run unnamed, straight to Postgres and behind a pooler, the stale-session machine's epochs started, stale-driven replacements, pool-wide actions taken and deferred, salts added and markers adopted, the sizes of the pending and cool-down tables, the four stale-session settings in force, and the pool's current marker, `g<n>` or `g<n>.<salt>` (SD, MA, MB) | `morm` | Pool, hold-pooler, locks, outbox, telemetry |
 | The internal warning sink: stderr now, `tracing` when enabled | `morm-core` | Every step that warns |
 | Expansion layout: `#[model]` calls one module per feature, so model steps add a module and don't edit one shared function | `morm-macros` | Model steps, `manifest`, `rolling` |
 | The config structs | `morm-core` | `morm`, `morm-migrate`, `morm-admin` |
@@ -326,7 +368,7 @@ These are context for every step. Details live in the step files.
 | R-0016 | Deadlocks and commits | Commits are confirmed, a second connection on a task is refused, pool and lock waits are finite, and single statements retry once on a reported deadlock (section 8) |
 | R-0017 | Statement cache | Two bounded per-connection LRUs: `statement_cache` for compile-time SQL, `shape_cache` for SQL built at runtime, so a client's choice of fields can't evict fixed queries. `query_typed` for dynamic SQL and overflow |
 | R-0018 | Connection | Unix socket by default (`host=/var/run/postgresql`), the lowest latency and allows peer auth. TCP also supported |
-| R-0019 | TLS | Optional cargo feature `tls` (rustls). Not compiled in unless enabled. Compiling it in costs binary size and build time; RAM and CPU are only spent on connections that use TLS |
+| R-0019 | TLS | Optional cargo feature `tls` (rustls) of `morm`. Not compiled in unless enabled. Compiling it in costs binary size and build time; RAM and CPU are only spent on connections that use TLS. `morm-admin` and `morm-migrate` always carry rustls (R-1285, R-1286), and the `morm-mgr` package `init` creates turns `tls` on (R-1287), which, as a member of the app's workspace, gives the app's own `morm` `tls` too in a build that includes it, such as `cargo build --workspace`, but not in a build of the app alone, such as `cargo build -p <app>` |
 | R-0020 | Default primary key | `bigint GENERATED BY DEFAULT AS IDENTITY` (`base = "common"`), the fastest and smallest. Same size and speed as `bigserial`, and the app role needs no separate sequence grant |
 | R-0021 | Alternative primary key | UUIDv7 (`base = "common_uuid"`), generated in the app or by Postgres 18's `uuidv7()`. For ids in public URLs and offline clients |
 | R-0022 | Custom primary key | `base = "bare"`: no columns added; you define your own single, composite, or no PK |

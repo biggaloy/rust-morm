@@ -20,6 +20,7 @@ Default to migrations that are safe on live tables.
 - Inherited columns changed only through their top parent, foreign keys dropped and added back around an index rebuild, the check for values that would merge on a unique index, and refusal of partitioned tables in the other safe forms
 - Refusal of a `NOT VALID` foreign key from a partitioned table on Postgres 15 to 17, and every statement Postgres carries to children and partitions run once on the top parent, refused when it would reach a child or a partition no model declares, and a partition's `pk` added or removed with no statement on the partition
 - Each safe form's one-transaction form in a down, for `rollback --fast`
+- `[migrations] cutover_lock_timeout`, `cutover_attempts` and `cutover_pause` added to the config structs, step 10's table of settings and `crates/morm-core/morm.toml` in the same PR, set to its default, or as a `${VAR}` placeholder where it has no default, with its allowed values, its environment variable or that it has none, and a comment on what it does and when to change it, as step 10's shipped `morm.toml` requires; step 10's drift test fails until it's there, and morm refuses any key the config structs don't read
 
 ## End-to-end check
 
