@@ -1,6 +1,6 @@
 # Brief: step 55, the thirty-first review
 
-Started 2026-11-27 (`isolation: worktree`, background, Opus, high effort). If `plans/reviews/step-55-review-31.md` isn't on `origin/main` after a restart: in the same session, resume it with `SendMessage`; otherwise check the old worktree under `.claude/worktrees/` for notes, then start a fresh reviewer with the brief below. Use the attribution lines the session then gives.
+Done: `plans/reviews/step-55-review-31.md` at `ab9efd4`, FI1 to FI3, 2026-11-27. Started 2026-11-27 (`isolation: worktree`, background, Opus, high effort). If `plans/reviews/step-55-review-31.md` isn't on `origin/main` after a restart: in the same session, resume it with `SendMessage`; otherwise check the old worktree under `.claude/worktrees/` for notes, then start a fresh reviewer with the brief below. Use the attribution lines the session then gives.
 
 ---
 
