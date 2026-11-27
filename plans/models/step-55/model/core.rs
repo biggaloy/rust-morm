@@ -249,6 +249,8 @@ pub enum Err {
     // the twenty-ninth review's FG1: another server error off the no-confirm list, such as a STRICT read's P0002
     // when the stored row is gone, or one the function raises further on
     OT,
+    // the thirtieth review's FH1: another 22P02 that isn't enum_in's, such as bad text for a number, same SQLSTATE
+    N22,
 }
 impl Err {
     pub fn code(&self) -> u8 {
@@ -261,6 +263,7 @@ impl Err {
             Err::S40 => 6,
             Err::F25 => 7,
             Err::OT => 8,
+            Err::N22 => 4,
         }
     }
     pub fn noconf(&self) -> bool {
@@ -364,7 +367,9 @@ pub struct Db {
     pub refresh: u32,
     pub stored_bad: bool,
     // the twenty-ninth review's FG1: what the stored text holds when it isn't _morm_retired_x: 0 a good label, 1
-    // NULL, 2 no row (the function answers NULL), 3 a value its function fails on another way (Err::OT)
+    // NULL, 2 no row (the function answers NULL), 3 a value its function fails on another way (Err::OT); the
+    // thirtieth review's FH1: 4 another bad label (another 22P02 from enum_in), 5 a good label and bad text for a
+    // number the function reads next (a 22P02 from another routine, Err::N22)
     pub stored_alt: u8,
     pub stored_nm: bool,
     pub last_change: u64,
@@ -637,6 +642,7 @@ impl Sim {
         match sp.stmt {
             CAST | F | TRIG | TWO => self.enum_in(cur, sp.label).map_err(|e| e.code()),
             ST if !self.db.stored_bad && self.db.stored_alt == 3 => Err(Err::OT.code()),
+            ST if !self.db.stored_bad && self.db.stored_alt >= 4 => Err(Err::N22.code()),
             ST if !self.db.stored_bad && self.db.stored_alt != 0 => Ok(cur),
             ST => self.enum_in(cur, self.stored()).map_err(|e| e.code()),
             STC => self.enum_in(cur, self.stored2()).and_then(|_| self.enum_in(cur, sp.label)).map_err(|e| e.code()),
@@ -771,12 +777,24 @@ impl Sim {
                 let mut r = self.enum_in(c.ver, l);
                 // FG1: NULL or no row never reaches the conversion, and answers; a value the function fails on
                 // another way fails so on any session; a session whose compiled type was dropped fails first
-                if sp.stmt == ST && !self.db.stored_bad && self.db.stored_alt != 0 && r != Err(Err::XX) {
+                if sp.stmt == ST && !self.db.stored_bad && self.db.stored_alt == 4 {
+                    // FH1: another bad label fails in enum_in on every session, naming the type that session
+                    // compiled, so a stale one's names the retired type, which holds _morm_retired_
+                    r = self.enum_in(c.ver, Label::Bad).map_err(|e| if let Err::P22 { named, ret, lab, .. } = e { Err::P22 { named, ret, lab, stored: true } } else { e });
+                } else if sp.stmt == ST && !self.db.stored_bad && self.db.stored_alt == 5 {
+                    // FH1: a good label, then bad text for a number: a stale session fails at the label first
+                    if r.is_ok() {
+                        r = Err(Err::N22);
+                    }
+                } else if sp.stmt == ST && !self.db.stored_bad && self.db.stored_alt != 0 && r != Err(Err::XX) {
                     r = if self.db.stored_alt == 3 { Err(Err::OT) } else { Ok(cur) };
                 }
                 let cause = match r {
+                    // FH1: another bad label is bad on every session, the kept type's and the current one's alike;
+                    // only a stale session's, naming the retired type, is that session's error
+                    Err(Err::P22 { named, lab: Label::Bad, .. }) if sp.stmt == ST && !matches!(named, Named::Ret(_)) => Cause::None,
                     Err(Err::P22 { named: Named::Kept(v), .. }) => Cause::Kept(v),
-                    Err(Err::OT) => Cause::None,
+                    Err(Err::OT) | Err(Err::N22) => Cause::None,
                     Err(_) if c.ver != cur => Cause::Sess(self.db.types[c.ver as usize].1),
                     _ => Cause::None,
                 };

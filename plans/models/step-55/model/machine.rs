@@ -933,10 +933,11 @@ pub async fn run_call(p: usize, conn: &mut Conn, cx: &mut Cx, sp: &Spec) -> Res 
     if let Some((ms, first)) = cx.due_mark {
         if ms.stmt == sp.stmt && ms.bytes() == sp.bytes() && ent.is_none_or(|e| e.1 != Some(sp.bytes())) {
             cx.due_mark = None;
-            if w().confirms(&o.r, first) {
+            fh1_note(sp, &o, false, first);
+            if w().confirms(&o.r, first) || fh1_break(&o) {
                 w().begin_step(p);
                 w().inc("FF1 replace requested: a confirming next attempt, row B3");
-                fg1_count(sp, &o, false);
+                fg1_count(sp, &o, false, first);
                 request(p, Act::Replace, false, cx, None).await;
                 fg2_record(p, conn);
             }
@@ -1305,9 +1306,10 @@ async fn session(p: usize, conn: &mut Conn, cx: &mut Cx, sp: &Spec, o: Out) -> R
             None => return Res::Pg(o),
             Some(r) => {
                 w().begin_step(p);
-                if !sure && w().confirms(&r.r, err.code()) {
+                fh1_note(sp, &r, true, err.code());
+                if !sure && (w().confirms(&r.r, err.code()) || fh1_break(&r)) {
                     w().inc("FF1 replace requested: a confirming run on the new connection, row A2");
-                    fg1_count(sp, &r, true);
+                    fg1_count(sp, &r, true, err.code());
                     request(p, Act::Replace, false, cx, None).await;
                     fg2_record(p, conn);
                 }
@@ -1367,7 +1369,7 @@ fn count_open(p: usize, ep: u64) {
 }
 
 // the twenty-ninth review's FG1: what made a stored-text function's confirming run confirm
-fn fg1_count(sp: &Spec, o: &Out, a2: bool) {
+fn fg1_count(sp: &Spec, o: &Out, a2: bool, first: u8) {
     if sp.stmt != ST {
         return;
     }
@@ -1380,11 +1382,44 @@ fn fg1_count(sp: &Spec, o: &Out, a2: bool) {
         _ => if a2 { "FG1 A2 replace by stored text: other" } else { "FG1 B3 replace by stored text: other" },
     };
     s.inc(k);
+    // the thirtieth review's FH1: after a 22P02, a run that ends in another 22P02, the same error by SQLSTATE, never
+    // confirms, so it never brings the *replace* action, whatever routine raised it (R-1245, R-1249, R-1250); after
+    // row B2's XX000 a 22P02 is another SQLSTATE, and confirms
+    if let Err(e) = o.r {
+        if e.code() == 4 && first == 4 {
+            let d = format!("t={} {:?}", s.now, e);
+            s.fail("FH1 a run ending in another 22P02 brought a replace", d);
+        }
+    }
     // the older wording, R-0981's "stored text a client changes to a good label", as a check of an older wording
     if !k.ends_with("a good label") {
         let d = format!("t={} {}", s.now, k);
         s.fail("lit FG1 R-0981 a replace from stored text only when it changes to a good label", d);
     }
+}
+// the thirtieth review's FH1: a stored-text function's run on the new connection, row A2, or the next attempt's, row
+// B3, after its stored text changed, that ends in another 22P02, from enum_in (another bad label) or from another
+// routine (bad text for a number): it requests nothing. R-1249's and R-1250's older wording took any run that fails
+// another way, off the errors that stop it before the value, for a cured stale session ("lit FH1")
+fn fh1_note(sp: &Spec, o: &Out, a2: bool, first: u8) {
+    if sp.stmt != ST || first != 4 {
+        return;
+    }
+    let s = w();
+    let (k, c) = match (o.r, a2) {
+        (Err(Err::P22 { ret: false, .. }), true) => ("another bad label, enum_in", "FH1 A2 another 22P02, another bad label (enum_in): nothing requested"),
+        (Err(Err::P22 { ret: false, .. }), false) => ("another bad label, enum_in", "FH1 B3 another 22P02, another bad label (enum_in): nothing requested"),
+        (Err(Err::N22), true) => ("bad text for a number", "FH1 A2 another 22P02, bad text for a number (another routine): nothing requested"),
+        (Err(Err::N22), false) => ("bad text for a number", "FH1 B3 another 22P02, bad text for a number (another routine): nothing requested"),
+        _ => return,
+    };
+    s.inc(c);
+    let d = format!("t={} {}", s.now, k);
+    s.fail("lit FH1 R-1249 and R-1250, a run failing another way off the stopping errors confirms", d);
+}
+// break 129: a run ending in another 22P02 taken for a confirmation, as R-1249's older wording reads
+fn fh1_break(o: &Out) -> bool {
+    w().c.fault == 129 && matches!(o.r, Err(Err::P22 { ret: false, .. }) | Err(Err::N22))
 }
 // the twenty-ninth review's FG2: the connection whose run requested *replace* opened before the action is taken, so
 // it's behind the connection generation once it is, and is replaced at its next checkout too

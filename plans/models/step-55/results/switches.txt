@@ -8,51 +8,51 @@
   6 straight  256  2048
   7 pooled    256  2048
   7 straight  256  2048
-  8 pooled    106   921
-  8 straight   94   665
-  9 pooled    186  1422
-  9 straight  192  1583
+  8 pooled     92   932
+  8 straight   82   707
+  9 pooled    189  1417
+  9 straight  198  1575
  10 pooled    256  2048
  10 straight  256  2048
- 11 straight   55   396
+ 11 straight   74   422
  12 straight   69   524
- 13 straight   80   642
+ 13 straight   79   663
  14 pooled    256  2048
  14 straight  256  2048
  15 straight  248  2011
  16 straight  256  2048
  17 straight  239  1916
  18 straight  256  2048
- 19 straight  218  1724
- 20 pooled    242  1934
- 20 straight  223  1893
- 21 straight  143  1257
+ 19 straight  220  1730
+ 20 pooled    236  1952
+ 20 straight  233  1879
+ 21 straight  153  1270
  22 pooled    254  2016
  23 pooled    228  1761
  24 straight  256  2048
- 25 pooled    245  1951
- 25 straight  170  1359
- 26 pooled     88   680
+ 25 pooled    246  1964
+ 25 straight  156  1323
+ 26 pooled     92   683
  27 pooled    256  2048
  28 pooled    256  2048
  28 straight  256  2048
- 29 pooled    134  1018
- 29 straight   74   570
- 30 straight  112   874
+ 29 pooled    123  1055
+ 29 straight   77   564
+ 30 straight  118   892
  31 straight  256  2048
- 32 straight  197  1577
+ 32 straight  201  1605
  33 pooled    256  2048
- 33 straight  256  2040
- 34 straight  255  2017
+ 33 straight  256  2044
+ 34 straight  252  2017
  35 pooled    256  2048
  36 pooled    256  2048
  36 straight  256  2048
- 37 pooled    256  2023
- 37 straight  215  1660
+ 37 pooled    254  2032
+ 37 straight  216  1680
  38 pooled      0     0
  38 straight  256  2048
- 39 pooled    256  2045
- 39 straight  192  1608
+ 39 pooled    256  2044
+ 39 straight  184  1642
 132 straight  256  2048
-lowest by 256: [(0, 0, (38, 'pooled')), (55, 396, (11, 'straight')), (69, 524, (12, 'straight')), (74, 570, (29, 'straight'))]
-lowest by 2048: [(0, 0, (38, 'pooled')), (55, 396, (11, 'straight')), (69, 524, (12, 'straight')), (74, 570, (29, 'straight'))]
+lowest by 256: [(0, 0, (38, 'pooled')), (69, 524, (12, 'straight')), (74, 422, (11, 'straight')), (77, 564, (29, 'straight'))]
+lowest by 2048: [(0, 0, (38, 'pooled')), (74, 422, (11, 'straight')), (69, 524, (12, 'straight')), (77, 564, (29, 'straight'))]

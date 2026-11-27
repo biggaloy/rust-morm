@@ -1,3 +1,38 @@
+# Step 55's stale-session model, after the thirtieth review's fix
+
+Started from `plans/models/step-55/` on `main` (the twenty-ninth review's fix, PR #3 `2fcbbcd`), copied to `plans/wip/step-55/`. Both findings change what the model checks:
+
+- **FH1:** a stored-text function whose run on the new connection (row A2) or next attempt (row B3) ends in another `22P02` doesn't confirm, by R-1245's same-SQLSTATE rule, and the world never drove that case.
+- **FH2:** the span checks counted, per span, the larger of the changes committed from `W` before it and the pool's moves of `<n>` from `W` before it. The text now names the count, the moves of the pool's last-read `<n>` from `W` before the span to its end, so the checks count those alone.
+
+What changed:
+
+- `model/core.rs`: `Err::N22`, a `22P02` from a routine other than `enum_in` (code 4, the same SQLSTATE as `Err::P22`, never the second row's). `Db::stored_alt` 4, another bad label: the function's conversion fails in `enum_in` on every session, naming the type that session compiled, so a stale session's error names the retired type and holds `_morm_retired_`. `stored_alt` 5, a good label and then bad text for a number: a stale session fails at the label first, and any other fails with `Err::N22`. The oracle gives code 4 for both.
+- `model/world.rs`: world event 6, when it draws `stored_alt` 3 (a value its function fails on another way), draws again: a third stay 3, a third 4 and a third 5. `FH1_OFF=1` draws nothing more, so it gives the last round's world. The draw before it gives a good label two times in five, and `NULL`, no row and 3 one time in five each. The last round's notes and `proofs.md` said half.
+- `model/world.rs`, the span checks: "I4 span" (opens), "I4 span replacements, FF1", "I3 span, an epoch's replacements, R-0981" and "lit FF1" count the moves of the pool's last-read `<n>` from `W` before the span's first open or replacement to its last. That is the fewest any span of `W` holding them can count. The commit-time counts are older readings' checks:
+  - "lit FH2 I4 span opens, per change committed in the span", which is what "I4 span" counted before;
+  - "lit FH2 I4 span replacements, per change committed from W before";
+  - "lit FH2 R-0981 span, an epoch's, per change committed from W before".
+- `model/machine.rs`:
+  - `fh1_note`, at row A2's run on the new connection and at the next attempt's run that row B3 marked, after a first `22P02`: the counters "FH1 A2/B3 another 22P02, another bad label (enum_in) / bad text for a number (another routine): nothing requested". It also fails "lit FH1 R-1249 and R-1250, a run failing another way off the stopping errors confirms", R-1249's and R-1250's older wording.
+  - `fg1_count`, the check "FH1 a run ending in another 22P02 brought a replace", only after a first `22P02`. After row B2's `XX000`, a `22P02` is another SQLSTATE and confirms; the first version of this check missed that and failed with no fault.
+  - Break 129, `fh1_break`: a run ending in another `22P02` taken for a confirmation at those two places.
+- `model/breaks.py`: break 129 at "defaults", "stored text only, no schema change" and "transactions without retry", straight to Postgres. `model/fh.sh <binary> [count]` prints FH1's and FH2's counts (`results/fh.txt`). `model/cmp.py` also sets aside FH1's and FH2's lines.
+
+Results:
+
+- **No fault, 86 settings,** over 256, 2,048 and 20,000 sequences (seeds 0 to 255, 1,000 to 3,047, 10,000 to 29,999): no check fails apart from the older wordings'. "lit FH1" fails in 37 of the 47 settings straight to Postgres at each count, the ones with client input. That's 3 to 213 of 256 and 264 to 15,704 of 20,000. "lit FH2" fails in none of the 86, but see below.
+- **FH1's counts** at "stored text only, no schema change", 256 sequences:
+  - another bad label requested nothing 289 times at A2 and 71 at B3;
+  - bad text for a number requested nothing 283 times at A2 and 59 at B3;
+  - no run that ended in another `22P02` after a `22P02` requested *replace*.
+- **Break 129** is caught by the new check in 47, 213 and 22 of 256.
+- **FH2:** at switch 16's setting with no fault, over 2,048 sequences, "lit FH2 R-0981 span, an epoch's, per change committed from W before" fails once. That's seed 2,480, and with `FH1_OFF=1` seed 2,889, the one the last round met: 9 of an epoch's replacements in a span of `W`, with no change committed from `W` before it. The moves-based check passes both.
+- **The last round's world, `FH1_OFF=1`:** every setting's output at 256 sequences is the last round's line for line (`cmp.py`, 765 lines), apart from FF1's, FG1's, FG2's, FH1's and FH2's lines. "lit FF1" fails in more sequences, because it now counts moves alone.
+- **Switches:** every one is caught, all 39, in 69 to 256 of 256 and 422 to 2,048 of 2,048 (`results/switches.txt`). At `2fcbbcd` it was 55 to 256 and 396 to 2,048; the counts move with the world's draws. Every break is caught (`results/breaks.txt`).
+
+Not run: Postgres and PgBouncer. FH1 and FH2 are wording of morm's own procedure, and the review's probes on 17.11 and 18.6 show the server's side.
+
 # Step 55's stale-session model, after the twenty-ninth review's fix
 
 Started from `plans/models/step-55/` on `main` (the twenty-eighth review's fix, PR #3 `3686e86`), copied to `plans/wip/step-55/`. FG1 changes what the model checks: stored text toggled only between a good label and `_morm_retired_x`, so only one kind of confirming change was driven, where any change that makes the next run confirm brings a *replace* action. FG2 changes nothing a check bounds (the model already replaces every connection behind the connection generation at checkout), but nothing checked it.

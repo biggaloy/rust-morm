@@ -175,6 +175,12 @@ fn world(s: &mut Sim) {
             // FG1_OFF=1 keeps the earlier world, a good label only, to compare the outputs with the last round's
             if s.c.client && !s.db.stored_bad && std::env::var_os("FG1_OFF").is_none() {
                 s.db.stored_alt = match s.rng.r(0, 4) { 0 | 1 => 0, 2 => 1, 3 => 2, _ => 3 };
+                // the thirtieth review's FH1: of the values its function fails on another way, a third fail with
+                // another 22P02 from enum_in, another bad label, and a third with one from another routine, bad text
+                // for a number; FH1_OFF=1 keeps the last round's world, which draws nothing more
+                if s.db.stored_alt == 3 && std::env::var_os("FH1_OFF").is_none() {
+                    s.db.stored_alt = match s.rng.r(0, 2) { 0 => 3, 1 => 4, _ => 5 };
+                }
             }
             s.db.stored_nm = s.rng.p(0.5);
         }
@@ -405,14 +411,23 @@ pub fn end_checks(s: &mut Sim) {
             s.fail("I4 pooled", String::new());
         }
         let mut lo = 0;
+        let mv_t: Vec<u64> = s.pools[p].moved.iter().map(|x| x.0).collect();
         for hi in 0..so.len() {
             while so[hi] - so[lo] >= wd {
                 lo += 1;
             }
-            let m = ch.iter().filter(|c| **c >= so[lo] && **c <= so[hi]).count() as u64;
+            // the thirtieth review's FH2: I4 counts, per span, the moves of the pool's last-read <n> from
+            // stale_cooldown before the span's start to its end, whenever the change was committed; the span checked
+            // starts at its first open, which counts the fewest moves of any span holding these opens
+            let mc = ch.iter().filter(|c| **c >= so[lo] && **c <= so[hi]).count() as u64;
+            let m = mv_t.iter().filter(|t| **t + wd >= so[lo] && **t <= so[hi]).count() as u64;
             let n = (hi - lo + 1) as u64;
             if n > 4 * max as u64 + 4 + 2 * max as u64 * m {
-                s.fail("I4 span", format!("{} opens, {} changes", n, m));
+                s.fail("I4 span", format!("{} opens, {} moves", n, m));
+            }
+            // the reading FH2 rules out, per migration committed within the span, as an older wording's check
+            if n > 4 * max as u64 + 4 + 2 * max as u64 * mc {
+                s.fail("lit FH2 I4 span opens, per change committed in the span", format!("{} opens, {} changes", n, mc));
             }
             let e = s.cnt.entry("most stale-driven opens in a span (max)").or_insert(0);
             *e = (*e).max(n);
@@ -425,19 +440,28 @@ pub fn end_checks(s: &mut Sim) {
         let mx = max as u64;
         let (mut lo, mut most, mut most_ep) = (0usize, 0u64, 0u64);
         let (mut lit, mut eg, mut over, mut ep_over) = (false, String::new(), String::new(), String::new());
+        let (mut lit_c, mut lit_ce) = (String::new(), String::new());
         for hi in 0..rt.len() {
             while rt[hi].0 - rt[lo].0 >= wd {
                 lo += 1;
             }
             // a change counts for the span when the pool can have learned it there: from W before the span's first
             // replacement, as a standby's replay or a read after the change can trail its commit
-            let m = ch.iter().filter(|c| **c + wd >= rt[lo].0 && **c <= rt[hi].0).count() as u64;
+            let mc = ch.iter().filter(|c| **c + wd >= rt[lo].0 && **c <= rt[hi].0).count() as u64;
             // the twenty-ninth round: or when the pool did learn it there, by a read that moved its <n>, which can come
-            // any time after the commit, since <n> is read only on a failure; the larger of the two counts
-            let mv = s.pools[p].moved.iter().filter(|x| x.0 + wd >= rt[lo].0 && x.0 <= rt[hi].0).count() as u64;
-            let m = m.max(mv);
+            // any time after the commit, since <n> is read only on a failure; it took the larger of the two counts.
+            // The thirtieth review's FH2: the text now names the count, the moves of the pool's last-read <n> from
+            // stale_cooldown before the span's start to its end, whenever the change was committed, and the checks
+            // count those alone; the commit-time count is kept as an older reading's check ("lit FH2")
+            let m = s.pools[p].moved.iter().filter(|x| x.0 + wd >= rt[lo].0 && x.0 <= rt[hi].0).count() as u64;
             let n = (hi - lo + 1) as u64;
             let ne =rt[lo..=hi].iter().filter(|x| x.1 == 0).count() as u64;
+            if n > 4 * mx + 2 * mx * mc && lit_c.is_empty() {
+                lit_c = format!("{} replacements in {}..{}, {} changes committed", n, rt[lo].0, rt[hi].0, mc);
+            }
+            if ne > 2 * mx + mx * mc && lit_ce.is_empty() {
+                lit_ce = format!("{} of an epoch's in {}..{}, {} changes committed", ne, rt[lo].0, rt[hi].0, mc);
+            }
             if n > 2 * mx + mx * m && !lit {
                 lit = true;
                 eg = format!("{} replacements in {}..{}, {} an epoch's, {} changes", n, rt[lo].0, rt[hi].0, ne, m);
@@ -468,6 +492,12 @@ pub fn end_checks(s: &mut Sim) {
         }
         if !ep_over.is_empty() {
             s.fail("I3 span, an epoch's replacements, R-0981", ep_over);
+        }
+        if !lit_c.is_empty() {
+            s.fail("lit FH2 I4 span replacements, per change committed from W before", lit_c);
+        }
+        if !lit_ce.is_empty() {
+            s.fail("lit FH2 R-0981 span, an epoch's, per change committed from W before", lit_ce);
         }
         if !rt.is_empty() {
             let (ne, na) = (rt.iter().filter(|x| x.1 == 0).count() as u64, rt.iter().filter(|x| x.1 == 1).count() as u64);

@@ -28,6 +28,10 @@ RUNS += [("pooled", b, s) for b in (125, 126, 127) for s in ("defaults", "transa
 # the twenty-ninth review's FG2: 128, the *replace* action sparing the connection whose own confirming run requested
 # it, straight to Postgres, against "FG2 a checkout kept a connection behind the connection generation"
 RUNS += [("straight", 128, s) for s in ("defaults", "stored text only, no schema change", "transactions without retry")]
+# the thirtieth review's FH1: 129, a stored-text function's run ending in another 22P02, another bad label or bad
+# text for a number, taken for a confirmation, straight to Postgres, against "FH1 a run ending in another 22P02
+# brought a replace"
+RUNS += [("straight", 129, s) for s in ("defaults", "stored text only, no schema change", "transactions without retry")]
 for mode, b, s in RUNS:
     out = subprocess.run([M, f"set{b}" if s == "set" else s, str(b), "0", "256", mode], capture_output=True, text=True).stdout
     print(f"-- break {b} [{mode}] {s}")

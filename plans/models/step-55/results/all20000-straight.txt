@@ -1,88 +1,94 @@
 == defaults [straight] fault 0 seeds 10000..30000 (9.8s)
-   FAIL  923/20000 ez I8 held, before then, every error
+   FAIL  955/20000 ez I8 held, before then, every error
+   FAIL   98/20000 ez I8 held, before then, visible errors
+   FAIL 4083/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL 3164/20000 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
+   FAIL 7946/20000 lit FG1 R-0981 a replace from stored text only when it changes to a good label
+   FAIL 19562/20000 lit FG2 R-1249 the action replaces every other connection
+   FAIL 3646/20000 lit FH1 R-1249 and R-1250, a run failing another way off the stopping errors confirms
+   FAIL 2281/20000 lit I1
+   FAIL 19999/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 10869/20000 lit I8 held, before then
+   FAIL 1062/20000 lit I8 search_path once per E
+   FAIL 18659/20000 lit I9 loud half
+   FAIL  377/20000 lit I9 loud: a request, entry or replacement
+   FAIL  477/20000 lit R-1271 before t0+W, not judged not old (parameter test)
+== entries off [straight] fault 0 seeds 10000..30000 (9.7s)
+   FAIL  976/20000 ez I8 held, before then, every error
    FAIL   99/20000 ez I8 held, before then, visible errors
-   FAIL 4070/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
-   FAIL 2502/20000 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
-   FAIL 9499/20000 lit FG1 R-0981 a replace from stored text only when it changes to a good label
-   FAIL 19627/20000 lit FG2 R-1249 the action replaces every other connection
-   FAIL 2234/20000 lit I1
-   FAIL 19997/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 10816/20000 lit I8 held, before then
-   FAIL 1059/20000 lit I8 search_path once per E
-   FAIL 18523/20000 lit I9 loud half
-   FAIL  388/20000 lit I9 loud: a request, entry or replacement
-   FAIL  463/20000 lit R-1271 before t0+W, not judged not old (parameter test)
-== entries off [straight] fault 0 seeds 10000..30000 (9.8s)
-   FAIL  948/20000 ez I8 held, before then, every error
-   FAIL   92/20000 ez I8 held, before then, visible errors
-   FAIL 2516/20000 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
-   FAIL 11551/20000 lit FG1 R-0981 a replace from stored text only when it changes to a good label
-   FAIL 19798/20000 lit FG2 R-1249 the action replaces every other connection
-   FAIL 1388/20000 lit I1
-   FAIL 19999/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 11650/20000 lit I8 held, before then
-   FAIL 7286/20000 lit I8 search_path once per E
-   FAIL 18517/20000 lit I9 loud half
-   FAIL  378/20000 lit I9 loud: a request, entry or replacement
-   FAIL  449/20000 lit R-1271 before t0+W, not judged not old (parameter test)
-== caps of 1 [straight] fault 0 seeds 10000..30000 (9.8s)
-   FAIL  933/20000 ez I8 held, before then, every error
-   FAIL   86/20000 ez I8 held, before then, visible errors
-   FAIL 4355/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
-   FAIL 2497/20000 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
-   FAIL 9502/20000 lit FG1 R-0981 a replace from stored text only when it changes to a good label
-   FAIL 19627/20000 lit FG2 R-1249 the action replaces every other connection
-   FAIL 2398/20000 lit I1
-   FAIL 19999/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 11217/20000 lit I8 held, before then
-   FAIL 2239/20000 lit I8 search_path once per E
-   FAIL 18493/20000 lit I9 loud half
-   FAIL  402/20000 lit I9 loud: a request, entry or replacement
-   FAIL  453/20000 lit R-1271 before t0+W, not judged not old (parameter test)
-== W five times E [straight] fault 0 seeds 10000..30000 (9.9s)
-   FAIL  971/20000 ez I8 held, before then, every error
-   FAIL  102/20000 ez I8 held, before then, visible errors
-   FAIL 4545/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
-   FAIL 2484/20000 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
-   FAIL 9361/20000 lit FG1 R-0981 a replace from stored text only when it changes to a good label
-   FAIL 19611/20000 lit FG2 R-1249 the action replaces every other connection
-   FAIL 1684/20000 lit I1
+   FAIL 3173/20000 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
+   FAIL 10229/20000 lit FG1 R-0981 a replace from stored text only when it changes to a good label
+   FAIL 19751/20000 lit FG2 R-1249 the action replaces every other connection
+   FAIL 3748/20000 lit FH1 R-1249 and R-1250, a run failing another way off the stopping errors confirms
+   FAIL 1364/20000 lit I1
+   FAIL 19998/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 11634/20000 lit I8 held, before then
+   FAIL 7228/20000 lit I8 search_path once per E
+   FAIL 18707/20000 lit I9 loud half
+   FAIL  396/20000 lit I9 loud: a request, entry or replacement
+   FAIL  467/20000 lit R-1271 before t0+W, not judged not old (parameter test)
+== caps of 1 [straight] fault 0 seeds 10000..30000 (9.7s)
+   FAIL  973/20000 ez I8 held, before then, every error
+   FAIL   94/20000 ez I8 held, before then, visible errors
+   FAIL 4313/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL 3141/20000 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
+   FAIL 7715/20000 lit FG1 R-0981 a replace from stored text only when it changes to a good label
+   FAIL 19567/20000 lit FG2 R-1249 the action replaces every other connection
+   FAIL 3598/20000 lit FH1 R-1249 and R-1250, a run failing another way off the stopping errors confirms
+   FAIL 2422/20000 lit I1
    FAIL 20000/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 11201/20000 lit I8 held, before then
-   FAIL  152/20000 lit I8 search_path once per E
-   FAIL 18478/20000 lit I9 loud half
-   FAIL  421/20000 lit I9 loud: a request, entry or replacement
+   FAIL 11153/20000 lit I8 held, before then
+   FAIL 2355/20000 lit I8 search_path once per E
+   FAIL 18627/20000 lit I9 loud half
+   FAIL  393/20000 lit I9 loud: a request, entry or replacement
+   FAIL  462/20000 lit R-1271 before t0+W, not judged not old (parameter test)
+== W five times E [straight] fault 0 seeds 10000..30000 (9.7s)
+   FAIL  953/20000 ez I8 held, before then, every error
+   FAIL   88/20000 ez I8 held, before then, visible errors
+   FAIL 4589/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL 3194/20000 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
+   FAIL 7911/20000 lit FG1 R-0981 a replace from stored text only when it changes to a good label
+   FAIL 19581/20000 lit FG2 R-1249 the action replaces every other connection
+   FAIL 3630/20000 lit FH1 R-1249 and R-1250, a run failing another way off the stopping errors confirms
+   FAIL 1646/20000 lit I1
+   FAIL 19998/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 11132/20000 lit I8 held, before then
+   FAIL  174/20000 lit I8 search_path once per E
+   FAIL 18634/20000 lit I9 loud half
+   FAIL  402/20000 lit I9 loud: a request, entry or replacement
    FAIL    1/20000 lit I9 silent past W of the first confirmation
-   FAIL  456/20000 lit R-1271 before t0+W, not judged not old (parameter test)
-== budget 8 [straight] fault 0 seeds 10000..30000 (9.8s)
-   FAIL  923/20000 ez I8 held, before then, every error
-   FAIL   99/20000 ez I8 held, before then, visible errors
-   FAIL 4070/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
-   FAIL 2502/20000 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
-   FAIL 9499/20000 lit FG1 R-0981 a replace from stored text only when it changes to a good label
-   FAIL 19627/20000 lit FG2 R-1249 the action replaces every other connection
-   FAIL 2234/20000 lit I1
-   FAIL 19997/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 10816/20000 lit I8 held, before then
-   FAIL 1059/20000 lit I8 search_path once per E
-   FAIL 18523/20000 lit I9 loud half
-   FAIL  388/20000 lit I9 loud: a request, entry or replacement
-   FAIL  463/20000 lit R-1271 before t0+W, not judged not old (parameter test)
+   FAIL  471/20000 lit R-1271 before t0+W, not judged not old (parameter test)
+== budget 8 [straight] fault 0 seeds 10000..30000 (9.7s)
+   FAIL  955/20000 ez I8 held, before then, every error
+   FAIL   98/20000 ez I8 held, before then, visible errors
+   FAIL 4083/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL 3164/20000 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
+   FAIL 7946/20000 lit FG1 R-0981 a replace from stored text only when it changes to a good label
+   FAIL 19562/20000 lit FG2 R-1249 the action replaces every other connection
+   FAIL 3646/20000 lit FH1 R-1249 and R-1250, a run failing another way off the stopping errors confirms
+   FAIL 2281/20000 lit I1
+   FAIL 19999/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 10869/20000 lit I8 held, before then
+   FAIL 1062/20000 lit I8 search_path once per E
+   FAIL 18659/20000 lit I9 loud half
+   FAIL  377/20000 lit I9 loud: a request, entry or replacement
+   FAIL  477/20000 lit R-1271 before t0+W, not judged not old (parameter test)
 == caches off [straight] fault 0 seeds 10000..30000 (8.5s)
-   FAIL  954/20000 ez I8 held, before then, every error
-   FAIL  133/20000 ez I8 held, before then, visible errors
-   FAIL 1069/20000 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
-   FAIL 8765/20000 lit FG1 R-0981 a replace from stored text only when it changes to a good label
-   FAIL 19709/20000 lit FG2 R-1249 the action replaces every other connection
-   FAIL  398/20000 lit I1
-   FAIL 19996/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL  954/20000 lit I8 held, before then
-   FAIL 17570/20000 lit I9 loud half
-   FAIL  400/20000 lit I9 loud: a request, entry or replacement
-   FAIL  500/20000 lit R-1271 before t0+W, not judged not old (parameter test)
+   FAIL  938/20000 ez I8 held, before then, every error
+   FAIL  136/20000 ez I8 held, before then, visible errors
+   FAIL 1524/20000 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
+   FAIL 7181/20000 lit FG1 R-0981 a replace from stored text only when it changes to a good label
+   FAIL 19685/20000 lit FG2 R-1249 the action replaces every other connection
+   FAIL 3619/20000 lit FH1 R-1249 and R-1250, a run failing another way off the stopping errors confirms
+   FAIL  383/20000 lit I1
+   FAIL 19999/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL  938/20000 lit I8 held, before then
+   FAIL 17721/20000 lit I9 loud half
+   FAIL  369/20000 lit I9 loud: a request, entry or replacement
+   FAIL  483/20000 lit R-1271 before t0+W, not judged not old (parameter test)
 == no client input [straight] fault 0 seeds 10000..30000 (8.2s)
    FAIL 4120/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
-   FAIL  305/20000 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
+   FAIL  528/20000 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
    FAIL    1/20000 lit FG1 R-0981 a replace from stored text only when it changes to a good label
    FAIL 19933/20000 lit FG2 R-1249 the action replaces every other connection
    FAIL 1789/20000 lit I1
@@ -93,172 +99,182 @@
    FAIL   18/20000 lit I9 loud: a request, entry or replacement
    FAIL    1/20000 lit I9 silent past W of the first confirmation
 == several, one server [straight] fault 0 seeds 10000..30000 (9.7s)
-   FAIL 1227/20000 ez I8 held, before then, every error
-   FAIL  125/20000 ez I8 held, before then, visible errors
-   FAIL 4263/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
-   FAIL 2511/20000 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
-   FAIL 7880/20000 lit FG1 R-0981 a replace from stored text only when it changes to a good label
-   FAIL 18376/20000 lit FG2 R-1249 the action replaces every other connection
-   FAIL  960/20000 lit I1 several (rose between them)
-   FAIL 19998/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 11068/20000 lit I8 held, before then
-   FAIL  421/20000 lit I8 search_path once per E
-   FAIL 18559/20000 lit I9 loud half
-   FAIL  347/20000 lit I9 loud: a request, entry or replacement
-   FAIL  560/20000 lit R-1271 before t0+W, not judged not old (parameter test)
+   FAIL 1220/20000 ez I8 held, before then, every error
+   FAIL  113/20000 ez I8 held, before then, visible errors
+   FAIL 4246/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL 9397/20000 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
+   FAIL 6587/20000 lit FG1 R-0981 a replace from stored text only when it changes to a good label
+   FAIL 18280/20000 lit FG2 R-1249 the action replaces every other connection
+   FAIL 3184/20000 lit FH1 R-1249 and R-1250, a run failing another way off the stopping errors confirms
+   FAIL  970/20000 lit I1 several (rose between them)
+   FAIL 19999/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 11064/20000 lit I8 held, before then
+   FAIL  416/20000 lit I8 search_path once per E
+   FAIL 18712/20000 lit I9 loud half
+   FAIL  362/20000 lit I9 loud: a request, entry or replacement
+   FAIL  548/20000 lit R-1271 before t0+W, not judged not old (parameter test)
 == two servers [straight] fault 0 seeds 10000..30000 (9.7s)
-   FAIL 1342/20000 ez I8 held, before then, every error
-   FAIL  167/20000 ez I8 held, before then, visible errors
-   FAIL 4357/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
-   FAIL 2354/20000 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
-   FAIL 8008/20000 lit FG1 R-0981 a replace from stored text only when it changes to a good label
-   FAIL 17740/20000 lit FG2 R-1249 the action replaces every other connection
-   FAIL 1026/20000 lit I1 several (rose between them)
+   FAIL 1415/20000 ez I8 held, before then, every error
+   FAIL  170/20000 ez I8 held, before then, visible errors
+   FAIL 4326/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL 9639/20000 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
+   FAIL 6577/20000 lit FG1 R-0981 a replace from stored text only when it changes to a good label
+   FAIL 17668/20000 lit FG2 R-1249 the action replaces every other connection
+   FAIL 3105/20000 lit FH1 R-1249 and R-1250, a run failing another way off the stopping errors confirms
+   FAIL 1014/20000 lit I1 several (rose between them)
    FAIL 19999/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 10961/20000 lit I8 held, before then
-   FAIL  483/20000 lit I8 search_path once per E
+   FAIL 10768/20000 lit I8 held, before then
+   FAIL  491/20000 lit I8 search_path once per E
    FAIL    2/20000 lit I8 visible from then on (parameter test)
-   FAIL 18513/20000 lit I9 loud half
-   FAIL  375/20000 lit I9 loud: a request, entry or replacement
-   FAIL  588/20000 lit R-1271 before t0+W, not judged not old (parameter test)
-== three servers [straight] fault 0 seeds 10000..30000 (9.8s)
-   FAIL 1332/20000 ez I8 held, before then, every error
-   FAIL  127/20000 ez I8 held, before then, visible errors
-   FAIL 4294/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
-   FAIL 2275/20000 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
-   FAIL 7898/20000 lit FG1 R-0981 a replace from stored text only when it changes to a good label
-   FAIL 17797/20000 lit FG2 R-1249 the action replaces every other connection
-   FAIL  999/20000 lit I1 several (rose between them)
-   FAIL 19998/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 10952/20000 lit I8 held, before then
-   FAIL    1/20000 lit I8 held, from then on
-   FAIL  460/20000 lit I8 search_path once per E
-   FAIL 18528/20000 lit I9 loud half
-   FAIL  415/20000 lit I9 loud: a request, entry or replacement
-   FAIL  583/20000 lit R-1271 before t0+W, not judged not old (parameter test)
-== heavy [straight] fault 0 seeds 10000..30000 (9.2s)
-   FAIL 1835/20000 ez I8 held, before then, every error
-   FAIL  216/20000 ez I8 held, before then, visible errors
-   FAIL 3246/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
-   FAIL   41/20000 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
-   FAIL 18431/20000 lit FG1 R-0981 a replace from stored text only when it changes to a good label
-   FAIL 20000/20000 lit FG2 R-1249 the action replaces every other connection
-   FAIL 2977/20000 lit I1
-   FAIL 19997/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 14698/20000 lit I8 held, before then
-   FAIL  677/20000 lit I8 search_path once per E
-   FAIL 19614/20000 lit I9 loud half
-   FAIL 2441/20000 lit I9 loud: a request, entry or replacement
-   FAIL  442/20000 lit R-1271 before t0+W, not judged not old (parameter test)
-== landing always [straight] fault 0 seeds 10000..30000 (9.9s)
-   FAIL  927/20000 ez I8 held, before then, every error
-   FAIL  108/20000 ez I8 held, before then, visible errors
-   FAIL 4063/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
-   FAIL 2538/20000 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
-   FAIL 9487/20000 lit FG1 R-0981 a replace from stored text only when it changes to a good label
-   FAIL 19621/20000 lit FG2 R-1249 the action replaces every other connection
-   FAIL 3589/20000 lit I1
-   FAIL 19997/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 10858/20000 lit I8 held, before then
-   FAIL 1075/20000 lit I8 search_path once per E
-   FAIL 18492/20000 lit I9 loud half
-   FAIL  417/20000 lit I9 loud: a request, entry or replacement
-   FAIL  483/20000 lit R-1271 before t0+W, not judged not old (parameter test)
-== two servers, landing always, heavy [straight] fault 0 seeds 10000..30000 (9.0s)
-   FAIL 2398/20000 ez I8 held, before then, every error
-   FAIL  234/20000 ez I8 held, before then, visible errors
-   FAIL 3656/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
-   FAIL   14/20000 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
-   FAIL 15768/20000 lit FG1 R-0981 a replace from stored text only when it changes to a good label
-   FAIL 19750/20000 lit FG2 R-1249 the action replaces every other connection
-   FAIL 3234/20000 lit I1 several (rose between them)
-   FAIL 19995/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 15218/20000 lit I8 held, before then
-   FAIL  381/20000 lit I8 search_path once per E
-   FAIL 19769/20000 lit I9 loud half
-   FAIL 1827/20000 lit I9 loud: a request, entry or replacement
-   FAIL  561/20000 lit R-1271 before t0+W, not judged not old (parameter test)
-== savepoints [straight] fault 0 seeds 10000..30000 (12.5s)
-   FAIL 1103/20000 ez I8 held, before then, every error
-   FAIL  118/20000 ez I8 held, before then, visible errors
-   FAIL 6451/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
-   FAIL 4357/20000 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
-   FAIL 7853/20000 lit FG1 R-0981 a replace from stored text only when it changes to a good label
-   FAIL 19515/20000 lit FG2 R-1249 the action replaces every other connection
-   FAIL 2946/20000 lit I1
-   FAIL 20000/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 9748/20000 lit I8 held, before then
-   FAIL 4539/20000 lit I8 search_path once per E
-   FAIL 19344/20000 lit I9 loud half
-   FAIL  373/20000 lit I9 loud: a request, entry or replacement
-   FAIL  768/20000 lit R-1271 before t0+W, not judged not old (parameter test)
-== RR and SERIALIZABLE only [straight] fault 0 seeds 10000..30000 (9.8s)
-   FAIL  923/20000 ez I8 held, before then, every error
-   FAIL   99/20000 ez I8 held, before then, visible errors
-   FAIL 4070/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
-   FAIL 2502/20000 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
-   FAIL 9499/20000 lit FG1 R-0981 a replace from stored text only when it changes to a good label
-   FAIL 19627/20000 lit FG2 R-1249 the action replaces every other connection
-   FAIL 2234/20000 lit I1
-   FAIL 19997/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 10816/20000 lit I8 held, before then
-   FAIL 1059/20000 lit I8 search_path once per E
-   FAIL 18523/20000 lit I9 loud half
-   FAIL  388/20000 lit I9 loud: a request, entry or replacement
-   FAIL  463/20000 lit R-1271 before t0+W, not judged not old (parameter test)
-== quiet [straight] fault 0 seeds 10000..30000 (9.5s)
-   FAIL  215/20000 ez I8 held, before then, every error
-   FAIL   43/20000 ez I8 held, before then, visible errors
-   FAIL 4525/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
-   FAIL 6802/20000 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
-   FAIL 1319/20000 lit FG1 R-0981 a replace from stored text only when it changes to a good label
-   FAIL 10437/20000 lit FG2 R-1249 the action replaces every other connection
-   FAIL  325/20000 lit I1
+   FAIL 18631/20000 lit I9 loud half
+   FAIL  378/20000 lit I9 loud: a request, entry or replacement
+   FAIL  597/20000 lit R-1271 before t0+W, not judged not old (parameter test)
+== three servers [straight] fault 0 seeds 10000..30000 (9.7s)
+   FAIL 1328/20000 ez I8 held, before then, every error
+   FAIL  123/20000 ez I8 held, before then, visible errors
+   FAIL 4346/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL 9367/20000 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
+   FAIL 6482/20000 lit FG1 R-0981 a replace from stored text only when it changes to a good label
+   FAIL 17706/20000 lit FG2 R-1249 the action replaces every other connection
+   FAIL 3104/20000 lit FH1 R-1249 and R-1250, a run failing another way off the stopping errors confirms
+   FAIL  979/20000 lit I1 several (rose between them)
+   FAIL 19996/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 11006/20000 lit I8 held, before then
+   FAIL  446/20000 lit I8 search_path once per E
+   FAIL 18650/20000 lit I9 loud half
+   FAIL  410/20000 lit I9 loud: a request, entry or replacement
+   FAIL  575/20000 lit R-1271 before t0+W, not judged not old (parameter test)
+== heavy [straight] fault 0 seeds 10000..30000 (9.1s)
+   FAIL 1967/20000 ez I8 held, before then, every error
+   FAIL  213/20000 ez I8 held, before then, visible errors
+   FAIL 3267/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL  318/20000 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
+   FAIL 17414/20000 lit FG1 R-0981 a replace from stored text only when it changes to a good label
+   FAIL 19998/20000 lit FG2 R-1249 the action replaces every other connection
+   FAIL 9492/20000 lit FH1 R-1249 and R-1250, a run failing another way off the stopping errors confirms
+   FAIL 2993/20000 lit I1
+   FAIL 19994/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 14729/20000 lit I8 held, before then
+   FAIL  648/20000 lit I8 search_path once per E
+   FAIL 19690/20000 lit I9 loud half
+   FAIL 2384/20000 lit I9 loud: a request, entry or replacement
+   FAIL  453/20000 lit R-1271 before t0+W, not judged not old (parameter test)
+== landing always [straight] fault 0 seeds 10000..30000 (9.8s)
+   FAIL  969/20000 ez I8 held, before then, every error
+   FAIL  111/20000 ez I8 held, before then, visible errors
+   FAIL 4136/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL 3178/20000 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
+   FAIL 7938/20000 lit FG1 R-0981 a replace from stored text only when it changes to a good label
+   FAIL 19581/20000 lit FG2 R-1249 the action replaces every other connection
+   FAIL 3671/20000 lit FH1 R-1249 and R-1250, a run failing another way off the stopping errors confirms
+   FAIL 3655/20000 lit I1
    FAIL 19999/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 2961/20000 lit I8 held, before then
-   FAIL  337/20000 lit I8 search_path once per E
-   FAIL 17102/20000 lit I9 loud half
-   FAIL   14/20000 lit I9 loud: a request, entry or replacement
-   FAIL  201/20000 lit R-1271 before t0+W, not judged not old (parameter test)
-== hand relabels [straight] fault 0 seeds 10000..30000 (9.7s)
-   FAIL  601/20000 ez I8 held, before then, every error
-   FAIL   74/20000 ez I8 held, before then, visible errors
-   FAIL 4298/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
-   FAIL 4825/20000 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
-   FAIL 7968/20000 lit FG1 R-0981 a replace from stored text only when it changes to a good label
-   FAIL 18060/20000 lit FG2 R-1249 the action replaces every other connection
-   FAIL 1390/20000 lit I1
+   FAIL 10831/20000 lit I8 held, before then
+   FAIL 1078/20000 lit I8 search_path once per E
+   FAIL 18626/20000 lit I9 loud half
+   FAIL  415/20000 lit I9 loud: a request, entry or replacement
+   FAIL  499/20000 lit R-1271 before t0+W, not judged not old (parameter test)
+== two servers, landing always, heavy [straight] fault 0 seeds 10000..30000 (9.1s)
+   FAIL 2393/20000 ez I8 held, before then, every error
+   FAIL  248/20000 ez I8 held, before then, visible errors
+   FAIL 3600/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL 8018/20000 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
+   FAIL 14019/20000 lit FG1 R-0981 a replace from stored text only when it changes to a good label
+   FAIL 19694/20000 lit FG2 R-1249 the action replaces every other connection
+   FAIL 6828/20000 lit FH1 R-1249 and R-1250, a run failing another way off the stopping errors confirms
+   FAIL 3257/20000 lit I1 several (rose between them)
+   FAIL 19996/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 15240/20000 lit I8 held, before then
+   FAIL  412/20000 lit I8 search_path once per E
+   FAIL 19812/20000 lit I9 loud half
+   FAIL 1770/20000 lit I9 loud: a request, entry or replacement
+   FAIL  536/20000 lit R-1271 before t0+W, not judged not old (parameter test)
+== savepoints [straight] fault 0 seeds 10000..30000 (12.6s)
+   FAIL 1124/20000 ez I8 held, before then, every error
+   FAIL  113/20000 ez I8 held, before then, visible errors
+   FAIL 6444/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL 6136/20000 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
+   FAIL 6559/20000 lit FG1 R-0981 a replace from stored text only when it changes to a good label
+   FAIL 19495/20000 lit FG2 R-1249 the action replaces every other connection
+   FAIL 2921/20000 lit FH1 R-1249 and R-1250, a run failing another way off the stopping errors confirms
+   FAIL 2892/20000 lit I1
    FAIL 20000/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 6629/20000 lit I8 held, before then
-   FAIL  829/20000 lit I8 search_path once per E
+   FAIL 9750/20000 lit I8 held, before then
+   FAIL 4483/20000 lit I8 search_path once per E
+   FAIL 19433/20000 lit I9 loud half
+   FAIL  398/20000 lit I9 loud: a request, entry or replacement
+   FAIL  785/20000 lit R-1271 before t0+W, not judged not old (parameter test)
+== RR and SERIALIZABLE only [straight] fault 0 seeds 10000..30000 (9.8s)
+   FAIL  955/20000 ez I8 held, before then, every error
+   FAIL   98/20000 ez I8 held, before then, visible errors
+   FAIL 4083/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL 3164/20000 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
+   FAIL 7946/20000 lit FG1 R-0981 a replace from stored text only when it changes to a good label
+   FAIL 19562/20000 lit FG2 R-1249 the action replaces every other connection
+   FAIL 3646/20000 lit FH1 R-1249 and R-1250, a run failing another way off the stopping errors confirms
+   FAIL 2281/20000 lit I1
+   FAIL 19999/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 10869/20000 lit I8 held, before then
+   FAIL 1062/20000 lit I8 search_path once per E
+   FAIL 18659/20000 lit I9 loud half
+   FAIL  377/20000 lit I9 loud: a request, entry or replacement
+   FAIL  477/20000 lit R-1271 before t0+W, not judged not old (parameter test)
+== quiet [straight] fault 0 seeds 10000..30000 (9.5s)
+   FAIL  226/20000 ez I8 held, before then, every error
+   FAIL   43/20000 ez I8 held, before then, visible errors
+   FAIL 4503/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL 6905/20000 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
+   FAIL 1021/20000 lit FG1 R-0981 a replace from stored text only when it changes to a good label
+   FAIL 10331/20000 lit FG2 R-1249 the action replaces every other connection
+   FAIL  484/20000 lit FH1 R-1249 and R-1250, a run failing another way off the stopping errors confirms
+   FAIL  332/20000 lit I1
+   FAIL 19997/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 2976/20000 lit I8 held, before then
+   FAIL  346/20000 lit I8 search_path once per E
+   FAIL 17183/20000 lit I9 loud half
+   FAIL   12/20000 lit I9 loud: a request, entry or replacement
+   FAIL  202/20000 lit R-1271 before t0+W, not judged not old (parameter test)
+== hand relabels [straight] fault 0 seeds 10000..30000 (9.6s)
+   FAIL  628/20000 ez I8 held, before then, every error
+   FAIL   81/20000 ez I8 held, before then, visible errors
+   FAIL 4288/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL 5234/20000 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
+   FAIL 6423/20000 lit FG1 R-0981 a replace from stored text only when it changes to a good label
+   FAIL 17845/20000 lit FG2 R-1249 the action replaces every other connection
+   FAIL 2905/20000 lit FH1 R-1249 and R-1250, a run failing another way off the stopping errors confirms
+   FAIL 1339/20000 lit I1
+   FAIL 19998/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 6628/20000 lit I8 held, before then
+   FAIL  807/20000 lit I8 search_path once per E
    FAIL    1/20000 lit I8 visible from then on (parameter test)
-   FAIL 19883/20000 lit I9 loud half
-   FAIL  760/20000 lit I9 loud: a request, entry or replacement
-   FAIL  328/20000 lit R-1271 before t0+W, not judged not old (parameter test)
+   FAIL 19882/20000 lit I9 loud half
+   FAIL  707/20000 lit I9 loud: a request, entry or replacement
+   FAIL  290/20000 lit R-1271 before t0+W, not judged not old (parameter test)
 == long transactions [straight] fault 0 seeds 10000..30000 (10.9s)
-   FAIL  694/20000 ez I8 held, before then, every error
-   FAIL   91/20000 ez I8 held, before then, visible errors
-   FAIL    4/20000 ez I8 held, from then on
-   FAIL 3556/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
-   FAIL 2566/20000 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
-   FAIL 7074/20000 lit FG1 R-0981 a replace from stored text only when it changes to a good label
-   FAIL 19907/20000 lit FG2 R-1249 the action replaces every other connection
-   FAIL 1426/20000 lit I1
+   FAIL  730/20000 ez I8 held, before then, every error
+   FAIL   89/20000 ez I8 held, before then, visible errors
+   FAIL    6/20000 ez I8 held, from then on
+   FAIL 3589/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL 2761/20000 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
+   FAIL 5801/20000 lit FG1 R-0981 a replace from stored text only when it changes to a good label
+   FAIL 19881/20000 lit FG2 R-1249 the action replaces every other connection
+   FAIL 3027/20000 lit FH1 R-1249 and R-1250, a run failing another way off the stopping errors confirms
+   FAIL 1406/20000 lit I1
    FAIL 20000/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 7576/20000 lit I8 held, before then
-   FAIL   37/20000 lit I8 held, from then on
-   FAIL  331/20000 lit I8 search_path once per E
-   FAIL   36/20000 lit I8 visible from then on (parameter test)
-   FAIL 16535/20000 lit I9 loud half
-   FAIL  148/20000 lit I9 loud: a request, entry or replacement
-   FAIL   48/20000 lit I9 silent past W of the first confirmation
-   FAIL  625/20000 lit R-1271 before t0+W, not judged not old (parameter test)
+   FAIL 7628/20000 lit I8 held, before then
+   FAIL   47/20000 lit I8 held, from then on
+   FAIL  349/20000 lit I8 search_path once per E
+   FAIL   35/20000 lit I8 visible from then on (parameter test)
+   FAIL 16748/20000 lit I9 loud half
+   FAIL  139/20000 lit I9 loud: a request, entry or replacement
+   FAIL   39/20000 lit I9 silent past W of the first confirmation
+   FAIL  601/20000 lit R-1271 before t0+W, not judged not old (parameter test)
 == slow [straight] fault 0 seeds 10000..30000 (7.8s)
    FAIL 1289/20000 ez I8 held, before then, every error
    FAIL  518/20000 ez I8 held, before then, visible errors
    FAIL  915/20000 ez I8 held, from then on
    FAIL 1937/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
-   FAIL    5/20000 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
+   FAIL    6/20000 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
    FAIL 20000/20000 lit FG2 R-1249 the action replaces every other connection
    FAIL  137/20000 lit I1
    FAIL 19995/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
@@ -267,236 +283,254 @@
    FAIL    2/20000 lit I8 search_path once per E
    FAIL 4752/20000 lit I8 visible from then on (parameter test)
    FAIL 6935/20000 lit R-1271 before t0+W, not judged not old (parameter test)
-== transactions without retry [straight] fault 0 seeds 10000..30000 (10.2s)
-   FAIL 18740/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
-   FAIL 10738/20000 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
-   FAIL 3659/20000 lit FG1 R-0981 a replace from stored text only when it changes to a good label
-   FAIL 17352/20000 lit FG2 R-1249 the action replaces every other connection
-   FAIL 3421/20000 lit I1
+== transactions without retry [straight] fault 0 seeds 10000..30000 (10.3s)
+   FAIL 18760/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL 12601/20000 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
+   FAIL 3011/20000 lit FG1 R-0981 a replace from stored text only when it changes to a good label
+   FAIL 17240/20000 lit FG2 R-1249 the action replaces every other connection
+   FAIL 1694/20000 lit FH1 R-1249 and R-1250, a run failing another way off the stopping errors confirms
+   FAIL 3432/20000 lit I1
    FAIL 20000/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 14097/20000 lit I8 search_path once per E
-   FAIL    3/20000 lit I8 visible from then on (parameter test)
-   FAIL 19266/20000 lit I9 loud half
-   FAIL  697/20000 lit I9 loud: a request, entry or replacement
-   FAIL    1/20000 lit I9 silent past W of the first confirmation
-   FAIL  945/20000 lit R-1271 before t0+W, not judged not old (parameter test)
-== transactions without retry, entries off [straight] fault 0 seeds 10000..30000 (10.2s)
-   FAIL 10352/20000 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
-   FAIL 3674/20000 lit FG1 R-0981 a replace from stored text only when it changes to a good label
-   FAIL 17313/20000 lit FG2 R-1249 the action replaces every other connection
-   FAIL 2014/20000 lit I1
+   FAIL 14108/20000 lit I8 search_path once per E
+   FAIL    2/20000 lit I8 visible from then on (parameter test)
+   FAIL 19382/20000 lit I9 loud half
+   FAIL  687/20000 lit I9 loud: a request, entry or replacement
+   FAIL    2/20000 lit I9 silent past W of the first confirmation
+   FAIL  879/20000 lit R-1271 before t0+W, not judged not old (parameter test)
+== transactions without retry, entries off [straight] fault 0 seeds 10000..30000 (10.1s)
+   FAIL 11878/20000 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
+   FAIL 2879/20000 lit FG1 R-0981 a replace from stored text only when it changes to a good label
+   FAIL 17090/20000 lit FG2 R-1249 the action replaces every other connection
+   FAIL 1705/20000 lit FH1 R-1249 and R-1250, a run failing another way off the stopping errors confirms
+   FAIL 1984/20000 lit I1
    FAIL 20000/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 20000/20000 lit I8 search_path once per E
+   FAIL 19999/20000 lit I8 search_path once per E
    FAIL    2/20000 lit I8 visible from then on (parameter test)
    FAIL 19304/20000 lit I9 loud half
-   FAIL  453/20000 lit I9 loud: a request, entry or replacement
-   FAIL  885/20000 lit R-1271 before t0+W, not judged not old (parameter test)
-== transactions without retry, E a fifth of W [straight] fault 0 seeds 10000..30000 (10.3s)
-   FAIL 19395/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
-   FAIL 10675/20000 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
-   FAIL 3603/20000 lit FG1 R-0981 a replace from stored text only when it changes to a good label
-   FAIL 17181/20000 lit FG2 R-1249 the action replaces every other connection
-   FAIL 2696/20000 lit I1
+   FAIL  445/20000 lit I9 loud: a request, entry or replacement
+   FAIL  851/20000 lit R-1271 before t0+W, not judged not old (parameter test)
+== transactions without retry, E a fifth of W [straight] fault 0 seeds 10000..30000 (10.2s)
+   FAIL 19409/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL 12487/20000 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
+   FAIL 2846/20000 lit FG1 R-0981 a replace from stored text only when it changes to a good label
+   FAIL 17093/20000 lit FG2 R-1249 the action replaces every other connection
+   FAIL 1637/20000 lit FH1 R-1249 and R-1250, a run failing another way off the stopping errors confirms
+   FAIL 2738/20000 lit I1
    FAIL 20000/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 3962/20000 lit I8 search_path once per E
-   FAIL 19297/20000 lit I9 loud half
+   FAIL 3942/20000 lit I8 search_path once per E
+   FAIL 19322/20000 lit I9 loud half
    FAIL  536/20000 lit I9 loud: a request, entry or replacement
-   FAIL  842/20000 lit R-1271 before t0+W, not judged not old (parameter test)
-== search_path only, no retry [straight] fault 0 seeds 10000..30000 (4.0s)
+   FAIL  843/20000 lit R-1271 before t0+W, not judged not old (parameter test)
+== search_path only, no retry [straight] fault 0 seeds 10000..30000 (3.9s)
    FAIL 15229/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
    FAIL 20000/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
-== search_path only, no retry, entries off [straight] fault 0 seeds 10000..30000 (6.3s)
+== search_path only, no retry, entries off [straight] fault 0 seeds 10000..30000 (6.1s)
    FAIL 20000/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL 20000/20000 lit I8 search_path once per E
-== search_path only, no retry, E off by 0s [straight] fault 0 seeds 10000..30000 (6.7s)
+== search_path only, no retry, E off by 0s [straight] fault 0 seeds 10000..30000 (6.2s)
    FAIL 20000/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
-== search_path only, no retry, up to 100 ms to the run [straight] fault 0 seeds 10000..30000 (4.7s)
+== search_path only, no retry, up to 100 ms to the run [straight] fault 0 seeds 10000..30000 (4.6s)
    FAIL 19353/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
    FAIL 19999/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
-== stored text only, no schema change [straight] fault 0 seeds 10000..30000 (11.4s)
-   FAIL 17162/20000 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
-   FAIL 19990/20000 lit FG1 R-0981 a replace from stored text only when it changes to a good label
-   FAIL 20000/20000 lit FG2 R-1249 the action replaces every other connection
-   FAIL 19995/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
-== record shapes only, no schema change [straight] fault 0 seeds 10000..30000 (12.2s)
+== stored text only, no schema change [straight] fault 0 seeds 10000..30000 (11.6s)
+   FAIL 16332/20000 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
+   FAIL 19925/20000 lit FG1 R-0981 a replace from stored text only when it changes to a good label
+   FAIL 19998/20000 lit FG2 R-1249 the action replaces every other connection
+   FAIL 15704/20000 lit FH1 R-1249 and R-1250, a run failing another way off the stopping errors confirms
+   FAIL 19996/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
+== record shapes only, no schema change [straight] fault 0 seeds 10000..30000 (12.1s)
    FAIL 19869/20000 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
    FAIL 19996/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
 == max 1 [straight] fault 0 seeds 10000..30000 (12.7s)
-   FAIL  369/20000 ez I8 held, before then, every error
+   FAIL  367/20000 ez I8 held, before then, every error
+   FAIL   40/20000 ez I8 held, before then, visible errors
+   FAIL 4364/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL 2838/20000 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
+   FAIL 5535/20000 lit FG1 R-0981 a replace from stored text only when it changes to a good label
+   FAIL 16652/20000 lit FG2 R-1249 the action replaces every other connection
+   FAIL 2113/20000 lit FH1 R-1249 and R-1250, a run failing another way off the stopping errors confirms
+   FAIL 6817/20000 lit I1
+   FAIL 19999/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 5450/20000 lit I8 held, before then
+   FAIL 2100/20000 lit I8 search_path once per E
+   FAIL 15884/20000 lit I9 loud half
+   FAIL  208/20000 lit I9 loud: a request, entry or replacement
+   FAIL  183/20000 lit R-1271 before t0+W, not judged not old (parameter test)
+== max 1, budget 1 [straight] fault 0 seeds 10000..30000 (12.7s)
+   FAIL  376/20000 ez I8 held, before then, every error
    FAIL   41/20000 ez I8 held, before then, visible errors
-   FAIL 4515/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
-   FAIL 2132/20000 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
-   FAIL 6675/20000 lit FG1 R-0981 a replace from stored text only when it changes to a good label
-   FAIL 16867/20000 lit FG2 R-1249 the action replaces every other connection
-   FAIL 6821/20000 lit I1
-   FAIL 19999/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 5478/20000 lit I8 held, before then
-   FAIL 2189/20000 lit I8 search_path once per E
-   FAIL 15726/20000 lit I9 loud half
-   FAIL  222/20000 lit I9 loud: a request, entry or replacement
-   FAIL  170/20000 lit R-1271 before t0+W, not judged not old (parameter test)
-== max 1, budget 1 [straight] fault 0 seeds 10000..30000 (12.8s)
-   FAIL  382/20000 ez I8 held, before then, every error
-   FAIL   45/20000 ez I8 held, before then, visible errors
-   FAIL 4467/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
-   FAIL 2147/20000 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
-   FAIL 6704/20000 lit FG1 R-0981 a replace from stored text only when it changes to a good label
-   FAIL 16877/20000 lit FG2 R-1249 the action replaces every other connection
-   FAIL 6746/20000 lit I1
-   FAIL 19999/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 5457/20000 lit I8 held, before then
-   FAIL 2165/20000 lit I8 search_path once per E
-   FAIL 15685/20000 lit I9 loud half
-   FAIL  227/20000 lit I9 loud: a request, entry or replacement
-   FAIL  151/20000 lit R-1271 before t0+W, not judged not old (parameter test)
+   FAIL 4360/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL 2829/20000 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
+   FAIL 5634/20000 lit FG1 R-0981 a replace from stored text only when it changes to a good label
+   FAIL 16674/20000 lit FG2 R-1249 the action replaces every other connection
+   FAIL 2057/20000 lit FH1 R-1249 and R-1250, a run failing another way off the stopping errors confirms
+   FAIL 6744/20000 lit I1
+   FAIL 19998/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 5393/20000 lit I8 held, before then
+   FAIL 2070/20000 lit I8 search_path once per E
+   FAIL 15851/20000 lit I9 loud half
+   FAIL  206/20000 lit I9 loud: a request, entry or replacement
+   FAIL  166/20000 lit R-1271 before t0+W, not judged not old (parameter test)
 == max 1, quick [straight] fault 0 seeds 10000..30000 (8.5s)
-   FAIL  408/20000 ez I8 held, before then, every error
-   FAIL   41/20000 ez I8 held, before then, visible errors
-   FAIL  527/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
-   FAIL 1144/20000 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
-   FAIL 4639/20000 lit FG1 R-0981 a replace from stored text only when it changes to a good label
-   FAIL 18087/20000 lit FG2 R-1249 the action replaces every other connection
-   FAIL 1958/20000 lit I1
+   FAIL  415/20000 ez I8 held, before then, every error
+   FAIL   48/20000 ez I8 held, before then, visible errors
+   FAIL  524/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL 1321/20000 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
+   FAIL 3781/20000 lit FG1 R-0981 a replace from stored text only when it changes to a good label
+   FAIL 18025/20000 lit FG2 R-1249 the action replaces every other connection
+   FAIL 1691/20000 lit FH1 R-1249 and R-1250, a run failing another way off the stopping errors confirms
+   FAIL 1979/20000 lit I1
+   FAIL 19996/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 5313/20000 lit I8 held, before then
+   FAIL  909/20000 lit I8 search_path once per E
+   FAIL    1/20000 lit I8 visible from then on (parameter test)
+   FAIL 14975/20000 lit I9 loud half
+   FAIL   72/20000 lit I9 loud: a request, entry or replacement
+   FAIL    2/20000 lit I9 silent past W of the first confirmation
+   FAIL  214/20000 lit R-1271 before t0+W, not judged not old (parameter test)
+== max 2, budget 2, heavy [straight] fault 0 seeds 10000..30000 (9.0s)
+   FAIL 1366/20000 ez I8 held, before then, every error
+   FAIL  157/20000 ez I8 held, before then, visible errors
+   FAIL 3334/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL 1734/20000 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
+   FAIL 15381/20000 lit FG1 R-0981 a replace from stored text only when it changes to a good label
+   FAIL 19969/20000 lit FG2 R-1249 the action replaces every other connection
+   FAIL 7372/20000 lit FH1 R-1249 and R-1250, a run failing another way off the stopping errors confirms
+   FAIL 4158/20000 lit I1
    FAIL 19994/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 5263/20000 lit I8 held, before then
-   FAIL  913/20000 lit I8 search_path once per E
-   FAIL    1/20000 lit I8 visible from then on (parameter test)
-   FAIL 14821/20000 lit I9 loud half
-   FAIL   65/20000 lit I9 loud: a request, entry or replacement
-   FAIL    1/20000 lit I9 silent past W of the first confirmation
-   FAIL  208/20000 lit R-1271 before t0+W, not judged not old (parameter test)
-== max 2, budget 2, heavy [straight] fault 0 seeds 10000..30000 (9.1s)
-   FAIL 1272/20000 ez I8 held, before then, every error
-   FAIL  150/20000 ez I8 held, before then, visible errors
-   FAIL 3399/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
-   FAIL  480/20000 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
-   FAIL 16795/20000 lit FG1 R-0981 a replace from stored text only when it changes to a good label
-   FAIL 19976/20000 lit FG2 R-1249 the action replaces every other connection
-   FAIL 4282/20000 lit I1
-   FAIL 19997/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 12335/20000 lit I8 held, before then
-   FAIL 1393/20000 lit I8 search_path once per E
-   FAIL 19426/20000 lit I9 loud half
-   FAIL 1372/20000 lit I9 loud: a request, entry or replacement
-   FAIL  387/20000 lit R-1271 before t0+W, not judged not old (parameter test)
+   FAIL 12268/20000 lit I8 held, before then
+   FAIL 1344/20000 lit I8 search_path once per E
+   FAIL 19477/20000 lit I9 loud half
+   FAIL 1396/20000 lit I9 loud: a request, entry or replacement
+   FAIL  384/20000 lit R-1271 before t0+W, not judged not old (parameter test)
 == hand relabels without the reset [straight] fault 0 seeds 10000..30000 (9.7s)
-   FAIL  652/20000 ez I8 held, before then, every error
+   FAIL  666/20000 ez I8 held, before then, every error
    FAIL   82/20000 ez I8 held, before then, visible errors
-   FAIL 4309/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
-   FAIL 4942/20000 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
-   FAIL 7976/20000 lit FG1 R-0981 a replace from stored text only when it changes to a good label
-   FAIL 18178/20000 lit FG2 R-1249 the action replaces every other connection
-   FAIL 1382/20000 lit I1
-   FAIL 19999/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 6576/20000 lit I8 held, before then
-   FAIL  773/20000 lit I8 search_path once per E
+   FAIL 4343/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL 5344/20000 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
+   FAIL 6476/20000 lit FG1 R-0981 a replace from stored text only when it changes to a good label
+   FAIL 18066/20000 lit FG2 R-1249 the action replaces every other connection
+   FAIL 2881/20000 lit FH1 R-1249 and R-1250, a run failing another way off the stopping errors confirms
+   FAIL 1386/20000 lit I1
+   FAIL 19998/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 6625/20000 lit I8 held, before then
+   FAIL    1/20000 lit I8 held, from then on
+   FAIL  790/20000 lit I8 search_path once per E
    FAIL    1/20000 lit I8 visible from then on (parameter test)
-   FAIL 19876/20000 lit I9 loud half
-   FAIL  721/20000 lit I9 loud: a request, entry or replacement
-   FAIL  311/20000 lit R-1271 before t0+W, not judged not old (parameter test)
+   FAIL 19887/20000 lit I9 loud half
+   FAIL  722/20000 lit I9 loud: a request, entry or replacement
+   FAIL  295/20000 lit R-1271 before t0+W, not judged not old (parameter test)
 == hand relabels without the reset, casts [straight] fault 0 seeds 10000..30000 (7.8s)
    FAIL    6/20000 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
    FAIL 6606/20000 lit FG2 R-1249 the action replaces every other connection
    FAIL 19999/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL 18899/20000 lit I9 loud half
-== old labels copied [straight] fault 0 seeds 10000..30000 (9.8s)
-   FAIL  700/20000 ez I8 held, before then, every error
-   FAIL  138/20000 ez I8 held, before then, visible errors
-   FAIL 4105/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
-   FAIL 2470/20000 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
-   FAIL 9235/20000 lit FG1 R-0981 a replace from stored text only when it changes to a good label
-   FAIL 19593/20000 lit FG2 R-1249 the action replaces every other connection
-   FAIL 2340/20000 lit I1
-   FAIL 19997/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 10619/20000 lit I8 held, before then
-   FAIL 1065/20000 lit I8 search_path once per E
-   FAIL 18437/20000 lit I9 loud half
-   FAIL  425/20000 lit I9 loud: a request, entry or replacement
-   FAIL  439/20000 lit R-1271 before t0+W, not judged not old (parameter test)
+== old labels copied [straight] fault 0 seeds 10000..30000 (10.0s)
+   FAIL  721/20000 ez I8 held, before then, every error
+   FAIL  132/20000 ez I8 held, before then, visible errors
+   FAIL 4114/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL 3200/20000 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
+   FAIL 7737/20000 lit FG1 R-0981 a replace from stored text only when it changes to a good label
+   FAIL 19544/20000 lit FG2 R-1249 the action replaces every other connection
+   FAIL 3531/20000 lit FH1 R-1249 and R-1250, a run failing another way off the stopping errors confirms
+   FAIL 2330/20000 lit I1
+   FAIL 19996/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 10583/20000 lit I8 held, before then
+   FAIL 1040/20000 lit I8 search_path once per E
+   FAIL 18564/20000 lit I9 loud half
+   FAIL  434/20000 lit I9 loud: a request, entry or replacement
+   FAIL  437/20000 lit R-1271 before t0+W, not judged not old (parameter test)
 == record and column statements [straight] fault 0 seeds 10000..30000 (9.9s)
-   FAIL 1051/20000 ez I8 held, before then, every error
-   FAIL  145/20000 ez I8 held, before then, visible errors
-   FAIL 5190/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
-   FAIL 3421/20000 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
-   FAIL 10157/20000 lit FG1 R-0981 a replace from stored text only when it changes to a good label
-   FAIL 18508/20000 lit FG2 R-1249 the action replaces every other connection
-   FAIL 2593/20000 lit I1
-   FAIL 19999/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 9938/20000 lit I8 held, before then
-   FAIL 1598/20000 lit I8 search_path once per E
-   FAIL 18548/20000 lit I9 loud half
-   FAIL  535/20000 lit I9 loud: a request, entry or replacement
+   FAIL 1127/20000 ez I8 held, before then, every error
+   FAIL  153/20000 ez I8 held, before then, visible errors
+   FAIL 5260/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL 4292/20000 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
+   FAIL 8624/20000 lit FG1 R-0981 a replace from stored text only when it changes to a good label
+   FAIL 18318/20000 lit FG2 R-1249 the action replaces every other connection
+   FAIL 4207/20000 lit FH1 R-1249 and R-1250, a run failing another way off the stopping errors confirms
+   FAIL 2650/20000 lit I1
+   FAIL 20000/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 9896/20000 lit I8 held, before then
+   FAIL    1/20000 lit I8 held, from then on
+   FAIL 1519/20000 lit I8 search_path once per E
+   FAIL    1/20000 lit I8 visible from then on (parameter test)
+   FAIL 18614/20000 lit I9 loud half
+   FAIL  543/20000 lit I9 loud: a request, entry or replacement
    FAIL    1/20000 lit I9 silent past W of the first confirmation
-   FAIL  605/20000 lit R-1271 before t0+W, not judged not old (parameter test)
-== every call a cast beside a second type [straight] fault 0 seeds 10000..30000 (8.2s)
+   FAIL  627/20000 lit R-1271 before t0+W, not judged not old (parameter test)
+== every call a cast beside a second type [straight] fault 0 seeds 10000..30000 (8.1s)
    FAIL  190/20000 lit I1
    FAIL 20000/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
    FAIL    2/20000 lit I9 silent past W of the first confirmation
 == held [straight] fault 0 seeds 10000..30000 (10.8s)
-   FAIL 1288/20000 ez I8 held, before then, every error
-   FAIL  127/20000 ez I8 held, before then, visible errors
-   FAIL 1440/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
-   FAIL  121/20000 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
-   FAIL 7770/20000 lit FG1 R-0981 a replace from stored text only when it changes to a good label
-   FAIL 17103/20000 lit FG2 R-1249 the action replaces every other connection
-   FAIL  903/20000 lit I1
+   FAIL 1375/20000 ez I8 held, before then, every error
+   FAIL  109/20000 ez I8 held, before then, visible errors
+   FAIL 1446/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL  160/20000 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
+   FAIL 6395/20000 lit FG1 R-0981 a replace from stored text only when it changes to a good label
+   FAIL 16856/20000 lit FG2 R-1249 the action replaces every other connection
+   FAIL 2311/20000 lit FH1 R-1249 and R-1250, a run failing another way off the stopping errors confirms
+   FAIL  887/20000 lit I1
    FAIL 20000/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 14722/20000 lit I8 held, before then
-   FAIL  590/20000 lit I8 search_path once per E
-   FAIL 15675/20000 lit I9 loud half
-   FAIL   73/20000 lit I9 loud: a request, entry or replacement
-   FAIL  138/20000 lit R-1271 before t0+W, not judged not old (parameter test)
-== held, quiet [straight] fault 0 seeds 10000..30000 (10.8s)
-   FAIL  251/20000 ez I8 held, before then, every error
-   FAIL   46/20000 ez I8 held, before then, visible errors
-   FAIL 1543/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
-   FAIL  381/20000 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
-   FAIL  887/20000 lit FG1 R-0981 a replace from stored text only when it changes to a good label
-   FAIL 4956/20000 lit FG2 R-1249 the action replaces every other connection
-   FAIL  194/20000 lit I1
-   FAIL 19999/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 4377/20000 lit I8 held, before then
-   FAIL  254/20000 lit I8 search_path once per E
-   FAIL 12661/20000 lit I9 loud half
+   FAIL 14716/20000 lit I8 held, before then
+   FAIL  587/20000 lit I8 search_path once per E
+   FAIL 15881/20000 lit I9 loud half
+   FAIL   69/20000 lit I9 loud: a request, entry or replacement
+   FAIL  158/20000 lit R-1271 before t0+W, not judged not old (parameter test)
+== held, quiet [straight] fault 0 seeds 10000..30000 (10.6s)
+   FAIL  255/20000 ez I8 held, before then, every error
+   FAIL   45/20000 ez I8 held, before then, visible errors
+   FAIL 1539/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL  390/20000 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
+   FAIL  686/20000 lit FG1 R-0981 a replace from stored text only when it changes to a good label
+   FAIL 4864/20000 lit FG2 R-1249 the action replaces every other connection
+   FAIL  264/20000 lit FH1 R-1249 and R-1250, a run failing another way off the stopping errors confirms
+   FAIL  193/20000 lit I1
+   FAIL 20000/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 4376/20000 lit I8 held, before then
+   FAIL  265/20000 lit I8 search_path once per E
+   FAIL 12802/20000 lit I9 loud half
    FAIL    1/20000 lit I9 loud: a request, entry or replacement
    FAIL   79/20000 lit R-1271 before t0+W, not judged not old (parameter test)
 == long holds [straight] fault 0 seeds 10000..30000 (11.7s)
-   FAIL 3747/20000 ez I8 held, before then, every error
-   FAIL  472/20000 ez I8 held, before then, visible errors
-   FAIL  101/20000 ez I8 held, from then on
-   FAIL 2921/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
-   FAIL  532/20000 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
-   FAIL 3716/20000 lit FG1 R-0981 a replace from stored text only when it changes to a good label
-   FAIL 19360/20000 lit FG2 R-1249 the action replaces every other connection
-   FAIL 1379/20000 lit I1
+   FAIL 3849/20000 ez I8 held, before then, every error
+   FAIL  504/20000 ez I8 held, before then, visible errors
+   FAIL   82/20000 ez I8 held, from then on
+   FAIL 2933/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL  547/20000 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
+   FAIL 3053/20000 lit FG1 R-0981 a replace from stored text only when it changes to a good label
+   FAIL 19331/20000 lit FG2 R-1249 the action replaces every other connection
+   FAIL 1925/20000 lit FH1 R-1249 and R-1250, a run failing another way off the stopping errors confirms
+   FAIL 1394/20000 lit I1
    FAIL 19999/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 18340/20000 lit I8 held, before then
-   FAIL  795/20000 lit I8 held, from then on
-   FAIL  210/20000 lit I8 search_path once per E
-   FAIL   49/20000 lit I8 visible from then on (parameter test)
-   FAIL 17871/20000 lit I9 loud half
-   FAIL   84/20000 lit I9 loud: a request, entry or replacement
-   FAIL   20/20000 lit I9 silent past W of the first confirmation
-   FAIL  376/20000 lit R-1271 before t0+W, not judged not old (parameter test)
-== long holds, held [straight] fault 0 seeds 10000..30000 (16.5s)
-   FAIL 3865/20000 ez I8 held, before then, every error
-   FAIL  448/20000 ez I8 held, before then, visible errors
-   FAIL  114/20000 ez I8 held, from then on
-   FAIL  815/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
-   FAIL  133/20000 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
-   FAIL 1403/20000 lit FG1 R-0981 a replace from stored text only when it changes to a good label
+   FAIL 18318/20000 lit I8 held, before then
+   FAIL  813/20000 lit I8 held, from then on
+   FAIL  194/20000 lit I8 search_path once per E
+   FAIL   42/20000 lit I8 visible from then on (parameter test)
+   FAIL 18092/20000 lit I9 loud half
+   FAIL   78/20000 lit I9 loud: a request, entry or replacement
+   FAIL   18/20000 lit I9 silent past W of the first confirmation
+   FAIL  346/20000 lit R-1271 before t0+W, not judged not old (parameter test)
+== long holds, held [straight] fault 0 seeds 10000..30000 (16.7s)
+   FAIL 3966/20000 ez I8 held, before then, every error
+   FAIL  460/20000 ez I8 held, before then, visible errors
+   FAIL  101/20000 ez I8 held, from then on
+   FAIL  813/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL  150/20000 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
+   FAIL 1167/20000 lit FG1 R-0981 a replace from stored text only when it changes to a good label
    FAIL 12234/20000 lit FG2 R-1249 the action replaces every other connection
-   FAIL 1270/20000 lit I1
-   FAIL 19998/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 18629/20000 lit I8 held, before then
-   FAIL  956/20000 lit I8 held, from then on
-   FAIL   83/20000 lit I8 search_path once per E
+   FAIL  541/20000 lit FH1 R-1249 and R-1250, a run failing another way off the stopping errors confirms
+   FAIL 1265/20000 lit I1
+   FAIL 19997/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 18594/20000 lit I8 held, before then
+   FAIL  967/20000 lit I8 held, from then on
+   FAIL   71/20000 lit I8 search_path once per E
    FAIL   23/20000 lit I8 visible from then on (parameter test)
-   FAIL 16877/20000 lit I9 loud half
+   FAIL 17007/20000 lit I9 loud half
    FAIL    4/20000 lit I9 loud: a request, entry or replacement
-   FAIL    5/20000 lit I9 silent past W of the first confirmation
-   FAIL   95/20000 lit R-1271 before t0+W, not judged not old (parameter test)
-== long holds, quiet [straight] fault 0 seeds 10000..30000 (13.1s)
+   FAIL    4/20000 lit I9 silent past W of the first confirmation
+   FAIL  102/20000 lit R-1271 before t0+W, not judged not old (parameter test)
+== long holds, quiet [straight] fault 0 seeds 10000..30000 (13.0s)
    FAIL 1547/20000 ez I8 held, before then, every error
    FAIL  632/20000 ez I8 held, before then, visible errors
    FAIL  158/20000 ez I8 held, from then on
@@ -513,76 +547,81 @@
    FAIL    2/20000 lit I9 silent past W of the first confirmation
    FAIL  240/20000 lit R-1271 before t0+W, not judged not old (parameter test)
 == long holds, hand relabels [straight] fault 0 seeds 10000..30000 (13.9s)
-   FAIL 2232/20000 ez I8 held, before then, every error
-   FAIL  264/20000 ez I8 held, before then, visible errors
-   FAIL   61/20000 ez I8 held, from then on
-   FAIL 1498/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
-   FAIL  255/20000 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
-   FAIL 1790/20000 lit FG1 R-0981 a replace from stored text only when it changes to a good label
-   FAIL 12693/20000 lit FG2 R-1249 the action replaces every other connection
-   FAIL  568/20000 lit I1
-   FAIL 19997/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 14464/20000 lit I8 held, before then
-   FAIL  563/20000 lit I8 held, from then on
-   FAIL   63/20000 lit I8 search_path once per E
-   FAIL   30/20000 lit I8 visible from then on (parameter test)
-   FAIL 19516/20000 lit I9 loud half
-   FAIL   40/20000 lit I9 loud: a request, entry or replacement
-   FAIL    8/20000 lit I9 silent past W of the first confirmation
-   FAIL  122/20000 lit R-1271 before t0+W, not judged not old (parameter test)
-== role limit [straight] fault 0 seeds 10000..30000 (9.9s)
-   FAIL  997/20000 ez I8 held, before then, every error
-   FAIL  114/20000 ez I8 held, before then, visible errors
-   FAIL 4180/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
-   FAIL 2322/20000 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
-   FAIL 9503/20000 lit FG1 R-0981 a replace from stored text only when it changes to a good label
-   FAIL 19585/20000 lit FG2 R-1249 the action replaces every other connection
-   FAIL 2278/20000 lit I1
+   FAIL 2260/20000 ez I8 held, before then, every error
+   FAIL  278/20000 ez I8 held, before then, visible errors
+   FAIL   66/20000 ez I8 held, from then on
+   FAIL 1534/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL  238/20000 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
+   FAIL 1425/20000 lit FG1 R-0981 a replace from stored text only when it changes to a good label
+   FAIL 12486/20000 lit FG2 R-1249 the action replaces every other connection
+   FAIL  678/20000 lit FH1 R-1249 and R-1250, a run failing another way off the stopping errors confirms
+   FAIL  595/20000 lit I1
+   FAIL 19996/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 14427/20000 lit I8 held, before then
+   FAIL  586/20000 lit I8 held, from then on
+   FAIL   55/20000 lit I8 search_path once per E
+   FAIL   29/20000 lit I8 visible from then on (parameter test)
+   FAIL 19575/20000 lit I9 loud half
+   FAIL   31/20000 lit I9 loud: a request, entry or replacement
+   FAIL   11/20000 lit I9 silent past W of the first confirmation
+   FAIL  123/20000 lit R-1271 before t0+W, not judged not old (parameter test)
+== role limit [straight] fault 0 seeds 10000..30000 (9.8s)
+   FAIL 1026/20000 ez I8 held, before then, every error
+   FAIL   99/20000 ez I8 held, before then, visible errors
+   FAIL 4200/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL 2967/20000 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
+   FAIL 7805/20000 lit FG1 R-0981 a replace from stored text only when it changes to a good label
+   FAIL 19535/20000 lit FG2 R-1249 the action replaces every other connection
+   FAIL 3645/20000 lit FH1 R-1249 and R-1250, a run failing another way off the stopping errors confirms
+   FAIL 2310/20000 lit I1
    FAIL 20000/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 10828/20000 lit I8 held, before then
-   FAIL 1056/20000 lit I8 search_path once per E
-   FAIL 18435/20000 lit I9 loud half
-   FAIL  562/20000 lit I9 loud: a request, entry or replacement
-   FAIL  286/20000 lit R-1271 before t0+W, not judged not old (parameter test)
+   FAIL 10722/20000 lit I8 held, before then
+   FAIL 1080/20000 lit I8 search_path once per E
+   FAIL 18559/20000 lit I9 loud half
+   FAIL  551/20000 lit I9 loud: a request, entry or replacement
+   FAIL  276/20000 lit R-1271 before t0+W, not judged not old (parameter test)
 == role limit, heavy [straight] fault 0 seeds 10000..30000 (9.1s)
-   FAIL 1892/20000 ez I8 held, before then, every error
-   FAIL  193/20000 ez I8 held, before then, visible errors
-   FAIL 3262/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
-   FAIL   30/20000 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
-   FAIL 18521/20000 lit FG1 R-0981 a replace from stored text only when it changes to a good label
-   FAIL 19999/20000 lit FG2 R-1249 the action replaces every other connection
-   FAIL 2969/20000 lit I1
-   FAIL 19994/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 14810/20000 lit I8 held, before then
-   FAIL  638/20000 lit I8 search_path once per E
-   FAIL 19627/20000 lit I9 loud half
-   FAIL 2572/20000 lit I9 loud: a request, entry or replacement
-   FAIL  208/20000 lit R-1271 before t0+W, not judged not old (parameter test)
+   FAIL 1924/20000 ez I8 held, before then, every error
+   FAIL  208/20000 ez I8 held, before then, visible errors
+   FAIL 3265/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL  250/20000 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
+   FAIL 17357/20000 lit FG1 R-0981 a replace from stored text only when it changes to a good label
+   FAIL 19998/20000 lit FG2 R-1249 the action replaces every other connection
+   FAIL 9440/20000 lit FH1 R-1249 and R-1250, a run failing another way off the stopping errors confirms
+   FAIL 2976/20000 lit I1
+   FAIL 19995/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 14642/20000 lit I8 held, before then
+   FAIL  632/20000 lit I8 search_path once per E
+   FAIL 19710/20000 lit I9 loud half
+   FAIL 2654/20000 lit I9 loud: a request, entry or replacement
+   FAIL  195/20000 lit R-1271 before t0+W, not judged not old (parameter test)
 == refusals [straight] fault 0 seeds 10000..30000 (10.0s)
-   FAIL 1727/20000 ez I8 held, before then, every error
-   FAIL  180/20000 ez I8 held, before then, visible errors
-   FAIL 3739/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
-   FAIL  145/20000 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
-   FAIL 12806/20000 lit FG1 R-0981 a replace from stored text only when it changes to a good label
-   FAIL 19752/20000 lit FG2 R-1249 the action replaces every other connection
-   FAIL 3757/20000 lit I1
-   FAIL 19997/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 14168/20000 lit I8 held, before then
-   FAIL  953/20000 lit I8 search_path once per E
-   FAIL 17259/20000 lit I9 loud half
-   FAIL 2556/20000 lit I9 loud: a request, entry or replacement
-   FAIL   36/20000 lit R-1271 before t0+W, not judged not old (parameter test)
-== held, no rerun [straight] fault 0 seeds 10000..30000 (9.6s)
-   FAIL  889/20000 ez I8 held, before then, every error
-   FAIL  117/20000 ez I8 held, before then, visible errors
-   FAIL 4114/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
-   FAIL 2444/20000 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
-   FAIL 9364/20000 lit FG1 R-0981 a replace from stored text only when it changes to a good label
-   FAIL 19635/20000 lit FG2 R-1249 the action replaces every other connection
-   FAIL 2323/20000 lit I1
-   FAIL 19999/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
-   FAIL 9741/20000 lit I8 held, before then
-   FAIL 1098/20000 lit I8 search_path once per E
-   FAIL 18401/20000 lit I9 loud half
-   FAIL  409/20000 lit I9 loud: a request, entry or replacement
-   FAIL  466/20000 lit R-1271 before t0+W, not judged not old (parameter test)
+   FAIL 1829/20000 ez I8 held, before then, every error
+   FAIL  168/20000 ez I8 held, before then, visible errors
+   FAIL 3727/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL  320/20000 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
+   FAIL 11004/20000 lit FG1 R-0981 a replace from stored text only when it changes to a good label
+   FAIL 19707/20000 lit FG2 R-1249 the action replaces every other connection
+   FAIL 4835/20000 lit FH1 R-1249 and R-1250, a run failing another way off the stopping errors confirms
+   FAIL 3641/20000 lit I1
+   FAIL 20000/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 14066/20000 lit I8 held, before then
+   FAIL  940/20000 lit I8 search_path once per E
+   FAIL 17633/20000 lit I9 loud half
+   FAIL 2694/20000 lit I9 loud: a request, entry or replacement
+   FAIL   45/20000 lit R-1271 before t0+W, not judged not old (parameter test)
+== held, no rerun [straight] fault 0 seeds 10000..30000 (9.7s)
+   FAIL  915/20000 ez I8 held, before then, every error
+   FAIL  107/20000 ez I8 held, before then, visible errors
+   FAIL 4211/20000 lit FD1 R-1253 and R-1272 gap clause, transactions that start while morm rolls back
+   FAIL 3155/20000 lit FF1 R-1268 shorter stale_cooldown, 2 × max replacements per span
+   FAIL 7831/20000 lit FG1 R-0981 a replace from stored text only when it changes to a good label
+   FAIL 19597/20000 lit FG2 R-1249 the action replaces every other connection
+   FAIL 3580/20000 lit FH1 R-1249 and R-1250, a run failing another way off the stopping errors confirms
+   FAIL 2300/20000 lit I1
+   FAIL 19996/20000 lit I11 (a serialization failure returned as it is fails the whole transaction)
+   FAIL 9735/20000 lit I8 held, before then
+   FAIL 1074/20000 lit I8 search_path once per E
+   FAIL 18561/20000 lit I9 loud half
+   FAIL  413/20000 lit I9 loud: a request, entry or replacement
+   FAIL  455/20000 lit R-1271 before t0+W, not judged not old (parameter test)

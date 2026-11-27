@@ -1,58 +1,58 @@
 switch 1 [straight]: ANY=2048; I4 span replacements, FF1=1; new I1=2048   | no fault: 
 switch 1 [pooled]: ANY=2048; new I1=2048   | no fault: 
-switch 2 [straight]: ANY=2048; I3 more than open at its start=2048; I3 span, an epoch's replacements, R-0981=2041; I4 per epoch opens=2047; I4 per epoch replacements=2048; I4 span=686; I4 span replacements, FF1=1667   | no fault: 
-switch 3 [straight]: ANY=2048; I4 span replacements, FF1=1; new I1=2048   | no fault: 
+switch 2 [straight]: ANY=2048; I3 more than open at its start=2048; I3 span, an epoch's replacements, R-0981=2044; I4 per epoch opens=2047; I4 per epoch replacements=2048; I4 span=284; I4 span replacements, FF1=1778   | no fault: 
+switch 3 [straight]: ANY=2048; I4 span replacements, FF1=2; new I1=2048   | no fault: 
 switch 4 [straight]: ANY=2046; I8 in a savepoint=1822; I8 in a transaction=2004; I8 once per connection=129; I8 outside a transaction=2030; R-1271 from t0+W on=2046; new I8 held, from then on=1948   | no fault: 
 switch 5 [straight]: ANY=2048; I8 outside a transaction=2047; R-1271 before t0+W, not judged not old=2048; R-1271 from t0+W on=2047   | no fault: 
-switch 6 [straight]: ANY=2048; I2=2048; new I9 silent past W of the first request=3   | no fault: 
-switch 6 [pooled]: ANY=2048; I2=2048; new I9 silent past W of the first request=170   | no fault: 
-switch 7 [straight]: ANY=2048; I7 held, a stale copy failing twice=1187; I7 outside a transaction=2048; I8 outside a transaction=6; I8 search_path visible outside=2047; R-1271 before t0+W, not judged not old=1931; R-1271 from t0+W on=23; new I8 held, before then=1066; new I9 loud half=1671   | no fault: 
-switch 7 [pooled]: ANY=2048; I7 outside a transaction=2048; I8 pooled, outside a transaction, as it is with no cool-down and no retry=2046; I8 search_path visible outside=2047; new I9 loud half=1949   | no fault: 
-switch 8 [straight]: ANY=665; new I1=665   | no fault: 
-switch 8 [pooled]: ANY=921; new I1=921   | no fault: 
-switch 9 [straight]: ANY=1583; I10 newer=1583; I3=1414; new I1=587   | no fault: 
-switch 9 [pooled]: ANY=1422; I10 newer=1422   | no fault: 
+switch 6 [straight]: ANY=2048; I2=2048; new I9 silent past W of the first request=1   | no fault: 
+switch 6 [pooled]: ANY=2048; I2=2048; new I9 silent past W of the first request=167   | no fault: 
+switch 7 [straight]: ANY=2048; I7 held, a stale copy failing twice=1182; I7 outside a transaction=2048; I8 outside a transaction=9; I8 search_path visible outside=2048; R-1271 before t0+W, not judged not old=1930; R-1271 from t0+W on=21; new I8 held, before then=1083; new I9 loud half=1678   | no fault: 
+switch 7 [pooled]: ANY=2048; I7 outside a transaction=2048; I8 pooled, outside a transaction, as it is with no cool-down and no retry=2046; I8 search_path visible outside=2047; new I9 loud half=1957   | no fault: 
+switch 8 [straight]: ANY=707; new I1=707   | no fault: 
+switch 8 [pooled]: ANY=932; new I1=932   | no fault: 
+switch 9 [straight]: ANY=1575; I10 newer=1575; I3=1403; new I1=561   | no fault: 
+switch 9 [pooled]: ANY=1417; I10 newer=1417   | no fault: 
 switch 10 [straight]: ANY=2048; I10 sets=2048   | no fault: 
 switch 10 [pooled]: ANY=2048; I10 sets=2048   | no fault: 
-switch 11 [straight]: ANY=396; I10 newer=396; I3=313; new I1=105   | no fault: 
+switch 11 [straight]: ANY=422; I10 newer=422; I3=336; new I1=113   | no fault: 
 switch 12 [straight]: ANY=524; I10 newer=524; I3=64; new I1=17   | no fault: 
-switch 13 [straight]: ANY=642; I10 newer=642; I3=513; new I1=187   | no fault: 
-switch 14 [straight]: ANY=2048; I10 down=2048; I3 several=2048; new I1 several=2048   | no fault: 
+switch 13 [straight]: ANY=663; I10 newer=663; I3=541; new I1=174   | no fault: 
+switch 14 [straight]: ANY=2048; I10 down=2048; I3 several=2048; new I1 several=2046   | no fault: 
 switch 14 [pooled]: ANY=2048; I10 down=2048   | no fault: 
 switch 15 [straight]: ANY=2011; I10 newer=20; I10 snapshot=2011; I3=3; new I1=15   | no fault: 
-switch 16 [straight]: ANY=2048; I10 newer=1836; I10 snapshot=2048; I11 read=2048; I3=1614; new I1=710   | no fault: 
+switch 16 [straight]: ANY=2048; I10 newer=1819; I10 snapshot=2048; I11 read=2048; I3=1583; new I1=688   | no fault: 
 switch 17 [straight]: ANY=1916; I10 newer=11; I10 snapshot=1916; new I1=8   | no fault: 
-switch 18 [straight]: ANY=2048; I10 newer=1793; I3=2047; new I1=2048   | no fault: 
-switch 19 [straight]: ANY=1724; I3=1724; I3 span, an epoch's replacements, R-0981=1   | no fault: 
-switch 20 [straight]: ANY=1893; new I1=1893   | no fault: 
-switch 20 [pooled]: ANY=1934; new I1=1934   | no fault: 
-switch 21 [straight]: ANY=1257; I8 clearing=4; new I1=1255   | no fault: 
+switch 18 [straight]: ANY=2048; I10 newer=1768; I3=2048; I3 span, an epoch's replacements, R-0981=1337; I4 span replacements, FF1=172; new I1=2048   | no fault: 
+switch 19 [straight]: ANY=1730; I3=1730; I3 span, an epoch's replacements, R-0981=12   | no fault: 
+switch 20 [straight]: ANY=1879; new I1=1879   | no fault: 
+switch 20 [pooled]: ANY=1952; new I1=1952   | no fault: 
+switch 21 [straight]: ANY=1270; I8 clearing=5; new I1=1267   | no fault: 
 switch 22 [pooled]: ANY=2016; I2=2016   | no fault: 
 switch 23 [pooled]: ANY=1761; I8 clearing=1761   | no fault: 
 switch 24 [straight]: ANY=2048; I5=2048   | no fault: 
-switch 25 [straight]: ANY=1359; I8 clearing=1359   | no fault: 
-switch 25 [pooled]: ANY=1951; I8 clearing=1951   | no fault: 
-switch 26 [pooled]: ANY=680; I8 clearing=680; new I9 silent past W of the first request=37   | no fault: 
-switch 27 [pooled]: ANY=2048; I14 the second row's cost: a bad text's SchemaChanged in a run begun while its entry exists=1989; new I8 a failure begun while its entry exists=2035   | no fault: 
-switch 28 [straight]: ANY=2048; I14 a later attempt's SchemaChanged for a 22P02 the second row takes=1553; I7 retried attempt runs cached=2048; I7 stale statements on more than one attempt=1516   | no fault: 
-switch 28 [pooled]: ANY=2048; I14 a later attempt's SchemaChanged for a 22P02 the second row takes=2047; I7 retried attempt runs cached=2048; I7 stale statements on more than one attempt=1934   | no fault: 
-switch 29 [straight]: ANY=570; I7 stale statements on more than one attempt=570   | no fault: 
-switch 29 [pooled]: ANY=1018; I7 stale statements on more than one attempt=1018   | no fault: 
-switch 30 [straight]: ANY=874; I4 per epoch opens=874   | no fault: 
+switch 25 [straight]: ANY=1323; I8 clearing=1323   | no fault: 
+switch 25 [pooled]: ANY=1964; I8 clearing=1964   | no fault: 
+switch 26 [pooled]: ANY=683; I8 clearing=683; new I9 silent past W of the first request=45   | no fault: 
+switch 27 [pooled]: ANY=2048; I14 the second row's cost: a bad text's SchemaChanged in a run begun while its entry exists=1995; new I8 a failure begun while its entry exists=2035   | no fault: 
+switch 28 [straight]: ANY=2048; I14 a later attempt's SchemaChanged for a 22P02 the second row takes=1680; I7 retried attempt runs cached=2048; I7 stale statements on more than one attempt=1510   | no fault: 
+switch 28 [pooled]: ANY=2048; I14 a later attempt's SchemaChanged for a 22P02 the second row takes=2048; I7 retried attempt runs cached=2048; I7 stale statements on more than one attempt=1924   | no fault: 
+switch 29 [straight]: ANY=564; I7 stale statements on more than one attempt=564   | no fault: 
+switch 29 [pooled]: ANY=1055; I7 stale statements on more than one attempt=1055   | no fault: 
+switch 30 [straight]: ANY=892; I4 per epoch opens=892   | no fault: 
 switch 31 [straight]: ANY=2048; I11=2048; I11 as it is after a whole rollback=2048; I11 read=2048   | no fault: 
-switch 32 [straight]: ANY=1577; new I8 held, before then=1577; new I8 held, from then on=2   | no fault: 
-switch 33 [straight]: ANY=2040; I14 a later attempt's SchemaChanged for a 22P02 the second row takes=2031; I14 the second row's cost: a bad text's SchemaChanged in a run begun while its entry exists=767; I9 loud: more than the second row's, or not as it is after it=713   | no fault: 
-switch 33 [pooled]: ANY=2048; I14 a later attempt's SchemaChanged for a 22P02 the second row takes=2048; I14 the second row's cost: a bad text's SchemaChanged in a run begun while its entry exists=680; I9 loud: more than the second row's, or not as it is after it=1799   | no fault: 
-switch 34 [straight]: ANY=2017; I7 held, a stale copy failing twice=2017; new I9 loud half=1046   | no fault: 
-switch 35 [pooled]: ANY=2048; I12 a call that never ends=1969; I12 a call waits for a connection while it holds one=2048   | no fault: 
+switch 32 [straight]: ANY=1605; new I8 held, before then=1605   | no fault: 
+switch 33 [straight]: ANY=2044; I14 a later attempt's SchemaChanged for a 22P02 the second row takes=2034; I14 the second row's cost: a bad text's SchemaChanged in a run begun while its entry exists=908; I9 loud: more than the second row's, or not as it is after it=720   | no fault: 
+switch 33 [pooled]: ANY=2048; I14 a later attempt's SchemaChanged for a 22P02 the second row takes=2048; I14 the second row's cost: a bad text's SchemaChanged in a run begun while its entry exists=742; I9 loud: more than the second row's, or not as it is after it=1789   | no fault: 
+switch 34 [straight]: ANY=2017; I7 held, a stale copy failing twice=2017; new I9 loud half=986   | no fault: 
+switch 35 [pooled]: ANY=2048; I12 a call that never ends=1960; I12 a call waits for a connection while it holds one=2048   | no fault: 
 switch 36 [straight]: ANY=2048; I7 in a transaction, as it is=2048   | no fault: 
 switch 36 [pooled]: ANY=2048; I7 in a transaction, as it is=2048   | no fault: 
-switch 37 [straight]: ANY=1660; R-1271 before t0+W, not judged not old=1569; new I8 held, before then=461   | no fault: 
-switch 37 [pooled]: ANY=2023; I8 pooled, outside a transaction, as it is with no cool-down and no retry=2023   | no fault: 
+switch 37 [straight]: ANY=1680; R-1271 before t0+W, not judged not old=1569; new I8 held, before then=478   | no fault: 
+switch 37 [pooled]: ANY=2032; I8 pooled, outside a transaction, as it is with no cool-down and no retry=2032   | no fault: 
 switch 38 [straight]: ANY=2048; new I8 held, before then=2048   | no fault: 
 switch 38 [pooled]:    | no fault: 
-switch 39 [straight]: ANY=1608; I13 a confirming run that ends in another error doesn't confirm=745; I13 a confirming run that ends in the error that set its bytes confirms=1440   | no fault: 
-switch 39 [pooled]: ANY=2045; I13 a confirming run that ends in another error doesn't confirm=1383; I13 a confirming run that ends in the error that set its bytes confirms=2045   | no fault: 
-switch 40 [straight]: ANY=170; I9 a renamed label guessed=170   | no fault: 
-switch 40 [pooled]: ANY=730; I9 a renamed label guessed=730   | no fault: 
-switch 132 [straight]: ANY=2048; new I8 held, before then=2048; new I8 held, from then on=1846   | no fault: 
+switch 39 [straight]: ANY=1642; I13 a confirming run that ends in another error doesn't confirm=744; I13 a confirming run that ends in the error that set its bytes confirms=1486   | no fault: 
+switch 39 [pooled]: ANY=2044; I13 a confirming run that ends in another error doesn't confirm=1444; I13 a confirming run that ends in the error that set its bytes confirms=2043   | no fault: 
+switch 40 [straight]: ANY=177; I9 a renamed label guessed=177   | no fault: 
+switch 40 [pooled]: ANY=750; I9 a renamed label guessed=750   | no fault: 
+switch 132 [straight]: ANY=2048; new I8 held, before then=2048; new I8 held, from then on=1850   | no fault: 
